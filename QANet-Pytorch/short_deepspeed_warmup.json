@@ -1,0 +1,12 @@
+{
+  "train_batch_size": 32,
+  "steps_per_print": 10,
+  "scheduler": {
+    "type": "WarmupLR",
+    "params": {
+      "warmup_min_lr": 0,
+      "warmup_max_lr": 0.001,
+      "warmup_num_steps": 1000
+    }
+  }
+}
