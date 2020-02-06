@@ -108,8 +108,6 @@ class Net(nn.Module):
 net = Net()
 parameters = filter(lambda p: p.requires_grad, net.parameters())
 args=add_argument()
-# Hack to disable client scheduler
-args.use_scheduler = False
 
 # Initialize DeepSpeed to use the following features
 # 1) Distributed model
