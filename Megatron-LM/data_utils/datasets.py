@@ -453,6 +453,43 @@ class json_dataset(data.Dataset):
                 j[self.label_key] = -1
             yield j
 
+class flat_file_dataset(data.Dataset):
+    """
+    Class for loading datasets from a flat file.
+    Purpose: Useful for loading data for unsupervised modeling or transfer tasks
+    Arguments:
+        path (str): path to json file with dataset.
+        tokenizer (data_utils.Tokenizer): Tokenizer to use when processing text. Default: None
+        preprocess_fn (callable): callable function that process a string into desired format.
+            Takes string, maxlen=None, encode=None as arguments. Default: process_str
+    """
+    def __init__(self, path, tokenizer=None, preprocess_fn=None):
+        self.is_lazy = False
+        self.preprocess_fn = preprocess_fn
+        self.path = path
+        self.SetTokenizer(tokenizer)
+        self.X = []
+
+        current_document = ""
+        eot = tokenizer.get_command('eos').name
+        with open(self.path, 'r') as f:
+            for line in f:
+                eot_index = line.find(eot)
+                if eot_index == -1:
+                    current_document += line
+                else:
+                    self.X.append(current_document + line[:eot_index + len(eot)])
+                    current_document = ""
+
+    def SetTokenizer(self, tokenizer):
+        if tokenizer is None:
+            self.using_tokenizer = False
+            if not hasattr(self, '_tokenizer'):
+                self._tokenizer = tokenizer
+        else:
+            self.using_tokenizer = True
+            self._tokenizer = tokenizer
+
 class GPT2Dataset(data.Dataset):
 
     def __init__(self, ds,

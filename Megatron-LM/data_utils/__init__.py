@@ -17,7 +17,7 @@ import os
 import math
 
 from .samplers import DistributedBatchSampler
-from .datasets import json_dataset, csv_dataset, split_ds, ConcatDataset, SplitDataset, bert_sentencepair_dataset, GPT2Dataset
+from .datasets import json_dataset, csv_dataset, flat_file_dataset, split_ds, ConcatDataset, SplitDataset, bert_sentencepair_dataset, GPT2Dataset
 from .lazy_loader import exists_lazy, make_lazy, lazy_array_loader
 from .tokenization import Tokenization, CommandToken, Tokenizer, CharacterLevelTokenizer, BertWordPieceTokenizer, GPT2BPETokenizer, make_tokenizer
 from . import corpora
@@ -50,6 +50,8 @@ def get_dataset(path, **kwargs):
         text = json_dataset(path, **kwargs)
     elif ext in ['.csv', '.tsv']:
         text = csv_dataset(path, **kwargs)
+    elif ext == '.txt':
+        text = flat_file_dataset(path, **kwargs)
     else:
         raise NotImplementedError('data file type %s is not supported'%(ext))
     return text
