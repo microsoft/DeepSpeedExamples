@@ -22,6 +22,7 @@ from datetime import datetime
 import os
 import random
 import math
+import json
 import numpy as np
 import torch
 
@@ -71,6 +72,20 @@ def get_model(args):
         print(' > number of parameters on model parallel rank {}: {}'.format(
             mpu.get_model_parallel_rank(),
             sum([p.nelement() for p in model.parameters()])), flush=True)
+
+        # save model configuration to a file
+        with open(os.path.join(args.save, 'hparams.json')) as f:
+            json.dump({"num_layers": args.num_layers,
+                       "vocab_size": args.vocab_size,
+                       "hidden_size": args.hidden_size,
+                       "num_attention_heads": args.num_attention_heads,
+                       "embedding_dropout_prob": args.hidden_dropout,
+                       "attention_dropout_prob": args.attention_dropout,
+                       "output_dropout_prob": args.hidden_dropout,
+                       "max_sequence_length": args.max_position_embeddings,
+                       "checkpoint_activations": args.checkpoint_activations,
+                       "checkpoint_num_layers": args.checkpoint_num_layers,
+                       "fp16": args.fp16}, f)
 
     # GPU allocation.
     model.cuda(torch.cuda.current_device())
