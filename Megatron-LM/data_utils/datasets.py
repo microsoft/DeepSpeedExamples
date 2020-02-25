@@ -463,7 +463,7 @@ class flat_file_dataset(data.Dataset):
         preprocess_fn (callable): callable function that process a string into desired format.
             Takes string, maxlen=None, encode=None as arguments. Default: process_str
     """
-    def __init__(self, path, tokenizer=None, preprocess_fn=None):
+    def __init__(self, path, tokenizer=None, preprocess_fn=None, **kwargs):
         self.is_lazy = False
         self.preprocess_fn = preprocess_fn
         self.path = path
@@ -471,7 +471,7 @@ class flat_file_dataset(data.Dataset):
         self.X = []
 
         current_document = ""
-        eot = tokenizer.get_command('eos').name
+        eot = "<|endoftext|>"
         with open(self.path, 'r') as f:
             for line in f:
                 eot_index = line.find(eot)
