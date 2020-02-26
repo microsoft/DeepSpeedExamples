@@ -34,6 +34,8 @@ from nltk import tokenize
 from .lazy_loader import lazy_array_loader, exists_lazy, make_lazy
 from .tokenization import Tokenization
 
+END_OF_TEXT = "<|endoftext|>"
+
 class ConcatDataset(data.Dataset):
     """
     Dataset to concatenate multiple datasets.
@@ -471,15 +473,22 @@ class flat_file_dataset(data.Dataset):
         self.X = []
 
         current_document = ""
-        eot = "<|endoftext|>"
         with open(self.path, 'r') as f:
             for line in f:
-                eot_index = line.find(eot)
-                if eot_index == -1:
-                    current_document += line
+                if END_OF_TEXT in line:
+                    split_line = line.split(END_OF_TEXT)
+                    self.add_document(current_document + split_line[0] + END_OF_TEXT)
+                    for inline_document in split_line[1:-1]:
+                        self.add_document(inline_document + END_OF_TEXT)
+                    current_document = split_line[-1]
                 else:
-                    self.X.append(current_document + line[:eot_index + len(eot)])
-                    current_document = ""
+                    current_document += line
+            self.add_document(current_document)
+
+    def add_document(self, document):
+        stripped_document = document.strip()
+        if stripped_document:
+            self.X.append(stripped_document)
 
     def SetTokenizer(self, tokenizer):
         if tokenizer is None:
