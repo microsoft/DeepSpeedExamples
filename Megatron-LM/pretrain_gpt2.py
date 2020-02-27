@@ -74,7 +74,7 @@ def get_model(args):
             sum([p.nelement() for p in model.parameters()])), flush=True)
 
         # save model configuration to a file
-        with open(os.path.join(args.save, 'hparams.json')) as f:
+        with open(os.path.join(args.save, 'hparams.json'), "w") as f:
             json.dump({"num_layers": args.num_layers,
                        "vocab_size": args.vocab_size,
                        "hidden_size": args.hidden_size,
