@@ -89,7 +89,7 @@ class GPT2Tokenizer(object):
         - Byte-level BPE
     """
     @classmethod
-    def from_pretrained(cls, pretrained_model_name_or_path, cache_dir=None, *inputs, **kwargs):
+    def from_pretrained(cls, pretrained_model_name_or_path, max_len, cache_dir=None, *inputs, **kwargs):
         """
         Instantiate a PreTrainedBertModel from a pre-trained model file.
         Download and cache the pre-trained model file if needed.
@@ -128,11 +128,14 @@ class GPT2Tokenizer(object):
                 vocab_file, resolved_vocab_file))
             logger.info("loading merges file {} from cache at {}".format(
                 merges_file, resolved_merges_file))
-        if pretrained_model_name_or_path in PRETRAINED_VOCAB_POSITIONAL_EMBEDDINGS_SIZE_MAP:
+        if max_len is None and pretrained_model_name_or_path in PRETRAINED_VOCAB_POSITIONAL_EMBEDDINGS_SIZE_MAP:
             # if we're using a pretrained model, ensure the tokenizer wont index sequences longer
             # than the number of positional embeddings
             max_len = PRETRAINED_VOCAB_POSITIONAL_EMBEDDINGS_SIZE_MAP[pretrained_model_name_or_path]
+
+        if max_len is not None:
             kwargs['max_len'] = min(kwargs.get('max_len', int(1e12)), max_len)
+
         # Instantiate tokenizer.
         if special_tokens_file and 'special_tokens' not in kwargs:
             special_tokens = open(special_tokens_file, encoding='utf-8').read().split('\n')[:-1]

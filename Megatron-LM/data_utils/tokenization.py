@@ -28,7 +28,7 @@ from .wordpiece import BertTokenizer, PRETRAINED_VOCAB_ARCHIVE_MAP
 from .tokenization_gpt2 import GPT2Tokenizer
 import regex as re
 
-def make_tokenizer(tokenizer_type, corpus, model_path=None, vocab_size=None, model_type='bpe', pad_token=0, character_coverage=1.0, command_tokens=None, type_tokens=None, **kwargs):
+def make_tokenizer(tokenizer_type, corpus, model_path=None, vocab_size=None, model_type='bpe', pad_token=0, character_coverage=1.0, command_tokens=None, type_tokens=None, max_len=None, **kwargs):
     """
     Helper function to instantiate a tokenizer given common combinations of options.
     """
@@ -38,7 +38,7 @@ def make_tokenizer(tokenizer_type, corpus, model_path=None, vocab_size=None, mod
     if tokenizer_class is BertWordPieceTokenizer:
         return BertWordPieceTokenizer(model_type, **kwargs)
     elif tokenizer_class is GPT2BPETokenizer:
-        return GPT2BPETokenizer(**kwargs)
+        return GPT2BPETokenizer(model_path, max_len, **kwargs)
     text_tokenizer =  tokenizer_class(corpus=corpus, vocab_size=vocab_size, model_path=model_path, model_type=model_type,
                                       pad_token=pad_token, character_coverage=character_coverage)
     return Tokenizer(text_tokenizer, command_tokens, type_tokens)
@@ -797,8 +797,9 @@ class BertWordPieceTokenizer(Tokenizer):
 
 
 class GPT2BPETokenizer(Tokenizer):
-    def __init__(self, cache_dir=None, **kwargs):
-        self.text_tokenizer = GPT2Tokenizer.from_pretrained('gpt2',
+    def __init__(self, model_path=None, cache_dir=None, **kwargs):
+        self.text_tokenizer = GPT2Tokenizer.from_pretrained(model_path or 'gpt2',
+                                                            max_len,
                                                             cache_dir=cache_dir)
 
         #disable max len warnings by increasing max len
