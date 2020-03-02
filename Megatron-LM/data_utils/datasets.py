@@ -477,9 +477,9 @@ class flat_file_dataset(data.Dataset):
             for line in f:
                 if END_OF_TEXT in line:
                     split_line = line.split(END_OF_TEXT)
-                    self.add_document(current_document + split_line[0] + END_OF_TEXT)
+                    self.add_document(current_document + split_line[0])
                     for inline_document in split_line[1:-1]:
-                        self.add_document(inline_document + END_OF_TEXT)
+                        self.add_document(inline_document)
                     current_document = split_line[-1]
                 else:
                     current_document += line
