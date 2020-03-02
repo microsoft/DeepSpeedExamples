@@ -499,6 +499,27 @@ class flat_file_dataset(data.Dataset):
             self.using_tokenizer = True
             self._tokenizer = tokenizer
 
+    def GetTokenizer(self):
+        return self._tokenizer
+
+    @property
+    def tokenizer(self):
+        if self.using_tokenizer:
+            return self._tokenizer
+        return None
+
+    def __getitem__(self, index):
+        """gets the index'th string from the dataset"""
+        x = self.X[index]
+        if self.tokenizer is not None:
+            x = self.tokenizer.EncodeAsIds(x, self.preprocess_fn)
+        elif self.preprocess_fn is not None:
+            x = self.preprocess_fn(x)
+        return {'text': x, 'length': len(x), 'label': -1}
+
+    def __len__(self):
+        return len(self.X)
+
 class GPT2Dataset(data.Dataset):
 
     def __init__(self, ds,
