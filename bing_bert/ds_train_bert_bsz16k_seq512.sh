@@ -7,16 +7,16 @@ batch_size=16384
 # This micro batch size assumes 32GB V100 GPUs
 micro_batch=8
 
+base_dir=`pwd`
+
 # Where should we save checkpoints and tensorboard events?
 JOB_NAME=lamb_16k_chkpt150_seq512 
-OUTPUT_DIR=/data/users/${DLWS_USER_NAME}/bert_model_outputs
+OUTPUT_DIR=${base_dir}/bert_model_outputs
 
 # Assumes job name in previous seq128 run, will resume training from epoch 150
 CHECKPOINT_BASE_PATH=${OUTPUT_DIR}/saved_models/lamb_16k_seq128
 CHECKPOINT_EPOCH150_NAME=`basename ${CHECKPOINT_BASE_PATH}/epoch150_*`
 echo "checkpoint id: $CHECKPOINT_EPOCH150_NAME"
-
-base_dir=`pwd`
 
 mkdir -p $OUTPUT_DIR
 total_gpus=$(( $num_gpus * $num_nodes ))

@@ -11,7 +11,7 @@ base_dir=`pwd`
 
 # Where should we save checkpoints and tensorboard events?
 JOB_NAME=lamb_16k_seq128
-OUTPUT_DIR=/data/users/${DLWS_USER_NAME}/bert_model_outputs
+OUTPUT_DIR=${base_dir}/bert_model_outputs
 
 mkdir -p $OUTPUT_DIR
 total_gpus=$(( $num_gpus * $num_nodes ))
