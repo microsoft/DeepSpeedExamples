@@ -439,7 +439,7 @@ class json_dataset(data.Dataset):
 
     def load_json_stream(self, load_path):
         if not self.loose_json:
-            jsons = json.load(open(load_path, 'r'))
+            jsons = json.load(open(load_path, 'r', encoding='utf-8'))
             generator = iter(jsons)
         else:
             def gen_helper():
