@@ -443,7 +443,7 @@ class json_dataset(data.Dataset):
             generator = iter(jsons)
         else:
             def gen_helper():
-                with open(load_path, 'r') as f:
+                with open(load_path, 'r', encoding='utf-8') as f:
                     for row in f:
                         yield json.loads(row)
             generator = gen_helper()
