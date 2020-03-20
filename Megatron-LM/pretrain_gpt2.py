@@ -24,6 +24,7 @@ import random
 import math
 import numpy as np
 import torch
+import time
 
 from arguments import get_args
 from configure_data import configure_data
@@ -145,7 +146,35 @@ def get_learning_rate_scheduler(optimizer, args):
 
     return lr_scheduler
 
+def replace_deepspeed_config_file(args, filename):
+    from deepspeed.pt.deepspeed_config import DeepSpeedConfigWriter
+    
+    if dist.get_rank() == 0:
+        config_writer=DeepSpeedConfigWriter()
+        config_writer.load_config(args.deepspeed_config)
+        
+        config_writer.data['zero_optimization']['stage']=int(args.zero_stage)
+        config_writer.data['zero_optimization']['reduce_scatter'] = args.zero_reduce_scatter
+        config_writer.data['zero_optimization']['contigious_memory'] = args.zero_contigious_memory
+        config_writer.data['zero_optimization']['reduce_bucket_size']=int(args.zero_reduce_bucket_size)
+        config_writer.data['zero_optimization']['allgather_bucket_size']=int(args.zero_allgather_bucket_size)
+        
+        config_writer.write_config(filename)
+    
+    dist.barrier()
+    args.deepspeed_config=filename
 
+    
+def set_activation_checkpoint_arguments(args):
+    num_layers = args.num_layers // args.checkpoint_num_layers
+    num_layers = num_layers if args.num_layers % args.checkpoint_num_layers == 0 else num_layers + 1
+    mpu.set_activation_checkpoint_parameters(partition_activations=args.partition_activations,
+                                        contigious_checkpointing=args.contigious_checkpointing,
+                                        nlayers=num_layers,
+                                        checkpoint_in_cpu=args.checkpoint_in_cpu,
+                                        synchronize=args.synchronize_each_layer,
+                                        profile_backward=args.profile_backward)
+                                        
 def setup_model_and_optimizer(args):
     """Setup model and optimizer."""
 
@@ -155,9 +184,15 @@ def setup_model_and_optimizer(args):
 
     if args.deepspeed:
         import deepspeed
+        
+        #Activation checkpointing stuff
+        set_activation_checkpoint_arguments(args)
+        
+        ##create a new deepspeed configfile
+        filename='tmp_deepspeed_config.json'
+        replace_deepspeed_config_file(args, filename)
 
         print_rank_0("DeepSpeed is enabled.")
-
         model, optimizer, _, lr_scheduler = deepspeed.initialize(
             model=model,
             optimizer=optimizer,
@@ -593,7 +628,6 @@ def get_train_val_test_data(args):
 
     return train_data, val_data, test_data, num_tokens, eod_token
 
-
 def main():
     """Main training program."""
 
@@ -614,6 +648,7 @@ def main():
 
     # Random seeds for reproducability.
     set_random_seed(args.seed)
+
 
     # Data stuff.
     train_data, val_data, test_data, args.vocab_size, \

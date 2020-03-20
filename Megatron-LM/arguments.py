@@ -107,8 +107,6 @@ def add_training_args(parser):
                        'with larger models and sequences')
     group.add_argument('--checkpoint-num-layers', type=int, default=1,
                        help='chunk size (number of layers) for checkpointing')
-    group.add_argument('--partition-activations', action='store_true',
-                       help='partition the checkpoint activation across model parallel process')
     group.add_argument('--clip-grad', type=float, default=1.0,
                        help='gradient clipping')
     group.add_argument('--train-iters', type=int, default=1000000,
@@ -301,6 +299,33 @@ def add_data_args(parser):
 
     return parser
 
+def add_zero_args(parser):
+    """Text generate arguments."""
+
+    group = parser.add_argument_group('Text generation', 'configurations')
+    group.add_argument("--zero-stage", type=int, default=1.0)
+    group.add_argument('--zero-reduce-scatter', action='store_true',
+                       help='Use reduce scatter if specified')
+    group.add_argument('--zero-contigious-memory', action='store_true',
+                       help='Use contigious memory optimizaiton if specified')
+    group.add_argument("--zero-reduce-bucket-size", type=int, default=0.0)
+    group.add_argument("--zero-allgather-bucket-size", type=int, default=0.0)
+    return parser
+
+def add_activation_checkpoint_args(parser):
+    group = parser.add_argument_group('Activation Checkpointing', 'Checkpointing Configurations')
+    group.add_argument('--partition-activations', action='store_true',
+                    help='partition Activations across GPUs before checkpointing.')
+    group.add_argument('--contigious-checkpointing', action='store_true',
+                    help='Contigious memory checkpointing for activatoins.')
+    group.add_argument('--checkpoint-in-cpu', action='store_true',
+                    help='Move the activation checkpoints to CPU.')
+    group.add_argument('--synchronize-each-layer', action='store_true',
+                    help='does a synchronize at the beginning and end of each checkpointed layer.')
+    group.add_argument('--profile-backward', action='store_true',
+                    help='Enables backward pass profiling for checkpointed layers.')
+    return parser
+
 def get_args():
     """Parse all the args."""
 
@@ -311,10 +336,12 @@ def get_args():
     parser = add_evaluation_args(parser)
     parser = add_text_generate_args(parser)
     parser = add_data_args(parser)
+    parser = add_zero_args(parser)
+    parser = add_activation_checkpoint_args(parser)
 
     # Include DeepSpeed configuration arguments
     parser = deepspeed.add_config_arguments(parser)
-
+    
     args = parser.parse_args()
 
     if not args.train_data and not args.train_data_path:

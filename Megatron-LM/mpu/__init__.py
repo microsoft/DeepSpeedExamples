@@ -42,7 +42,7 @@ from .mappings import gather_from_model_parallel_region
 from .mappings import reduce_from_model_parallel_region
 from .mappings import scatter_to_model_parallel_region
 
-from .random import checkpoint
+from .random import checkpoint, set_activation_checkpoint_parameters
 from .random import partition_activations_in_checkpoint
 from .random import get_cuda_rng_tracker
 from .random import model_parallel_cuda_manual_seed
