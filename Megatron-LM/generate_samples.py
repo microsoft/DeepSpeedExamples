@@ -27,7 +27,7 @@ from utils import Timers
 from pretrain_gpt2 import initialize_distributed
 from pretrain_gpt2 import set_random_seed
 from pretrain_gpt2 import get_train_val_test_data
-from pretrain_gpt2 import get_masks_and_position_ids, get_basic_model
+from pretrain_gpt2 import get_masks_and_position_ids
 from utils import load_checkpoint
 from data_utils import make_tokenizer
 from configure_data import configure_data
@@ -41,7 +41,18 @@ from utils import print_rank_0
 def get_model(args):
     """Build the model."""
 
-    model = get_basic_model(args, False)
+    print_rank_0('building GPT2 model ...')
+    model = GPT2Model(num_layers=args.num_layers,
+                      vocab_size=args.vocab_size,
+                      hidden_size=args.hidden_size,
+                      num_attention_heads=args.num_attention_heads,
+                      embedding_dropout_prob=args.hidden_dropout,
+                      attention_dropout_prob=args.attention_dropout,
+                      output_dropout_prob=args.hidden_dropout,
+                      max_sequence_length=args.max_position_embeddings,
+                      checkpoint_activations=args.checkpoint_activations,
+                      checkpoint_num_layers=args.checkpoint_num_layers,
+                      parallel_output=False)
 
     if mpu.get_data_parallel_rank() == 0:
         print(' > number of parameters on model parallel rank {}: {}'.format(

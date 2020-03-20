@@ -51,48 +51,28 @@ import torch.distributed as dist
 
 from gpt2_data_loader import make_gpt2_dataloaders
 
-def get_basic_model(args, parallel_output):
-    hparams = None
-    if args.load is not None:
-        hparams_file_path = os.path.join(args.load, 'hparams.json')
-        if os.path.exists(hparams_file_path):
-            print_rank_0(f'Loading existing hyperparameters file at {hparams_file_path}')
-            with open(hparams_file_path) as f:
-                hparams = json.load(f)
-        else:
-            print_rank_0(f'No hyperparameters file found at {hparams_file_path}, using hyperparameters from command '
-                          'line options')
 
-    print_rank_0('building GPT2 model ...')
-    if hparams is None:
-        return GPT2Model(num_layers=args.num_layers,
-                         vocab_size=args.vocab_size,
-                         hidden_size=args.hidden_size,
-                         num_attention_heads=args.num_attention_heads,
-                         embedding_dropout_prob=args.hidden_dropout,
-                         attention_dropout_prob=args.attention_dropout,
-                         output_dropout_prob=args.hidden_dropout,
-                         max_sequence_length=args.max_position_embeddings,
-                         checkpoint_activations=args.checkpoint_activations,
-                         checkpoint_num_layers=args.checkpoint_num_layers,
-                         parallel_output=parallel_output)
-    return GPT2Model(num_layers=hparams["num_layers"],
-                     vocab_size=hparams["vocab_size"],
-                     hidden_size=hparams["hidden_size"],
-                     num_attention_heads=hparams["num_attention_heads"],
-                     embedding_dropout_prob=hparams["embedding_dropout_prob"],
-                     attention_dropout_prob=hparams["attention_dropout_prob"],
-                     output_dropout_prob=hparams["output_dropout_prob"],
-                     max_sequence_length=hparams["max_sequence_length"],
-                     checkpoint_activations=hparams["checkpoint_activations"],
-                     checkpoint_num_layers=hparams["checkpoint_num_layers"],
-                     parallel_output=parallel_output)
+ARGS_TO_SAVE = ["num_layers", "vocab_size", "hidden_size", "num_attention_heads", "embedding_dropout_prob",
+                "attention_dropout_prob", "output_dropout_prob", "max_sequence_length", "checkpoint_activations",
+                "checkpoint_num_layers", "fp16", "reset_position_ids", "reset_attention_mask", "tokenizer_type",
+                "tokenizer_path", "tokenizer_model_type", "make_vocab_size_divisible_by"]
 
 
 def get_model(args):
     """Build the model."""
 
-    model = get_basic_model(args, True)
+    print_rank_0('building GPT2 model ...')
+    model = GPT2Model(num_layers=args.num_layers,
+                      vocab_size=args.vocab_size,
+                      hidden_size=args.hidden_size,
+                      num_attention_heads=args.num_attention_heads,
+                      embedding_dropout_prob=args.hidden_dropout,
+                      attention_dropout_prob=args.attention_dropout,
+                      output_dropout_prob=args.hidden_dropout,
+                      max_sequence_length=args.max_position_embeddings,
+                      checkpoint_activations=args.checkpoint_activations,
+                      checkpoint_num_layers=args.checkpoint_num_layers,
+                      parallel_output=True)
 
     if mpu.get_data_parallel_rank() == 0:
         print(' > number of parameters on model parallel rank {}: {}'.format(
@@ -101,17 +81,7 @@ def get_model(args):
 
         # save model configuration to a file
         with open(os.path.join(args.save, 'hparams.json'), "w") as f:
-            json.dump({"num_layers": args.num_layers,
-                       "vocab_size": args.vocab_size,
-                       "hidden_size": args.hidden_size,
-                       "num_attention_heads": args.num_attention_heads,
-                       "embedding_dropout_prob": args.hidden_dropout,
-                       "attention_dropout_prob": args.attention_dropout,
-                       "output_dropout_prob": args.hidden_dropout,
-                       "max_sequence_length": args.max_position_embeddings,
-                       "checkpoint_activations": args.checkpoint_activations,
-                       "checkpoint_num_layers": args.checkpoint_num_layers,
-                       "fp16": args.fp16}, f)
+            json.dump({key: getattr(args, key) for key in ARGS_TO_SAVE}, f)
 
     # GPU allocation.
     model.cuda(torch.cuda.current_device())
