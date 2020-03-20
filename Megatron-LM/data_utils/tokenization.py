@@ -795,7 +795,6 @@ class BertWordPieceTokenizer(Tokenizer):
             Tokens = Tokens.tokenization
         return ' '.join(Tokens)
 
-
 class GPT2BPETokenizer(Tokenizer):
     def __init__(self, model_path=None, cache_dir=None, **kwargs):
         self.text_tokenizer = GPT2Tokenizer.from_pretrained(model_path or 'gpt2',
@@ -888,4 +887,3 @@ class GPT2BPETokenizer(Tokenizer):
         if isinstance(Tokens, Tokenization):
             Tokens = Tokens.tokenization
         return self.text_tokenizer.decode([self.TokenToId(tok) for tok in Tokens])
-

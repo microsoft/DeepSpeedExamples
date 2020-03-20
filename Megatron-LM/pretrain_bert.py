@@ -15,9 +15,6 @@
 
 """Pretrain BERT"""
 
-# Flag to use Pytorch ddp which uses overlapping communication and computation.
-USE_TORCH_DDP = False
-
 from datetime import datetime
 import os
 import random
@@ -33,10 +30,7 @@ from learning_rates import AnnealingLR
 from model import BertModel
 from model import get_params_for_weight_decay_optimization
 from model import gpt2_get_params_for_weight_decay_optimization
-if USE_TORCH_DDP:
-    from torch.nn.parallel.distributed import DistributedDataParallel as DDP
-else:
-    from model import DistributedDataParallel as DDP
+from model import DistributedDataParallel as LocalDDP
 import mpu
 from apex.optimizers import FusedAdam as Adam
 from utils import Timers
@@ -46,7 +40,8 @@ from utils import report_memory
 from utils import print_args
 from utils import print_params_min_max_norm
 from utils import print_rank_0
-
+from utils import enable_adlr_autoresume
+from utils import check_adlr_autoresume_termination
 
 def get_model(args):
     """Build the model."""
@@ -77,12 +72,18 @@ def get_model(args):
                     _module.float()
 
     # Wrap model for distributed training.
-    if USE_TORCH_DDP:
+    if args.DDP_impl == 'torch':
         i = torch.cuda.current_device()
-        model = DDP(model, device_ids=[i], output_device=i,
-                    process_group=mpu.get_data_parallel_group())
+        args.DDP_type = torch.nn.parallel.distributed.DistributedDataParallel
+        model = args.DDP_type(model, device_ids=[i], output_device=i,
+                              process_group=mpu.get_data_parallel_group())
+    elif args.DDP_impl == 'local':
+        args.DDP_type = LocalDDP
+        model = args.DDP_type(model)
     else:
-        model = DDP(model)
+        print_rank_0('Unknown DDP implementation specified: {}. '
+                     'Exiting.'.format(args.DDP_impl))
+        exit()
 
     return model
 
@@ -91,7 +92,7 @@ def get_optimizer(model, args):
     """Set up the optimizer."""
 
     # Build parameter groups (weight decay and non-decay).
-    while isinstance(model, (DDP, FP16_Module)):
+    while isinstance(model, (args.DDP_type, FP16_Module)):
         model = model.module
     layers = model.model.bert.encoder.layer
     pooler = model.model.bert.pooler
@@ -114,7 +115,8 @@ def get_optimizer(model, args):
                 param.model_parallel = False
 
     # Use Adam.
-    optimizer = Adam(param_groups,
+    betas = (0.9, 0.999)
+    optimizer = Adam(param_groups, betas=betas,
                      lr=args.lr, weight_decay=args.weight_decay)
 
     # Wrap into fp16 optimizer.
@@ -145,7 +147,10 @@ def get_learning_rate_scheduler(optimizer, args):
                                warmup_iter=warmup_iter,
                                num_iters=num_iters,
                                decay_style=args.lr_decay_style,
-                               last_iter=init_step)
+                               last_iter=init_step,
+                               min_lr=args.min_lr,
+                               use_checkpoint_lr_scheduler=args.use_checkpoint_lr_scheduler,
+                               override_lr_scheduler=args.override_lr_scheduler)
 
     return lr_scheduler
 
@@ -227,7 +232,7 @@ def forward_step(data_iterator, model, args, timers):
     return lm_loss, nsp_loss
 
 
-def backward_step(optimizer, model, lm_loss, nsp_loss, args):
+def backward_step(optimizer, model, lm_loss, nsp_loss, args, timers):
     """Backward step."""
 
     # Total loss.
@@ -247,9 +252,11 @@ def backward_step(optimizer, model, lm_loss, nsp_loss, args):
     reduced_losses = torch.cat((lm_loss.view(1), nsp_loss.view(1)))
     torch.distributed.all_reduce(reduced_losses.data)
     reduced_losses.data = reduced_losses.data / args.world_size
-    if not USE_TORCH_DDP:
+    if args.DDP_impl == 'local':
+        timers('allreduce').start()
         model.allreduce_params(reduce_after=False,
                                fp32_allreduce=args.fp32_allreduce)
+        timers('allreduce').stop()
     lm_loss_reduced = reduced_losses[0]
     nsp_loss_reduced = reduced_losses[1]
 
@@ -280,7 +287,7 @@ def train_step(data_iterator, model, optimizer, lr_scheduler,
     # Calculate gradients, reduce across processes, and clip.
     timers('backward').start()
     lm_loss_reduced, nsp_loss_reduced = backward_step(optimizer, model, lm_loss,
-                                                      nsp_loss, args)
+                                                      nsp_loss, args, timers)
     timers('backward').stop()
 
     # Update parameters.
@@ -299,7 +306,7 @@ def train_step(data_iterator, model, optimizer, lr_scheduler,
 
 
 def train(model, optimizer, lr_scheduler,
-          train_data_iterator, val_data_iterator, timers, args):
+          train_data_iterator, val_data_iterator, timers, args, writer):
     """Train the model."""
 
     # Turn on training mode which enables dropout.
@@ -326,15 +333,41 @@ def train(model, optimizer, lr_scheduler,
         iteration += 1
 
         # Update losses.
-        total_lm_loss += lm_loss.data.detach().float()
-        total_nsp_loss += nsp_loss.data.detach().float()
+        current_lm_loss = lm_loss.data.detach().float()
+        current_nsp_loss = nsp_loss.data.detach().float()
+        total_lm_loss += current_lm_loss
+        total_nsp_loss += current_nsp_loss
 
         # Logging.
+
+        if args.DDP_impl == 'torch':
+            timers_to_log = ['forward', 'backward', 'optimizer',
+                            'batch generator', 'data loader']
+        else:
+            timers_to_log = ['forward', 'backward', 'allreduce', 'optimizer',
+                             'batch generator', 'data loader']
+
+        learning_rate = optimizer.param_groups[0]['lr']
+
+        if writer and args.rank == 0:
+            writer.add_scalar('learning_rate', learning_rate, iteration)
+            writer.add_scalar('lm_loss', current_lm_loss, iteration)
+            writer.add_scalar('nsp_loss', current_nsp_loss, iteration)
+            if args.fp16:
+                writer.add_scalar('loss_scale', optimizer.loss_scale, iteration)
+            normalizer = iteration % args.log_interval
+            if normalizer == 0:
+                normalizer = args.log_interval
+            timers.write(timers_to_log, writer, iteration,
+                         normalizer=normalizer)
+
         if iteration % args.log_interval == 0:
-            learning_rate = optimizer.param_groups[0]['lr']
             avg_nsp_loss = total_nsp_loss.item() / args.log_interval
             avg_lm_loss = total_lm_loss.item() / args.log_interval
             elapsed_time = timers('interval time').elapsed()
+            if writer and args.rank == 0:
+                writer.add_scalar('iteration_time',
+                                  elapsed_time / args.log_interval, iteration)
             log_string = ' iteration {:8d}/{:8d} |'.format(iteration,
                                                             args.train_iters)
             log_string += ' elapsed time per iteration (ms): {:.1f} |'.format(
@@ -351,9 +384,13 @@ def train(model, optimizer, lr_scheduler,
             if report_memory_flag:
                 report_memory('after {} iterations'.format(iteration))
                 report_memory_flag = False
-            timers.log(['forward', 'backward', 'optimizer', 'batch generator',
-                        'data loader'],
-                       normalizer=args.log_interval)
+            timers.log(timers_to_log, normalizer=args.log_interval)
+
+        # Autoresume
+        if (iteration % args.adlr_autoresume_interval == 0) and args.adlr_autoresume:
+            check_adlr_autoresume_termination(iteration, model, optimizer,
+                                              lr_scheduler, args)
+
         # Checkpointing
         if args.save and args.save_interval and iteration % args.save_interval == 0:
             save_checkpoint(iteration, model, optimizer, lr_scheduler, args)
@@ -361,8 +398,8 @@ def train(model, optimizer, lr_scheduler,
         # Evaluation
         if args.eval_interval and iteration % args.eval_interval == 0 and args.do_valid:
             prefix = 'iteration {}'.format(iteration)
-            evaluate_and_print_results(
-                prefix, val_data_iterator, model, args, timers, False)
+            evaluate_and_print_results(prefix, val_data_iterator, model, args,
+                                       writer, iteration, timers, False)
 
         if args.exit_interval and iteration % args.exit_interval == 0:
             torch.distributed.barrier()
@@ -394,7 +431,7 @@ def evaluate(data_iterator, model, args, timers, verbose = False):
             lm_loss, nsp_loss = forward_step(data_iterator, model,
                                              args, timers)
             # Reduce across processes.
-            if isinstance(model, DDP):
+            if isinstance(model, args.DDP_type):
                 reduced_losses = torch.cat((lm_loss.view(1), nsp_loss.view(1)))
                 torch.distributed.all_reduce(reduced_losses.data)
                 reduced_losses.data = reduced_losses.data/args.world_size
@@ -413,7 +450,8 @@ def evaluate(data_iterator, model, args, timers, verbose = False):
 
 
 def evaluate_and_print_results(prefix, data_iterator, model,
-                               args, timers, verbose=False):
+                               args, writer, iteration,
+                               timers, verbose=False):
     """Helper function to evaluate and dump results on screen."""
     lm_loss, nsp_loss = evaluate(data_iterator, model,
                                  args, timers, verbose)
@@ -427,6 +465,11 @@ def evaluate_and_print_results(prefix, data_iterator, model,
     print_rank_0('-' * length)
     print_rank_0(string)
     print_rank_0('-' * length)
+
+    if writer and args.rank == 0:
+        writer.add_scalar('val_lm_loss', lm_loss, iteration)
+        writer.add_scalar('val_nsp_loss', nsp_loss, iteration)
+        writer.add_scalar('val_total_loss', val_loss, iteration)
 
     return val_loss
 
@@ -471,7 +514,8 @@ def get_train_val_test_data(args):
     # Data loader only on rank 0 of each model parallel group.
     if mpu.get_model_parallel_rank() == 0:
         data_config = configure_data()
-        data_config.set_defaults(data_set_type='BERT', transpose=False)
+        ds_type = 'BERT'
+        data_config.set_defaults(data_set_type=ds_type, transpose=False)
         (train_data, val_data, test_data), tokenizer = data_config.apply(args)
         before = tokenizer.num_tokens
         after = before
@@ -514,11 +558,27 @@ def main():
     # Arguments.
     args = get_args()
 
+    writer = None
+    if args.tensorboard_dir and args.rank == 0:
+        try:
+            from torch.utils.tensorboard import SummaryWriter
+            writer = SummaryWriter(log_dir = args.tensorboard_dir)
+        except ModuleNotFoundError:
+            print_rank_0('WARNING: TensorBoard writing requested but is not '
+                         'available (are you using PyTorch 1.1.0 or later?), '
+                         'no TensorBoard logs will be written.')
+            writer = None
+
     # Pytorch distributed.
     initialize_distributed(args)
     if torch.distributed.get_rank() == 0:
         print('Pretrain BERT model')
-        print_args(args)
+        print_args(args, writer)
+
+    # Autoresume.
+    torch.distributed.barrier()
+    if args.adlr_autoresume:
+        enable_adlr_autoresume(args)
 
     # Random seeds for reproducability.
     set_random_seed(args.seed)
@@ -534,11 +594,15 @@ def main():
         if train_data is not None:
             train_data.batch_sampler.start_iter = args.iteration % \
                                                   len(train_data)
+            print_rank_0('setting training data start iteration to {}'.
+                         format(train_data.batch_sampler.start_iter))
         if val_data is not None:
-            start_iter_val = (args.train_iters // args.save_interval) * \
-                             args.eval_interval
+            start_iter_val = (args.iteration // args.eval_interval) * \
+                             args.eval_iters
             val_data.batch_sampler.start_iter = start_iter_val % \
                                                 len(val_data)
+            print_rank_0('setting validation data start iteration to {}'.
+                         format(val_data.batch_sampler.start_iter))
 
     if train_data is not None:
         train_data_iterator = iter(train_data)
@@ -556,11 +620,12 @@ def main():
                                        lr_scheduler,
                                        train_data_iterator,
                                        val_data_iterator,
-                                       timers, args)
+                                       timers, args, writer)
         if args.do_valid:
             prefix = 'the end of training for val data'
             val_loss = evaluate_and_print_results(prefix, val_data_iterator,
-                                                  model, args, timers, False)
+                                                  model, args, writer, iteration,
+                                                  timers, False)
 
     if args.save and iteration != 0:
         save_checkpoint(iteration, model, optimizer, lr_scheduler, args)
@@ -574,7 +639,7 @@ def main():
         # Run on test data.
         prefix = 'the end of training for test data'
         evaluate_and_print_results(prefix, test_data_iterator,
-                                   model, args, timers, True)
+                                   model, args, None, 0, timers, True)
 
 
 if __name__ == "__main__":
