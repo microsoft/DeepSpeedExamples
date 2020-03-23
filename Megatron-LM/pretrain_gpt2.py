@@ -155,7 +155,7 @@ def replace_deepspeed_config_file(args, filename):
         
         config_writer.data['zero_optimization']['stage']=int(args.zero_stage)
         config_writer.data['zero_optimization']['reduce_scatter'] = args.zero_reduce_scatter
-        config_writer.data['zero_optimization']['contigious_memory'] = args.zero_contigious_memory
+        config_writer.data['zero_optimization']['contigious_gradients'] = args.zero_contigious_gradients
         config_writer.data['zero_optimization']['reduce_bucket_size']=int(args.zero_reduce_bucket_size)
         config_writer.data['zero_optimization']['allgather_bucket_size']=int(args.zero_allgather_bucket_size)
         
@@ -174,7 +174,7 @@ def set_activation_checkpoint_arguments(args):
                                         checkpoint_in_cpu=args.checkpoint_in_cpu,
                                         synchronize=args.synchronize_each_layer,
                                         profile_backward=args.profile_backward)
-                                        
+
 def setup_model_and_optimizer(args):
     """Setup model and optimizer."""
 

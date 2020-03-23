@@ -49,7 +49,7 @@ do
         
         echo "Starting new experiement: $line"
         optimizations="s${stage}_rs-${reduce_scatter}_rbs${rbs}_agbs${agbs}_PA-${PA}_CPU-${PA-CPU}_CC-${CC}_SYNC-${SYNCHRONIZE}"
-        deepscale_logfile="ds_${num_nodes}_${mp_size}_${batch_size}_${nlayers}_${hidden_size}_${attn_heads}_${chkp_layers}_${train_iters}"
+        deepscale_logfile="ds_${num_nodes}_${mp_size}_b${batch_size}_nl${nlayers}_hs${hidden_size}_at${attn_heads}_cl${chkp_layers}_itr${train_iters}"
         deepscale_logfile="${deepscale_logfile}_${optimizations}_${tag}.log"
         
         if [ -f $deepscale_logfile ]; then

@@ -306,7 +306,7 @@ def add_zero_args(parser):
     group.add_argument("--zero-stage", type=int, default=1.0)
     group.add_argument('--zero-reduce-scatter', action='store_true',
                        help='Use reduce scatter if specified')
-    group.add_argument('--zero-contigious-memory', action='store_true',
+    group.add_argument('--zero-contigious-gradients', action='store_true',
                        help='Use contigious memory optimizaiton if specified')
     group.add_argument("--zero-reduce-bucket-size", type=int, default=0.0)
     group.add_argument("--zero-allgather-bucket-size", type=int, default=0.0)
