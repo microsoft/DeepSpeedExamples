@@ -80,7 +80,9 @@ def get_model(args):
             sum([p.nelement() for p in model.parameters()])), flush=True)
 
         # save model configuration to a file
-        with open(os.path.join(args.save, 'hparams.json'), "w") as f:
+        hparams_path = os.path.join(args.save, 'hparams.json')
+        print(' > saving hyperparameters file to: ' + hparams_path)
+        with open(hparams_path, "w") as f:
             json.dump({key: getattr(args, key) for key in ARGS_TO_SAVE}, f)
 
     # GPU allocation.
