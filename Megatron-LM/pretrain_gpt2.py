@@ -55,6 +55,8 @@ from gpt2_data_loader import make_gpt2_dataloaders
 def get_model(args):
     """Build the model."""
 
+    pre = time.time()
+    print_rank_0("pre-build={}".format(datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
     print_rank_0('building GPT2 model ...')
     model = GPT2Model(num_layers=args.num_layers,
                       vocab_size=args.vocab_size,
@@ -67,11 +69,17 @@ def get_model(args):
                       checkpoint_activations=args.checkpoint_activations,
                       checkpoint_num_layers=args.checkpoint_num_layers,
                       parallel_output=True)
+    post=time.time()
+    print_rank_0("post-build={}".format(datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
+    print_rank_0("duration={}".format(post-pre))
 
     if mpu.get_data_parallel_rank() == 0:
         print(' > number of parameters on model parallel rank {}: {}'.format(
             mpu.get_model_parallel_rank(),
             sum([p.nelement() for p in model.parameters()])), flush=True)
+
+    if args.fp16:
+        model = model.half()
 
     # GPU allocation.
     model.cuda(torch.cuda.current_device())
