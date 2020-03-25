@@ -82,6 +82,7 @@ def get_model(args):
         # save model configuration to a file
         hparams_path = os.path.join(args.save, 'hparams.json')
         print(' > saving hyperparameters file to: ' + hparams_path)
+        os.makedirs(args.save, exist_ok=True)
         with open(hparams_path, "w") as f:
             json.dump({key: getattr(args, key) for key in ARGS_TO_SAVE}, f)
 
