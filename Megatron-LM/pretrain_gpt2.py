@@ -19,6 +19,7 @@ from datetime import datetime
 import os
 import random
 import math
+import json
 import numpy as np
 import torch
 
@@ -46,6 +47,13 @@ from utils import check_adlr_autoresume_termination
 
 from gpt2_data_loader import make_gpt2_dataloaders
 
+
+ARGS_TO_SAVE = ["num_layers", "vocab_size", "hidden_size", "num_attention_heads", "hidden_dropout",
+                "attention_dropout", "max_position_embeddings", "checkpoint_activations", "checkpoint_num_layers",
+                "fp16", "reset_position_ids", "reset_attention_mask", "tokenizer_type", "tokenizer_path",
+                "tokenizer_model_type", "make_vocab_size_divisible_by"]
+
+
 def get_model(args):
     """Build the model."""
 
@@ -66,6 +74,13 @@ def get_model(args):
         print(' > number of parameters on model parallel rank {}: {}'.format(
             mpu.get_model_parallel_rank(),
             sum([p.nelement() for p in model.parameters()])), flush=True)
+
+        # save model configuration to a file
+        hparams_path = os.path.join(args.save, 'hparams.json')
+        print(' > saving hyperparameters file to: ' + hparams_path)
+        os.makedirs(args.save, exist_ok=True)
+        with open(hparams_path, "w") as f:
+            json.dump({key: getattr(args, key) for key in ARGS_TO_SAVE}, f)
 
     # GPU allocation.
     model.cuda(torch.cuda.current_device())
