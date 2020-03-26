@@ -34,6 +34,8 @@ from nltk import tokenize
 from .lazy_loader import lazy_array_loader, exists_lazy, make_lazy
 from .tokenization import Tokenization
 
+END_OF_TEXT = "<|endoftext|>"
+
 class ConcatDataset(data.Dataset):
     """
     Dataset to concatenate multiple datasets.
@@ -452,6 +454,71 @@ class json_dataset(data.Dataset):
             if self.label_key not in j:
                 j[self.label_key] = -1
             yield j
+
+class flat_file_dataset(data.Dataset):
+    """
+    Class for loading datasets from a flat file.
+    Purpose: Useful for loading data for unsupervised modeling or transfer tasks
+    Arguments:
+        path (str): path to json file with dataset.
+        tokenizer (data_utils.Tokenizer): Tokenizer to use when processing text. Default: None
+        preprocess_fn (callable): callable function that process a string into desired format.
+            Takes string, maxlen=None, encode=None as arguments. Default: process_str
+    """
+    def __init__(self, path, tokenizer=None, preprocess_fn=None, **kwargs):
+        self.is_lazy = False
+        self.preprocess_fn = preprocess_fn
+        self.path = path
+        self.SetTokenizer(tokenizer)
+        self.X = []
+
+        current_document = ""
+        with open(self.path, 'r') as f:
+            for line in f:
+                if END_OF_TEXT in line:
+                    split_line = line.split(END_OF_TEXT)
+                    self.add_document(current_document + split_line[0])
+                    for inline_document in split_line[1:-1]:
+                        self.add_document(inline_document)
+                    current_document = split_line[-1]
+                else:
+                    current_document += line
+            self.add_document(current_document)
+
+    def add_document(self, document):
+        stripped_document = document.strip()
+        if stripped_document:
+            self.X.append(stripped_document)
+
+    def SetTokenizer(self, tokenizer):
+        if tokenizer is None:
+            self.using_tokenizer = False
+            if not hasattr(self, '_tokenizer'):
+                self._tokenizer = tokenizer
+        else:
+            self.using_tokenizer = True
+            self._tokenizer = tokenizer
+
+    def GetTokenizer(self):
+        return self._tokenizer
+
+    @property
+    def tokenizer(self):
+        if self.using_tokenizer:
+            return self._tokenizer
+        return None
+
+    def __getitem__(self, index):
+        """gets the index'th string from the dataset"""
+        x = self.X[index]
+        if self.tokenizer is not None:
+            x = self.tokenizer.EncodeAsIds(x, self.preprocess_fn)
+        elif self.preprocess_fn is not None:
+            x = self.preprocess_fn(x)
+        return {'text': x, 'length': len(x), 'label': -1}
+
+    def __len__(self):
+        return len(self.X)
 
 class GPT2Dataset(data.Dataset):
 
