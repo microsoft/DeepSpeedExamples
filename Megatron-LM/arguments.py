@@ -16,6 +16,7 @@
 """argparser configuration"""
 
 import argparse
+import json
 import os
 import torch
 import deepspeed
@@ -345,6 +346,20 @@ def add_data_args(parser):
 
     return parser
 
+
+def set_args_from_hparams(args):
+    if args.load is not None:
+        hparams_file_path = os.path.join(args.load, 'hparams.json')
+        if os.path.exists(hparams_file_path):
+            print(f'Loading existing hyperparameters file at {hparams_file_path}')
+            with open(hparams_file_path) as f:
+                for key, value in json.load(f):
+                    setattr(args, key, value)
+        else:
+            print(f'No hyperparameters file found at {hparams_file_path}, using hyperparameters from command line '
+                  'options')
+
+
 def get_args():
     """Parse all the args."""
 
@@ -400,5 +415,7 @@ def get_args():
         args.fp32_embedding = False
         args.fp32_tokentypes = False
         args.fp32_layernorm = False
+
+    set_args_from_hparams(args)
 
     return args
