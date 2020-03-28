@@ -5,7 +5,12 @@
 #3: gradient accumulation step
 #4: --fp16 if you want to enable fp16
 #5: --deepspeed if you want to enable deepspeed
-NGPU=$1
+NGPU_PER_NODE=$1
+MODEL_FILE=$2
+SQUAD_DIR=$3
+OUTPUT_DIR=$4
+NUM_NODES=1
+NGPU=$((NGPU_PER_NODE*NUM_NODES))
 EFFECTIVE_BATCH_SIZE=24
 MAX_GPU_BATCH_SIZE=6
 PER_GPU_BATCH_SIZE=$((EFFECTIVE_BATCH_SIZE/NGPU))
@@ -19,9 +24,7 @@ MASTER_PORT=$((NGPU+12346))
 JOB_NAME="deepspeed_${NGPU}GPUs_${EFFECTIVE_BATCH_SIZE}batch_size"
 #config_json=deepspeed_${NGPU}gpu_config.json
 config_json=deepspeed_bsz24_config.json
-run_cmd="python3.6 -m torch.distributed.launch \
-       --nproc_per_node=${NGPU} \
-       --master_port=${MASTER_PORT} \
+run_cmd="deepspeed --num_nodes ${NUM_NODES} --num_gpus ${NGPU_PER_NODE} \
        nvidia_run_squad_deepspeed.py \
        --bert_model bert-large-uncased \
        --do_train \
@@ -40,7 +43,7 @@ run_cmd="python3.6 -m torch.distributed.launch \
        --fp16 \
        --deepspeed \
        --deepspeed_config ${config_json} \
-       --model_file $2
+       --model_file $MODEL_FILE
        "
 echo ${run_cmd}
 eval ${run_cmd}
