@@ -1,10 +1,10 @@
 #~/bin/bash
 
 #1: number of GPUs
-#2: batch size per GPU
-#3: gradient accumulation step
-#4: --fp16 if you want to enable fp16
-#5: --deepspeed if you want to enable deepspeed
+#2: Model File Address
+#3: BertSquad Data Directory Address
+#4: Output Directory Address
+
 NGPU_PER_NODE=$1
 MODEL_FILE=$2
 SQUAD_DIR=$3
