@@ -1,10 +1,10 @@
 #~/bin/bash
 
 #1: number of GPUs
-#2: batch size per GPU
-#3: gradient accumulation step
-#4: --fp16 if you want to enable fp16
-#5: --deepspeed if you want to enable deepspeed
+#2: Model File Address
+#3: BertSquad Data Directory Address
+#4: Output Directory Address
+
 NGPU_PER_NODE=$1
 MODEL_FILE=$2
 SQUAD_DIR=$3
@@ -22,7 +22,6 @@ fi
 LR=3e-5
 MASTER_PORT=$((NGPU+12346))
 JOB_NAME="deepspeed_${NGPU}GPUs_${EFFECTIVE_BATCH_SIZE}batch_size"
-#config_json=deepspeed_${NGPU}gpu_config.json
 config_json=deepspeed_bsz24_config.json
 run_cmd="deepspeed --num_nodes ${NUM_NODES} --num_gpus ${NGPU_PER_NODE} \
        nvidia_run_squad_deepspeed.py \
