@@ -1,3 +1,3 @@
-1 2 4 1024 16 32 2 true true 500000000 500000000 true true true true true 1 1000 nop
-# Nodes MP nl hd ah batch stage reduce-scatter contigious-gradients reduce-bucket allgather-bucket PA CC PA-CPU SYNCHRONIZE PROFILE chkpt-layer iterations
- 
+# Nodes MP nl hd ah batch stage reduce-scatter contigious-gradients reduce-bucket allgather-bucket PA PA-CPU CC SYNCHRONIZE PROFILE chkpt-layer iterations
+4 2 4 1024 16 32 2 true true 500000000 500000000 true true true true true 1 5 nop
+4 4 4 1024 16 32 2 true true 500000000 500000000 true true true true true 1 5 nop
