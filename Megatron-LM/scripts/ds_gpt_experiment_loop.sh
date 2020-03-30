@@ -2,17 +2,27 @@
 
 script_path=$(realpath $0)
 script_dir=$(dirname $script_path)
-tag="notag"
+dt=`date +%s`
+config_json="$script_dir/ds_zero_stage_2_config.json"
+
+exp_file=$1
 if [ -z $1 ]; then
-   config_json="$script_dir/ds_config.json"
-else
-   config_json="$script_dir/$1"
+    echo "must provide exp file"
+    exit 1
 fi
+base_file=`basename $exp_file`
+tag="largeb16sweep_${base_file}"
 
 NUM_GPUS_PER_NODE=${DLWS_NUM_GPU_PER_WORKER}
 
-cat ${script_dir}/exp.dat | while read line
-do
+#cat ${script_dir}/exp.dat | while read line
+#cat ${script_dir}/exp_100b.dat | while read line
+#grep -v "#" $exp_file | while read line
+
+num_lines=`grep -v "#" $exp_file | wc -l`
+for i in `seq 1 $num_lines`; do
+    line=`grep -v "#" $exp_file | sed "${i}q;d"`
+
     #Model Parallelism and Data Parallelism
     num_nodes=`echo $line | awk '{print $1}'`
     mp_size=`echo $line | awk '{print $2}'`
@@ -48,7 +58,7 @@ do
         train_iters=`echo $line | awk '{print $18}'`
         
         echo "Starting new experiement: $line"
-        optimizations="s${stage}_rs-${reduce_scatter}_rbs${rbs}_agbs${agbs}_PA-${PA}_CPU-${PA-CPU}_CC-${CC}_SYNC-${SYNCHRONIZE}"
+        optimizations="s${stage}_rs-${reduce_scatter}_rbs${rbs}_agbs${agbs}_PA-${PA}_CPU-${PA_CPU}_CC-${CC}_SYNC-${SYNCHRONIZE}"
         deepscale_logfile="ds_${num_nodes}_${mp_size}_b${batch_size}_nl${nlayers}_hs${hidden_size}_at${attn_heads}_cl${chkp_layers}_itr${train_iters}"
         deepscale_logfile="${deepscale_logfile}_${optimizations}_${tag}.log"
         
@@ -77,12 +87,14 @@ do
                 --weight-decay 1e-2 \
                 --clip-grad 1.0 \
                 --warmup .01 \
-                --fp16
+                --fp16 \
+                --cache-dir cache_dir \
             "
             deepspeed_options=" \
                 --deepspeed \
                 --deepspeed_config ${config_json} \
                 --zero-stage ${stage} \
+                --zero-reduce-scatter \
                 --zero-reduce-bucket-size ${rbs} \
                 --zero-allgather-bucket-size ${agbs} 
             "
@@ -126,10 +138,19 @@ do
             run_cmd="deepspeed.pt --num_nodes ${num_nodes} --num_gpus ${NUM_GPUS_PER_NODE} pretrain_gpt2.py ${@:2} ${full_options} &> ${deepscale_logfile}"
             echo ${run_cmd}
             eval ${run_cmd}
+            if [ -f ${deepscale_logfile} ]; then
+                grep "CUDA out of memory" ${deepscale_logfile}
+                if [ $? == 0 ]; then
+                    echo "Found max model size, done."
+                    break
+                fi
+            fi
         fi
         echo "experiment done"
+        sleep 5
     else
         echo "\ Skipping commented line: ${line} \ "
     fi
+    echo "DONE"
 done
-set +x
+#set +x
