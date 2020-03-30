@@ -49,7 +49,7 @@ size_offsets = []
 num_layers=125
 
 def see_memory_usage(message, force=False):
-    return
+    #return
     if not force:
         return
     #dist.barrier()
