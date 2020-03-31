@@ -1,0 +1,5 @@
+4   16  75  8192    32  2   2   true    true    500000000   200000000   true    true    true    true    true    1   20  nop
+4   16  75  8192    32  4   2   true    true    500000000   200000000   true    true    true    true    true    1   20  nop
+4   16  75  8192    32  8   2   true    true    500000000   200000000   true    true    true    true    true    1   20  nop
+4   16  75  8192    32  16  2   true    true    500000000   200000000   true    true    true    true    true    1   20  nop
+4   16  75  8192    32  32  2   true    true    500000000   200000000   true    true    true    true    true    1   20  nop
