@@ -51,7 +51,7 @@ from gpt2_data_loader import make_gpt2_dataloaders
 ARGS_TO_SAVE = ["num_layers", "vocab_size", "hidden_size", "num_attention_heads", "hidden_dropout",
                 "attention_dropout", "max_position_embeddings", "checkpoint_activations", "checkpoint_num_layers",
                 "fp16", "reset_position_ids", "reset_attention_mask", "tokenizer_type", "tokenizer_path",
-                "tokenizer_model_type", "make_vocab_size_divisible_by", "deepspeed"]
+                "tokenizer_model_type", "make_vocab_size_divisible_by", "deepspeed", "DDP_impl"]
 
 
 def get_model(args):
