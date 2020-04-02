@@ -51,7 +51,8 @@ from gpt2_data_loader import make_gpt2_dataloaders
 ARGS_TO_SAVE = ["num_layers", "vocab_size", "hidden_size", "num_attention_heads", "hidden_dropout",
                 "attention_dropout", "max_position_embeddings", "checkpoint_activations", "checkpoint_num_layers",
                 "fp16", "reset_position_ids", "reset_attention_mask", "tokenizer_type", "tokenizer_path",
-                "tokenizer_model_type", "make_vocab_size_divisible_by"]
+                "tokenizer_model_type", "make_vocab_size_divisible_by", "deepspeed", "DDP_impl", "distributed_backend",
+                "partition_activations", "eod_mask_loss"]
 
 
 def get_model(args):
@@ -74,13 +75,6 @@ def get_model(args):
         print(' > number of parameters on model parallel rank {}: {}'.format(
             mpu.get_model_parallel_rank(),
             sum([p.nelement() for p in model.parameters()])), flush=True)
-
-        # save model configuration to a file
-        hparams_path = os.path.join(args.save, 'hparams.json')
-        print(' > saving hyperparameters file to: ' + hparams_path)
-        os.makedirs(args.save, exist_ok=True)
-        with open(hparams_path, "w") as f:
-            json.dump({key: getattr(args, key) for key in ARGS_TO_SAVE}, f)
 
     # GPU allocation.
     model.cuda(torch.cuda.current_device())
@@ -169,6 +163,15 @@ def setup_model_and_optimizer(args):
     """Setup model and optimizer."""
 
     model = get_model(args)
+
+    if mpu.get_data_parallel_rank() == 0:
+        # save model configuration to a file
+        hparams_path = os.path.join(args.save, 'hparams.json')
+        print(' > saving hyperparameters file to: ' + hparams_path)
+        os.makedirs(args.save, exist_ok=True)
+        with open(hparams_path, "w") as f:
+            json.dump({key: getattr(args, key) for key in ARGS_TO_SAVE}, f)
+
     optimizer = get_optimizer(model, args)
     lr_scheduler = get_learning_rate_scheduler(optimizer, args)
 
