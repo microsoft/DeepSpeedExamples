@@ -20,6 +20,8 @@
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+import torch_blocksparse
+
 import copy
 import json
 import logging
@@ -58,6 +60,13 @@ PRETRAINED_MODEL_ARCHIVE_MAP = {
 CONFIG_NAME = 'bert_config.json'
 WEIGHTS_NAME = 'pytorch_model.bin'
 TF_WEIGHTS_NAME = 'model.ckpt'
+
+def MakeMultiHeadSparseAttention(mode, block, stride, unidirectional, numverts, vertsize, embed_dim, num_heads):
+    # create sparse multi-head attention module
+    sparsity = torch_blocksparse.MultiheadAttention.SparsityInfo(mode, block, stride, unidirectional, numverts, vertsize)
+    torch.manual_seed(0)
+    sparse_mha = torch_blocksparse.MultiheadAttention(embed_dim, num_heads, sparsity).cuda()
+    return sparse_mha
 
 def load_tf_weights_in_bert(model, tf_checkpoint_path):
     """ Load tf checkpoints in a pytorch model
@@ -355,6 +364,19 @@ class BertSelfAttention(nn.Module):
 
         self.dropout = nn.Dropout(config.attention_probs_dropout_prob)
         self.softmax = nn.Softmax(dim=-1)
+        print ("\n\n   start initializing ST ... \n\n")
+        print ("config.hidden_size: ", config.hidden_size)
+        self.multi_head_sparse_attention = MakeMultiHeadSparseAttention('dense', 16, 32, True, 1, 1, config.hidden_size, config.num_attention_heads)
+        print ("\n\n   ... end initializing ST   \n\n")
+
+    def transpose_for_sparse_scores(self, x):
+        return x.permute(1, 0, 2)
+
+    def transpose_mask_for_sparse(self, x):
+        #new_x_shape = x.size()[:-1] + (self.num_attention_heads, self.attention_head_size)
+        #x = x.view(*new_x_shape)
+        #return x.permute(0, 2, 3, 1)
+        return torch.squeeze(x)
 
     def transpose_for_scores(self, x):
         new_x_shape = x.size()[:-1] + (self.num_attention_heads, self.attention_head_size)
@@ -366,34 +388,57 @@ class BertSelfAttention(nn.Module):
         x = x.view(*new_x_shape)
         return x.permute(0, 2, 3, 1)
 
-    def forward(self, hidden_states, attention_mask):
+
+    def forward(self, hidden_states, attention_mask, sparse=True):
+        #print ("hidden states: ", hidden_states)
         mixed_query_layer = self.query(hidden_states)
         mixed_key_layer = self.key(hidden_states)
         mixed_value_layer = self.value(hidden_states)
 
-        query_layer = self.transpose_for_scores(mixed_query_layer)
-        key_layer = self.transpose_key_for_scores(mixed_key_layer)
-        value_layer = self.transpose_for_scores(mixed_value_layer)
+        print ("\n\nArash nvidia modeling\n\n")
 
-        # Take the dot product between "query" and "key" to get the raw attention scores.
-        attention_scores = torch.matmul(query_layer, key_layer)
-        attention_scores = attention_scores / math.sqrt(self.attention_head_size)
-        # Apply the attention mask is (precomputed for all layers in BertModel forward() function)
-        attention_scores = attention_scores + attention_mask
+        query_layer = self.transpose_for_sparse_scores(mixed_query_layer) if sparse else self.transpose_for_scores(mixed_query_layer)
+        #key_layer = self.transpose_for_scores(mixed_key_layer) if 1==1 else self.transpose_key_for_scores(mixed_key_layer)
+        key_layer = self.transpose_for_sparse_scores(mixed_key_layer) if sparse else self.transpose_key_for_scores(mixed_key_layer)
+        value_layer = self.transpose_for_sparse_scores(mixed_value_layer) if sparse else self.transpose_for_scores(mixed_value_layer)
 
-        # Normalize the attention scores to probabilities.
-        attention_probs = self.softmax(attention_scores)
+        print ("mixed query: ", mixed_query_layer.shape)
+        print ("mixed key: ", mixed_key_layer.shape)
+        print ("mixed value: ", mixed_value_layer.shape)
 
-        # This is actually dropping out entire tokens to attend to, which might
-        # seem a bit unusual, but is taken from the original Transformer paper.
-        attention_probs = self.dropout(attention_probs)
+        print ("query: ", query_layer.shape)
+        print ("key: ", key_layer.shape)
+        print ("value: ", value_layer.shape)
 
-        context_layer = torch.matmul(attention_probs, value_layer)
+
+        if sparse:
+            print ("\n\n   start ST forward ... \n\n")
+            print ("atten_mask: ", attention_mask.shape)
+            #sparse_attention_mask = attention_mask.view(attention_mask.shape[0], attention_mask.shape[-1])
+            sparse_attention_mask = self.transpose_mask_for_sparse(attention_mask)
+            print ("sparse_attention_mask: ", sparse_attention_mask.shape)
+            context_layer, _ = self.multi_head_sparse_attention(query_layer, key_layer, value_layer, key_padding_mask=sparse_attention_mask, need_weights=False)
+            print ("\n\n   ... end ST forward  \n\n")
+        else:
+            # Take the dot product between "query" and "key" to get the raw attention scores.
+            attention_scores = torch.matmul(query_layer, key_layer)
+            attention_scores = attention_scores / math.sqrt(self.attention_head_size)
+            # Apply the attention mask is (precomputed for all layers in BertModel forward() function)
+            attention_scores = attention_scores + attention_mask
+
+            # Normalize the attention scores to probabilities.
+            attention_probs = self.softmax(attention_scores)
+
+            # This is actually dropping out entire tokens to attend to, which might
+            # seem a bit unusual, but is taken from the original Transformer paper.
+            attention_probs = self.dropout(attention_probs)
+
+            context_layer = torch.matmul(attention_probs, value_layer)
+
         context_layer = context_layer.permute(0, 2, 1, 3).contiguous()
         new_context_layer_shape = context_layer.size()[:-2] + (self.all_head_size,)
         context_layer = context_layer.view(*new_context_layer_shape)
         return context_layer
-
 
 class BertSelfOutput(nn.Module):
     def __init__(self, config):
