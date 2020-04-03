@@ -16,6 +16,7 @@
 """Utilities for logging and serialization"""
 
 import os
+import pickle
 import random
 import shutil
 import time
@@ -28,7 +29,7 @@ import mpu
 import model
 
 
-old_models = []
+MODEL_LIST_PICKLE_FILE = "model_list.pkl"
 
 
 def print_rank_0(message):
@@ -220,12 +221,36 @@ def save_zero_checkpoint(args, iteration, optimizer):
     print('  successfully saved {}'.format(zero_checkpoint_name))
 
 
+def load_model_list(args):
+    model_list_pickle_path = os.path.join(args.save, MODEL_LIST_PICKLE_FILE)
+    if os.path.exists(model_list_pickle_path):
+        with open(model_list_pickle_path, 'rb') as f:
+            print("Loading list of previous models from: " + model_list_pickle_path)
+            return pickle.load(f)
+    else:
+        return []
+
+
+def save_model_list(args, model_list):
+    model_list_pickle_path = os.path.join(args.save, MODEL_LIST_PICKLE_FILE)
+    with open(model_list_pickle_path, 'wb') as f:
+        pickle.dump(model_list, f)
+
+
+def track_new_model(new_model, args):
+    model_list = load_model_list(args)
+    model_list.append(new_model)
+    save_model_list(args, model_list)
+
+
 def remove_old_models(args):
+    model_list = load_model_list(args)
     if args.only_keep_checkpoints is not None:
-        while len(old_models) > args.only_keep_checkpoints:
-            model = old_models.pop(0)
+        while len(model_list) > args.only_keep_checkpoints:
+            model = model_list.pop(0)
             print("Removing old model: " + model)
             shutil.rmtree(model)
+    save_model_list(args, model_list)
 
 
 def save_checkpoint(iteration, model, optimizer,
@@ -266,7 +291,7 @@ def save_checkpoint(iteration, model, optimizer,
             ensure_directory_exists(checkpoint_name)
             torch.save(sd, checkpoint_name)
             print('  successfully saved {}'.format(checkpoint_name))
-            old_models.append(os.path.dirname(checkpoint_name))
+            track_new_model(os.path.dirname(checkpoint_name), args)
     remove_old_models(args)
 
     # Wait so everyone is done (necessary)
@@ -293,7 +318,7 @@ def save_ds_checkpoint(iteration, model, args):
         sd['rng_tracker_states'] = mpu.get_cuda_rng_tracker().get_states()
         
     model.save_checkpoint(args.save, iteration, client_state = sd)
-    old_models.append(os.path.join(args.save, iteration))
+    track_new_model(os.path.join(args.save, iteration), args)
 
 
 def get_checkpoint_iteration(args):
