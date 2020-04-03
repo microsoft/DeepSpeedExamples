@@ -17,6 +17,7 @@
 
 import os
 import random
+import shutil
 import time
 import numpy as np
 import torch
@@ -25,6 +26,9 @@ from torch.nn.parallel.distributed import DistributedDataParallel as torchDDP
 from fp16 import FP16_Optimizer
 import mpu
 import model
+
+
+old_models = []
 
 
 def print_rank_0(message):
@@ -215,6 +219,15 @@ def save_zero_checkpoint(args, iteration, optimizer):
     torch.save(zero_sd, zero_checkpoint_name)
     print('  successfully saved {}'.format(zero_checkpoint_name))
 
+
+def remove_old_models(args):
+    if args.only_keep_checkpoints is not None:
+        while len(old_models) > args.only_keep_checkpoints:
+            model = old_models.pop(0)
+            print("Removing old model: " + model)
+            shutil.rmtree(model)
+
+
 def save_checkpoint(iteration, model, optimizer,
                     lr_scheduler, args):
     """Save a model checkpoint."""
@@ -253,6 +266,7 @@ def save_checkpoint(iteration, model, optimizer,
             ensure_directory_exists(checkpoint_name)
             torch.save(sd, checkpoint_name)
             print('  successfully saved {}'.format(checkpoint_name))
+            old_models.append(os.path.dirname(checkpoint_name))
 
     # Wait so everyone is done (necessary)
     torch.distributed.barrier()
@@ -278,6 +292,7 @@ def save_ds_checkpoint(iteration, model, args):
         sd['rng_tracker_states'] = mpu.get_cuda_rng_tracker().get_states()
         
     model.save_checkpoint(args.save, iteration, client_state = sd)
+    old_models.append(os.path.join(args.save, iteration))
 
 
 def get_checkpoint_iteration(args):
