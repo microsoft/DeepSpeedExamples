@@ -473,7 +473,7 @@ class flat_file_dataset(data.Dataset):
         self.X = []
 
         current_document = ""
-        with open(self.path, 'r') as f:
+        with open(self.path, 'r', encoding='utf-8') as f:
             for line in f:
                 if END_OF_TEXT in line:
                     split_line = line.split(END_OF_TEXT)
