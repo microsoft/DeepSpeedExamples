@@ -267,6 +267,7 @@ def save_checkpoint(iteration, model, optimizer,
             torch.save(sd, checkpoint_name)
             print('  successfully saved {}'.format(checkpoint_name))
             old_models.append(os.path.dirname(checkpoint_name))
+    remove_old_models(args)
 
     # Wait so everyone is done (necessary)
     torch.distributed.barrier()
