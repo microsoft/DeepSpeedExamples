@@ -353,7 +353,7 @@ def set_args_from_hparams(args):
         if os.path.exists(hparams_file_path):
             print(f'Loading existing hyperparameters file at {hparams_file_path}')
             with open(hparams_file_path) as f:
-                for key, value in json.load(f):
+                for key, value in json.load(f).items():
                     setattr(args, key, value)
         else:
             print(f'No hyperparameters file found at {hparams_file_path}, using hyperparameters from command line '
