@@ -2,10 +2,10 @@
 
 num_nodes=$DLWS_NUM_WORKER
 num_gpus=$DLWS_NUM_GPU_PER_WORKER
-batch_size=16384
+batch_size=256
 
 # This micro batch size assumes 32GB V100 GPUs
-micro_batch=64
+micro_batch=8
 
 base_dir=`pwd`
 
@@ -27,11 +27,10 @@ deepspeed.pt ${base_dir}/deepspeed_train.py \
 --output_dir $OUTPUT_DIR \
 --gradient_accumulation_steps ${gas} \
 --max_grad_norm 1.0 \
---fp16 \
 --deepspeed \
 --loss_scale 0 \
 --delay_allreduce \
---max_steps 7500 \
+--max_steps 1 \
 --print_steps 100 \
 --job_name $JOB_NAME \
 --deepspeed_config ${base_dir}/deepspeed_bsz16K_lamb_config.json \
