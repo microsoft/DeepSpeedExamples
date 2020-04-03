@@ -238,13 +238,14 @@ def save_model_list(args, model_list):
 
 
 def track_new_model(new_model, args):
-    model_list = load_model_list(args)
-    model_list.append(new_model)
-    save_model_list(args, model_list)
+    if mpu.get_data_parallel_rank() == 0:
+        model_list = load_model_list(args)
+        model_list.append(new_model)
+        save_model_list(args, model_list)
 
 
 def remove_old_models(args):
-    if args.only_keep_checkpoints is not None:
+    if mpu.get_data_parallel_rank() == 0 and args.only_keep_checkpoints is not None:
         model_list = load_model_list(args)
         while len(model_list) > args.only_keep_checkpoints:
             model = model_list.pop(0)
