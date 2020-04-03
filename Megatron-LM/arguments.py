@@ -168,6 +168,9 @@ def add_training_args(parser):
                        help='Do not save current optimizer.')
     group.add_argument('--no-save-rng', action='store_true',
                        help='Do not save current rng state.')
+    group.add_argument('--only-keep-checkpoints', type=int,
+                       help='If set, remove old checkpoint files as new ones are created so that there are only this '
+                            'many models in the --save directory at any given time.')
     group.add_argument('--load', type=str, default=None,
                        help='Path to a directory containing a model checkpoint.')
     group.add_argument('--no-load-optim', action='store_true',
