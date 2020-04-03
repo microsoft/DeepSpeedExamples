@@ -318,7 +318,7 @@ def save_ds_checkpoint(iteration, model, args):
         sd['rng_tracker_states'] = mpu.get_cuda_rng_tracker().get_states()
         
     model.save_checkpoint(args.save, iteration, client_state = sd)
-    track_new_model(os.path.join(args.save, iteration), args)
+    track_new_model(os.path.join(args.save, str(iteration)), args)
 
 
 def get_checkpoint_iteration(args):
