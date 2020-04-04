@@ -240,8 +240,9 @@ def save_model_list(args, model_list):
 def track_new_model(new_model, args):
     if torch.distributed.get_rank() == 0:
         model_list = load_model_list(args)
-        model_list.append(new_model)
-        save_model_list(args, model_list)
+        if new_model not in model_list:
+            model_list.append(new_model)
+            save_model_list(args, model_list)
 
 
 def remove_old_models(args):
