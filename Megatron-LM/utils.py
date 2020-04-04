@@ -16,7 +16,9 @@
 """Utilities for logging and serialization"""
 
 import os
+import pickle
 import random
+import shutil
 import time
 import numpy as np
 import torch
@@ -25,6 +27,9 @@ from torch.nn.parallel.distributed import DistributedDataParallel as torchDDP
 from fp16 import FP16_Optimizer
 import mpu
 import model
+
+
+MODEL_LIST_PICKLE_FILE = "model_list.pkl"
 
 
 def print_rank_0(message):
@@ -215,6 +220,41 @@ def save_zero_checkpoint(args, iteration, optimizer):
     torch.save(zero_sd, zero_checkpoint_name)
     print('  successfully saved {}'.format(zero_checkpoint_name))
 
+
+def load_model_list(args):
+    model_list_pickle_path = os.path.join(args.save, MODEL_LIST_PICKLE_FILE)
+    if os.path.exists(model_list_pickle_path):
+        with open(model_list_pickle_path, 'rb') as f:
+            print("Loading list of previous models from: " + model_list_pickle_path)
+            return pickle.load(f)
+    else:
+        return []
+
+
+def save_model_list(args, model_list):
+    model_list_pickle_path = os.path.join(args.save, MODEL_LIST_PICKLE_FILE)
+    with open(model_list_pickle_path, 'wb') as f:
+        pickle.dump(model_list, f)
+
+
+def track_new_model(new_model, args):
+    if torch.distributed.get_rank() == 0:
+        model_list = load_model_list(args)
+        if new_model not in model_list:
+            model_list.append(new_model)
+            save_model_list(args, model_list)
+
+
+def remove_old_models(args):
+    if torch.distributed.get_rank() == 0 and args.only_keep_checkpoints is not None:
+        model_list = load_model_list(args)
+        while len(model_list) > args.only_keep_checkpoints:
+            model = model_list.pop(0)
+            print("Removing old model: " + model)
+            shutil.rmtree(model)
+        save_model_list(args, model_list)
+
+
 def save_checkpoint(iteration, model, optimizer,
                     lr_scheduler, args):
     """Save a model checkpoint."""
@@ -253,6 +293,8 @@ def save_checkpoint(iteration, model, optimizer,
             ensure_directory_exists(checkpoint_name)
             torch.save(sd, checkpoint_name)
             print('  successfully saved {}'.format(checkpoint_name))
+            track_new_model(os.path.dirname(checkpoint_name), args)
+    remove_old_models(args)
 
     # Wait so everyone is done (necessary)
     torch.distributed.barrier()
@@ -278,6 +320,7 @@ def save_ds_checkpoint(iteration, model, args):
         sd['rng_tracker_states'] = mpu.get_cuda_rng_tracker().get_states()
         
     model.save_checkpoint(args.save, iteration, client_state = sd)
+    track_new_model(os.path.join(args.save, str(iteration)), args)
 
 
 def get_checkpoint_iteration(args):
