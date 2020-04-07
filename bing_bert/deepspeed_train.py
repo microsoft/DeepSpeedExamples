@@ -107,44 +107,11 @@ def pretrain_validation(args, index, model):
         args.summary_writer.add_scalar(f'Validation/Loss', eval_loss, index+1)
     return
 
-
-def evaluate_tp1pp_set(args, model, eval_file):
-    dataset = QAFinetuningDataset(
-        args.tokenizer, eval_file, args.logger, args.max_seq_length)
-    data_batches = DataLoader(
-        dataset, batch_size=args.train_micro_batch_size_per_gpu, drop_last=False)
-    scores = []
-    labels = []
-    for batch in tqdm(data_batches):
-        batch_labels = batch[4].view(-1).tolist()
-        # This is important for the model to return scores and not the loss
-        batch[4] = None
-        batch = tuple(t.to(args.device) if t is not None else t for t in batch)
-        batch_scores = model.network(batch).view(-1).tolist()
-        labels.extend(batch_labels)
-        scores.extend(batch_scores)
-
-    precision, recall, threshold = precision_recall_curve(labels, scores)
-    fpr, tpr, _ = roc_curve(labels, scores)
-    eval_auc = auc(fpr, tpr)
-    args.logger.info(f"TP1++ evaluation file: {eval_file}; AUC: {eval_auc}")
-    return eval_auc
-
-
-def eval_tp1pp(args, index, model):
-    model.eval()
-    tp1pp_evaluations = {}
-    finetune_sets = args.config["data"]["tp1pp_evalsets"]
-    for key, data_path in finetune_sets.items():
-        tp1pp_evaluations[key] = evaluate_tp1pp_set(args, model, data_path)
-    return eval_tp1pp
-
-    #! Need to add to logs
-
 def master_process(args):
     return (not args.no_cuda and dist.get_rank() == 0) or (args.no_cuda and args.local_rank == -1)
 
 def get_train_dataset(args, index, finetune=False, shuffle=True):
+    assert not finetune, "finetune not supported"
     i = 0
     dataloaders = {}
     datalengths = []
@@ -155,84 +122,41 @@ def get_train_dataset(args, index, finetune=False, shuffle=True):
     dataset_paths = config["data"]["datasets"]
     dataset_flags = config["data"]["flags"]
 
-    if finetune:
-        qp_finetune_dataset = QAFinetuningDataset(
-            args.tokenizer, dataset_paths["qp_finetuning_dataset"], args.logger, args.max_seq_length)
-        datalengths.append(len(qp_finetune_dataset))
-        dataloaders[i] = get_dataloader(args, qp_finetune_dataset)
-        batch_mapping[i] = QABatch
-        batchs_per_dataset.append(
-            get_effective_batch(args, len(qp_finetune_dataset)))
-        i += 1
+    # Pretraining dataset
+    if dataset_flags.get("pretrain_dataset", False):
+        pretrain_type = dataset_flags.get("pretrain_type")
 
-    else:
-        # QP dataset
-        if dataset_flags.get("qp_dataset", False):
-            qp_dataset = QADataset(
-                args.tokenizer, dataset_paths["qp_dataset"], args.logger, args.max_seq_length, index)
-            datalengths.append(len(qp_dataset))
-            dataloaders[i] = get_dataloader(args, qp_dataset)
-            batch_mapping[i] = QABatch
-            batchs_per_dataset.append(get_effective_batch(args, len(qp_dataset)))
+        if pretrain_type == "wiki_bc":
+            # Load Wiki Dataset
+            wiki_pretrain_dataset = PreTrainingDataset(
+                args.tokenizer,
+                dataset_paths['wiki_pretrain_dataset'],
+                args.logger,
+                args.max_seq_length,
+                index,
+                PretrainDataType.NUMPY,
+                args.max_predictions_per_seq)
+            datalengths.append(len(wiki_pretrain_dataset))
+            dataloaders[i] = get_dataloader(args, wiki_pretrain_dataset)
+            batch_mapping[i] = PretrainBatch
+            batchs_per_dataset.append(
+                get_effective_batch(args, len(wiki_pretrain_dataset)))
             i += 1
 
-        # Pretraining dataset
-        if dataset_flags.get("pretrain_dataset", False):
-            pretrain_type = dataset_flags.get("pretrain_type")
-
-            # CLEAN BODY Data Load
-            if pretrain_type == "clean_body":
-                cb_pretrain_dataset = PreTrainingDataset(
-                    args.tokenizer, dataset_paths['cb_pretrain_dataset'], args.logger, args.max_seq_length, index, PretrainDataType.NUMPY)
-                datalengths.append(len(cb_pretrain_dataset))
-                dataloaders[i] = get_dataloader(args, cb_pretrain_dataset)
-                batch_mapping[i] = PretrainBatch
-                batchs_per_dataset.append(
-                    get_effective_batch(args, len(cb_pretrain_dataset)))
-                i += 1
-
-            elif pretrain_type == "wiki_bc":
-                # Load Wiki Dataset
-                wiki_pretrain_dataset = PreTrainingDataset(
-                    args.tokenizer,
-                    dataset_paths['wiki_pretrain_dataset'],
-                    args.logger,
-                    args.max_seq_length,
-                    index,
-                    PretrainDataType.NUMPY,
-                    args.max_predictions_per_seq)
-                datalengths.append(len(wiki_pretrain_dataset))
-                dataloaders[i] = get_dataloader(args, wiki_pretrain_dataset)
-                batch_mapping[i] = PretrainBatch
-                batchs_per_dataset.append(
-                    get_effective_batch(args, len(wiki_pretrain_dataset)))
-                i += 1
-
-                bc_pretrain_dataset = PreTrainingDataset(
-                    args.tokenizer,
-                    dataset_paths['bc_pretrain_dataset'],
-                    args.logger,
-                    args.max_seq_length,
-                    index,
-                    PretrainDataType.NUMPY,
-                    args.max_predictions_per_seq
-                )
-                datalengths.append(len(bc_pretrain_dataset))
-                dataloaders[i] = get_dataloader(args, bc_pretrain_dataset)
-                batch_mapping[i] = PretrainBatch
-                batchs_per_dataset.append(
-                    get_effective_batch(args, len(bc_pretrain_dataset)))
-                i += 1
-
-        # Ranking Dataset
-        if dataset_flags.get("ranking_dataset", False):
-            ranking_dataset = RankingDataset(
-                args.tokenizer, dataset_paths['ranking_dataset'], args.logger, args.max_seq_length, index, args.fp16)
-            datalengths.append(len(ranking_dataset))
-            dataloaders[i] = get_dataloader(args, ranking_dataset)
-            batch_mapping[i] = RankingBatch
+            bc_pretrain_dataset = PreTrainingDataset(
+                args.tokenizer,
+                dataset_paths['bc_pretrain_dataset'],
+                args.logger,
+                args.max_seq_length,
+                index,
+                PretrainDataType.NUMPY,
+                args.max_predictions_per_seq
+            )
+            datalengths.append(len(bc_pretrain_dataset))
+            dataloaders[i] = get_dataloader(args, bc_pretrain_dataset)
+            batch_mapping[i] = PretrainBatch
             batchs_per_dataset.append(
-                get_effective_batch(args, len(ranking_dataset)))
+                get_effective_batch(args, len(bc_pretrain_dataset)))
             i += 1
 
     dataset_batches = []
@@ -268,21 +192,16 @@ def train(args, index, model, optimizer, finetune=False):
     for step, dataset_type in enumerate(tqdm(dataset_picker, smoothing=1)):
         try:
             batch = next(dataloaders[dataset_type])
-            if args.n_gpu == 1:
-                batch = tuple(t.to(args.device) for t in batch)  # Move to GPU
+            batch = tuple(t.to(args.device) for t in batch)  # Move to GPU
 
             # Calculate forward pass
             loss = model.network(batch)
             unscaled_loss = loss.item()
             current_data_sample_count += (args.train_micro_batch_size_per_gpu * dist.get_world_size())
-            if args.n_gpu > 1:
-                # this is to average loss for multi-gpu. In DistributedDataParallel
-                # setting, we get tuple of losses form all proccesses
-                loss = loss.mean()
 
             model.network.backward(loss)
 
-            if (step + 1) % args.gradient_accumulation_steps == 0:
+            if model.network.is_gradient_accumulation_boundary():
                 if args.fp16:
                     # modify learning rate with special warm up BERT uses
                     # if args.fp16 is False, BertAdam is used that handles this automatically
@@ -314,8 +233,6 @@ def train(args, index, model, optimizer, finetune=False):
         logger.info(f"TRAIN BATCH SIZE: {args.train_micro_batch_size_per_gpu}")
         pretrain_validation(args, index, model)
 
-    if finetune:
-        eval_tp1pp(args, index, model)
 
 def update_learning_rate(config, current_global_step, optimizer):
     global last_global_step_from_restore
@@ -507,37 +424,26 @@ def run(args, model, optimizer, start_epoch):
     config = args.config
     logger = args.logger
 
-    if args.finetune:
-        for index in range(config["training"]["num_epochs"]):
-            logger.info(f"Finetuning Epoch: {index + 1}")
+    for index in range(start_epoch, config["training"]["num_epochs"]):
+        logger.info(f"Training Epoch: {index + 1}")
+        pre = time.time()
+        train(args, index, model, optimizer)
+        logger.info(
+            f"Saving a checkpointing of the model for epoch: {index+1}")
+        checkpoint_model(PATH=args.saved_model_path,
+                            ckpt_id='epoch{}_step{}'.format(index + 1, global_step),
+                            model=model,
+                            epoch=index+1,
+                            last_global_step=global_step,
+                            last_global_data_samples=global_data_samples)
 
-            train(args, index, model, optimizer, finetune=True)
+        post = time.time()
+        logger.info(f"Time for shard {index + 1}: {post-pre} seconds")
 
-            if (not args.no_cuda and dist.get_rank() == 0) or (args.no_cuda and args.local_rank == -1):
-                model.save(os.path.join(args.saved_model_path,
-                                        "model_finetuned_epoch_{}.pt".format(index + 1)))
-    else:
-        for index in range(start_epoch, config["training"]["num_epochs"]):
-            logger.info(f"Training Epoch: {index + 1}")
-            pre = time.time()
-            train(args, index, model, optimizer)
-            logger.info(
-                f"Saving a checkpointing of the model for epoch: {index+1}")
-            checkpoint_model(PATH=args.saved_model_path,
-                                ckpt_id='epoch{}_step{}'.format(index + 1, global_step),
-                                model=model,
-                                epoch=index+1,
-                                last_global_step=global_step,
-                                last_global_data_samples=global_data_samples)
-
-            post = time.time()
-            logger.info(f"Time for shard {index + 1}: {post-pre} seconds")
-
-            current_global_step = global_step - last_global_step_from_restore
-            if is_time_to_exit(args=args,
-                               global_steps=current_global_step):
-                print(f'Warning: Early training termination due to max steps limit, epoch={index+1}, global_step={current_global_step}')
-                break
+        current_global_step = global_step - last_global_step_from_restore
+        if is_time_to_exit(args=args, global_steps=current_global_step):
+            print(f'Warning: Early training termination due to max steps limit, epoch={index+1}, global_step={current_global_step}')
+            break
 
 
 def main():
