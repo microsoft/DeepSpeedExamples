@@ -12,7 +12,6 @@ deepspeed.pt ${base_dir}/deepspeed_train.py \
 --cf ${base_dir}/bert_large_lamb_seq128.json \
 --max_seq_length 128 \
 --output_dir $OUTPUT_DIR \
---max_grad_norm 1.0 \
 --deepspeed \
 --max_steps 7500 \
 --print_steps 100 \
