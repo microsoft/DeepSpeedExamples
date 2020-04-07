@@ -13,7 +13,6 @@ deepspeed.pt ${base_dir}/deepspeed_train.py \
 --max_seq_length 128 \
 --output_dir $OUTPUT_DIR \
 --deepspeed \
---max_steps 7500 \
 --print_steps 100 \
 --job_name $JOB_NAME \
 --deepspeed_config ${base_dir}/deepspeed_bsz16K_lamb_config.json \
