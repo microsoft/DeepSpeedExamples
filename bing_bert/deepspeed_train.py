@@ -423,7 +423,7 @@ def construct_arguments():
 
     # set device
     # args.device = device
-    # args.n_gpu = n_gpu
+    args.n_gpu = 1
 
     # Loading Tokenizer
     tokenizer = BertTokenizer.from_pretrained(config["bert_token_file"])
@@ -486,9 +486,9 @@ def prepare_model_optimizer(args):
         os.makedirs(args.saved_model_path, exist_ok=True)
         
         # Set summary writer so we can log events in the model
-        model.network.set_summary_writer(summary_writer)
+        model.network.module.set_summary_writer(summary_writer)
 
-    model.network.set_samples_per_step(args.train_batch_size)
+    model.network.module.set_samples_per_step(args.train_batch_size)
 
     return model, optimizer
 
