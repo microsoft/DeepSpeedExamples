@@ -70,9 +70,9 @@ def load_training_checkpoint(args, model, PATH, ckpt_id):
 
 def get_effective_batch(args, total):
     if args.local_rank != -1:
-        return total//dist.get_world_size()//args.train_batch_size//args.gradient_accumulation_steps//args.refresh_bucket_size
+        return total//dist.get_world_size()//args.train_micro_batch_size_per_gpu//args.gradient_accumulation_steps//args.refresh_bucket_size
     else:
-        return total//args.train_batch_size//args.gradient_accumulation_steps//args.refresh_bucket_size
+        return total//args.train_micro_batch_size_per_gpu//args.gradient_accumulation_steps//args.refresh_bucket_size
 
 
 def get_dataloader(args, dataset: Dataset, eval_set=False):
@@ -80,7 +80,7 @@ def get_dataloader(args, dataset: Dataset, eval_set=False):
         train_sampler = RandomSampler(dataset)
     else:
         train_sampler = DistributedSampler(dataset)
-    return (x for x in DataLoader(dataset, batch_size=args.train_batch_size//2 if eval_set else args.train_batch_size, sampler=train_sampler, num_workers=args.config['training']['num_workers']))
+    return (x for x in DataLoader(dataset, batch_size=args.train_micro_batch_size_per_gpu//2 if eval_set else args.train_micro_batch_size_per_gpu, sampler=train_sampler, num_workers=args.config['training']['num_workers']))
 
 
 def pretrain_validation(args, index, model):
@@ -112,7 +112,7 @@ def evaluate_tp1pp_set(args, model, eval_file):
     dataset = QAFinetuningDataset(
         args.tokenizer, eval_file, args.logger, args.max_seq_length)
     data_batches = DataLoader(
-        dataset, batch_size=args.train_batch_size, drop_last=False)
+        dataset, batch_size=args.train_micro_batch_size_per_gpu, drop_last=False)
     scores = []
     labels = []
     for batch in tqdm(data_batches):
@@ -274,7 +274,7 @@ def train(args, index, model, optimizer, finetune=False):
             # Calculate forward pass
             loss = model.network(batch)
             unscaled_loss = loss.item()
-            current_data_sample_count += (args.train_batch_size * dist.get_world_size())
+            current_data_sample_count += (args.train_micro_batch_size_per_gpu * dist.get_world_size())
             if args.n_gpu > 1:
                 # this is to average loss for multi-gpu. In DistributedDataParallel
                 # setting, we get tuple of losses form all proccesses
@@ -311,7 +311,7 @@ def train(args, index, model, optimizer, finetune=False):
 
     # Run Validation Loss
     if not finetune and args.max_seq_length == 512:
-        logger.info(f"TRAIN BATCH SIZE: {args.train_batch_size}")
+        logger.info(f"TRAIN BATCH SIZE: {args.train_micro_batch_size_per_gpu}")
         pretrain_validation(args, index, model)
 
     if finetune:
@@ -442,7 +442,7 @@ def prepare_model_optimizer(args):
                                                           model_parameters=optimizer_grouped_parameters)
 
     # Overwrite application configs with DeepSpeed config
-    args.train_batch_size = model.network.train_micro_batch_size_per_gpu()
+    args.train_micro_batch_size_per_gpu = model.network.train_micro_batch_size_per_gpu()
     args.gradient_accumulation_steps = model.network.gradient_accumulation_steps()
     
     # Set DeepSpeed info
@@ -457,8 +457,6 @@ def prepare_model_optimizer(args):
         summary_writer = get_sample_writer(name=args.job_name, base=args.output_dir)
         args.summary_writer = summary_writer
         os.makedirs(args.saved_model_path, exist_ok=True)
-
-    model.network.module.set_samples_per_step(args.train_batch_size)
 
     return model, optimizer
 
@@ -495,7 +493,7 @@ def load_checkpoint(args, model):
     # Run validation for checkpoint before training
     if not args.finetune and args.max_seq_length == 512:
         logger.info(f"Validation Loss of Checkpoint {start_epoch} before pretraining")
-        logger.info(f"TRAIN BATCH SIZE: {args.train_batch_size}")
+        logger.info(f"TRAIN MICRO BATCH SIZE PER GPU: {args.train_micro_batch_size_per_gpu}")
         index = start_epoch - 1 if start_epoch > 0 else start_epoch
         pretrain_validation(args, index, model)
 
