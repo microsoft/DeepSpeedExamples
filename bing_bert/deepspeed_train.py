@@ -457,9 +457,6 @@ def prepare_model_optimizer(args):
         summary_writer = get_sample_writer(name=args.job_name, base=args.output_dir)
         args.summary_writer = summary_writer
         os.makedirs(args.saved_model_path, exist_ok=True)
-        
-        # Set summary writer so we can log events in the model
-        model.network.module.set_summary_writer(summary_writer)
 
     model.network.module.set_samples_per_step(args.train_batch_size)
 

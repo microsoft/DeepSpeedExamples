@@ -22,10 +22,7 @@ def get_argument_parser():
                         type=int,
                         default=42,
                         help="random seed for initialization")
-    parser.add_argument('--max_grad_norm',
-                        type=float,
-                        default=0.0,
-                        help="The gradient clipping factor. Default: 0.0")
+    
     parser.add_argument("--do_lower_case",
                         default=True,
                         action='store_true',
