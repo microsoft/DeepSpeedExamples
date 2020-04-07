@@ -886,13 +886,16 @@ class BertForPreTraining(BertPreTrainedModel):
     def __init__(self, config, args):
         super(BertForPreTraining, self).__init__(config)
         self.summary_writer = None
-        if dist.get_rank() == 0:
-            self.summary_writer = args.summary_writer
-        self.samples_per_step = dist.get_world_size() * args.train_batch_size
-        self.sample_count = self.samples_per_step
         self.bert = BertModel(config)
         self.cls = BertPreTrainingHeads(config, self.bert.embeddings.word_embeddings.weight)
         self.apply(self.init_bert_weights)
+
+    def set_summary_writer(self, summary_writer):
+        self.summary_writer = summary_writer
+
+    def set_samples_per_step(self, train_batch_size):
+        self.samples_per_step = dist.get_world_size() * train_batch_size
+        self.sample_count = self.samples_per_step
 
     def log_summary_writer(self, logs: dict, base='Train'):
         if dist.get_rank() == 0:

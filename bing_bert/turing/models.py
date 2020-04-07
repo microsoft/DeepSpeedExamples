@@ -185,40 +185,16 @@ class BertMultiTask:
                 bert_config.vocab_size += 8 - (bert_config.vocab_size % 8)
             print("VOCAB SIZE:", bert_config.vocab_size)
 
-#            self.bert_encoder = BertModel(bert_config)
             self.network = BertForPreTraining(bert_config, args)
         # Use pretrained bert weights
         else:
             self.bert_encoder = BertModel.from_pretrained(self.config['bert_model_file'], cache_dir=PYTORCH_PRETRAINED_BERT_CACHE / 'distributed_{}'.format(args.local_rank))
             bert_config = self.bert_encoder.config
 
-        #self.network = MTLRouting(self.bert_encoder, args)
-        #self.network = MTLRouting(self.bert_encoder, args, loss_calculation=BertPretrainingLoss(self.bert_encoder, bert_config))
+        self.device = None
 
-        # for param in self.bert_encoder.parameters():
-        #     param.required_grad = False
-        config_data=self.config['data']
-
-        self.device=args.device
-        return
-
-        # QA Dataset
-        if config_data["flags"].get("qp_dataset", False):
-            self.network.register_batch(BatchType.QP_BATCH, "qa_dataset", loss_calculation=BertClassificationLoss(
-                self.bert_encoder, bert_config, 1))
-
-        # Pretrain Dataset
-        if config_data["flags"].get("pretrain_dataset", False):
-            self.network.register_batch(BatchType.PRETRAIN_BATCH, "pretrain_dataset",
-                                        loss_calculation=BertPretrainingLoss(self.bert_encoder, bert_config))
-
-        # Ranking Dataset
-        if config_data["flags"].get("ranking_dataset", False):
-            self.network.register_batch(BatchType.RANKING_BATCH, "ranking_dataset", loss_calculation=BertRegressionLoss(
-                self.bert_encoder, bert_config))
-
-        # self.network = self.network.float()
-        # print(f"Bert ID: {id(self.bert_encoder)}  from GPU: {dist.get_rank()}")
+    def set_device(self, device):
+        self.device = device
 
     def save(self, filename: str):
         network=self.network.module

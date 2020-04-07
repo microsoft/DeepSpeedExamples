@@ -16,7 +16,6 @@ from tqdm import tqdm, trange
 from sklearn.metrics import precision_recall_curve, roc_curve, auc
 import time
 
-from apex import amp
 from timer import ThroughputTimer as tt
 from turing.logger import Logger
 from turing.utils import get_sample_writer
@@ -377,62 +376,54 @@ def construct_arguments():
     config = json.load(open(args.config_file, 'r', encoding='utf-8'))
     args.config = config
 
-    job_name = config['name'] if args.job_name is None else args.job_name
-    print("Running Config File: ", job_name)
+    args.job_name = config['name'] if args.job_name is None else args.job_name
+    print("Running Config File: ", args.job_name)
     # Setting the distributed variables
     print("Args = {}".format(args))
 
-    if args.local_rank == -1 or args.no_cuda:
-        device = torch.device("cuda" if torch.cuda.is_available()
-                            and not args.no_cuda else "cpu")
-        n_gpu = torch.cuda.device_count()
-    else:
-        device = torch.device("cuda", args.local_rank)
-        n_gpu = 1
-        # Initializes the distributed backend which will take care of sychronizing nodes/GPUs
-        start_time = time.time()
-        torch.distributed.init_process_group(backend='nccl')
-        end_time = time.time()
-        logger.info("Init_process_group takes %f sec" % (end_time - start_time))
+    # if args.local_rank == -1 or args.no_cuda:
+    #     device = torch.device("cuda" if torch.cuda.is_available()
+    #                         and not args.no_cuda else "cpu")
+    #     n_gpu = torch.cuda.device_count()
+    # else:
+    #     device = torch.device("cuda", args.local_rank)
+    #     n_gpu = 1
+    #     # Initializes the distributed backend which will take care of sychronizing nodes/GPUs
+    #     start_time = time.time()
+    #     torch.distributed.init_process_group(backend='nccl')
+    #     end_time = time.time()
+    #     logger.info("Init_process_group takes %f sec" % (end_time - start_time))
 
-        if args.fp16:
-            logger.info(
-                "16-bits distributed training not officially supported but seems to be working.")
-            args.fp16 = True  # (see https://github.com/pytorch/pytorch/pull/13496)
-    logger.info("device: {} n_gpu: {}, distributed training: {}, 16-bits training: {}".format(
-        device, n_gpu, bool(args.local_rank != -1), args.fp16))
+    #     if args.fp16:
+    #         logger.info(
+    #             "16-bits distributed training not officially supported but seems to be working.")
+    #         args.fp16 = True  # (see https://github.com/pytorch/pytorch/pull/13496)
+    # logger.info("device: {} n_gpu: {}, distributed training: {}, 16-bits training: {}".format(
+    #     device, n_gpu, bool(args.local_rank != -1), args.fp16))
 
-    if args.gradient_accumulation_steps < 1:
-        raise ValueError("Invalid gradient_accumulation_steps parameter: {}, should be >= 1".format(
-            args.gradient_accumulation_steps))
+    # if args.gradient_accumulation_steps < 1:
+    #     raise ValueError("Invalid gradient_accumulation_steps parameter: {}, should be >= 1".format(
+    #         args.gradient_accumulation_steps))
 
-    args.train_batch_size = int(
-        args.train_batch_size / args.gradient_accumulation_steps)
+    # args.train_batch_size = int(
+    #     args.train_batch_size / args.gradient_accumulation_steps)
 
     # Setting all the seeds so that the task is random but same accross processes
     random.seed(args.seed)
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
-    if n_gpu > 0:
-        torch.cuda.manual_seed_all(args.seed)
+    torch.cuda.manual_seed_all(args.seed)
 
     # if os.path.exists(args.output_dir) and os.listdir(args.output_dir):
     #     raise ValueError("Output directory () already exists and is not empty.")
 
     os.makedirs(args.output_dir, exist_ok=True)
     args.saved_model_path = os.path.join(
-        args.output_dir, "saved_models/", job_name)
-
-    # Prepare Summary Writer and saved_models path
-    if (not args.no_cuda and dist.get_rank() == 0) or (args.no_cuda and args.local_rank == -1):
-        summary_writer = get_sample_writer(
-            name=job_name, base=args.output_dir)
-        args.summary_writer = summary_writer
-        os.makedirs(args.saved_model_path, exist_ok=True)
+        args.output_dir, "saved_models/", args.job_name)
 
     # set device
-    args.device = device
-    args.n_gpu = n_gpu
+    # args.device = device
+    # args.n_gpu = n_gpu
 
     # Loading Tokenizer
     tokenizer = BertTokenizer.from_pretrained(config["bert_token_file"])
@@ -477,12 +468,27 @@ def prepare_model_optimizer(args):
     # DeepSpeed initializer handles FP16, distributed, optimizer automatically.
     model.network, optimizer, _, _ = deepspeed.initialize(args=args,
                                                           model=model.network,
-                                                          model_parameters=optimizer_grouped_parameters,
-                                                          dist_init_required=False)
+                                                          model_parameters=optimizer_grouped_parameters)
 
     # Overwrite application configs with DeepSpeed config
     args.train_batch_size = model.network.train_micro_batch_size_per_gpu()
     args.gradient_accumulation_steps = model.network.gradient_accumulation_steps()
+    
+    # Set DeepSpeed dist info
+    args.local_rank = model.network.local_rank
+    args.device = model.network.device
+    model.set_device(args.device)
+
+    # Prepare Summary Writer and saved_models path
+    if dist.get_rank() == 0:
+        summary_writer = get_sample_writer(name=args.job_name, base=args.output_dir)
+        args.summary_writer = summary_writer
+        os.makedirs(args.saved_model_path, exist_ok=True)
+        
+        # Set summary writer so we can log events in the model
+        model.network.set_summary_writer(summary_writer)
+
+    model.network.set_samples_per_step(args.train_batch_size)
 
     return model, optimizer
 
