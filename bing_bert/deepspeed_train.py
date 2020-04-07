@@ -364,6 +364,9 @@ def get_arguments():
     parser = deepspeed.add_config_arguments(parser)
 
     args = parser.parse_args()
+    
+    # no cuda mode is not supported
+    args.no_cuda = False
 
     return args
 
@@ -381,48 +384,16 @@ def construct_arguments():
     # Setting the distributed variables
     print("Args = {}".format(args))
 
-    # if args.local_rank == -1 or args.no_cuda:
-    #     device = torch.device("cuda" if torch.cuda.is_available()
-    #                         and not args.no_cuda else "cpu")
-    #     n_gpu = torch.cuda.device_count()
-    # else:
-    #     device = torch.device("cuda", args.local_rank)
-    #     n_gpu = 1
-    #     # Initializes the distributed backend which will take care of sychronizing nodes/GPUs
-    #     start_time = time.time()
-    #     torch.distributed.init_process_group(backend='nccl')
-    #     end_time = time.time()
-    #     logger.info("Init_process_group takes %f sec" % (end_time - start_time))
-
-    #     if args.fp16:
-    #         logger.info(
-    #             "16-bits distributed training not officially supported but seems to be working.")
-    #         args.fp16 = True  # (see https://github.com/pytorch/pytorch/pull/13496)
-    # logger.info("device: {} n_gpu: {}, distributed training: {}, 16-bits training: {}".format(
-    #     device, n_gpu, bool(args.local_rank != -1), args.fp16))
-
-    # if args.gradient_accumulation_steps < 1:
-    #     raise ValueError("Invalid gradient_accumulation_steps parameter: {}, should be >= 1".format(
-    #         args.gradient_accumulation_steps))
-
-    # args.train_batch_size = int(
-    #     args.train_batch_size / args.gradient_accumulation_steps)
-
     # Setting all the seeds so that the task is random but same accross processes
     random.seed(args.seed)
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
     torch.cuda.manual_seed_all(args.seed)
 
-    # if os.path.exists(args.output_dir) and os.listdir(args.output_dir):
-    #     raise ValueError("Output directory () already exists and is not empty.")
-
     os.makedirs(args.output_dir, exist_ok=True)
     args.saved_model_path = os.path.join(
         args.output_dir, "saved_models/", args.job_name)
 
-    # set device
-    # args.device = device
     args.n_gpu = 1
 
     # Loading Tokenizer
@@ -474,10 +445,12 @@ def prepare_model_optimizer(args):
     args.train_batch_size = model.network.train_micro_batch_size_per_gpu()
     args.gradient_accumulation_steps = model.network.gradient_accumulation_steps()
     
-    # Set DeepSpeed dist info
+    # Set DeepSpeed info
     args.local_rank = model.network.local_rank
     args.device = model.network.device
     model.set_device(args.device)
+    args.fp16 = model.network.fp16_enabled()
+    args.use_lamb = model.network.optimizer_name() == deepspeed.pt.deepspeed_config.LAMB_OPTIMIZER
 
     # Prepare Summary Writer and saved_models path
     if dist.get_rank() == 0:
