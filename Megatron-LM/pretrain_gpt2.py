@@ -52,7 +52,7 @@ ARGS_TO_SAVE = ["num_layers", "vocab_size", "hidden_size", "num_attention_heads"
                 "attention_dropout", "max_position_embeddings", "checkpoint_activations", "checkpoint_num_layers",
                 "fp16", "reset_position_ids", "reset_attention_mask", "tokenizer_type", "tokenizer_path",
                 "tokenizer_model_type", "make_vocab_size_divisible_by", "deepspeed", "DDP_impl", "distributed_backend",
-                "partition_activations", "eod_mask_loss"]
+                "partition_activations", "eod_mask_loss", "model_parallel_size"]
 
 
 def get_model(args):
