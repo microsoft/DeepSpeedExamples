@@ -446,9 +446,47 @@ def run(args, model, optimizer, start_epoch):
             break
 
 
+def _mpi_check(args):
+    from mpi4py import MPI
+    import subprocess
+    comm = MPI.COMM_WORLD
+    rank = comm.Get_rank()
+    world_size = comm.Get_size()
+
+    master_addr = None
+    if rank == 0:
+        hostname_cmd = ["hostname -I"]
+        result = subprocess.check_output(hostname_cmd, shell=True)
+        master_addr = result.decode('utf-8').split()[0]
+    master_addr = comm.bcast(master_addr, root=0)
+
+    # Determine local rank by assuming hostnames are unique
+    proc_name = MPI.Get_processor_name()
+    all_procs = comm.allgather(proc_name)
+    local_rank = sum([i == proc_name for i in all_procs[:rank]])
+
+    os.environ['RANK'] = str(rank)
+    os.environ['WORLD_SIZE'] = str(world_size)
+    args.local_rank = local_rank
+    os.environ['MASTER_ADDR'] = master_addr
+
+    start_port_range = int(os.environ['PHILLY_CONTAINER_PORT_RANGE_START'])
+    end_port_range = int(os.environ['PHILLY_CONTAINER_PORT_RANGE_END'])
+    torch_port = start_port_range + (end_port_range - start_port_range) // 2
+    os.environ['MASTER_PORT'] = torch_port
+
+    print(
+        "Discovered MPI settings of world_rank={}, local_rank={}, world_size={}, master_addr={}, master_port={}"
+        .format(os.environ['RANK'],
+                args.local_rank,
+                os.environ['WORLD_SIZE'],
+                os.environ['MASTER_ADDR'],
+                os.environ['MASTER_PORT']))
+
 def main():
     start = time.time()
     args = construct_arguments()
+    _mpi_check(args)
     model, optimizer = prepare_model_optimizer(args)
     start_epoch = 0
     if not None in [args.load_training_checkpoint, args.load_checkpoint_id]:
