@@ -28,7 +28,7 @@ from .wordpiece import BertTokenizer, PRETRAINED_VOCAB_ARCHIVE_MAP
 from .tokenization_gpt2 import GPT2Tokenizer
 import regex as re
 
-def make_tokenizer(tokenizer_type, corpus, model_path=None, vocab_size=None, model_type='bpe', pad_token=0, character_coverage=1.0, command_tokens=None, type_tokens=None, max_len=None, **kwargs):
+def make_tokenizer(tokenizer_type, corpus, model_path=None, vocab_size=None, model_type='bpe', pad_token=0, character_coverage=1.0, command_tokens=None, type_tokens=None, max_len=None, save_dir=None, **kwargs):
     """
     Helper function to instantiate a tokenizer given common combinations of options.
     """
@@ -796,10 +796,11 @@ class BertWordPieceTokenizer(Tokenizer):
         return ' '.join(Tokens)
 
 class GPT2BPETokenizer(Tokenizer):
-    def __init__(self, model_path=None, max_len=None, cache_dir=None, **kwargs):
+    def __init__(self, model_path=None, max_len=None, cache_dir=None, save_dir=None, **kwargs):
         self.text_tokenizer = GPT2Tokenizer.from_pretrained(model_path or 'gpt2',
                                                             max_len,
-                                                            cache_dir=cache_dir)
+                                                            cache_dir=cache_dir,
+                                                            save_dir=save_dir)
 
         #disable max len warnings by increasing max len
         self.text_tokenizer.max_len = int(1e12)

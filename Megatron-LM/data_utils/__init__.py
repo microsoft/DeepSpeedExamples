@@ -66,7 +66,7 @@ def make_dataset(path, seq_length, text_key, label_key, lazy=False, process_fn=N
                 delim=',', loose=False, binarize_sent=False, drop_unlabeled=False, tokenizer=None,
                 tokenizer_type='CharacterLevelTokenizer', tokenizer_model_path=None, vocab_size=None,
                 model_type='bpe', pad_token=0, character_converage=1.0, non_binary_cols=None,
-                 parallel_group=None, max_len=None, **kwargs):
+                 parallel_group=None, max_len=None, save_dir=None, **kwargs):
     """function to create datasets+tokenizers for common options"""
     if isinstance(process_fn, str):
         process_fn = eval(process_fn)
@@ -111,7 +111,7 @@ def make_dataset(path, seq_length, text_key, label_key, lazy=False, process_fn=N
     # make tokenizer for dataset
     if tokenizer is None:
         tokenizer = make_tokenizer(tokenizer_type, ds, tokenizer_model_path, vocab_size, model_type, 
-                                    pad_token, character_converage, max_len=max_len, **kwargs)
+                                    pad_token, character_converage, max_len=max_len, save_dir=save_dir, **kwargs)
 
     ds_type = ''
     if 'ds_type' in kwargs:

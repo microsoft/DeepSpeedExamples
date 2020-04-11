@@ -20,6 +20,7 @@ import sys
 import json
 import logging
 import os
+import shutil
 import regex as re
 from io import open
 
@@ -89,7 +90,7 @@ class GPT2Tokenizer(object):
         - Byte-level BPE
     """
     @classmethod
-    def from_pretrained(cls, pretrained_model_name_or_path, max_len, cache_dir=None, *inputs, **kwargs):
+    def from_pretrained(cls, pretrained_model_name_or_path, max_len, cache_dir=None, save_dir=None, *inputs, **kwargs):
         """
         Instantiate a PreTrainedBertModel from a pre-trained model file.
         Download and cache the pre-trained model file if needed.
@@ -106,6 +107,10 @@ class GPT2Tokenizer(object):
                 special_tokens_file = None
             else:
                 logger.info("loading special tokens file {}".format(special_tokens_file))
+            if save_dir:
+                logger.info("copying vocab and merges files to  {}".format(save_dir))
+                shutil.copyfile(vocab_file, save_dir)
+                shutil.copyfile(merges_file, save_dir)
         # redirect to the cache, if necessary
         try:
             resolved_vocab_file = cached_path(vocab_file, cache_dir=cache_dir)
