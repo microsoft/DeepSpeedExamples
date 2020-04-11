@@ -162,7 +162,7 @@ class GPT2Tokenizer(object):
         self.cache = {}
 
         # Should haved added re.IGNORECASE so BPE merges can happen for capitalized versions of contractions
-        self.pat = re.compile(r"""'s|'t|'re|'ve|'m|'ll|'d| ?\p{L}+| ?\p{N}+| ?[^\s\p{L}\p{N}]+|\s+(?!\S)|\s+""")
+        self.pat = re.compile(r"""<\|endoftext\|>|<\|endofcomment\|>|'s|'t|'re|'ve|'m|'ll|'d| ?\p{L}+| ?\p{N}+| ?[^\s\p{L}\p{N}]+|\s+(?!\S)|\s+""")
 
         self.special_tokens = {}
         self.special_tokens_decoder = {}
@@ -185,6 +185,9 @@ class GPT2Tokenizer(object):
         logger.info("Special tokens {}".format(self.special_tokens))
 
     def bpe(self, token):
+        if token in ("<|endoftext|>", "<|endofcomment|>"):
+            return token
+
         if token in self.cache:
             return self.cache[token]
         word = tuple(token)
