@@ -473,7 +473,7 @@ def _mpi_check(args):
     start_port_range = int(os.environ['PHILLY_CONTAINER_PORT_RANGE_START'])
     end_port_range = int(os.environ['PHILLY_CONTAINER_PORT_RANGE_END'])
     torch_port = start_port_range + (end_port_range - start_port_range) // 2
-    os.environ['MASTER_PORT'] = torch_port
+    os.environ['MASTER_PORT'] = str(torch_port)
 
     print(
         "Discovered MPI settings of world_rank={}, local_rank={}, world_size={}, master_addr={}, master_port={}"
