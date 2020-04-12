@@ -470,10 +470,21 @@ def _mpi_check(args):
     args.local_rank = local_rank
     os.environ['MASTER_ADDR'] = master_addr
 
-    start_port_range = int(os.environ['PHILLY_CONTAINER_PORT_RANGE_START'])
-    end_port_range = int(os.environ['PHILLY_CONTAINER_PORT_RANGE_END'])
-    torch_port = start_port_range + (end_port_range - start_port_range) // 2
-    os.environ['MASTER_PORT'] = str(torch_port)
+    if "PHILLY_CONTAINER_PORT_RANGE_START" in os.environ:
+        print("Philly environment")
+        start_port_range = int(os.environ['PHILLY_CONTAINER_PORT_RANGE_START'])
+        end_port_range = int(os.environ['PHILLY_CONTAINER_PORT_RANGE_END'])
+        torch_port = start_port_range + (end_port_range - start_port_range) // 2
+        master_port = comm.bcast(torch_port, root=0)
+        os.environ['MASTER_PORT'] = str(master_port)
+    elif "AZ_BATCH_MASTER_NODE" in os.environ:
+        print("AML environment")
+        master_addr, master_port = os.environ["AZ_BATCH_MASTER_NODE"].split(":")
+        os.environ['MASTER_ADDR'] = master_addr
+        os.environ['MASTER_PORT'] = master_port
+    else:
+        print("Using torch.distributed default port of 29500")
+        os.environ['MASTER_PORT'] = "29500"
 
     print(
         "Discovered MPI settings of world_rank={}, local_rank={}, world_size={}, master_addr={}, master_port={}"
