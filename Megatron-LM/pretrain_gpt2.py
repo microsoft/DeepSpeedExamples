@@ -164,7 +164,7 @@ def setup_model_and_optimizer(args):
 
     model = get_model(args)
 
-    if mpu.get_data_parallel_rank() == 0:
+    if dist.get_rank() == 0:
         # save model configuration to a file
         hparams_path = os.path.join(args.save, 'hparams.json')
         print(' > saving hyperparameters file to: ' + hparams_path)
