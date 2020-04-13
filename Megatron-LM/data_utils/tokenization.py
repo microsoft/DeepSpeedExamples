@@ -38,7 +38,7 @@ def make_tokenizer(tokenizer_type, corpus, model_path=None, vocab_size=None, mod
     if tokenizer_class is BertWordPieceTokenizer:
         return BertWordPieceTokenizer(model_type, **kwargs)
     elif tokenizer_class is GPT2BPETokenizer:
-        return GPT2BPETokenizer(model_path, max_len, **kwargs)
+        return GPT2BPETokenizer(model_path, max_len, save_dir=save_dir, **kwargs)
     text_tokenizer =  tokenizer_class(corpus=corpus, vocab_size=vocab_size, model_path=model_path, model_type=model_type,
                                       pad_token=pad_token, character_coverage=character_coverage)
     return Tokenizer(text_tokenizer, command_tokens, type_tokens)

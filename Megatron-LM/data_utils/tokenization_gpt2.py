@@ -23,6 +23,7 @@ import os
 import shutil
 import regex as re
 from io import open
+import torch
 
 try:
     from functools import lru_cache
@@ -107,10 +108,6 @@ class GPT2Tokenizer(object):
                 special_tokens_file = None
             else:
                 logger.info("loading special tokens file {}".format(special_tokens_file))
-            if save_dir:
-                logger.info("copying vocab and merges files to  {}".format(save_dir))
-                shutil.copyfile(vocab_file, save_dir)
-                shutil.copyfile(merges_file, save_dir)
         # redirect to the cache, if necessary
         try:
             resolved_vocab_file = cached_path(vocab_file, cache_dir=cache_dir)
@@ -146,6 +143,13 @@ class GPT2Tokenizer(object):
             special_tokens = open(special_tokens_file, encoding='utf-8').read().split('\n')[:-1]
         else:
             special_tokens = kwargs.pop('special_tokens', [])
+
+        if save_dir and torch.distributed.get_rank() == 0:
+            logger.info("copying vocab and merges files to  {}".format(save_dir))
+            os.makedirs(save_dir, exist_ok=True)
+            shutil.copy(resolved_vocab_file, save_dir)
+            shutil.copy(resolved_merges_file, save_dir)
+
         tokenizer = cls(resolved_vocab_file, resolved_merges_file, special_tokens=special_tokens, *inputs, **kwargs)
         return tokenizer
 
