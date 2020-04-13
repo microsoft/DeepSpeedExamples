@@ -509,7 +509,7 @@ def set_environment_variables_for_nccl_backend(single_node=False):
         print('NCCL_SOCKET_IFNAME original value = {}'.format(os.environ['NCCL_SOCKET_IFNAME']))
 
     # TODO make this parameterizable
-    os.environ['NCCL_SOCKET_IFNAME'] = '^docker0,lo'
+    #os.environ['NCCL_SOCKET_IFNAME'] = '^docker0,lo'
 
     print('RANK = {}'.format(os.environ['RANK']))
     print('WORLD_SIZE = {}'.format(os.environ['WORLD_SIZE']))
