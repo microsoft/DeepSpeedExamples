@@ -162,7 +162,9 @@ class GPT2Tokenizer(object):
         self.cache = {}
 
         # Should haved added re.IGNORECASE so BPE merges can happen for capitalized versions of contractions
-        self.pat = re.compile(r"""<\|endoftext\|>|<\|endofcomment\|>|'s|'t|'re|'ve|'m|'ll|'d| ?\p{L}+| ?\p{N}+| ?[^\s\p{L}\p{N}]+|\s+(?!\S)|\s+""")
+        self.pat = re.compile(r"""'s|'t|'re|'ve|'m|'ll|'d| ?\p{L}+| ?\p{N}+| ?[^\s\p{L}\p{N}]+|\s+(?!\S)|\s+""")
+        self.eot_tokens = ("<|endoftext|>", "<|endofcomment|>")
+        self.eot_pat = re.compile("|".join([re.escape(x) for x in self.eot_tokens]))
 
         self.special_tokens = {}
         self.special_tokens_decoder = {}
@@ -185,7 +187,7 @@ class GPT2Tokenizer(object):
         logger.info("Special tokens {}".format(self.special_tokens))
 
     def bpe(self, token):
-        if token in ("<|endoftext|>", "<|endofcomment|>"):
+        if token in self.eot_tokens:
             return token
 
         if token in self.cache:
@@ -228,15 +230,26 @@ class GPT2Tokenizer(object):
         self.cache[token] = word
         return word
 
+    def separate_eot_tokens(self, text):
+        last_end_index = 0
+        for m in re.finditer(self.eot_pat, text):
+            if last_end_index < m.start():
+                yield text[last_end_index:m.start()]
+            yield text[m.start():m.end()]
+            last_end_index = m.end()
+        if last_end_index < len(text):
+            yield text[last_end_index:]
+
     def tokenize(self, text):
         """ Tokenize a string. """
         bpe_tokens = []
-        for token in re.findall(self.pat, text):
-            if sys.version_info[0] == 2:
-                token = ''.join(self.byte_encoder[ord(b)] for b in token)
-            else:
-                token = ''.join(self.byte_encoder[b] for b in token.encode('utf-8'))
-            bpe_tokens.extend(bpe_token for bpe_token in self.bpe(token).split(' '))
+        for segment in self.separate_eot_tokens(text):
+            for token in re.findall(self.pat, segment):
+                if sys.version_info[0] == 2:
+                    token = ''.join(self.byte_encoder[ord(b)] for b in token)
+                else:
+                    token = ''.join(self.byte_encoder[b] for b in token.encode('utf-8'))
+                bpe_tokens.extend(bpe_token for bpe_token in self.bpe(token).split(' '))
         return bpe_tokens
 
     def convert_tokens_to_ids(self, tokens):
