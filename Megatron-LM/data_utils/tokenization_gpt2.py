@@ -244,7 +244,11 @@ class GPT2Tokenizer(object):
         """ Tokenize a string. """
         bpe_tokens = []
         for segment in self.separate_eot_tokens(text):
-            for token in re.findall(self.pat, segment):
+            if segment in self.eot_tokens:
+                tokens = [segment]
+            else:
+                tokens = re.findall(self.pat, segment)
+            for token in tokens:
                 if sys.version_info[0] == 2:
                     token = ''.join(self.byte_encoder[ord(b)] for b in token)
                 else:
