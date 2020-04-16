@@ -395,8 +395,7 @@ def sample_sequence_batch(model, context_tokens, context_lengths, attention_mask
                     tokens2use = tokens[:, context_length - 1].view(batch_size, -1)
                     positions2use = position_ids[:, context_length - 1].view(batch_size, -1)
                 logits, layer_past = model(tokens2use, positions2use, attention_mask, layer_past=layer_past, get_present=True)
-                logits = logits[:, -1].view(batch_size,-1).contiguous()
-
+                logits = logits[:, -1].view(batch_size, tokenizer.num_tokens).contiguous()
             if args.greedy:
                 prev = torch.argmax(logits, dim=-1).view(-1)
             else:
