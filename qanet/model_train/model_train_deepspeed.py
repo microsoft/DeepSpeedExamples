@@ -167,6 +167,7 @@ class Model_Trainer(object):
                     speed = self.train_data_loader.batch_size * \
                         step_num / used_time
                     batch_loss = global_loss / step_num
+                    lr_this_step = self.scheduler.get_lr() if self.use_scheduler else self.model.get_lr()
                     print(("step: {}/{} \t "
                                   "epoch: {} \t "
                                   "lr: {} \t "
@@ -175,8 +176,7 @@ class Model_Trainer(object):
                                   "speed: {} examples/sec").format(
                         batch_idx, total_steps,
                         epoch,
-                        #self.optimizer.param_groups[0]['lr'],
-                        self.scheduler.get_lr(),
+                        lr_this_step,
                         batch_loss,
                         loss.item(),
                         speed))
