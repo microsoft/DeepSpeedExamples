@@ -1,6 +1,6 @@
 {
   "train_batch_size": 512,
-  "train_step_batch_size": 32,
+  "gradient_accumulation_steps": 1,
   "steps_per_print": 10,
   "optimizer": {
     "type": "Adam",

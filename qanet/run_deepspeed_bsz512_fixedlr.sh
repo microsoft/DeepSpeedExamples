@@ -7,7 +7,7 @@ if [ ! -d ${data_dir} ]; then
     echo "Processed data directory does not exist, please create it first!"
     exit 1
 fi
-ds_config=deepspeed_bsz512_1cycle.json
+ds_config=deepspeed_bsz512_fixedlr.json
 squad_dir=${data_dir}/SQuAD
 squad_args="--train_processed_data ${squad_dir}/train-v1.1-processed.pkl \
             --dev_processed_data ${squad_dir}/dev-v1.1-processed.pkl \
@@ -22,7 +22,6 @@ squad_args="--train_processed_data ${squad_dir}/train-v1.1-processed.pkl \
 
 deepspeed_options="--deepspeed --deepspeed_config ${ds_config}"
 args="--data_processed ${squad_args} --with_cuda --use_ema ${deepspeed_options}"
-export PYTHONWARNINGS="ignore"
 run_cmd="deepspeed.pt main_deepspeed.py $@ ${args}"
 echo ${run_cmd}
 eval ${run_cmd}
