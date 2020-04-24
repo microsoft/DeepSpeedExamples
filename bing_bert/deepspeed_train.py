@@ -32,6 +32,7 @@ from pytorch_pretrained_bert.file_utils import PYTORCH_PRETRAINED_BERT_CACHE
 from utils import get_argument_parser, is_time_to_exit
 
 import deepspeed
+from data_worker import AsyncWorker
 
 global_step = 0
 global_data_samples = 0
@@ -188,16 +189,28 @@ def train(args, index, model, optimizer, finetune=False):
 
     model.train()
 
+    if args.config['training']['async_worker']:
+        worker = AsyncWorker(dataloaders, dataset_picker)
+        worker.start()
+
     epoch_step = 0
     for step, dataset_type in enumerate(tqdm(dataset_picker, smoothing=1)):
         try:
-            batch = next(dataloaders[dataset_type])
+            if args.config['training']['async_worker']:
+                batch = worker.get()
+            else:
+                batch = next(dataloaders[dataset_type])
+
             batch = tuple(t.to(args.device) for t in batch)  # Move to GPU
 
             # Calculate forward pass
             loss = model.network(batch)
             unscaled_loss = loss.item()
             current_data_sample_count += (args.train_micro_batch_size_per_gpu * dist.get_world_size())
+
+            # Prefetch training data
+            if args.config['training']['async_worker']:
+                worker.prefetch()
 
             model.network.backward(loss)
 
@@ -227,6 +240,9 @@ def train(args, index, model, optimizer, finetune=False):
                            global_steps=current_global_step):
             print(f'Warning: Early epoch termination due to max steps limit, epoch step ={epoch_step}, global step = {current_global_step}, epoch = {index+1}')
             break
+
+    if args.config['training']['async_worker']:
+        worker.stop()
 
     # Run Validation Loss
     if not finetune and args.max_seq_length == 512:
@@ -281,7 +297,7 @@ def get_arguments():
     parser = deepspeed.add_config_arguments(parser)
 
     args = parser.parse_args()
-    
+
     # no cuda mode is not supported
     args.no_cuda = False
 
@@ -361,7 +377,7 @@ def prepare_model_optimizer(args):
     # Overwrite application configs with DeepSpeed config
     args.train_micro_batch_size_per_gpu = model.network.train_micro_batch_size_per_gpu()
     args.gradient_accumulation_steps = model.network.gradient_accumulation_steps()
-    
+
     # Set DeepSpeed info
     args.local_rank = model.network.local_rank
     args.device = model.network.device
