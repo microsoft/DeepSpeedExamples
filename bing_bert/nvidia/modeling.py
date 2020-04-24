@@ -210,7 +210,8 @@ class BertConfig(object):
                  attention_probs_dropout_prob=0.1,
                  max_position_embeddings=512,
                  type_vocab_size=2,
-                 initializer_range=0.02):
+                 initializer_range=0.02,
+                 cuda_ext_config=""):
         """Constructs BertConfig.
 
         Args:
@@ -253,6 +254,7 @@ class BertConfig(object):
             self.max_position_embeddings = max_position_embeddings
             self.type_vocab_size = type_vocab_size
             self.initializer_range = initializer_range
+            self.cuda_ext_config = cuda_ext_config
         else:
             raise ValueError("First argument must be either a vocabulary size (int)"
                              "or the path to a pretrained model config file (str)")
@@ -459,10 +461,17 @@ class BertLayer(nn.Module):
         return layer_output
 
 class BertEncoder(nn.Module):
-    def __init__(self, config):
+    def __init__(self, config, args):
         super(BertEncoder, self).__init__()
-        layer = BertLayer(config)
-        self.layer = nn.ModuleList([copy.deepcopy(layer) for _ in range(config.num_hidden_layers)])
+
+        if config.cuda_ext_config:
+            from deepspeed import DeepSpeedBertLayer, DeepSpeedBertConfig
+            ds_config = DeepSpeedBertConfig.from_json_file(config.cuda_ext_config)
+            local_rank = args.local_rank if hasattr(args, 'local_rank') else -1
+            self.layer = nn.ModuleList([copy.deepcopy(DeepSpeedBertLayer(i, ds_config, local_rank=local_rank)) for i in range(config.num_hidden_layers)])
+        else:
+            layer = BertLayer(config)
+            self.layer = nn.ModuleList([copy.deepcopy(layer) for _ in range(config.num_hidden_layers)])
 
     # def forward(self, hidden_states, attention_mask, output_all_encoded_layers=True):
     #     all_encoder_layers = []
@@ -558,8 +567,12 @@ class BertLMPredictionHead(nn.Module):
         self.decoder.weight = bert_model_embedding_weights
         self.bias = nn.Parameter(torch.zeros(bert_model_embedding_weights.size(0)))
 
-    def forward(self, hidden_states):
+    def forward(self, hidden_states, masked_token_indexes):
         hidden_states = self.transform(hidden_states)
+
+        if masked_token_indexes is not None:
+            hidden_states = torch.index_select(hidden_states.view(-1, hidden_states.shape[-1]), 0, masked_token_indexes)
+
         torch.cuda.nvtx.range_push("decoder input.size() = {}, weight.size() = {}".format(hidden_states.size(), self.decoder.weight.size()))
         hidden_states = self.decoder(hidden_states) + self.bias
         torch.cuda.nvtx.range_pop()
@@ -592,8 +605,8 @@ class BertPreTrainingHeads(nn.Module):
         self.predictions = BertLMPredictionHead(config, bert_model_embedding_weights)
         self.seq_relationship = nn.Linear(config.hidden_size, 2)
 
-    def forward(self, sequence_output, pooled_output):
-        prediction_scores = self.predictions(sequence_output)
+    def forward(self, sequence_output, pooled_output, masked_token_indexes=None):
+        prediction_scores = self.predictions(sequence_output, masked_token_indexes)
         seq_relationship_score = self.seq_relationship(pooled_output)
         return prediction_scores, seq_relationship_score
 
@@ -794,10 +807,10 @@ class BertModel(BertPreTrainedModel):
     all_encoder_layers, pooled_output = model(input_ids, token_type_ids, input_mask)
     ```
     """
-    def __init__(self, config):
+    def __init__(self, config, args):
         super(BertModel, self).__init__(config)
         self.embeddings = BertEmbeddings(config)
-        self.encoder = BertEncoder(config)
+        self.encoder = BertEncoder(config, args)
         self.pooler = BertPooler(config)
         self.apply(self.init_bert_weights)
 
@@ -885,7 +898,7 @@ class BertForPreTraining(BertPreTrainedModel):
     """
     def __init__(self, config, args):
         super(BertForPreTraining, self).__init__(config)
-        self.bert = BertModel(config)
+        self.bert = BertModel(config, args)
         self.cls = BertPreTrainingHeads(config, self.bert.embeddings.word_embeddings.weight)
         self.apply(self.init_bert_weights)
 
@@ -900,16 +913,21 @@ class BertForPreTraining(BertPreTrainedModel):
 
         sequence_output, pooled_output = self.bert(input_ids, token_type_ids, attention_mask,
                                                    output_all_encoded_layers=False, checkpoint_activations=checkpoint_activations)
-        prediction_scores, seq_relationship_score = self.cls(sequence_output, pooled_output)
 
         if masked_lm_labels is not None and next_sentence_label is not None:
+            # filter out all masked labels.
+            masked_token_indexes = torch.nonzero((masked_lm_labels+1).view(-1)).view(-1)
+            prediction_scores, seq_relationship_score = self.cls(sequence_output, pooled_output, masked_token_indexes)
+            target = torch.index_select(masked_lm_labels.view(-1), 0, masked_token_indexes)
+
             loss_fct = CrossEntropyLoss(ignore_index=-1)
-            masked_lm_loss = loss_fct(prediction_scores.view(-1, self.config.vocab_size), masked_lm_labels.view(-1))
+            masked_lm_loss = loss_fct(prediction_scores.view(-1, self.config.vocab_size), target)
             next_sentence_loss = loss_fct(seq_relationship_score.view(-1, 2), next_sentence_label.view(-1))
             #print("loss is {} {}".format(masked_lm_loss, next_sentence_loss))
             total_loss = masked_lm_loss + next_sentence_loss
             return total_loss
         else:
+            prediction_scores, seq_relationship_score = self.cls(sequence_output, pooled_output)
             return prediction_scores, seq_relationship_score
 
 
