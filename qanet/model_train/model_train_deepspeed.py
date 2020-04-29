@@ -9,6 +9,7 @@ from datetime import datetime
 from .metric import convert_tokens, evaluate_by_dict
 from data_process import pickle_load_large_file
 
+
 class Model_Trainer(object):
     def __init__(self, args, model, loss, train_data_loader, dev_data_loader, dev_eval_file, optimizer, scheduler,
                  epochs, with_cuda, save_dir, verbosity=2, save_freq=1, print_freq=10, resume=False, identifier='',
@@ -56,6 +57,10 @@ class Model_Trainer(object):
         self.best_em = 0
         self.best_f1 = 0
         self.global_rank = torch.distributed.get_rank()
+        self.gradient_accumulation_steps = self.model.gradient_accumulation_steps()
+        self.total_steps = len(
+            self.train_data_loader) // self.train_data_loader.batch_size // self.gradient_accumulation_steps
+
         if resume:
             self._resume_checkpoint(resume)
             self.model = self.model.to(self.model.local_rank)
@@ -94,12 +99,12 @@ class Model_Trainer(object):
                 self._save_checkpoint(
                     epoch, result["f1"], result["em"], is_best)
 
-
     def _train_epoch(self, epoch):
         self.model.train()
         self.model.to(self.device)
 
         # initialize
+        effective_batch_idx = 0
         global_loss = 0.0
         last_step = self.step - 1
         last_time = time.time()
@@ -126,8 +131,9 @@ class Model_Trainer(object):
             a_end = a_end.to(self.device)
             id = id.to(self.device)
             answerable = answerable.to(self.device)
+
             # calculate loss
-            self.model.zero_grad()
+#            self.model.zero_grad()
             p1, p2 = self.model(
                 wids_context,
                 cids_context,
@@ -139,7 +145,12 @@ class Model_Trainer(object):
             loss2 = self.loss(p2, a_end)
             loss = torch.mean(loss1 + loss2)
             self.model.backward(loss)
-            global_loss += loss.item()
+            global_loss += loss.item() / self.gradient_accumulation_steps
+
+            if (batch_idx + 1) % self.gradient_accumulation_steps:
+                self.model.step()
+                continue
+
             # gradient clip
             if self.use_grad_clip:
                 torch.nn.utils.clip_grad_norm_(
@@ -155,6 +166,7 @@ class Model_Trainer(object):
                 self.scheduler.step()
 
             # exponential moving avarage
+
             if self.use_ema and self.ema is not None:
                 self.ema(self.model, self.step)
 
@@ -163,18 +175,18 @@ class Model_Trainer(object):
                 if self.step % self.print_freq == self.print_freq - 1:
                     used_time = time.time() - last_time
                     step_num = self.step - last_step
-                    total_steps = len(self.train_data_loader) // self.train_data_loader.batch_size
                     speed = self.train_data_loader.batch_size * \
+                        self.gradient_accumulation_steps * \
                         step_num / used_time
                     batch_loss = global_loss / step_num
                     lr_this_step = self.scheduler.get_lr() if self.use_scheduler else self.model.get_lr()
                     print(("step: {}/{} \t "
-                                  "epoch: {} \t "
-                                  "lr: {} \t "
-                                  "global_loss: {} \t "
-                                  "loss: {} \t "
-                                  "speed: {} examples/sec").format(
-                        batch_idx, total_steps,
+                           "epoch: {} \t "
+                           "lr: {} \t "
+                           "global_loss: {} \t "
+                           "loss: {} \t "
+                           "speed: {} examples/sec").format(
+                        effective_batch_idx, self.total_steps,
                         epoch,
                         lr_this_step,
                         batch_loss,
@@ -184,6 +196,7 @@ class Model_Trainer(object):
                     last_step = self.step
                     last_time = time.time()
             self.step += 1
+            effective_batch_idx += 1
 
             if self.is_debug and batch_idx >= self.debug_batchnum:
                 break
@@ -191,7 +204,7 @@ class Model_Trainer(object):
         metrics = self._valid_eopch(self.dev_eval_dict, self.dev_data_loader)
         if self.global_rank == 0:
             print("epoch: %d \t dev_em: %f \t dev_f1: %f" % (
-                         epoch, metrics["exact_match"], metrics["f1"]))
+                epoch, metrics["exact_match"], metrics["f1"]))
 
         result = {}
         result["em"] = metrics["exact_match"]
