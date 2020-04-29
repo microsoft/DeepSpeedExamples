@@ -42,6 +42,7 @@ from pytorch_pretrained_bert.tokenization import whitespace_tokenize, BasicToken
 from pytorch_pretrained_bert.optimization import BertAdam
 from pytorch_pretrained_bert.file_utils import PYTORCH_PRETRAINED_BERT_CACHE
 
+from apex import amp
 from turing.nvidia_modeling import BertForQuestionAnswering, BertConfig
 
 logging.basicConfig(format = '%(asctime)s - %(levelname)s - %(name)s -   %(message)s',
@@ -858,7 +859,6 @@ def main():
         t_total = t_total // torch.distributed.get_world_size()
     if args.fp16:
         try:
-            from apex import amp
             from apex.optimizers import FusedAdam
         except ImportError:
             raise ImportError("Please install apex from https://www.github.com/nvidia/apex to use distributed and fp16 training.")
