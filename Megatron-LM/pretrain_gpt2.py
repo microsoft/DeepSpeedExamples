@@ -16,7 +16,7 @@
 """Pretrain GPT2"""
 
 # Flag to use Pytorch ddp which uses overlapping communication and computation.
-USE_TORCH_DDP = False
+USE_TORCH_DDP = True
 
 from datetime import datetime
 import os
