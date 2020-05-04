@@ -82,7 +82,7 @@ def get_model(args):
     # Wrap model for distributed training.
     if USE_TORCH_DDP:
         i = torch.cuda.current_device()
-        model = DDP(model, device_ids=[i], output_device=i,
+        model = DDP(model, device_ids=[i], output_device=i, bucket_cap_mb=args.bucket_cap_mb,
                     process_group=mpu.get_data_parallel_group())
     else:
         model = DDP(model)

@@ -170,6 +170,9 @@ def add_training_args(parser):
     group.add_argument('--local_rank', type=int, default=None,
                        help='local rank passed from distributed launcher')
 
+    group.add_argument('--bucket-cap-mb', type=int, default=25,
+                       help='Torch DDP bucket_cap_mb')
+
     return parser
 
 

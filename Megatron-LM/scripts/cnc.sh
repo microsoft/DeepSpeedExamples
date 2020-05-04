@@ -5,13 +5,34 @@ MASTER_ADDR=localhost
 MASTER_PORT=6000
 MP_SIZE=1
 
+
+if [ -z $1 ];
+then
+    echo "Please set model size."
+    exit 1
+fi
+
+MODEL_SIZE=$1
+
+if [ -z $2 ];
+then
+    BUCKET_CAP_MB=25
+else
+    BUCKET_CAP_MB=$2
+fi
+
+if [ -z $3 ];
+then
+    TRAIN_ITERS=1000
+else
+    TRAIN_ITERS=$3
+fi
+
 script_path=$(realpath $0)
 script_dir=$(dirname $script_path)
 
 config_json="$script_dir/ds_config.json"
 
-MODEL_SIZE="1.2B"
- 
 if [[ ${MODEL_SIZE} == "320M" ]]; then
     #320M
     NUM_LAYERS=24
@@ -41,7 +62,8 @@ elif [[ ${MODEL_SIZE} == "8.3B" ]]; then
     # 8.3B
     NUM_LAYERS=72
     HIDDEN_SIZE=3072
-    NUM_ATT_HEADS=24
+    NUM_ATT_HEADS=32
+    MP_SIZE=8
 elif [[ ${MODEL_SIZE} == "10B" ]]; then
     # 10B
     NUM_LAYERS=85
@@ -72,10 +94,10 @@ gpt_options=" \
        --num-layers ${NUM_LAYERS} \
        --hidden-size ${HIDDEN_SIZE} \
        --num-attention-heads ${NUM_ATT_HEADS} \
-       --batch-size 8 \
+       --batch-size 1 \
        --seq-length 1024 \
        --max-position-embeddings 1024 \
-       --train-iters 100000 \
+       --train-iters ${TRAIN_ITERS} \
        --resume-dataloader \
        --train-data webtext \
        --lazy-loader \
@@ -91,13 +113,21 @@ gpt_options=" \
        --checkpoint-activations \
        --fp16 \
        --log-interval 1 \
+       --bucket-cap-mb ${BUCKET_CAP_MB} \
 "
 
        #--deepspeed \
        #--deepspeed_config ${config_json} \
 
-run_cmd="deepspeed --num_nodes ${DLWS_NUM_WORKER} --num_gpus ${DLWS_NUM_GPU_PER_WORKER} pretrain_gpt2.py $@ ${gpt_options}"
+kill_pdsh.sh
+pkill -9 -f "nvidia-smi dmon"
+[ ! -d "./log" ] && mkdir -p ./log
+sleep 10
+
+mem_cmd="nvidia-smi dmon -s m -i 1 &> log/cnc_mem_${MODEL_SIZE}_${BUCKET_CAP_MB}MB.log &"
+run_cmd="deepspeed --num_nodes ${DLWS_NUM_WORKER} --num_gpus ${DLWS_NUM_GPU_PER_WORKER} pretrain_gpt2.py ${gpt_options} &> log/cnc_${MODEL_SIZE}_${BUCKET_CAP_MB}MB.log"
 echo ${run_cmd}
+eval ${mem_cmd}
 eval ${run_cmd}
 
 set +x
