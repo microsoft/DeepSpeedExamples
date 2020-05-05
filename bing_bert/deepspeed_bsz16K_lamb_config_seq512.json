@@ -25,7 +25,7 @@
   "transformer_cuda_ext": {
     "enabled": false,
     "hidden_size": 1024,
-    "max_seq_length": 128,
+    "max_seq_length": 512,
     "heads": 16,
     "attn_dropout_ratio": 0.1,
     "hidden_dropout_ratio": 0.1,
