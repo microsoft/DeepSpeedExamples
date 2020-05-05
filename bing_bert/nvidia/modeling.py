@@ -210,8 +210,7 @@ class BertConfig(object):
                  attention_probs_dropout_prob=0.1,
                  max_position_embeddings=512,
                  type_vocab_size=2,
-                 initializer_range=0.02,
-                 cuda_ext_config=""):
+                 initializer_range=0.02):
         """Constructs BertConfig.
 
         Args:
@@ -254,7 +253,6 @@ class BertConfig(object):
             self.max_position_embeddings = max_position_embeddings
             self.type_vocab_size = type_vocab_size
             self.initializer_range = initializer_range
-            self.cuda_ext_config = cuda_ext_config
         else:
             raise ValueError("First argument must be either a vocabulary size (int)"
                              "or the path to a pretrained model config file (str)")
@@ -464,11 +462,12 @@ class BertEncoder(nn.Module):
     def __init__(self, config, args):
         super(BertEncoder, self).__init__()
 
-        if config.cuda_ext_config:
-            from deepspeed import DeepSpeedBertLayer, DeepSpeedBertConfig
-            ds_config = DeepSpeedBertConfig.from_json_file(config.cuda_ext_config)
+        from deepspeed import DeepSpeedBertLayer, DeepSpeedBertConfig
+        cuda_config = DeepSpeedBertConfig.from_args(args)
+
+        if cuda_config.enabled:
             local_rank = args.local_rank if hasattr(args, 'local_rank') else -1
-            self.layer = nn.ModuleList([copy.deepcopy(DeepSpeedBertLayer(i, ds_config, local_rank=local_rank)) for i in range(config.num_hidden_layers)])
+            self.layer = nn.ModuleList([copy.deepcopy(DeepSpeedBertLayer(i, cuda_config, local_rank=local_rank)) for i in range(config.num_hidden_layers)])
         else:
             layer = BertLayer(config)
             self.layer = nn.ModuleList([copy.deepcopy(layer) for _ in range(config.num_hidden_layers)])
