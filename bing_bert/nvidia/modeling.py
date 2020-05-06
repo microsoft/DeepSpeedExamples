@@ -462,12 +462,28 @@ class BertEncoder(nn.Module):
     def __init__(self, config, args):
         super(BertEncoder, self).__init__()
 
-        from deepspeed import DeepSpeedBertLayer, DeepSpeedBertConfig
-        cuda_config = DeepSpeedBertConfig.from_args(args)
+        if args.deepspeed_transformer_kernel:
+            from deepspeed import DeepSpeedBertLayer, DeepSpeedBertConfig, DeepSpeedConfig
 
-        if cuda_config.enabled:
-            local_rank = args.local_rank if hasattr(args, 'local_rank') else -1
-            self.layer = nn.ModuleList([copy.deepcopy(DeepSpeedBertLayer(i, cuda_config, local_rank=local_rank)) for i in range(config.num_hidden_layers)])
+            if hasattr(args, 'deepspeed_config') and args.deepspeed_config:
+                ds_config = DeepSpeedConfig(args.deepspeed_config)
+            else:
+                raise RuntimeError('deepspeed_config is not found in args.')
+
+            cuda_config = DeepSpeedBertConfig(batch_size = ds_config.train_micro_batch_size_per_gpu,
+                                              max_seq_length = args.max_seq_length,
+                                              hidden_size = config.hidden_size,
+                                              heads = config.num_attention_heads,
+                                              attn_dropout_ratio = config.attention_probs_dropout_prob,
+                                              hidden_dropout_ratio = config.hidden_dropout_prob,
+                                              num_hidden_layers = config.num_hidden_layers,
+                                              initializer_range = config.initializer_range,
+                                              local_rank = args.local_rank if hasattr(args, 'local_rank') else -1,
+                                              seed = args.seed,
+                                              fp16 = ds_config.fp16_enabled,
+                                              pre_layer_norm=False)
+
+            self.layer = nn.ModuleList([copy.deepcopy(DeepSpeedBertLayer(i, cuda_config)) for i in range(config.num_hidden_layers)])
         else:
             layer = BertLayer(config)
             self.layer = nn.ModuleList([copy.deepcopy(layer) for _ in range(config.num_hidden_layers)])

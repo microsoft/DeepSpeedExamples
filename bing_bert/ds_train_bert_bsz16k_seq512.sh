@@ -3,7 +3,7 @@
 base_dir=`pwd`
 
 # Where should we save checkpoints and tensorboard events?
-JOB_NAME=lamb_16k_chkpt150_seq512 
+JOB_NAME=lamb_16k_chkpt150_seq512
 OUTPUT_DIR=${base_dir}/bert_model_outputs
 
 # Assumes job name in previous seq128 run, will resume training from epoch 150
@@ -20,6 +20,7 @@ deepspeed ${base_dir}/deepspeed_train.py \
 --print_steps 1 \
 --job_name $JOB_NAME \
 --deepspeed_config ${base_dir}/deepspeed_bsz16K_lamb_config_seq512.json \
+--deepspeed_transformer_kernel \
 --rewarmup \
 --load_training_checkpoint ${CHECKPOINT_BASE_PATH} \
 --load_checkpoint_id ${CHECKPOINT_EPOCH150_NAME}

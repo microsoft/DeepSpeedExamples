@@ -20,18 +20,5 @@
   "fp16": {
     "enabled": true,
     "loss_scale": 0
-  },
-
-  "transformer_cuda_ext": {
-    "enabled": false,
-    "hidden_size": 1024,
-    "max_seq_length": 128,
-    "heads": 16,
-    "attn_dropout_ratio": 0.1,
-    "hidden_dropout_ratio": 0.1,
-    "num_hidden_layers": 24,
-    "initializer_range": 0.02,
-    "pre_layer_norm ": true,
-    "seed": 42
   }
 }
