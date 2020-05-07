@@ -17,4 +17,3 @@ deepspeed ${base_dir}/deepspeed_train.py \
 --job_name $JOB_NAME \
 --deepspeed_config ${base_dir}/deepspeed_bsz16K_lamb_config.json \
 --deepspeed_transformer_kernel \
-

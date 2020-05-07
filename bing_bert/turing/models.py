@@ -18,7 +18,7 @@ from pytorch_pretrained_bert.modeling import BertModel #, BertConfig
 from pytorch_pretrained_bert.modeling import BertPreTrainingHeads, PreTrainedBertModel, BertPreTrainingHeads
 from pytorch_pretrained_bert.file_utils import PYTORCH_PRETRAINED_BERT_CACHE
 
-from nvidia.modeling import BertForPreTraining, BertConfig
+from nvidia.modelingpreln import BertForPreTrainingPreLN, BertConfig
 
 class BertPretrainingLoss(PreTrainedBertModel):
     def __init__(self, bert_encoder, config):
@@ -103,7 +103,7 @@ class BertMultiTask:
                 bert_config.vocab_size += 8 - (bert_config.vocab_size % 8)
             print("VOCAB SIZE:", bert_config.vocab_size)
 
-            self.network = BertForPreTraining(bert_config, args)
+            self.network = BertForPreTrainingPreLN(bert_config, args)
         # Use pretrained bert weights
         else:
             self.bert_encoder = BertModel.from_pretrained(self.config['bert_model_file'], cache_dir=PYTORCH_PRETRAINED_BERT_CACHE / 'distributed_{}'.format(args.local_rank))
