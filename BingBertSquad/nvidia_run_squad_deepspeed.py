@@ -798,8 +798,7 @@ def main():
         "attention_probs_dropout_prob": 0.1,
         "max_position_embeddings": 512,
         "type_vocab_size": 2,
-        "initializer_range": 0.02,
-        "cuda_ext_config": ""
+        "initializer_range": 0.02
     }
 
     bert_config = BertConfig(**bert_model_config)
@@ -807,7 +806,7 @@ def main():
     # Padding for divisibility by 8
     if bert_config.vocab_size % 8 != 0:
         bert_config.vocab_size += 8 - (bert_config.vocab_size % 8)
-    model = BertForQuestionAnswering(bert_config)
+    model = BertForQuestionAnswering(bert_config, args)
     print("VOCAB SIZE:", bert_config.vocab_size)
     if args.model_file is not "0":
         logger.info(f"Loading Pretrained Bert Encoder from: {args.model_file}")

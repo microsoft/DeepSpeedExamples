@@ -210,8 +210,7 @@ class BertConfig(object):
                  attention_probs_dropout_prob=0.1,
                  max_position_embeddings=512,
                  type_vocab_size=2,
-                 initializer_range=0.02,
-                 cuda_ext_config=""):
+                 initializer_range=0.02):
         """Constructs BertConfig.
 
         Args:
@@ -254,7 +253,6 @@ class BertConfig(object):
             self.max_position_embeddings = max_position_embeddings
             self.type_vocab_size = type_vocab_size
             self.initializer_range = initializer_range
-            self.cuda_ext_config = cuda_ext_config
         else:
             raise ValueError("First argument must be either a vocabulary size (int)"
                              "or the path to a pretrained model config file (str)")
@@ -461,13 +459,30 @@ class BertLayer(nn.Module):
         return layer_output
 
 class BertEncoder(nn.Module):
-    def __init__(self, config):
+    def __init__(self, config, args):
         super(BertEncoder, self).__init__()
 
-        if config.cuda_ext_config:
-            from deepspeed import DeepSpeedBertLayer, DeepSpeedBertConfig
-            ds_config = DeepSpeedBertConfig.from_json_file(config.cuda_ext_config)
-            self.layer = nn.ModuleList([copy.deepcopy(DeepSpeedBertLayer(i, ds_config)) for i in range(config.num_hidden_layers)])
+        if args.deepspeed_transformer_kernel:
+            from deepspeed import DeepSpeedBertLayer, DeepSpeedBertConfig, DeepSpeedConfig
+
+            if hasattr(args, 'deepspeed_config') and args.deepspeed_config:
+                ds_config = DeepSpeedConfig(args.deepspeed_config)
+            else:
+                raise RuntimeError('deepspeed_config is not found in args.')
+
+            cuda_config = DeepSpeedBertConfig(batch_size = ds_config.train_micro_batch_size_per_gpu,
+                                              max_seq_length = args.max_seq_length,
+                                              hidden_size = config.hidden_size,
+                                              heads = config.num_attention_heads,
+                                              attn_dropout_ratio = config.attention_probs_dropout_prob,
+                                              hidden_dropout_ratio = config.hidden_dropout_prob,
+                                              num_hidden_layers = config.num_hidden_layers,
+                                              initializer_range = config.initializer_range,
+                                              seed = args.seed,
+                                              fp16 = ds_config.fp16_enabled,
+                                              pre_layer_norm=False)
+
+            self.layer = nn.ModuleList([copy.deepcopy(DeepSpeedBertLayer(i, cuda_config)) for i in range(config.num_hidden_layers)])
         else:
             layer = BertLayer(config)
             self.layer = nn.ModuleList([copy.deepcopy(layer) for _ in range(config.num_hidden_layers)])
@@ -802,10 +817,10 @@ class BertModel(BertPreTrainedModel):
     all_encoder_layers, pooled_output = model(input_ids, token_type_ids, input_mask)
     ```
     """
-    def __init__(self, config):
+    def __init__(self, config, args):
         super(BertModel, self).__init__(config)
         self.embeddings = BertEmbeddings(config)
-        self.encoder = BertEncoder(config)
+        self.encoder = BertEncoder(config, args)
         self.pooler = BertPooler(config)
         self.apply(self.init_bert_weights)
 
@@ -1314,9 +1329,9 @@ class BertForQuestionAnswering(BertPreTrainedModel):
     start_logits, end_logits = model(input_ids, token_type_ids, input_mask)
     ```
     """
-    def __init__(self, config):
+    def __init__(self, config, args):
         super(BertForQuestionAnswering, self).__init__(config)
-        self.bert = BertModel(config)
+        self.bert = BertModel(config, args)
         # TODO check with Google if it's normal there is no dropout on the token classifier of SQuAD in the TF version
         # self.dropout = nn.Dropout(config.hidden_dropout_prob)
         self.qa_outputs = nn.Linear(config.hidden_size, 2)
