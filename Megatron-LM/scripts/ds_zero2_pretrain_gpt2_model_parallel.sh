@@ -1,8 +1,6 @@
 #! /bin/bash
 
 # Change for multinode config
-MASTER_ADDR=localhost
-MASTER_PORT=6000
 MP_SIZE=4
 
 NUM_WORKERS=1
