@@ -363,10 +363,7 @@ def prepare_optimizer_parameters(args, model):
     return optimizer_grouped_parameters
 
 def prepare_model_optimizer(args):
-    start_time = time.time()
     torch.distributed.init_process_group(backend='nccl')
-    end_time = time.time()
-    args.logger.info("Init_process_group takes %f sec" % (end_time - start_time))
 
     # Loading Model
     model = BertMultiTask(args)
