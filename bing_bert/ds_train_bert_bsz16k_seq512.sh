@@ -20,7 +20,6 @@ deepspeed ${base_dir}/deepspeed_train.py \
 --print_steps 1 \
 --job_name $JOB_NAME \
 --deepspeed_config ${base_dir}/deepspeed_bsz16K_lamb_config_seq512.json \
---deepspeed_transformer_kernel \
 --rewarmup \
 --load_training_checkpoint ${CHECKPOINT_BASE_PATH} \
 --load_checkpoint_id ${CHECKPOINT_EPOCH150_NAME}
