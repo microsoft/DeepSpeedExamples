@@ -37,12 +37,13 @@
     },
     "training": {
         "num_epochs": 150,
-        "warmup_proportion": 0.02,
-        "learning_rate": 4e-3,
+        "warmup_proportion": 0.06,
+        "learning_rate": 11e-3,
         "num_workers": 0,
+        "async_worker": true,
         "decay_rate": 0.90,
-        "decay_step": 1000,
-        "total_training_steps": 187000
+        "decay_step": 250,
+        "total_training_steps": 7500
     },
     "validation": {
         "path": "validation_set/"

@@ -3,7 +3,7 @@
 base_dir=`pwd`
 
 # Where should we save checkpoints and tensorboard events?
-JOB_NAME=lamb_16k_chkpt150_seq512 
+JOB_NAME=lamb_16k_chkpt150_seq512
 OUTPUT_DIR=${base_dir}/bert_model_outputs
 
 # Assumes job name in previous seq128 run, will resume training from epoch 150

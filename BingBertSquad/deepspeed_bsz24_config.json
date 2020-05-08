@@ -5,7 +5,7 @@
   "optimizer": {
     "type": "Adam",
     "params": {
-      "lr": 3e-5,
+      "lr": 1e-5,
       "weight_decay": 0.0,
       "bias_correction": false
     }

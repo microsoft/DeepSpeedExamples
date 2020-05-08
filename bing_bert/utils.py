@@ -22,7 +22,7 @@ def get_argument_parser():
                         type=int,
                         default=42,
                         help="random seed for initialization")
-    
+
     parser.add_argument("--do_lower_case",
                         default=True,
                         action='store_true',
@@ -31,7 +31,7 @@ def get_argument_parser():
                         type=int,
                         default=-1,
                         help="local_rank for distributed training on gpus")
-    
+
     parser.add_argument('--use_pretrain',
                         default=False,
                         action='store_true',
@@ -84,6 +84,11 @@ def get_argument_parser():
                         type=str,
                         default="",
                         help="Path to prefix data loading, helpful for AML and other environments")
+
+    parser.add_argument('--deepspeed_transformer_kernel',
+                        default=False,
+                        action='store_true',
+                        help='Use DeepSpeed transformer kernel to accelerate.')
 
     return parser
 

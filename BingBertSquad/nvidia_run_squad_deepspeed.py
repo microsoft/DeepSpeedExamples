@@ -806,7 +806,7 @@ def main():
     # Padding for divisibility by 8
     if bert_config.vocab_size % 8 != 0:
         bert_config.vocab_size += 8 - (bert_config.vocab_size % 8)
-    model = BertForQuestionAnswering(bert_config)
+    model = BertForQuestionAnswering(bert_config, args)
     print("VOCAB SIZE:", bert_config.vocab_size)
     if args.model_file is not "0":
         logger.info(f"Loading Pretrained Bert Encoder from: {args.model_file}")
