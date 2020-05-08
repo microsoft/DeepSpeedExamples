@@ -5,6 +5,9 @@ MASTER_ADDR=localhost
 MASTER_PORT=6000
 MP_SIZE=4
 
+NUM_WORKERS=1
+NUM_GPUS_PER_WORKER=16
+
 script_path=$(realpath $0)
 script_dir=$(dirname $script_path)
 
@@ -39,7 +42,7 @@ gpt_options="${gpt_options}
 "
 
 
-run_cmd="deepspeed.pt --num_nodes ${DLWS_NUM_WORKER} --num_gpus ${DLWS_NUM_GPU_PER_WORKER} pretrain_gpt2.py $@ ${gpt_options}"
+run_cmd="deepspeed.pt --num_nodes ${NUM_WORKERS} --num_gpus ${NUM_GPUS_PER_WORKER} pretrain_gpt2.py $@ ${gpt_options}"
 echo ${run_cmd}
 eval ${run_cmd}
 
