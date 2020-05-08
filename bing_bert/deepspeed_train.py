@@ -1,42 +1,35 @@
+import os
 import sys
+import time
 import logging
-import pdb
 import numpy as np
 import random
-import os
 import json
 import torch
-import torch.nn as nn
 import torch.distributed as dist
 from torch.utils.data import DataLoader, Dataset
 from torch.utils.data.sampler import RandomSampler, SequentialSampler
 from torch.utils.data.distributed import DistributedSampler
-import argparse
-from tqdm import tqdm, trange
-from sklearn.metrics import precision_recall_curve, roc_curve, auc
-import time
+from tqdm import tqdm
 
-from timer import ThroughputTimer as tt
 from turing.logger import Logger
 from turing.utils import get_sample_writer
 from turing.models import BertMultiTask
-from turing.sources import PretrainingDataCreator, TokenInstance, WikiNBookCorpusPretrainingDataCreator, CleanBodyDataCreator
-from turing.sources import WikiPretrainingDataCreator
 from turing.dataset import QADataset, RankingDataset, PreTrainingDataset, QAFinetuningDataset
 from turing.dataset import QABatch, RankingBatch, PretrainBatch, PretrainDataType
 from pytorch_pretrained_bert.tokenization import BertTokenizer
-from pytorch_pretrained_bert.modeling import BertModel
 from pytorch_pretrained_bert.optimization import BertAdam, warmup_linear, warmup_linear_decay_exp
-from pytorch_pretrained_bert.file_utils import PYTORCH_PRETRAINED_BERT_CACHE
 
 from utils import get_argument_parser, is_time_to_exit
 
 import deepspeed
 from data_worker import AsyncWorker
 
+
 global_step = 0
 global_data_samples = 0
 last_global_step_from_restore = 0
+
 
 def checkpoint_model(PATH, ckpt_id, model, epoch, last_global_step, last_global_data_samples, **kwargs):
     """Utility function for checkpointing model + optimizer dictionaries
@@ -68,6 +61,7 @@ def load_training_checkpoint(args, model, PATH, ckpt_id):
     last_global_data_samples = checkpoint_state_dict['last_global_data_samples']
     del checkpoint_state_dict
     return (epoch, last_global_step, last_global_data_samples)
+
 
 def get_effective_batch(args, total):
     if args.local_rank != -1:
@@ -108,8 +102,10 @@ def pretrain_validation(args, index, model):
         args.summary_writer.add_scalar(f'Validation/Loss', eval_loss, index+1)
     return
 
+
 def master_process(args):
     return (not args.no_cuda and dist.get_rank() == 0) or (args.no_cuda and args.local_rank == -1)
+
 
 def get_train_dataset(args, index, finetune=False, shuffle=True):
     assert not finetune, "finetune not supported"
@@ -174,6 +170,7 @@ def get_train_dataset(args, index, finetune=False, shuffle=True):
                               args.gradient_accumulation_steps * args.refresh_bucket_size)
 
     return dataset_picker, dataloaders, sum(datalengths)
+
 
 def train(args, index, model, optimizer, finetune=False):
     global global_step
@@ -264,6 +261,7 @@ def update_learning_rate(config, current_global_step, optimizer):
 
     return lr_this_step
 
+
 def report_step_metrics(args, lr, loss, step, data_sample_count):
     ##### Record the LR against global_step on tensorboard #####
     if (not args.no_cuda and dist.get_rank() == 0) or (args.no_cuda and args.local_rank == -1):
@@ -281,6 +279,7 @@ def report_step_metrics(args, lr, loss, step, data_sample_count):
         print('bing_bert_progress: step={}, loss={}, lr={}, sample_count={}'
         .format(step + 1, loss, lr, data_sample_count))
 
+
 def report_lamb_coefficients(args, optimizer):
     if master_process(args):
         if (args.fp16 and args.use_lamb):
@@ -290,6 +289,7 @@ def report_lamb_coefficients(args, optimizer):
             if lamb_coeffs.size > 0:
                 args.summary_writer.add_histogram(
                         f'Train/lamb_coeffs', lamb_coeffs, global_step)
+
 
 def get_arguments():
     parser = get_argument_parser()
@@ -302,6 +302,7 @@ def get_arguments():
     args.no_cuda = False
 
     return args
+
 
 def construct_arguments():
     args = get_arguments()
@@ -342,6 +343,7 @@ def construct_arguments():
 
     return args
 
+
 def prepare_optimizer_parameters(args, model):
     config = args.config
 
@@ -362,9 +364,8 @@ def prepare_optimizer_parameters(args, model):
 
     return optimizer_grouped_parameters
 
-def prepare_model_optimizer(args):
-    torch.distributed.init_process_group(backend='nccl')
 
+def prepare_model_optimizer(args):
     # Loading Model
     model = BertMultiTask(args)
 
@@ -394,6 +395,7 @@ def prepare_model_optimizer(args):
         os.makedirs(args.saved_model_path, exist_ok=True)
 
     return model, optimizer
+
 
 def load_checkpoint(args, model):
     global global_step
@@ -433,6 +435,7 @@ def load_checkpoint(args, model):
         pretrain_validation(args, index, model)
 
     return start_epoch
+
 
 def run(args, model, optimizer, start_epoch):
     global global_step
@@ -475,6 +478,7 @@ def main():
     elapsed = time.time() - start
     logger = args.logger
     logger.info(f"Elapsed time: {elapsed} seconds")
+
 
 if __name__ == "__main__":
     main()
