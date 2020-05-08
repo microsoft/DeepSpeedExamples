@@ -1,24 +1,15 @@
-import argparse
-import logging
-import random
-import numpy as np
-import os
 import torch
-import json
 import torch.nn as nn
-import torch.nn.functional as F
-import torch.distributed as dist
 from torch.nn import CrossEntropyLoss, MSELoss
 
-from turing.dataset import BatchType
 from turing.utils import TorchTuple
 
-from pytorch_pretrained_bert.tokenization import BertTokenizer
-from pytorch_pretrained_bert.modeling import BertModel #, BertConfig
+from pytorch_pretrained_bert.modeling import BertModel
 from pytorch_pretrained_bert.modeling import BertPreTrainingHeads, PreTrainedBertModel, BertPreTrainingHeads
 from pytorch_pretrained_bert.file_utils import PYTORCH_PRETRAINED_BERT_CACHE
 
 from nvidia.modelingpreln import BertForPreTrainingPreLN, BertConfig
+
 
 class BertPretrainingLoss(PreTrainedBertModel):
     def __init__(self, bert_encoder, config):
@@ -88,6 +79,7 @@ class BertRegressionLoss(PreTrainedBertModel):
             return loss
         else:
             return logits
+
 
 class BertMultiTask:
     def __init__(self, args):
