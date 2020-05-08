@@ -16,3 +16,4 @@ deepspeed ${base_dir}/deepspeed_train.py \
 --print_steps 100 \
 --job_name $JOB_NAME \
 --deepspeed_config ${base_dir}/deepspeed_bsz16K_lamb_config.json \
+--data_path_prefix /data/bert \
