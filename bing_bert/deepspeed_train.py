@@ -294,6 +294,7 @@ def construct_arguments():
     logger = Logger(cuda=torch.cuda.is_available() and not args.no_cuda)
     args.logger = logger
     config = json.load(open(args.config_file, 'r', encoding='utf-8'))
+    config["bert_model_config"]["max_position_embeddings"] = args.max_seq_length
     args.config = config
 
     args.job_name = config['name'] if args.job_name is None else args.job_name
