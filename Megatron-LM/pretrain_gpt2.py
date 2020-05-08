@@ -485,6 +485,14 @@ def evaluate(data_iterator, model, args, timers, verbose=False):
                 print_rank_0('Evaluating iter {}/{}'.format(iteration, args.eval_iters))
             # Forward evaluation.
             lm_loss = forward_step(data_iterator, model, args, timers)
+
+            '''when contiguous memory optimizations are enabled, the buffers
+            allocated by the optiizations are deallocated during backward pass
+            in the absence of backward pass the buffers should be reset after each
+            forward pass'''
+            if args.deepspeed and args.deepspeed_activation_checkpointing:
+                deepspeed.checkpointing.reset()
+
             # Reduce across processes.
             if isinstance(model, DDP):
                 torch.distributed.all_reduce(lm_loss.data)
@@ -559,7 +567,7 @@ def initialize_distributed(args):
 
     # Optional DeepSpeed Activation Checkpointing Features
     # 
-    if args.deepspeed:
+    if args.deepspeed and args.deepspeed_activation_checkpointing:
         set_deepspeed_activation_checkpointing(args)
 
 
