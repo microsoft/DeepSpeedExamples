@@ -487,7 +487,7 @@ def evaluate(data_iterator, model, args, timers, verbose=False):
             lm_loss = forward_step(data_iterator, model, args, timers)
 
             '''when contiguous memory optimizations are enabled, the buffers
-            allocated by the optiizations are deallocated during backward pass
+            allocated by the optimizations are deallocated during backward pass
             in the absence of backward pass the buffers should be reset after each
             forward pass'''
             if args.deepspeed and args.deepspeed_activation_checkpointing:
@@ -538,11 +538,11 @@ def evaluate_and_print_results(prefix, data_iterator, model,
     This must be done before all the calls to mpu.model_parallel_cuda_manual_seed
     '''
 def set_deepspeed_activation_checkpointing(args):
-    deepspeed.checkpointing.configure(mpu, enabled=True)
+
+    deepspeed.checkpointing.configure(mpu, deepspeed_config=args.deepspeed_config, num_checkpoints=args.num_layers)
     mpu.checkpoint = deepspeed.checkpointing.checkpoint
     mpu.get_cuda_rng_tracker = deepspeed.checkpointing.get_cuda_rng_tracker
     mpu.model_parallel_cuda_manual_seed = deepspeed.checkpointing.model_parallel_cuda_manual_seed
-
 
 def initialize_distributed(args):
     """Initialize torch.distributed."""
