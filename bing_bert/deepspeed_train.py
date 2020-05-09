@@ -311,6 +311,15 @@ def construct_arguments():
     logger = Logger(cuda=torch.cuda.is_available() and not args.no_cuda)
     args.logger = logger
     config = json.load(open(args.config_file, 'r', encoding='utf-8'))
+   
+    # choose dataset and training config based on the given sequence length
+    seq_len = str(args.max_seq_length)
+    datasets = config["data"]["mixed_seq_datasets"][seq_len]
+    del config["data"]["mixed_seq_datasets"]
+    training = config["mixed_seq_training"][seq_len]
+    del config["mixed_seq_training"]
+    config["data"]["datasets"] = datasets
+    config["training"] = training
     args.config = config
 
     args.job_name = config['name'] if args.job_name is None else args.job_name

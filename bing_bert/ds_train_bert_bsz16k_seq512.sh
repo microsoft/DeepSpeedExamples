@@ -14,7 +14,7 @@ echo "checkpoint id: $CHECKPOINT_EPOCH150_NAME"
 mkdir -p $OUTPUT_DIR
 
 deepspeed ${base_dir}/deepspeed_train.py \
---cf ${base_dir}/bert_large_lamb_seq512.json \
+--cf ${base_dir}/bert_large_lamb.json \
 --max_seq_length 512 \
 --output_dir $OUTPUT_DIR \
 --print_steps 1 \

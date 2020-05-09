@@ -9,7 +9,7 @@ OUTPUT_DIR=${base_dir}/bert_model_outputs
 mkdir -p $OUTPUT_DIR
 
 deepspeed ${base_dir}/deepspeed_train.py \
---cf ${base_dir}/bert_large_lamb_seq128.json \
+--cf ${base_dir}/bert_large_lamb.json \
 --max_seq_length 128 \
 --output_dir $OUTPUT_DIR \
 --deepspeed \
