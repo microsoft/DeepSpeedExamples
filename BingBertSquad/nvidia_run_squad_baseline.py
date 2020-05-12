@@ -716,7 +716,7 @@ def set_optimizer_params_grad(named_params_optimizer, named_params_model, test_n
 from apex.multi_tensor_apply import multi_tensor_applier
 class GradientClipper:
     """
-    Clips gradient norm of an iterable of parameters. 
+    Clips gradient norm of an iterable of parameters.
     """
     def __init__(self, max_grad_norm):
         self.max_norm = max_grad_norm
@@ -827,7 +827,7 @@ def main():
     # Padding for divisibility by 8
     if bert_config.vocab_size % 8 != 0:
         bert_config.vocab_size += 8 - (bert_config.vocab_size % 8)
-    model = BertForQuestionAnswering(bert_config)
+    model = BertForQuestionAnswering(bert_config, args)
     print("VOCAB SIZE:", bert_config.vocab_size)
     if args.model_file is not "0":
         logger.info(f"Loading Pretrained Bert Encoder from: {args.model_file}")
@@ -958,7 +958,7 @@ def main():
                 else:
                     loss.backward()
 
-                # gradient clipping  
+                # gradient clipping
                 gradClipper.step(amp.master_params(optimizer))
 
                 sample_count += (args.train_batch_size * torch.distributed.get_world_size())
