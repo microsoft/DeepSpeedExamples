@@ -32,6 +32,7 @@ gpt_options=" \
        --clip-grad 1.0 \
        --warmup .01 \
        --checkpoint-activations \
+       --deepspeed-activation-checkpointing \
        --fp16 \
 "
 gpt_options="${gpt_options}

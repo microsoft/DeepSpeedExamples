@@ -17,6 +17,7 @@ from turing.utils import get_sample_writer
 from turing.models import BertMultiTask
 from turing.dataset import QADataset, RankingDataset, PreTrainingDataset, QAFinetuningDataset
 from turing.dataset import QABatch, RankingBatch, PretrainBatch, PretrainDataType
+from turing.sources import WikiPretrainingDataCreator, PretrainingDataCreator, TokenInstance
 from pytorch_pretrained_bert.tokenization import BertTokenizer
 from pytorch_pretrained_bert.optimization import BertAdam, warmup_linear, warmup_linear_decay_exp
 from turing.sources import WikiPretrainingDataCreator, PretrainingDataCreator, TokenInstance
@@ -326,6 +327,15 @@ def construct_arguments():
     logger = Logger(cuda=torch.cuda.is_available() and not args.no_cuda)
     args.logger = logger
     config = json.load(open(args.config_file, 'r', encoding='utf-8'))
+
+    # choose dataset and training config based on the given sequence length
+    seq_len = str(args.max_seq_length)
+    datasets = config["data"]["mixed_seq_datasets"][seq_len]
+    del config["data"]["mixed_seq_datasets"]
+    training = config["mixed_seq_training"][seq_len]
+    del config["mixed_seq_training"]
+    config["data"]["datasets"] = datasets
+    config["training"] = training
     args.config = config
 
     args.job_name = config['name'] if args.job_name is None else args.job_name

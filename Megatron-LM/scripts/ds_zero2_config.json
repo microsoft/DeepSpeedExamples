@@ -20,7 +20,7 @@
     "min_loss_scale": 1
   },
   "activation_checkpointing": {
-    "partition_activations":false,
+    "partition_activations":true,
     "contiguous_memory_optimization":false
   },
   "wall_clock_breakdown": false

@@ -14,12 +14,13 @@ echo "checkpoint id: $CHECKPOINT_EPOCH150_NAME"
 mkdir -p $OUTPUT_DIR
 
 NCCL_TREE_THRESHOLD=0 deepspeed ${base_dir}/deepspeed_train.py \
---cf ${base_dir}/bert_large_lamb_seq512.json \
+--cf ${base_dir}/bert_large_lamb.json \
 --max_seq_length 512 \
 --output_dir $OUTPUT_DIR \
 --print_steps 1 \
 --job_name $JOB_NAME \
 --deepspeed_config ${base_dir}/deepspeed_bsz16K_lamb_config_seq512.json \
+--data_path_prefix /data/bert \
 --rewarmup \
 --load_training_checkpoint ${CHECKPOINT_BASE_PATH} \
 --load_checkpoint_id ${CHECKPOINT_EPOCH150_NAME} \
