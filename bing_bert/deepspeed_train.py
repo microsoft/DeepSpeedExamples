@@ -19,7 +19,7 @@ from turing.dataset import QADataset, RankingDataset, PreTrainingDataset, QAFine
 from turing.dataset import QABatch, RankingBatch, PretrainBatch, PretrainDataType
 from turing.sources import WikiPretrainingDataCreator, PretrainingDataCreator, TokenInstance
 from pytorch_pretrained_bert.tokenization import BertTokenizer
-from pytorch_pretrained_bert.optimization import BertAdam, warmup_linear, warmup_linear_decay_exp
+from pytorch_pretrained_bert.optimization import BertAdam, warmup_linear, warmup_linear_decay_exp, warmup_exp_decay_exp, warmup_exp_decay_poly
 from turing.sources import WikiPretrainingDataCreator, PretrainingDataCreator, TokenInstance
 from utils import get_argument_parser, is_time_to_exit
 
