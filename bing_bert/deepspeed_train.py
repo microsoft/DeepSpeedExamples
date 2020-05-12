@@ -248,7 +248,7 @@ def train(args, index, model, optimizer, finetune=False):
         pretrain_validation(args, index, model)
 
 
-def update_learning_rate(config, current_global_step, optimizer):
+def update_learning_rate(args, config, current_global_step, optimizer):
     global last_global_step_from_restore
 
     global_step_for_lr = current_global_step - last_global_step_from_restore
