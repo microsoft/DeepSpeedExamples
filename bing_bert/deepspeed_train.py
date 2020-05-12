@@ -19,7 +19,7 @@ from turing.dataset import QADataset, RankingDataset, PreTrainingDataset, QAFine
 from turing.dataset import QABatch, RankingBatch, PretrainBatch, PretrainDataType
 from turing.sources import WikiPretrainingDataCreator, PretrainingDataCreator, TokenInstance
 from pytorch_pretrained_bert.tokenization import BertTokenizer
-from pytorch_pretrained_bert.optimization import BertAdam, warmup_linear, warmup_linear_decay_exp
+from pytorch_pretrained_bert.optimization import BertAdam, warmup_linear, warmup_linear_decay_exp, warmup_exp_decay_exp, warmup_exp_decay_poly
 from turing.sources import WikiPretrainingDataCreator, PretrainingDataCreator, TokenInstance
 from utils import get_argument_parser, is_time_to_exit
 
@@ -248,7 +248,7 @@ def train(args, index, model, optimizer, finetune=False):
         pretrain_validation(args, index, model)
 
 
-def update_learning_rate(config, current_global_step, optimizer):
+def update_learning_rate(args, config, current_global_step, optimizer):
     global last_global_step_from_restore
 
     global_step_for_lr = current_global_step - last_global_step_from_restore
@@ -474,15 +474,15 @@ def run(args, model, optimizer, start_epoch):
         logger.info(f"Training Epoch: {index + 1}")
         pre = time.time()
         train(args, index, model, optimizer)
-        if index is 159 :
-            logger.info(
-                f"Saving a checkpointing of the model for epoch: {index+1}")
-            checkpoint_model(PATH=args.saved_model_path,
-                            ckpt_id='epoch{}_step{}'.format(index + 1, global_step),
-                            model=model,
-                            epoch=index+1,
-                            last_global_step=global_step,
-                            last_global_data_samples=global_data_samples)
+        #TODO: add new user flag called --checkpoint_idx which defines what epoch we should checkpoint at (e.g., seq128=150, seq512=160)
+        logger.info(
+            f"Saving a checkpointing of the model for epoch: {index+1}")
+        checkpoint_model(PATH=args.saved_model_path,
+                        ckpt_id='epoch{}_step{}'.format(index + 1, global_step),
+                        model=model,
+                        epoch=index+1,
+                        last_global_step=global_step,
+                        last_global_data_samples=global_data_samples)
 
         post = time.time()
         logger.info(f"Time for shard {index + 1}: {post-pre} seconds")

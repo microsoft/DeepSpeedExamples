@@ -49,6 +49,20 @@ def warmup_linear_decay_exp(global_step, decay_rate, decay_steps, total_steps, w
         return x/warmup
     return decay_rate**((global_step-warmup_end)/decay_steps)
 
+def warmup_exp_decay_exp(global_step, decay_rate, decay_steps, total_steps, warmup=0.002, degree=2.0):
+    x = global_step/total_steps
+    warmup_end = warmup * total_steps
+    if warmup == 0.0:
+        return 1.0
+    elif x < warmup:
+        return (x/warmup) ** degree
+    return decay_rate**((global_step-warmup_end)/decay_steps)
+
+def warmup_exp_decay_poly(global_step, total_steps, warmup=0.002, warm_degree=1.5, degree=2.0):
+    x = global_step/total_steps
+    if x < warmup:
+        return (x/warmup)**warm_degree
+    return (1.0 - x)**degree
 
 
 SCHEDULES = {
@@ -56,6 +70,8 @@ SCHEDULES = {
     'warmup_constant': warmup_constant,
     'warmup_linear': warmup_linear,
     'warmup_linear_decay_exp':warmup_linear_decay_exp,
+    'warmup_exp_decay_poly': warmup_exp_decay_poly,
+    'warmup_exp_decay_exp' : warmup_exp_decay_exp
 }
 
 
@@ -186,3 +202,4 @@ class BertAdam(Optimizer):
                 # bias_correction2 = 1 - beta2 ** state['step']
 
         return loss
+
