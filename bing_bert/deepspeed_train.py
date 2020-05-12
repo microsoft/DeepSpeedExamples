@@ -19,7 +19,7 @@ from turing.dataset import QADataset, RankingDataset, PreTrainingDataset, QAFine
 from turing.dataset import QABatch, RankingBatch, PretrainBatch, PretrainDataType
 from pytorch_pretrained_bert.tokenization import BertTokenizer
 from pytorch_pretrained_bert.optimization import BertAdam, warmup_linear, warmup_linear_decay_exp
-
+from turing.sources import WikiPretrainingDataCreator, PretrainingDataCreator, TokenInstance
 from utils import get_argument_parser, is_time_to_exit
 
 import deepspeed
@@ -215,7 +215,7 @@ def train(args, index, model, optimizer, finetune=False):
                 if args.fp16:
                     # modify learning rate with special warm up BERT uses
                     # if args.fp16 is False, BertAdam is used that handles this automatically
-                    lr_this_step = update_learning_rate(config, global_step, optimizer)
+                    lr_this_step = update_learning_rate(args, config, global_step, optimizer)
 
                 report_step_metrics(args, lr_this_step, unscaled_loss, global_step, current_data_sample_count)
 
@@ -251,11 +251,26 @@ def update_learning_rate(config, current_global_step, optimizer):
     global last_global_step_from_restore
 
     global_step_for_lr = current_global_step - last_global_step_from_restore
-    lr_this_step = config["training"]["learning_rate"] * warmup_linear_decay_exp(global_step_for_lr,
+
+     if args.lr_schedule == "EE":
+                 #print(f'LR Schedule is {args.lr_schedule} EE')
+                 lr_this_step = config["training"]["learning_rate"] * warmup_exp_decay_exp(global_step_for_lr,
+                                                          config["training"]["decay_rate"],
+                                                          config["training"]["decay_step"],
+                                                          config["training"]["total_training_steps"],                                                                                                                                  config["training"]["warmup_proportion"])
+    elif args.lr_schedule == "EP":
+                print(f'LR Schedule is {args.lr_schedule} EP')
+                lr_this_step = config["training"]["learning_rate"] * warmup_exp_decay_poly(global_step_for_lr,
+                                                          config["training"]["total_training_steps"],
+                                                          config["training"]["warmup_proportion"])
+    else :
+                lr_this_step = config["training"]["learning_rate"] * warmup_linear_decay_exp(global_step_for_lr,
                                                                                 config["training"]["decay_rate"],
                                                                                 config["training"]["decay_step"],
                                                                                 config["training"]["total_training_steps"],
                                                                                 config["training"]["warmup_proportion"])
+    lr_this_step += args.lr_offset
+
     for param_group in optimizer.param_groups:
         param_group['lr'] = lr_this_step
 
@@ -449,9 +464,10 @@ def run(args, model, optimizer, start_epoch):
         logger.info(f"Training Epoch: {index + 1}")
         pre = time.time()
         train(args, index, model, optimizer)
-        logger.info(
-            f"Saving a checkpointing of the model for epoch: {index+1}")
-        checkpoint_model(PATH=args.saved_model_path,
+        if index is 159 :
+            logger.info(
+                f"Saving a checkpointing of the model for epoch: {index+1}")
+            checkpoint_model(PATH=args.saved_model_path,
                             ckpt_id='epoch{}_step{}'.format(index + 1, global_step),
                             model=model,
                             epoch=index+1,

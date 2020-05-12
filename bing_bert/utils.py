@@ -46,6 +46,15 @@ def get_argument_parser():
                         default=False,
                         action='store_true',
                         help="Whether to finetune only")
+    
+    parser.add_argument('--lr_schedule',
+                        type=str,
+                        default='LE',
+                        help='Choices LE, EE, EP (L: Linear, E: Exponetial, P: Polynomial warmup and decay)')
+
+    parser.add_argument('--lr_offset',
+                        type=float, default=0.0,
+                        help='Offset added to lr.')
 
     parser.add_argument('--load_training_checkpoint', '--load_cp',
                         type=str,
@@ -86,7 +95,7 @@ def get_argument_parser():
                         help="Path to prefix data loading, helpful for AML and other environments")
 
     parser.add_argument('--deepspeed_transformer_kernel',
-                        default=False,
+                        default=True,
                         action='store_true',
                         help='Use DeepSpeed transformer kernel to accelerate.')
 

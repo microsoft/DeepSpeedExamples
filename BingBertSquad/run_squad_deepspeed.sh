@@ -9,6 +9,12 @@ NGPU_PER_NODE=$1
 MODEL_FILE=$2
 SQUAD_DIR=$3
 OUTPUT_DIR=$4
+LR=$5
+SEED=$6
+MASTER_PORT=$7
+echo "arg6 is $6"
+echo "arg7 is $7"
+
 NUM_NODES=1
 NGPU=$((NGPU_PER_NODE*NUM_NODES))
 EFFECTIVE_BATCH_SIZE=24
@@ -19,15 +25,18 @@ if [[ $PER_GPU_BATCH_SIZE -lt $MAX_GPU_BATCH_SIZE ]]; then
 else
        GRAD_ACCUM_STEPS=$((PER_GPU_BATCH_SIZE/MAX_GPU_BATCH_SIZE))
 fi
-LR=3e-5
-MASTER_PORT=$((NGPU+12346))
 JOB_NAME="deepspeed_${NGPU}GPUs_${EFFECTIVE_BATCH_SIZE}batch_size"
 config_json=deepspeed_bsz24_config.json
-run_cmd="deepspeed --num_nodes ${NUM_NODES} --num_gpus ${NGPU_PER_NODE} \
+#run_cmd="deepspeed --num_nodes ${NUM_NODES} --num_gpus ${NGPU_PER_NODE} \
+#       --master_port=${MASTER_PORT} \
+run_cmd="python3.6 -m torch.distributed.launch \
+       --nproc_per_node=${NGPU} \
+       --master_port=${MASTER_PORT} \
        nvidia_run_squad_deepspeed.py \
        --bert_model bert-large-uncased \
        --do_train \
        --do_lower_case \
+       --predict_batch_size 3 \
        --do_predict \
        --train_file $SQUAD_DIR/train-v1.1.json \
        --predict_file $SQUAD_DIR/dev-v1.1.json \
@@ -43,7 +52,8 @@ run_cmd="deepspeed --num_nodes ${NUM_NODES} --num_gpus ${NGPU_PER_NODE} \
        --deepspeed \
        --deepspeed_config ${config_json} \
        --deepspeed_transformer_kernel \
-       --model_file $MODEL_FILE
+       --model_file $MODEL_FILE \
+       --seed ${SEED} \
        "
 echo ${run_cmd}
 eval ${run_cmd}
