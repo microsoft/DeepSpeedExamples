@@ -102,7 +102,15 @@ def get_argument_parser():
     parser.add_argument('--attention_dropout_checkpoint',
                         default=False,
                         action='store_true',
-                        help='Use DeepSpeed transformer kernel memory optimization to support large batch sizes.')
+                        help='Use DeepSpeed transformer kernel memory optimization to checkpoint dropout output.')
+    parser.add_argument('--normalize_invertible',
+                        default=False,
+                        action='store_true',
+                        help='Use DeepSpeed transformer kernel memory optimization to perform invertible normalize backpropagation.')
+    parser.add_argument('--GELU_checkpoint',
+                        default=False,
+                        action='store_true',
+                        help='Use DeepSpeed transformer kernel memory optimization to checkpoint GELU activation.')
 
     return parser
 
