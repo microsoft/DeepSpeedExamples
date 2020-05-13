@@ -100,7 +100,7 @@ def get_argument_parser():
                         help='Use DeepSpeed transformer kernel to accelerate.')
 
     parser.add_argument('--attention_dropout_checkpoint',
-                        default=True,
+                        default=False,
                         action='store_true',
                         help='Use DeepSpeed transformer kernel memory optimization to support large batch sizes.')
 
