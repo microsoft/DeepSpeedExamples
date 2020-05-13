@@ -35,6 +35,7 @@ import torch
 from torch import nn
 from torch.nn import CrossEntropyLoss
 from torch.utils import checkpoint
+import torch.distributed as dist
 
 from turing.file_utils import cached_path
 
@@ -212,7 +213,8 @@ class BertConfig(object):
                  attention_probs_dropout_prob=0.1,
                  max_position_embeddings=512,
                  type_vocab_size=2,
-                 initializer_range=0.02):
+                 initializer_range=0.02,
+                 cuda_ext_config=""):
         """Constructs BertConfig.
 
         Args:
@@ -255,6 +257,7 @@ class BertConfig(object):
             self.max_position_embeddings = max_position_embeddings
             self.type_vocab_size = type_vocab_size
             self.initializer_range = initializer_range
+            self.cuda_ext_config = cuda_ext_config
         else:
             raise ValueError("First argument must be either a vocabulary size (int)"
                              "or the path to a pretrained model config file (str)")
@@ -494,13 +497,9 @@ class BertEncoder(nn.Module):
                                                      hidden_dropout_ratio = config.hidden_dropout_prob,
                                                      num_hidden_layers = config.num_hidden_layers,
                                                      initializer_range = config.initializer_range,
-                                                     local_rank = args.local_rank if hasattr(args, 'local_rank') else -1,
                                                      seed = args.seed,
                                                      fp16 = ds_config.fp16_enabled,
-                                                     pre_layer_norm=True,
-                                                     attn_dropout_checkpoint=args.attention_dropout_checkpoint,
-                                                     normalize_invertible=args.normalize_invertible,
-                                                     gelu_checkpoint=args.gelu_checkpoint)
+                                                     pre_layer_norm=True)
 
             self.layer = nn.ModuleList([copy.deepcopy(DeepSpeedTransformerLayer(i, cuda_config)) for i in range(config.num_hidden_layers)])
         else:
@@ -602,12 +601,8 @@ class BertLMPredictionHead(nn.Module):
         self.decoder.weight = bert_model_embedding_weights
         self.bias = nn.Parameter(torch.zeros(bert_model_embedding_weights.size(0)))
 
-    def forward(self, hidden_states, masked_token_indexes):
+    def forward(self, hidden_states):
         hidden_states = self.transform(hidden_states)
-
-        if masked_token_indexes is not None:
-            hidden_states = torch.index_select(hidden_states.view(-1, hidden_states.shape[-1]), 0, masked_token_indexes)
-
         torch.cuda.nvtx.range_push("decoder input.size() = {}, weight.size() = {}".format(hidden_states.size(), self.decoder.weight.size()))
         hidden_states = self.decoder(hidden_states) + self.bias
         torch.cuda.nvtx.range_pop()
@@ -640,8 +635,8 @@ class BertPreTrainingHeads(nn.Module):
         self.predictions = BertLMPredictionHead(config, bert_model_embedding_weights)
         self.seq_relationship = nn.Linear(config.hidden_size, 2)
 
-    def forward(self, sequence_output, pooled_output, masked_token_indexes=None):
-        prediction_scores = self.predictions(sequence_output, masked_token_indexes)
+    def forward(self, sequence_output, pooled_output):
+        prediction_scores = self.predictions(sequence_output)
         seq_relationship_score = self.seq_relationship(pooled_output)
         return prediction_scores, seq_relationship_score
 
@@ -940,12 +935,25 @@ class BertForPreTrainingPreLN(BertPreTrainedModel):
     """
     def __init__(self, config, args):
         super(BertForPreTrainingPreLN, self).__init__(config)
+        self.summary_writer = None
+        if dist.get_rank() == 0:
+            self.summary_writer = args.summary_writer
+        self.samples_per_step = dist.get_world_size() * args.train_batch_size
+        self.sample_count = self.samples_per_step
         self.bert = BertModel(config, args)
         self.cls = BertPreTrainingHeads(config, self.bert.embeddings.word_embeddings.weight)
         self.apply(self.init_bert_weights)
-        self.args = args
+
+    def log_summary_writer(self, logs: dict, base='Train'):
+        if dist.get_rank() == 0:
+            module_name = "Samples" #self._batch_module_name.get(batch_type, self._get_batch_type_error(batch_type))
+            for key, log in logs.items():
+                self.summary_writer.add_scalar(
+                    f'{base}/{module_name}/{key}', log, self.sample_count)
+            self.sample_count += self.samples_per_step
 
     def forward(self, batch, log=True):
+        #input_ids, token_type_ids=None, attention_mask=None, masked_lm_labels=None, next_sentence_label=None, checkpoint_activations=False):
         input_ids = batch[1]
         token_type_ids = batch[3]
         attention_mask = batch[2]
@@ -955,20 +963,18 @@ class BertForPreTrainingPreLN(BertPreTrainedModel):
 
         sequence_output, pooled_output = self.bert(input_ids, token_type_ids, attention_mask,
                                                    output_all_encoded_layers=False, checkpoint_activations=checkpoint_activations)
+        prediction_scores, seq_relationship_score = self.cls(sequence_output, pooled_output)
 
         if masked_lm_labels is not None and next_sentence_label is not None:
-            # filter out all masked labels.
-            masked_token_indexes = torch.nonzero((masked_lm_labels+1).view(-1)).view(-1)
-            prediction_scores, seq_relationship_score = self.cls(sequence_output, pooled_output, masked_token_indexes)
-            target = torch.index_select(masked_lm_labels.view(-1), 0, masked_token_indexes)
-
             loss_fct = CrossEntropyLoss(ignore_index=-1)
-            masked_lm_loss = loss_fct(prediction_scores.view(-1, self.config.vocab_size), target)
+            masked_lm_loss = loss_fct(prediction_scores.view(-1, self.config.vocab_size), masked_lm_labels.view(-1))
             next_sentence_loss = loss_fct(seq_relationship_score.view(-1, 2), next_sentence_label.view(-1))
+            #print("loss is {} {}".format(masked_lm_loss, next_sentence_loss))
             total_loss = masked_lm_loss + next_sentence_loss
+#            if log:
+#                self.log_summary_writer(logs={'train_loss': total_loss.item()})
             return total_loss
         else:
-            prediction_scores, seq_relationship_score = self.cls(sequence_output, pooled_output)
             return prediction_scores, seq_relationship_score
 
 
@@ -1350,9 +1356,9 @@ class BertForQuestionAnswering(BertPreTrainedModel):
     start_logits, end_logits = model(input_ids, token_type_ids, input_mask)
     ```
     """
-    def __init__(self, config):
+    def __init__(self, config, args=None):
         super(BertForQuestionAnswering, self).__init__(config)
-        self.bert = BertModel(config)
+        self.bert = BertModel(config, args)
         # TODO check with Google if it's normal there is no dropout on the token classifier of SQuAD in the TF version
         # self.dropout = nn.Dropout(config.hidden_dropout_prob)
         self.qa_outputs = nn.Linear(config.hidden_size, 2)

@@ -51,6 +51,7 @@ run_cmd="deepspeed --num_nodes ${NUM_NODES} --num_gpus ${NGPU_PER_NODE} \
        --deepspeed_transformer_kernel \
        --model_file $MODEL_FILE \
        --seed ${SEED} \
+       --preln \
        "
 echo ${run_cmd}
 eval ${run_cmd}
