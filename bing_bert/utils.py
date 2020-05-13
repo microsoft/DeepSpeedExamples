@@ -107,7 +107,7 @@ def get_argument_parser():
                         default=False,
                         action='store_true',
                         help='Use DeepSpeed transformer kernel memory optimization to perform invertible normalize backpropagation.')
-    parser.add_argument('--GELU_checkpoint',
+    parser.add_argument('--gelu_checkpoint',
                         default=False,
                         action='store_true',
                         help='Use DeepSpeed transformer kernel memory optimization to checkpoint GELU activation.')

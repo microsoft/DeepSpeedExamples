@@ -3,11 +3,11 @@
 base_dir=`pwd`
 
 # Where should we save checkpoints and tensorboard events?
-JOB_NAME=lamb_32k_chkpt150_seq512_new
+JOB_NAME=lamb_32k_chkpt150_seq512
 OUTPUT_DIR=${base_dir}/bert_model_outputs
 
 # Assumes job name in previous seq128 run, will resume training from epoch 150
-CHECKPOINT_BASE_PATH=${OUTPUT_DIR}/saved_models/lamb_64k_seq128_128GPUs_64K
+CHECKPOINT_BASE_PATH=${OUTPUT_DIR}/saved_models/lamb_64k_seq128
 CHECKPOINT_EPOCH150_NAME=`basename ${CHECKPOINT_BASE_PATH}/epoch150_*`
 echo "checkpoint id: $CHECKPOINT_EPOCH150_NAME"
 
