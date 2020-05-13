@@ -46,7 +46,7 @@ def get_argument_parser():
                         default=False,
                         action='store_true',
                         help="Whether to finetune only")
-    
+
     parser.add_argument('--lr_schedule',
                         type=str,
                         default='LE',
@@ -98,6 +98,11 @@ def get_argument_parser():
                         default=True,
                         action='store_true',
                         help='Use DeepSpeed transformer kernel to accelerate.')
+
+    parser.add_argument('--attention_dropout_checkpoint',
+                        default=False,
+                        action='store_true',
+                        help='Use DeepSpeed transformer kernel memory optimization to support large batch sizes.')
 
     return parser
 

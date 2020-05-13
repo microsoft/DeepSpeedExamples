@@ -486,14 +486,6 @@ class BertEncoder(nn.Module):
             else:
                 raise RuntimeError('deepspeed_config is not found in args.')
 
-            #TODO: the user should not have to set this flag, we should have
-            #      the DeepSpeed transformer kernel backend set this flag as it sees fit, and/or
-            #      expose an optional flag to the user if they want to set it. 
-
-            attn_dropout_checkpoint = False
-            if max_seq_length == 512 and ds_config.train_micro_batch_size_per_gpu == 16:
-                attn_dropout_checkpoint = True
-
             cuda_config = DeepSpeedTransformerConfig(batch_size = ds_config.train_micro_batch_size_per_gpu,
                                                      max_seq_length = args.max_seq_length,
                                                      hidden_size = config.hidden_size,
@@ -506,7 +498,7 @@ class BertEncoder(nn.Module):
                                                      seed = args.seed,
                                                      fp16 = ds_config.fp16_enabled,
                                                      pre_layer_norm=True,
-                                                     attn_dropout_checkpoint=attn_dropout_checkpoint)
+                                                     attn_dropout_checkpoint=args.attention_dropout_checkpoint)
 
             self.layer = nn.ModuleList([copy.deepcopy(DeepSpeedTransformerLayer(i, cuda_config)) for i in range(config.num_hidden_layers)])
         else:
