@@ -474,15 +474,18 @@ def run(args, model, optimizer, start_epoch):
         logger.info(f"Training Epoch: {index + 1}")
         pre = time.time()
         train(args, index, model, optimizer)
-        #TODO: add new user flag called --checkpoint_idx which defines what epoch we should checkpoint at (e.g., seq128=150, seq512=160)
-        logger.info(
-            f"Saving a checkpointing of the model for epoch: {index+1}")
-        checkpoint_model(PATH=args.saved_model_path,
-                        ckpt_id='epoch{}_step{}'.format(index + 1, global_step),
-                        model=model,
-                        epoch=index+1,
-                        last_global_step=global_step,
-                        last_global_data_samples=global_data_samples)
+
+        # Save ckpts according to "--ckpt_to_save" option,
+        # e.g. "--ckpt_to_save 160 161" to save epoch 160 and 161.
+        if args.ckpt_to_save is None or (index+1) in args.ckpt_to_save:
+            logger.info(
+                f"Saving a checkpointing of the model for epoch: {index+1}")
+            checkpoint_model(PATH=args.saved_model_path,
+                            ckpt_id='epoch{}_step{}'.format(index + 1, global_step),
+                            model=model,
+                            epoch=index+1,
+                            last_global_step=global_step,
+                            last_global_data_samples=global_data_samples)
 
         post = time.time()
         logger.info(f"Time for shard {index + 1}: {post-pre} seconds")

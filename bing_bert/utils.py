@@ -95,9 +95,14 @@ def get_argument_parser():
                         help="Path to prefix data loading, helpful for AML and other environments")
 
     parser.add_argument('--deepspeed_transformer_kernel',
-                        default=True,
+                        default=False,
                         action='store_true',
                         help='Use DeepSpeed transformer kernel to accelerate.')
+
+    parser.add_argument('--ckpt_to_save',
+                        nargs='+',
+                        type=int,
+                        help='Indicates which checkpoints to save, e.g. --ckpt_to_save 160 161, by default all checkpoints are saved.')
 
     parser.add_argument('--attention_dropout_checkpoint',
                         default=False,
