@@ -24,6 +24,7 @@ NCCL_TREE_THRESHOLD=0 deepspeed ${base_dir}/deepspeed_train.py \
 --data_path_prefix /data/bert \
 --rewarmup \
 --lr_schedule "EE" \
+--attention_dropout_checkpoint \
 --lr_offset 0.0 \
 --load_training_checkpoint ${CHECKPOINT_BASE_PATH} \
 --load_checkpoint_id ${CHECKPOINT_EPOCH150_NAME} \

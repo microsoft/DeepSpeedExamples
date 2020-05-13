@@ -253,7 +253,7 @@ def update_learning_rate(args, config, current_global_step, optimizer):
 
     global_step_for_lr = current_global_step - last_global_step_from_restore
 
-     if args.lr_schedule == "EE":
+    if args.lr_schedule == "EE":
                  #print(f'LR Schedule is {args.lr_schedule} EE')
                  lr_this_step = config["training"]["learning_rate"] * warmup_exp_decay_exp(global_step_for_lr,
                                                           config["training"]["decay_rate"],

@@ -498,7 +498,9 @@ class BertEncoder(nn.Module):
                                                      seed = args.seed,
                                                      fp16 = ds_config.fp16_enabled,
                                                      pre_layer_norm=True,
-                                                     attn_dropout_checkpoint=args.attention_dropout_checkpoint)
+                                                     attn_dropout_checkpoint=args.attention_dropout_checkpoint,
+                                                     normalize_invertible=args.normalize_invertible,
+                                                     gelu_checkpoint=args.gelu_checkpoint)
 
             self.layer = nn.ModuleList([copy.deepcopy(DeepSpeedTransformerLayer(i, cuda_config)) for i in range(config.num_hidden_layers)])
         else:
