@@ -44,6 +44,8 @@ from pytorch_pretrained_bert.optimization import BertAdam
 from pytorch_pretrained_bert.file_utils import PYTORCH_PRETRAINED_BERT_CACHE
 
 from turing.nvidia_modeling import BertForQuestionAnswering, BertConfig
+from turing.nvidia_modelingpreln import BertConfig as BertConfigPreLN
+from turing.nvidia_modelingpreln import BertForQuestionAnswering as BertForQuestionAnsweringPreLN
 
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(name)s -   %(message)s',
                     datefmt='%m/%d/%Y %H:%M:%S',
@@ -800,13 +802,21 @@ def main():
         "type_vocab_size": 2,
         "initializer_range": 0.02
     }
-
-    bert_config = BertConfig(**bert_model_config)
+    if args.preln:
+        bert_config = BertConfigPreLN(**bert_model_config)
+    else:
+        bert_config = BertConfig(**bert_model_config)
+    
     bert_config.vocab_size = len(tokenizer.vocab)
     # Padding for divisibility by 8
     if bert_config.vocab_size % 8 != 0:
         bert_config.vocab_size += 8 - (bert_config.vocab_size % 8)
-    model = BertForQuestionAnswering(bert_config, args)
+    
+    if args.preln:
+        model = BertForQuestionAnsweringPreLN(bert_config, args)
+    else:
+        model = BertForQuestionAnswering(bert_config, args)
+ 
     print("VOCAB SIZE:", bert_config.vocab_size)
     if args.model_file is not "0":
         logger.info(f"Loading Pretrained Bert Encoder from: {args.model_file}")

@@ -92,6 +92,12 @@ def get_argument_parser():
                         type=str,
                         default=None,
                         help='Output path for Tensorboard event files.')
+
+    parser.add_argument('--preln',
+                        action='store_true',
+                        default=False,
+                        help="Whether to display the breakdown of the wall-clock time for foraward, backward and step")
+
     parser.add_argument('--loss_plot_alpha',
                         type=float,
                         default=0.2,
