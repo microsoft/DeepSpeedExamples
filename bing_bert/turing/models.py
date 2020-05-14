@@ -19,18 +19,27 @@ class BertPretrainingLoss(PreTrainedBertModel):
             config, self.bert.embeddings.word_embeddings.weight)
         self.cls.apply(self.init_bert_weights)
 
-    def forward(self, input_ids, token_type_ids=None, attention_mask=None, masked_lm_labels=None, next_sentence_label=None):
-        sequence_output, pooled_output = self.bert(input_ids, token_type_ids, attention_mask,
-                                                   output_all_encoded_layers=False)
+    def forward(self,
+                input_ids,
+                token_type_ids=None,
+                attention_mask=None,
+                masked_lm_labels=None,
+                next_sentence_label=None):
+        sequence_output, pooled_output = self.bert(
+            input_ids,
+            token_type_ids,
+            attention_mask,
+            output_all_encoded_layers=False)
         prediction_scores, seq_relationship_score = self.cls(
             sequence_output, pooled_output)
 
         if masked_lm_labels is not None and next_sentence_label is not None:
             loss_fct = CrossEntropyLoss(ignore_index=-1)
-            next_sentence_loss = loss_fct(
-                seq_relationship_score.view(-1, 2), next_sentence_label.view(-1))
+            next_sentence_loss = loss_fct(seq_relationship_score.view(-1, 2),
+                                          next_sentence_label.view(-1))
             masked_lm_loss = loss_fct(
-                prediction_scores.view(-1, self.config.vocab_size), masked_lm_labels.view(-1))
+                prediction_scores.view(-1, self.config.vocab_size),
+                masked_lm_labels.view(-1))
             total_loss = masked_lm_loss + next_sentence_loss
             return total_loss
         else:
@@ -46,14 +55,21 @@ class BertClassificationLoss(PreTrainedBertModel):
         self.classifier = nn.Linear(config.hidden_size, num_labels)
         self.classifier.apply(self.init_bert_weights)
 
-    def forward(self, input_ids, token_type_ids=None, attention_mask=None, labels=None):
-        _, pooled_output = self.bert(
-            input_ids, token_type_ids, attention_mask, output_all_encoded_layers=False)
+    def forward(self,
+                input_ids,
+                token_type_ids=None,
+                attention_mask=None,
+                labels=None):
+        _, pooled_output = self.bert(input_ids,
+                                     token_type_ids,
+                                     attention_mask,
+                                     output_all_encoded_layers=False)
         pooled_output = self.dropout(pooled_output)
         scores = self.classifier(pooled_output)
         if labels is not None:
             loss_fct = nn.BCEWithLogitsLoss()
-            loss = loss_fct(scores.view(-1, self.num_labels), labels.view(-1,1))
+            loss = loss_fct(scores.view(-1, self.num_labels),
+                            labels.view(-1, 1))
             return loss
         else:
             return scores
@@ -67,9 +83,15 @@ class BertRegressionLoss(PreTrainedBertModel):
         self.classifier = nn.Linear(config.hidden_size, 1)
         self.classifier.apply(self.init_bert_weights)
 
-    def forward(self, input_ids, token_type_ids=None, attention_mask=None, labels=None):
-        _, pooled_output = self.bert(
-            input_ids, token_type_ids, attention_mask, output_all_encoded_layers=False)
+    def forward(self,
+                input_ids,
+                token_type_ids=None,
+                attention_mask=None,
+                labels=None):
+        _, pooled_output = self.bert(input_ids,
+                                     token_type_ids,
+                                     attention_mask,
+                                     output_all_encoded_layers=False)
         pooled_output = self.dropout(pooled_output)
         logits = self.classifier(pooled_output)
 
@@ -98,7 +120,10 @@ class BertMultiTask:
             self.network = BertForPreTrainingPreLN(bert_config, args)
         # Use pretrained bert weights
         else:
-            self.bert_encoder = BertModel.from_pretrained(self.config['bert_model_file'], cache_dir=PYTORCH_PRETRAINED_BERT_CACHE / 'distributed_{}'.format(args.local_rank))
+            self.bert_encoder = BertModel.from_pretrained(
+                self.config['bert_model_file'],
+                cache_dir=PYTORCH_PRETRAINED_BERT_CACHE /
+                'distributed_{}'.format(args.local_rank))
             bert_config = self.bert_encoder.config
 
         self.device = None
@@ -107,11 +132,13 @@ class BertMultiTask:
         self.device = device
 
     def save(self, filename: str):
-        network=self.network.module
+        network = self.network.module
         return torch.save(network.state_dict(), filename)
 
     def load(self, model_state_dict: str):
-        return self.network.module.load_state_dict(torch.load(model_state_dict, map_location=lambda storage, loc: storage))
+        return self.network.module.load_state_dict(
+            torch.load(model_state_dict,
+                       map_location=lambda storage, loc: storage))
 
     def move_batch(self, batch: TorchTuple, non_blocking=False):
         return batch.to(self.device, non_blocking)
