@@ -203,11 +203,6 @@ def get_argument_parser():
                         default=100,
                         help='Interval to print training details.')
 
-    parser.add_argument('--deepspeed_transformer_kernel',
-                        default=False,
-                        action='store_true',
-                        help='Use DeepSpeed transformer kernel to accelerate.')
-
     return parser
 
 
