@@ -516,51 +516,10 @@ class BertEncoder(nn.Module):
         #Added later to make it similar to GPT-2
         self.FinalLayerNorm = BertLayerNorm(config.hidden_size, eps=1e-12)
 
-        if args.deepspeed_transformer_kernel:
-            from deepspeed import DeepSpeedTransformerLayer, DeepSpeedTransformerConfig, DeepSpeedConfig
+        layer = BertLayer(config)
+        self.layer = nn.ModuleList(
+            [copy.deepcopy(layer) for _ in range(config.num_hidden_layers)])
 
-            if hasattr(args, 'deepspeed_config') and args.deepspeed_config:
-                ds_config = DeepSpeedConfig(args.deepspeed_config)
-            else:
-                raise RuntimeError('deepspeed_config is not found in args.')
-
-            cuda_config = DeepSpeedTransformerConfig(
-                batch_size=ds_config.train_micro_batch_size_per_gpu,
-                max_seq_length=args.max_seq_length,
-                hidden_size=config.hidden_size,
-                heads=config.num_attention_heads,
-                attn_dropout_ratio=config.attention_probs_dropout_prob,
-                hidden_dropout_ratio=config.hidden_dropout_prob,
-                num_hidden_layers=config.num_hidden_layers,
-                initializer_range=config.initializer_range,
-                local_rank=args.local_rank
-                if hasattr(args, 'local_rank') else -1,
-                seed=args.seed,
-                fp16=ds_config.fp16_enabled,
-                pre_layer_norm=True,
-                attn_dropout_checkpoint=args.attention_dropout_checkpoint,
-                normalize_invertible=args.normalize_invertible,
-                gelu_checkpoint=args.gelu_checkpoint)
-
-            self.layer = nn.ModuleList([
-                copy.deepcopy(DeepSpeedTransformerLayer(i, cuda_config))
-                for i in range(config.num_hidden_layers)
-            ])
-        else:
-            layer = BertLayer(config)
-            self.layer = nn.ModuleList([
-                copy.deepcopy(layer) for _ in range(config.num_hidden_layers)
-            ])
-
-    # def forward(self, hidden_states, attention_mask, output_all_encoded_layers=True):
-    #     all_encoder_layers = []
-    #     for layer_module in self.layer:
-    #         hidden_states = layer_module(hidden_states, attention_mask)
-    #         if output_all_encoded_layers:
-    #             all_encoder_layers.append(hidden_states)
-    #     if not output_all_encoded_layers:
-    #         all_encoder_layers.append(hidden_states)
-    #     return all_encoder_layers
     def forward(self,
                 hidden_states,
                 attention_mask,
