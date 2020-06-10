@@ -856,6 +856,9 @@ def main():
 
         bert_config = BertConfig.from_json_file(args.origin_bert_config_file)
 
+        if bert_config.vocab_size != len(tokenizer.vocab):
+            raise ValueError("vocab size from original checkpoint mismatch.")
+
     bert_config.vocab_size = len(tokenizer.vocab)
     # Padding for divisibility by 8
     if bert_config.vocab_size % 8 != 0:
