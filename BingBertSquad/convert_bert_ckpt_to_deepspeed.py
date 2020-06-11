@@ -1,6 +1,8 @@
 # coding=utf-8
-# This is created based on Huggingface's converting script.
-# It can convert Tensorflow and Huggingface checkpoint files to DeepSpeed.
+# This script references to below file from HuggingFace:
+#   https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_bert.py:d541938
+#
+# It converts Tensorflow and Huggingface checkpoint files to DeepSpeed.
 
 import os
 import argparse
