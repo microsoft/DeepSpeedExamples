@@ -888,7 +888,7 @@ def main():
                 raise ValueError("Unable to find model state in checkpoint")
         else:
             from convert_bert_ckpt_to_deepspeed import convert_ckpt_to_deepspeed
-            convert_ckpt_to_deepspeed(model, args.ckpt_type, args.model_file, args.origin_bert_config_file, vocab_diff)
+            convert_ckpt_to_deepspeed(model, args.ckpt_type, args.model_file, vocab_diff)
 
         logger.info(f"Pretrained Bert Encoder Loaded from: {args.model_file}")
 

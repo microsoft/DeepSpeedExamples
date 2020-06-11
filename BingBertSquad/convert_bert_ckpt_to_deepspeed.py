@@ -1,6 +1,6 @@
 # coding=utf-8
 # This script references to below file from HuggingFace:
-#   https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_bert.py:d541938
+#   https://github.com/huggingface/transformers/blob/d541938/src/transformers/modeling_bert.py
 #
 # It converts Tensorflow and Huggingface checkpoint files to DeepSpeed.
 
@@ -22,7 +22,7 @@ def set_data(param, array):
         raise
     param.data = torch.from_numpy(array)
 
-def load_tf_weights_in_bert(model, config, ckpt_path, voc_size_diff):
+def load_tf_weights_in_bert(model, ckpt_path, voc_size_diff):
     """ Load tf checkpoints in DeepSpeed model.
     """
     try:
@@ -170,7 +170,7 @@ def load_tf_weights_in_bert(model, config, ckpt_path, voc_size_diff):
 
     return model
 
-def load_hf_weights_in_bert(model, config, ckpt_path, voc_size_diff):
+def load_hf_weights_in_bert(model, ckpt_path, voc_size_diff):
     """ Load huggingface checkpoints and convert to a deepspeed model.
     """
     hf_path = os.path.abspath(ckpt_path)
@@ -279,12 +279,12 @@ def load_hf_weights_in_bert(model, config, ckpt_path, voc_size_diff):
 
     return model
 
-def convert_ckpt_to_deepspeed(model, ckpt_type, ckpt_path, bert_config, vocab_diff):
+def convert_ckpt_to_deepspeed(model, ckpt_type, ckpt_path, vocab_diff):
 
     # Load weights from checkpoint
     if ckpt_type == "HF":
-        load_hf_weights_in_bert(model, bert_config, ckpt_path, vocab_diff)
+        load_hf_weights_in_bert(model, ckpt_path, vocab_diff)
     elif ckpt_type == "TF":
-        load_tf_weights_in_bert(model, bert_config, ckpt_path, vocab_diff)
+        load_tf_weights_in_bert(model, ckpt_path, vocab_diff)
     else:
         raise ValueError(f"Invalid ckpt_type.")
