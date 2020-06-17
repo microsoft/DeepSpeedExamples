@@ -870,6 +870,21 @@ def main():
         #model.bert.load_state_dict(bert_state_dict, strict=False)
         logger.info(f"Pretrained Bert Encoder Loaded from: {args.model_file}")
 
+    # Patch model with deepspeed transformer kernel
+    if args.deepspeed_transformer_kernel:
+        from deepspeed import module_inject
+        from turing.nvidia_modelingpreln import BertLayer
+        ds_config = deepspeed.DeepSpeedConfig(args.deepspeed_config)
+        model = module_inject(
+            layer_obj=BertLayer, 
+            model=model, 
+            config=bert_config, 
+            micro_batch_size=ds_config.train_micro_batch_size_per_gpu, 
+            max_seq_length=args.max_seq_length, 
+            seed=args.seed
+        )
+        print("post injection model: {}".format(model))
+
     # Prepare optimizer
     param_optimizer = list(model.named_parameters())
 

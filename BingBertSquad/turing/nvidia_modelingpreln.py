@@ -519,7 +519,7 @@ class BertEncoder(nn.Module):
         #Added later to make it similar to GPT-2
         self.FinalLayerNorm = BertLayerNorm(config.hidden_size, eps=1e-12)
 
-        if args.deepspeed_transformer_kernel:
+        if False: #args.deepspeed_transformer_kernel:
             from deepspeed import DeepSpeedTransformerLayer, DeepSpeedTransformerConfig, DeepSpeedConfig
 
             if hasattr(args, 'deepspeed_config') and args.deepspeed_config:

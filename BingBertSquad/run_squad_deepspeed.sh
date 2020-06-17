@@ -24,7 +24,7 @@ HOSTFILE=/dev/null
 
 NGPU=$((NGPU_PER_NODE*NUM_NODES))
 EFFECTIVE_BATCH_SIZE=24
-MAX_GPU_BATCH_SIZE=3
+MAX_GPU_BATCH_SIZE=4
 PER_GPU_BATCH_SIZE=$((EFFECTIVE_BATCH_SIZE/NGPU))
 if [[ $PER_GPU_BATCH_SIZE -lt $MAX_GPU_BATCH_SIZE ]]; then
        GRAD_ACCUM_STEPS=1
@@ -40,7 +40,7 @@ run_cmd="deepspeed --num_nodes ${NUM_NODES} --num_gpus ${NGPU_PER_NODE} \
        --bert_model bert-large-uncased \
        --do_train \
        --do_lower_case \
-       --predict_batch_size 3 \
+       --predict_batch_size $MAX_GPU_BATCH_SIZE \
        --do_predict \
        --train_file $SQUAD_DIR/train-v1.1.json \
        --predict_file $SQUAD_DIR/dev-v1.1.json \
