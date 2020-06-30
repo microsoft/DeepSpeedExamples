@@ -1,6 +1,6 @@
 deepspeed \
-	--num_nodes=$2 \
-	--num_gpus=$1 \
+	--num_nodes=$1 \
+	--num_gpus=$2 \
 	resnet_deepspeed.py \
 	--train-dir=/data/ImageNet/train \
 	--val-dir=/data/ImageNet/val/ \
