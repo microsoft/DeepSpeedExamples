@@ -80,6 +80,9 @@ class GPT2Model(torch.nn.Module):
                                                        checkpoint_activations,
                                                        checkpoint_num_layers)
 
+        print(f"Word embeddings {self.word_embeddings.weight}")
+        super().register_parameter('embedding_param', self.word_embeddings.weight)
+
     def forward(self, input_ids, position_ids, attention_mask):
 
         # Embeddings.
@@ -96,6 +99,9 @@ class GPT2Model(torch.nn.Module):
         # Parallel logits.
         transformer_output_parallel = mpu.copy_to_model_parallel_region(
             transformer_output)
+        
+        print(f"Transformer output parallel {transformer_output_parallel.shape}")
+        print(f"Word embeddings parallel {self.word_embeddings.weight.shape}")
         logits_parallel = F.linear(transformer_output_parallel,
                                    self.word_embeddings.weight)
 
