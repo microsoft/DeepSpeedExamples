@@ -69,7 +69,6 @@ def get_model(args):
                         checkpoint_activations=args.checkpoint_activations,
                         checkpoint_num_layers=args.checkpoint_num_layers,
                         parallel_output=True)
-    torch.cuda.synchronize()
     
     if mpu.get_data_parallel_rank() == 0:
         print(' > number of parameters on model parallel rank {}: {}'.format(
@@ -161,6 +160,7 @@ def setup_model_and_optimizer(args):
     optimizer = get_optimizer(model, args)
     lr_scheduler = get_learning_rate_scheduler(optimizer, args)
 
+    
     if args.deepspeed:
         print_rank_0("DeepSpeed is enabled.")
 
@@ -365,8 +365,6 @@ def train_step(data_iterator, model, optimizer, lr_scheduler,
                args, timers):
     """Single training step."""
     #torch.cuda.synchronize()
-    for name, param in model.named_parameters(recurse=True):
-       param.partition()
     # Forward model for one step.
     timers('forward').start()
     lm_loss = forward_step(data_iterator, model, args, timers)
@@ -661,6 +659,7 @@ def main():
 
     # Model, optimizer, and learning rate.
     model, optimizer, lr_scheduler = setup_model_and_optimizer(args)
+
 
     # Resume data loader if necessary.
     if args.resume_dataloader:
