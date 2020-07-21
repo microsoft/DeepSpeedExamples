@@ -15,16 +15,15 @@ from tqdm import tqdm
 from turing.logger import Logger
 from turing.utils import get_sample_writer
 from turing.models import BertMultiTask
-from turing.dataset import QADataset, RankingDataset, PreTrainingDataset, QAFinetuningDataset
-from turing.dataset import QABatch, RankingBatch, PretrainBatch, PretrainDataType
-from turing.sources import WikiPretrainingDataCreator, PretrainingDataCreator, TokenInstance
+from turing.dataset import PreTrainingDataset, PretrainDataType
 from pytorch_pretrained_bert.tokenization import BertTokenizer
 from pytorch_pretrained_bert.optimization import BertAdam, warmup_linear, warmup_linear_decay_exp, warmup_exp_decay_exp, warmup_exp_decay_poly
-from turing.sources import WikiPretrainingDataCreator, PretrainingDataCreator, TokenInstance
 from utils import get_argument_parser, is_time_to_exit
 
+from bing_bert_dataset_provider import BingBertDatasetProvider
+from nvidia_bert_dataset_provider import NvidiaBertDatasetProvider
+
 import deepspeed
-from data_worker import AsyncWorker
 
 global_step = 0
 global_data_samples = 0
@@ -66,14 +65,6 @@ def load_training_checkpoint(args, model, PATH, ckpt_id):
         'last_global_data_samples']
     del checkpoint_state_dict
     return (epoch, last_global_step, last_global_data_samples)
-
-
-def get_effective_batch(args, total):
-    if args.local_rank != -1:
-        return total // dist.get_world_size(
-        ) // args.train_micro_batch_size_per_gpu // args.gradient_accumulation_steps // args.refresh_bucket_size
-    else:
-        return total // args.train_micro_batch_size_per_gpu // args.gradient_accumulation_steps // args.refresh_bucket_size
 
 
 def get_dataloader(args, dataset: Dataset, eval_set=False):
@@ -126,95 +117,26 @@ def master_process(args):
                                           and args.local_rank == -1)
 
 
-def get_train_dataset(args, index, finetune=False, shuffle=True):
-    assert not finetune, "finetune not supported"
-    i = 0
-    dataloaders = {}
-    datalengths = []
-    batchs_per_dataset = []
-    batch_mapping = {}
-
-    config = args.config
-    dataset_paths = config["data"]["datasets"]
-    dataset_flags = config["data"]["flags"]
-
-    # Pretraining dataset
-    if dataset_flags.get("pretrain_dataset", False):
-        pretrain_type = dataset_flags.get("pretrain_type")
-
-        if pretrain_type == "wiki_bc":
-            # Load Wiki Dataset
-            wiki_pretrain_dataset = PreTrainingDataset(
-                args.tokenizer,
-                os.path.join(args.data_path_prefix,
-                             dataset_paths['wiki_pretrain_dataset']),
-                args.logger, args.max_seq_length, index,
-                PretrainDataType.NUMPY, args.max_predictions_per_seq)
-            datalengths.append(len(wiki_pretrain_dataset))
-            dataloaders[i] = get_dataloader(args, wiki_pretrain_dataset)
-            batch_mapping[i] = PretrainBatch
-            batchs_per_dataset.append(
-                get_effective_batch(args, len(wiki_pretrain_dataset)))
-            i += 1
-
-            bc_pretrain_dataset = PreTrainingDataset(
-                args.tokenizer,
-                os.path.join(args.data_path_prefix,
-                             dataset_paths['bc_pretrain_dataset']),
-                args.logger, args.max_seq_length, index,
-                PretrainDataType.NUMPY, args.max_predictions_per_seq)
-            datalengths.append(len(bc_pretrain_dataset))
-            dataloaders[i] = get_dataloader(args, bc_pretrain_dataset)
-            batch_mapping[i] = PretrainBatch
-            batchs_per_dataset.append(
-                get_effective_batch(args, len(bc_pretrain_dataset)))
-            i += 1
-
-    dataset_batches = []
-    for i, batch_count in enumerate(batchs_per_dataset):
-        dataset_batches.extend([i] * batch_count)
-
-    # shuffle
-    if shuffle:
-        random.shuffle(dataset_batches)
-
-    dataset_picker = []
-    for dataset_batch_type in dataset_batches:
-        dataset_picker.extend([dataset_batch_type] *
-                              args.gradient_accumulation_steps *
-                              args.refresh_bucket_size)
-
-    return dataset_picker, dataloaders, sum(datalengths)
-
-
-def train(args, index, model, optimizer, finetune=False):
+def train(args, index, model, optimizer, pretrain_dataset_provider, finetune=False):
     global global_step
     global global_data_samples
     global last_global_step_from_restore
 
-    dataset_picker, dataloaders, total_length = get_train_dataset(
-        args, index, finetune)
+    dataset_iterator, total_length = pretrain_dataset_provider.get_shard(index)
     current_data_sample_count = global_data_samples
-    global_data_samples += total_length
+
     config = args.config
     logger = args.logger
-    print('total_length', total_length, 'global_data_samples',
-          global_data_samples)
+    print(f'worker-{dist.get_rank()}: begin epoch {index+1} current_sample_count {current_data_sample_count} shard_length {total_length} global_data_samples {global_data_samples}')
+
+    pretrain_dataset_provider.prefetch_shard(index + 1)
 
     model.train()
 
-    if args.config['training']['async_worker']:
-        worker = AsyncWorker(dataloaders, dataset_picker)
-        worker.start()
-
     epoch_step = 0
-    for step, dataset_type in enumerate(tqdm(dataset_picker, smoothing=1)):
+    for _, batch_index in enumerate(tqdm(dataset_iterator, smoothing=1)):
         try:
-            if args.config['training']['async_worker']:
-                batch = worker.get()
-            else:
-                batch = next(dataloaders[dataset_type])
-
+            batch = pretrain_dataset_provider.get_batch(batch_index)
             batch = tuple(t.to(args.device) for t in batch)  # Move to GPU
 
             # Calculate forward pass
@@ -224,8 +146,7 @@ def train(args, index, model, optimizer, finetune=False):
                                           dist.get_world_size())
 
             # Prefetch training data
-            if args.config['training']['async_worker']:
-                worker.prefetch()
+            pretrain_dataset_provider.prefetch_batch()
 
             model.network.backward(loss)
 
@@ -260,13 +181,15 @@ def train(args, index, model, optimizer, finetune=False):
             )
             break
 
-    if args.config['training']['async_worker']:
-        worker.stop()
+    pretrain_dataset_provider.release_shard(index)
+
+    global_data_samples = current_data_sample_count
 
     # Run Validation Loss
     if not finetune and args.max_seq_length == 512:
         logger.info(f"TRAIN BATCH SIZE: {args.train_micro_batch_size_per_gpu}")
         pretrain_validation(args, index, model)
+
 
 
 def update_learning_rate(args, config, current_global_step, optimizer):
@@ -519,16 +442,22 @@ def run(args, model, optimizer, start_epoch):
     config = args.config
     logger = args.logger
 
+    if args.use_nvidia_dataset:
+        pretrain_dataset_provider = NvidiaBertDatasetProvider(args)
+    else:
+        pretrain_dataset_provider = BingBertDatasetProvider(args)
+
     for index in range(start_epoch, config["training"]["num_epochs"]):
         logger.info(f"Training Epoch: {index + 1}")
         pre = time.time()
-        train(args, index, model, optimizer)
+        train(args, index, model, optimizer, pretrain_dataset_provider)
 
         # Save ckpts according to "--ckpt_to_save" option,
         # e.g. "--ckpt_to_save 160 161" to save epoch 160 and 161.
         if args.ckpt_to_save is None or (index + 1) in args.ckpt_to_save:
             logger.info(
                 f"Saving a checkpointing of the model for epoch: {index+1}")
+
             checkpoint_model(PATH=args.saved_model_path,
                              ckpt_id='epoch{}_step{}'.format(
                                  index + 1, global_step),

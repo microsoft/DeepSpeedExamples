@@ -142,7 +142,7 @@ def get_argument_parser():
                         default=False,
                         action='store_true',
                         help='Use DeepSpeed transformer kernel to accelerate.')
-    
+
     parser.add_argument('--stochastic_mode',
                         default=False,
                         action='store_true',
@@ -176,6 +176,14 @@ def get_argument_parser():
         action='store_true',
         help=
         'Use DeepSpeed transformer kernel memory optimization to checkpoint GELU activation.'
+    )
+
+    parser.add_argument(
+        '--use_nvidia_dataset',
+        default=False,
+        action='store_true',
+        help=
+        'Use Nvidia pretraining dataset.'
     )
 
     return parser
