@@ -21,8 +21,9 @@ class BingBertDatasetProvider(BertDatasetProviderInterface):
         # Initialize dataset paths
         self.dataset_paths = []
         for dataset in ['wiki_pretrain_dataset', 'bc_pretrain_dataset']:
-            self.dataset_paths.append(os.path.join(args.data_path_prefix,
-                                                   args.config["data"]["datasets"][dataset]))
+            self.dataset_paths.append(
+                os.path.join(args.data_path_prefix,
+                             args.config["data"]["datasets"][dataset]))
 
         self.max_seq_length = args.max_seq_length
         self.max_predictions_per_seq = args.max_predictions_per_seq
@@ -42,8 +43,9 @@ class BingBertDatasetProvider(BertDatasetProviderInterface):
         self.async_worker = None
 
         if self.global_rank == 0:
-            self.logger.info(f"BingBertDatasetProvider - Initialization:  async data loading {self.async_dataloading}")
-
+            self.logger.info(
+                f"BingBertDatasetProvider - Initialization:  async data loading {self.async_dataloading}"
+            )
 
     def get_shard(self, index, shuffle=True):
         datalengths = []
@@ -60,7 +62,8 @@ class BingBertDatasetProvider(BertDatasetProviderInterface):
                 max_predictions_per_seq=self.max_predictions_per_seq)
 
             datalengths.append(len(pretrain_dataset))
-            batches_per_dataset.append(self._get_effective_batch(len(pretrain_dataset)))
+            batches_per_dataset.append(
+                self._get_effective_batch(len(pretrain_dataset)))
             self.dataloaders[i] = self._get_dataloader(pretrain_dataset)
 
         dataset_batches = []
@@ -78,7 +81,8 @@ class BingBertDatasetProvider(BertDatasetProviderInterface):
                                          self.refresh_bucket_size)
 
         if self.async_dataloading:
-            self.async_worker = AsyncWorker(self.dataloaders, self.dataset_iterator)
+            self.async_worker = AsyncWorker(self.dataloaders,
+                                            self.dataset_iterator)
             self.async_worker.start()
 
         return self.dataset_iterator, sum(datalengths)
@@ -100,11 +104,12 @@ class BingBertDatasetProvider(BertDatasetProviderInterface):
             self.async_worker.prefetch()
 
     def _get_dataloader(self, dataset: Dataset):
-        return (x for x in
-                DataLoader(dataset,
-                           batch_size=self.train_micro_batch_size_per_gpu,
-                           sampler=self.datasampler(dataset),
-                           num_workers=self.num_workers))
+        return (
+            x
+            for x in DataLoader(dataset,
+                                batch_size=self.train_micro_batch_size_per_gpu,
+                                sampler=self.datasampler(dataset),
+                                num_workers=self.num_workers))
 
     def _get_effective_batch(self, total):
         return total // self.world_size // self.train_micro_batch_size_per_gpu // self.gradient_accumulation_steps // self.refresh_bucket_size

@@ -117,7 +117,12 @@ def master_process(args):
                                           and args.local_rank == -1)
 
 
-def train(args, index, model, optimizer, pretrain_dataset_provider, finetune=False):
+def train(args,
+          index,
+          model,
+          optimizer,
+          pretrain_dataset_provider,
+          finetune=False):
     global global_step
     global global_data_samples
     global last_global_step_from_restore
@@ -127,7 +132,9 @@ def train(args, index, model, optimizer, pretrain_dataset_provider, finetune=Fal
 
     config = args.config
     logger = args.logger
-    print(f'worker-{dist.get_rank()}: begin epoch {index+1} current_sample_count {current_data_sample_count} shard_length {total_length} global_data_samples {global_data_samples}')
+    print(
+        f'worker-{dist.get_rank()}: begin epoch {index+1} current_sample_count {current_data_sample_count} shard_length {total_length} global_data_samples {global_data_samples}'
+    )
 
     pretrain_dataset_provider.prefetch_shard(index + 1)
 
@@ -189,7 +196,6 @@ def train(args, index, model, optimizer, pretrain_dataset_provider, finetune=Fal
     if not finetune and args.max_seq_length == 512:
         logger.info(f"TRAIN BATCH SIZE: {args.train_micro_batch_size_per_gpu}")
         pretrain_validation(args, index, model)
-
 
 
 def update_learning_rate(args, config, current_global_step, optimizer):
