@@ -8,8 +8,8 @@ OUTPUT_DIR=${base_dir}/bert_model_nvidia_data_outputs
 
 mkdir -p $OUTPUT_DIR
 
-NCCL_TREE_THRESHOLD=0 NCCL_DEBUG=info deepspeed ${base_dir}/deepspeed_train.py \
---cf ${base_dir}/bert_large_lamb.json \
+NCCL_TREE_THRESHOLD=0 deepspeed ${base_dir}/deepspeed_train.py \
+--cf ${base_dir}/bert_large_lamb_nvidia_data.json \
 --max_seq_length 128 \
 --output_dir $OUTPUT_DIR \
 --deepspeed \
@@ -19,6 +19,6 @@ NCCL_TREE_THRESHOLD=0 NCCL_DEBUG=info deepspeed ${base_dir}/deepspeed_train.py \
 --lr_offset 10e-4 \
 --job_name $JOB_NAME \
 --deepspeed_config ${base_dir}/deepspeed_bsz64k_lamb_config_seq128.json \
---data_path_prefix /workspace/bert/data/128  \
+--data_path_prefix /workspace/bert \
 --use_nvidia_dataset \
 &> ${JOB_NAME}.log

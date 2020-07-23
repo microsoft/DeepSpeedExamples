@@ -15,7 +15,8 @@ from tqdm import tqdm
 from turing.logger import Logger
 from turing.utils import get_sample_writer
 from turing.models import BertMultiTask
-from turing.dataset import PreTrainingDataset, PretrainDataType
+from turing.dataset import PreTrainingDataset, PretrainBatch, PretrainDataType
+from turing.sources import PretrainingDataCreator
 from pytorch_pretrained_bert.tokenization import BertTokenizer
 from pytorch_pretrained_bert.optimization import BertAdam, warmup_linear, warmup_linear_decay_exp, warmup_exp_decay_exp, warmup_exp_decay_poly
 from utils import get_argument_parser, is_time_to_exit
@@ -81,13 +82,18 @@ def get_dataloader(args, dataset: Dataset, eval_set=False):
 
 
 def pretrain_validation(args, index, model):
+    if args.validation_data_path_prefix is None:
+        return
+
     config = args.config
     logger = args.logger
+
+    logger.info(f"Validation micro batch size: {args.train_micro_batch_size_per_gpu}")
 
     model.eval()
     dataset = PreTrainingDataset(
         args.tokenizer,
-        os.path.join(args.data_path_prefix, config['validation']['path']),
+        os.path.join(args.validation_data_path_prefix, config['validation']['path']),
         args.logger, args.max_seq_length, index, PretrainDataType.VALIDATION,
         args.max_predictions_per_seq)
     data_batches = get_dataloader(args, dataset, eval_set=True)
@@ -132,7 +138,7 @@ def train(args,
 
     config = args.config
     logger = args.logger
-    print(
+    logger.info(
         f'worker-{dist.get_rank()}: begin epoch {index+1} current_sample_count {current_data_sample_count} shard_length {total_length} global_data_samples {global_data_samples}'
     )
 
@@ -194,7 +200,6 @@ def train(args,
 
     # Run Validation Loss
     if not finetune and args.max_seq_length == 512:
-        logger.info(f"TRAIN BATCH SIZE: {args.train_micro_batch_size_per_gpu}")
         pretrain_validation(args, index, model)
 
 
@@ -285,6 +290,7 @@ def construct_arguments():
 
     # choose dataset and training config based on the given sequence length
     seq_len = str(args.max_seq_length)
+
     datasets = config["data"]["mixed_seq_datasets"][seq_len]
     del config["data"]["mixed_seq_datasets"]
     training = config["mixed_seq_training"][seq_len]
@@ -313,6 +319,10 @@ def construct_arguments():
     # Loading Tokenizer
     tokenizer = BertTokenizer.from_pretrained(config["bert_token_file"])
     args.tokenizer = tokenizer
+
+    # Set validation dataset path
+    if args.validation_data_path_prefix is None:
+        logging.warning('Skipping validation because validation_data_path_prefix is unspecified')
 
     # Issue warning if early exit from epoch is configured
     if args.max_steps < sys.maxsize:
@@ -431,9 +441,6 @@ def load_checkpoint(args, model):
     if not args.finetune and args.max_seq_length == 512:
         logger.info(
             f"Validation Loss of Checkpoint {start_epoch} before pretraining")
-        logger.info(
-            f"TRAIN MICRO BATCH SIZE PER GPU: {args.train_micro_batch_size_per_gpu}"
-        )
         index = start_epoch - 1 if start_epoch > 0 else start_epoch
         pretrain_validation(args, index, model)
 
