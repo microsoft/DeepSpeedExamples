@@ -12,8 +12,8 @@ script_dir=$(dirname $script_path)
 config_json="$script_dir/ds_zero3_config.json"
 gpt_options=" \
        --model-parallel-size ${MP_SIZE} \
-       --num-layers 85 \
-       --hidden-size 4096 \
+       --num-layers 24 \
+       --hidden-size 8192 \
        --num-attention-heads 16 \
        --batch-size 1 \
        --seq-length 1024 \
