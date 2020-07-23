@@ -87,12 +87,13 @@ def get_model(args):
         model = FP16_Module(model)
 
     # Wrap model for distributed training.
-    if USE_TORCH_DDP:
-        i = torch.cuda.current_device()
-        model = DDP(model, device_ids=[i], output_device=i,
-                    process_group=mpu.get_data_parallel_group())
-    else:
-        model = DDP(model)
+    if not args.deepspeed:
+        if USE_TORCH_DDP:
+            i = torch.cuda.current_device()
+            model = DDP(model, device_ids=[i], output_device=i,
+                        process_group=mpu.get_data_parallel_group())
+        else:
+            model = DDP(model)
 
     return model
 
@@ -313,7 +314,7 @@ def backward_step(optimizer, model, lm_loss, args, timers):
             optimizer.backward(loss, update_master_grads=False)
         else:
             loss.backward()
-    exit(0)
+
     # Reduce across processes.
     lm_loss_reduced = lm_loss
 
@@ -379,7 +380,7 @@ def train_step(data_iterator, model, optimizer, lr_scheduler,
     lm_loss_reduced = backward_step(optimizer, model, lm_loss, args, timers)
     timers('backward').stop()
 
-    return lm_loss_reduced, 0
+    #return lm_loss_reduced, 0
     # Update parameters.
     skipped_iter = 0
     timers('optimizer').start()

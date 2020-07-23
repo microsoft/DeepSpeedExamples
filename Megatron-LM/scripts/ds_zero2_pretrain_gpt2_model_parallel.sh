@@ -4,7 +4,7 @@
 MP_SIZE=1
 
 NUM_WORKERS=1
-NUM_GPUS_PER_WORKER=2
+NUM_GPUS_PER_WORKER=16
 
 script_path=$(realpath $0)
 script_dir=$(dirname $script_path)
@@ -12,10 +12,10 @@ script_dir=$(dirname $script_path)
 config_json="$script_dir/ds_zero3_config.json"
 gpt_options=" \
        --model-parallel-size ${MP_SIZE} \
-       --num-layers 1 \
-       --hidden-size 1024 \
+       --num-layers 85 \
+       --hidden-size 4096 \
        --num-attention-heads 16 \
-       --batch-size 8 \
+       --batch-size 1 \
        --seq-length 1024 \
        --max-position-embeddings 1024 \
        --train-iters 100000 \

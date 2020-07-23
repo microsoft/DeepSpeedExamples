@@ -3,7 +3,9 @@
   "gradient_accumulation_steps": 1,
   "steps_per_print": 1,
   "zero_optimization": {
-    "stage":3
+    "stage":3,
+    "reduce_bucket_size": 50000000,
+    "contiguous_gradients": true
   },
   "optimizer": {
     "type": "Adam",
