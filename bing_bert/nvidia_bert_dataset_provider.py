@@ -100,12 +100,12 @@ class NvidiaBertDatasetProvider(BertDatasetProviderInterface):
             self.world_size = dist.get_world_size()
 
         # Initialize dataset files
-        dataset_path = os.path.join(args.data_path_prefix, args.config['data']['datasets']['pretrain_dataset'])
+        dataset_path = os.path.join(
+            args.data_path_prefix,
+            args.config['data']['datasets']['pretrain_dataset'])
         self.dataset_files = [
-            os.path.join(dataset_path, f)
-            for f in os.listdir(dataset_path)
-            if os.path.isfile(os.path.join(dataset_path, f))
-            and 'training' in f
+            os.path.join(dataset_path, f) for f in os.listdir(dataset_path) if
+            os.path.isfile(os.path.join(dataset_path, f)) and 'training' in f
         ]
         self.dataset_files.sort()
         random.shuffle(self.dataset_files)

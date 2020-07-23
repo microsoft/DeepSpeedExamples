@@ -143,7 +143,8 @@ def get_argument_parser():
         type=str,
         default=None,
         help=
-        "Path to prefix validation data loading, helpful if pretraining dataset path is different")
+        "Path to prefix validation data loading, helpful if pretraining dataset path is different"
+    )
 
     parser.add_argument('--deepspeed_transformer_kernel',
                         default=False,

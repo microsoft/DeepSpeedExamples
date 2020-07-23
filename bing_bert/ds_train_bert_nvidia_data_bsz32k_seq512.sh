@@ -8,7 +8,7 @@ fi
 base_dir=`pwd`
 
 # Where should we save checkpoints and tensorboard events?
-JOB_NAME=lamb_nvidia_data_32k_chkpt${LOAD_EPOCH}_seq512_no_validation
+JOB_NAME=lamb_nvidia_data_32k_chkpt${LOAD_EPOCH}_seq512
 OUTPUT_DIR=${base_dir}/bert_model_nvidia_data_outputs
 
 # Assumes job name in previous seq128 run, will resume training from epoch 18 by default

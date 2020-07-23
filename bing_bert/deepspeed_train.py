@@ -88,13 +88,15 @@ def pretrain_validation(args, index, model):
     config = args.config
     logger = args.logger
 
-    logger.info(f"Validation micro batch size: {args.train_micro_batch_size_per_gpu}")
+    logger.info(
+        f"Validation micro batch size: {args.train_micro_batch_size_per_gpu}")
 
     model.eval()
     dataset = PreTrainingDataset(
         args.tokenizer,
-        os.path.join(args.validation_data_path_prefix, config['validation']['path']),
-        args.logger, args.max_seq_length, index, PretrainDataType.VALIDATION,
+        os.path.join(args.validation_data_path_prefix,
+                     config['validation']['path']), args.logger,
+        args.max_seq_length, index, PretrainDataType.VALIDATION,
         args.max_predictions_per_seq)
     data_batches = get_dataloader(args, dataset, eval_set=True)
     eval_loss = 0
@@ -322,7 +324,9 @@ def construct_arguments():
 
     # Set validation dataset path
     if args.validation_data_path_prefix is None:
-        logging.warning('Skipping validation because validation_data_path_prefix is unspecified')
+        logging.warning(
+            'Skipping validation because validation_data_path_prefix is unspecified'
+        )
 
     # Issue warning if early exit from epoch is configured
     if args.max_steps < sys.maxsize:
