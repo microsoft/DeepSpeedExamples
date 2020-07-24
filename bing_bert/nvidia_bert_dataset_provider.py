@@ -84,7 +84,7 @@ class pretraining_dataset(Dataset):
 
 class NvidiaBertDatasetProvider(BertDatasetProviderInterface):
     def __init__(self, args):
-        self.num_workers = 4  # args.config['training']['num_workers']
+        self.num_workers = args.config['training']['num_workers']
         self.max_seq_length = args.max_seq_length
         self.max_predictions_per_seq = args.max_predictions_per_seq
 
