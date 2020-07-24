@@ -13,10 +13,10 @@ the same number and generation of GPUs.
 * The source code for our transformer kernels can be found in the [DeepSpeed repo](https://github.com/microsoft/deepspeed).
 
 
-Although the fastest BERT training record was achieved using internal datasets, the DeepSpeed BERT model can also be pre-trained using datasets provided by [Nvidia](https://github.com/NVIDIA/DeepLearningExamples/tree/master/PyTorch/LanguageModeling/BERT).  Instructions for preparing the datasets are available [here](https://github.com/NVIDIA/DeepLearningExamples/tree/master/PyTorch/LanguageModeling/BERT#dataset-guidelines). In addition, the following three files are provided in this repo to perform the full pre-training of DeepSpeed BERT with Nvidia datasets.
+The fastest BERT training record reported above was achieved using internal datasets, which were not publicly available at the time of this release.  However, the DeepSpeed BERT model can also be pre-trained using publicly available datasets from [Nvidia](https://github.com/NVIDIA/DeepLearningExamples/tree/master/PyTorch/LanguageModeling/BERT).  Instructions for preparing the datasets are available [here](https://github.com/NVIDIA/DeepLearningExamples/tree/master/PyTorch/LanguageModeling/BERT#dataset-guidelines). In addition, the following three files are provided in this repo to perform the complete pre-training of DeepSpeed BERT using the Nvidia datasets.
 
-1. <code>ds_train_bert_nvidia_data_bsz64k_seq128.sh</code> for phase 1 training
-2. <code>ds_train_bert_nvidia_data_bsz32k_seq512.sh</code> for phase 2 training
+1. <code>ds_train_bert_nvidia_data_bsz64k_seq128.sh</code> script for phase 1 training
+2. <code>ds_train_bert_nvidia_data_bsz32k_seq512.sh</code> script for phase 2 training
 3. <code>bert_large_lamb_nvidia_data.json</code> for configuring the different parameters relating to the model, datasets, hyper-parameters, etc.
 
-As reference, the default settings of these script and configuration files will pre-train the model to achieve EM/F1 finetuning scores of 83.57/90.62 on SQuAD.
+The scripts assume that the datasets are available in the path <code>/workspace/bert</code>. For reference, the default settings of these script and configuration files will pre-train the model to achieve EM/F1 finetuning scores of 83.57/90.62 on SQuAD.
