@@ -69,6 +69,19 @@ class GPT2ParallelSelfAttention(torch.nn.Module):
         # Set output layer initialization if not provided.
         self.deepspeed_kernel_enable = deepspeed_kernel_enable
         if deepspeed_kernel_enable:
+            from deepspeed import DeepSpeedTransformerConfig, DeepSpeedSelfAttentionLayer 
+            ds_config = DeepSpeedTransformerConfig()
+            ds_config.batch_size = 1
+            ds_config.hidden_size = hidden_size
+            ds_config.max_seq_length = 2048
+            ds_config.heads = num_attention_heads
+            ds_config.attn_dropout_ratio = attention_dropout_prob
+            ds_config.pre_layer_norm = True
+            ds_config.initializer_range = 0.02
+            ds_config.fp16 = True
+
+            self.self = DeepSpeedSelfAttentionLayer(ds_config)
+        else:
             if output_layer_init_method is None:
                 output_layer_init_method = init_method
             # Per attention head and per partition values.
@@ -93,19 +106,6 @@ class GPT2ParallelSelfAttention(torch.nn.Module):
                                         hidden_size,
                                         input_is_parallel=True,
                                         init_method=output_layer_init_method)
-        else:
-            from deepspeed import DeepSpeedTransformerConfig, DeepSpeedSelfAttentionLayer 
-            ds_config = DeepSpeedTransformerConfig()
-            ds_config.batch_size = 1
-            ds_config.hidden_size = hidden_size
-            ds_config.max_seq_length = 2048
-            ds_config.heads = num_attention_heads
-            ds_config.attn_dropout_ratio = attention_dropout_prob
-            ds_config.pre_layer_norm = True
-            ds_config.initializer_range = 0.02
-            ds_config.fp16 = True
-
-            self.self = DeepSpeedSelfAttentionLayer(config)
 
         self.output_dropout = torch.nn.Dropout(output_dropout_prob)
 
@@ -131,6 +131,12 @@ class GPT2ParallelSelfAttention(torch.nn.Module):
 
         # Attention heads. [b, s, hp]
         if deepspeed_kernel_enable:
+            input_parallel = copy_to_model_parallel_region(hidden_states)
+
+            output_parallel = self.self(hidden_states)
+
+            output = reduce_from_model_parallel_region(output_parallel)
+        else:
             mixed_x_layer = self.query_key_value(hidden_states)
             (mixed_query_layer,
             mixed_key_layer,
@@ -169,12 +175,6 @@ class GPT2ParallelSelfAttention(torch.nn.Module):
 
             # Output. [b, s, h]
             output = self.dense(context_layer)
-        else:
-            input_parallel = copy_to_model_parallel_region(hidden_states)
-
-            output_parallel = self.self(hidden_states)
-            
-            output = reduce_from_model_parallel_region(output_parallel)
 
         output = self.output_dropout(output)
 
