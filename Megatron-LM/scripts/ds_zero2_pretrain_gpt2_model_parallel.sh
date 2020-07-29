@@ -15,7 +15,7 @@ gpt_options=" \
        --num-layers 24 \
        --hidden-size 1024 \
        --num-attention-heads 16 \
-       --batch-size 8 \
+       --batch-size 2 \
        --seq-length 1024 \
        --max-position-embeddings 1024 \
        --train-iters 100000 \
@@ -31,8 +31,6 @@ gpt_options=" \
        --weight-decay 1e-2 \
        --clip-grad 1.0 \
        --warmup .01 \
-       --checkpoint-activations \
-       --deepspeed-activation-checkpointing \
        --fp16 \
 "
 gpt_options="${gpt_options}

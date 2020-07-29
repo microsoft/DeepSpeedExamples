@@ -284,7 +284,6 @@ def forward_step(data_iterator, model, args, timers):
     tokens, labels, loss_mask, attention_mask, position_ids = get_batch(
         data_iterator, args, timers)
     timers('batch generator').stop()
-
     # Forward model.
     output = model(tokens, position_ids, attention_mask)
     losses = mpu.vocab_parallel_cross_entropy(output.contiguous().float(),

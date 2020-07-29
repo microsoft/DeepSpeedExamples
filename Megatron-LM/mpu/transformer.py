@@ -26,6 +26,8 @@ from .layers import ColumnParallelLinear
 from .layers import RowParallelLinear
 from .mappings import gather_from_model_parallel_region
 from .mappings import reduce_from_model_parallel_region
+from .mappings import copy_to_model_parallel_region
+
 import deepspeed
 
 from .random import checkpoint
@@ -64,45 +66,48 @@ class GPT2ParallelSelfAttention(torch.nn.Module):
     def __init__(self, hidden_size, num_attention_heads,
                  attention_dropout_prob, output_dropout_prob,
                  init_method, output_layer_init_method=None,
-                 deepspeed_kernel_enable=False):
+                 deepspeed_kernel_enable=True):
         super(GPT2ParallelSelfAttention, self).__init__()
         # Set output layer initialization if not provided.
+
+        # Per attention head and per partition values.
+        world_size = get_model_parallel_world_size()
+        self.hidden_size_per_partition = divide(hidden_size, world_size)
+        self.hidden_size_per_attention_head = divide(hidden_size,
+                                                    num_attention_heads)
+        self.num_attention_heads_per_partition = divide(num_attention_heads,
+                                                        world_size)
+
         self.deepspeed_kernel_enable = deepspeed_kernel_enable
         if deepspeed_kernel_enable:
             from deepspeed import DeepSpeedTransformerConfig, DeepSpeedSelfAttentionLayer 
             ds_config = DeepSpeedTransformerConfig()
-            ds_config.batch_size = 1
-            ds_config.hidden_size = hidden_size
-            ds_config.max_seq_length = 2048
-            ds_config.heads = num_attention_heads
+            ds_config.batch_size = 8
+            ds_config.hidden_size = self.hidden_size_per_partition
+            ds_config.max_seq_length = 1024
+            ds_config.heads = self.num_attention_heads_per_partition
             ds_config.attn_dropout_ratio = attention_dropout_prob
-            ds_config.pre_layer_norm = True
+            ds_config.pre_layer_norm = False
             ds_config.initializer_range = 0.02
             ds_config.fp16 = True
 
             self.self = DeepSpeedSelfAttentionLayer(ds_config)
-        else:
-            if output_layer_init_method is None:
-                output_layer_init_method = init_method
-            # Per attention head and per partition values.
-            world_size = get_model_parallel_world_size()
-            self.hidden_size_per_partition = divide(hidden_size, world_size)
-            self.hidden_size_per_attention_head = divide(hidden_size,
-                                                        num_attention_heads)
-            self.num_attention_heads_per_partition = divide(num_attention_heads,
-                                                            world_size)
-            # Strided linear layer.
-            self.query_key_value = ColumnParallelLinear(hidden_size, 3*hidden_size,
-                                                        stride=3,
-                                                        gather_output=False,
-                                                        init_method=init_method)
-            # Dropout. Note that for a single iteration, this layer will generate
-            # different outputs on different number of parallel partitions but
-            # on average it should not be partition dependent.
-            self.attention_dropout = torch.nn.Dropout(attention_dropout_prob)
-
-            # Output.
-            self.dense = RowParallelLinear(hidden_size,
+        #else:
+            
+        
+        # Strided linear layer.
+        self.query_key_value = ColumnParallelLinear(hidden_size, 3*hidden_size,
+                                                    stride=3,
+                                                    gather_output=False,
+                                                    init_method=init_method)
+        # Dropout. Note that for a single iteration, this layer will generate
+        # different outputs on different number of parallel partitions but
+        # on average it should not be partition dependent.
+        self.attention_dropout = torch.nn.Dropout(attention_dropout_prob)
+        if output_layer_init_method is None:
+                        output_layer_init_method = init_method
+        # Output.
+        self.dense = RowParallelLinear(hidden_size,
                                         hidden_size,
                                         input_is_parallel=True,
                                         init_method=output_layer_init_method)
@@ -130,14 +135,22 @@ class GPT2ParallelSelfAttention(torch.nn.Module):
         # ltor_mask: [1, 1, s, s]
 
         # Attention heads. [b, s, hp]
-        if deepspeed_kernel_enable:
+        if self.deepspeed_kernel_enable:
+            
             input_parallel = copy_to_model_parallel_region(hidden_states)
+            
+            output_parallel = self.self(hidden_states, ltor_mask)
+            print("**********************************")
+            print("size:", hidden_states.size(0))
+            print("output_parallel.shape:", output_parallel.shape)
+            
+            (query_layer,
+            key_layer,
+            value_layer) = torch.split(output_parallel, hidden_states.size(0), dim=0)
 
-            output_parallel = self.self(hidden_states)
-
-            output = reduce_from_model_parallel_region(output_parallel)
+            #output = reduce_from_model_parallel_region(output_parallel)
         else:
-            mixed_x_layer = self.query_key_value(hidden_states)
+            mixed_x_layer = self.query_key_value(output_parallel)
             (mixed_query_layer,
             mixed_key_layer,
             mixed_value_layer) = split_tensor_along_last_dim(mixed_x_layer, 3)
@@ -147,34 +160,35 @@ class GPT2ParallelSelfAttention(torch.nn.Module):
             key_layer = self._transpose_for_scores(mixed_key_layer)
             value_layer = self._transpose_for_scores(mixed_value_layer)
 
-            # Raw attention scores. [b, np, s, s]
-            attention_scores = torch.matmul(query_layer,
-                                            key_layer.transpose(-1, -2))
-            attention_scores = attention_scores / math.sqrt(
-                self.hidden_size_per_attention_head)
-            # Apply the left to right attention mask.
-            attention_scores = torch.mul(attention_scores, ltor_mask) - \
-                            10000.0 * (1.0 - ltor_mask)
+        # Raw attention scores. [b, np, s, s]
+        attention_scores = torch.matmul(query_layer,
+                                        key_layer.transpose(-1, -2))
+        attention_scores = attention_scores / math.sqrt(
+            self.hidden_size_per_attention_head)
+        # Apply the left to right attention mask.
+        # [B, H, S, S] * [1, 1, S, S]
+        attention_scores = torch.mul(attention_scores, ltor_mask) - \
+                        10000.0 * (1.0 - ltor_mask)
 
-            # Attention probabilities. [b, np, s, s]
-            attention_probs = torch.nn.Softmax(dim=-1)(attention_scores)
-            # This is actually dropping out entire tokens to attend to, which might
-            # seem a bit unusual, but is taken from the original Transformer paper.
-            with get_cuda_rng_tracker().fork():
-                attention_probs = self.attention_dropout(attention_probs)
+        # Attention probabilities. [b, np, s, s]
+        attention_probs = torch.nn.Softmax(dim=-1)(attention_scores)
+        # This is actually dropping out entire tokens to attend to, which might
+        # seem a bit unusual, but is taken from the original Transformer paper.
+        with get_cuda_rng_tracker().fork():
+            attention_probs = self.attention_dropout(attention_probs)
 
-            # Context layer.
-            # [b, np, s, hn]
-            context_layer = torch.matmul(attention_probs, value_layer)
-            # [b, s, np, hn]
-            context_layer = context_layer.permute(0, 2, 1, 3).contiguous()
-            new_context_layer_shape = context_layer.size()[:-2] + \
-                                    (self.hidden_size_per_partition,)
-            # [b, s, hp]
-            context_layer = context_layer.view(*new_context_layer_shape)
+        # Context layer.
+        # [b, np, s, hn]
+        context_layer = torch.matmul(attention_probs, value_layer)
+        # [b, s, np, hn]
+        context_layer = context_layer.permute(0, 2, 1, 3).contiguous()
+        new_context_layer_shape = context_layer.size()[:-2] + \
+                                (self.hidden_size_per_partition,)
+        # [b, s, hp]
+        context_layer = context_layer.view(*new_context_layer_shape)
 
-            # Output. [b, s, h]
-            output = self.dense(context_layer)
+        # Output. [b, s, h]
+        output = self.dense(context_layer)
 
         output = self.output_dropout(output)
 
