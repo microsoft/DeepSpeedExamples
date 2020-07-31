@@ -415,6 +415,7 @@ def train(model, optimizer, lr_scheduler,
 
     timers('interval time').start()
     report_memory_flag = True
+    counter = 0
     while iteration < args.train_iters:
 
         lm_loss, skipped_iter = train_step(train_data_iterator,
@@ -424,6 +425,9 @@ def train(model, optimizer, lr_scheduler,
                                            args, timers)
         skipped_iters += skipped_iter
         iteration += 1
+        counter += 1
+        if counter > 2:
+            exit(0)
 
         # Update losses.
         total_lm_loss += lm_loss.data.detach().float()
