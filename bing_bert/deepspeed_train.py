@@ -451,6 +451,14 @@ def load_checkpoint(args, model):
     return start_epoch
 
 
+def get_dataprovider(args):
+    if args.use_nvidia_dataset:
+        dataset_provider = NvidiaBertDatasetProvider(args)
+    else:
+        dataset_provider = BingBertDatasetProvider(args)
+    return dataset_provider
+
+
 def run(args, model, optimizer, start_epoch):
     global global_step
     global global_data_samples
@@ -459,10 +467,7 @@ def run(args, model, optimizer, start_epoch):
     config = args.config
     logger = args.logger
 
-    if args.use_nvidia_dataset:
-        pretrain_dataset_provider = NvidiaBertDatasetProvider(args)
-    else:
-        pretrain_dataset_provider = BingBertDatasetProvider(args)
+    pretrain_dataset_provider = get_dataprovider(args)
 
     for index in range(start_epoch, config["training"]["num_epochs"]):
         logger.info(f"Training Epoch: {index + 1}")
@@ -494,10 +499,30 @@ def run(args, model, optimizer, start_epoch):
             break
 
 
+def deepspeed_trace_model(args, model):
+    # Get dataset provider for sample batch
+    sample_dataprovider = get_dataprovider(args)
+    sample_iterator, _ = sample_dataprovider.get_shard(0)
+    sample_batch = sample_dataprovider.get_batch(sample_iterator)
+    sample_batch = tuple(t.to(args.device) for t in sample_batch)  # Move to GPU
+    model.network.module = torch.jit.trace(model.network.module, (sample_batch, ))
+    sample_dataprovider.release_shard(0)
+    args.logger.info(f"Enabled JIT Trace DeepSpeed model")
+
+
+def deepspeed_script_model(args, model):
+    import pdb
+    pdb.set_trace()
+    model.network.module = torch.jit.script(model.network)
+
+
 def main():
     start = time.time()
     args = construct_arguments()
     model, optimizer = prepare_model_optimizer(args)
+    if args.jit_trace:
+        deepspeed_trace_model(args, model)
+
     start_epoch = 0
     if not None in [args.load_training_checkpoint, args.load_checkpoint_id]:
         start_epoch = load_checkpoint(args, model)

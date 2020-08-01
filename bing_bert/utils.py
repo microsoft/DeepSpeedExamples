@@ -25,8 +25,7 @@ def get_argument_parser():
         "--max_seq_length",
         default=512,
         type=int,
-        help=
-        "The maximum total input sequence length after WordPiece tokenization. Sequences "
+        help="The maximum total input sequence length after WordPiece tokenization. Sequences "
         "longer than this will be truncated, and sequences shorter than this will be padded."
     )
     parser.add_argument(
@@ -34,8 +33,7 @@ def get_argument_parser():
         "--max_pred",
         default=80,
         type=int,
-        help=
-        "The maximum number of masked tokens in a sequence to be predicted.")
+        help="The maximum number of masked tokens in a sequence to be predicted.")
     parser.add_argument('--seed',
                         type=int,
                         default=42,
@@ -45,8 +43,7 @@ def get_argument_parser():
         "--do_lower_case",
         default=True,
         action='store_true',
-        help=
-        "Whether to lower case the input text. True for uncased models, False for cased models."
+        help="Whether to lower case the input text. True for uncased models, False for cased models."
     )
     parser.add_argument("--local_rank",
                         type=int,
@@ -62,8 +59,7 @@ def get_argument_parser():
         '--refresh_bucket_size',
         type=int,
         default=1,
-        help=
-        "This param makes sure that a certain task is repeated for this time steps to \
+        help="This param makes sure that a certain task is repeated for this time steps to \
                             optimise on the back propogation speed with APEX's DistributedDataParallel"
     )
     parser.add_argument('--finetune',
@@ -75,8 +71,7 @@ def get_argument_parser():
         '--lr_schedule',
         type=str,
         default='LE',
-        help=
-        'Choices LE, EE, EP (L: Linear, E: Exponetial, P: Polynomial warmup and decay)'
+        help='Choices LE, EE, EP (L: Linear, E: Exponetial, P: Polynomial warmup and decay)'
     )
 
     parser.add_argument('--lr_offset',
@@ -89,8 +84,7 @@ def get_argument_parser():
         '--load_cp',
         type=str,
         default=None,
-        help=
-        "This is the path to the TAR file which contains model+opt state_dict() checkpointed."
+        help="This is the path to the TAR file which contains model+opt state_dict() checkpointed."
     )
     parser.add_argument(
         '--load_checkpoint_id',
@@ -114,16 +108,14 @@ def get_argument_parser():
         '--max_steps',
         type=int,
         default=sys.maxsize,
-        help=
-        'Maximum number of training steps of effective batch size to complete.'
+        help='Maximum number of training steps of effective batch size to complete.'
     )
 
     parser.add_argument(
         '--max_steps_per_epoch',
         type=int,
         default=sys.maxsize,
-        help=
-        'Maximum number of training steps of effective batch size within an epoch to complete.'
+        help='Maximum number of training steps of effective batch size within an epoch to complete.'
     )
 
     parser.add_argument('--print_steps',
@@ -135,15 +127,13 @@ def get_argument_parser():
         '--data_path_prefix',
         type=str,
         default="",
-        help=
-        "Path to prefix data loading, helpful for AML and other environments")
+        help="Path to prefix data loading, helpful for AML and other environments")
 
     parser.add_argument(
         '--validation_data_path_prefix',
         type=str,
         default=None,
-        help=
-        "Path to prefix validation data loading, helpful if pretraining dataset path is different"
+        help="Path to prefix validation data loading, helpful if pretraining dataset path is different"
     )
 
     parser.add_argument('--deepspeed_transformer_kernel',
@@ -161,30 +151,26 @@ def get_argument_parser():
         '--ckpt_to_save',
         nargs='+',
         type=int,
-        help=
-        'Indicates which checkpoints to save, e.g. --ckpt_to_save 160 161, by default all checkpoints are saved.'
+        help='Indicates which checkpoints to save, e.g. --ckpt_to_save 160 161, by default all checkpoints are saved.'
     )
 
     parser.add_argument(
         '--attention_dropout_checkpoint',
         default=False,
         action='store_true',
-        help=
-        'Use DeepSpeed transformer kernel memory optimization to checkpoint dropout output.'
+        help='Use DeepSpeed transformer kernel memory optimization to checkpoint dropout output.'
     )
     parser.add_argument(
         '--normalize_invertible',
         default=False,
         action='store_true',
-        help=
-        'Use DeepSpeed transformer kernel memory optimization to perform invertible normalize backpropagation.'
+        help='Use DeepSpeed transformer kernel memory optimization to perform invertible normalize backpropagation.'
     )
     parser.add_argument(
         '--gelu_checkpoint',
         default=False,
         action='store_true',
-        help=
-        'Use DeepSpeed transformer kernel memory optimization to checkpoint GELU activation.'
+        help='Use DeepSpeed transformer kernel memory optimization to checkpoint GELU activation.'
     )
 
     parser.add_argument('--use_nvidia_dataset',
@@ -192,9 +178,14 @@ def get_argument_parser():
                         action='store_true',
                         help='Use Nvidia pretraining dataset.')
 
+    parser.add_argument('--jit_trace',
+                        default=False,
+                        action='store_true',
+                        help='Use jit traced model.')
+
     return parser
 
 
 def is_time_to_exit(args, epoch_steps=0, global_steps=0):
     return (epoch_steps >= args.max_steps_per_epoch) or \
-            (global_steps >= args.max_steps)
+        (global_steps >= args.max_steps)

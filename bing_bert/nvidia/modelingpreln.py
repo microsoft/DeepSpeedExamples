@@ -65,6 +65,8 @@ CONFIG_NAME = 'bert_config.json'
 WEIGHTS_NAME = 'pytorch_model.bin'
 TF_WEIGHTS_NAME = 'model.ckpt'
 
+TRUE_TENSOR = torch.ones(1, dtype=torch.bool)
+FALSE_TENSOR = torch.zeros(1, dtype=torch.bool)
 
 def load_tf_weights_in_bert(model, tf_checkpoint_path):
     """ Load tf checkpoints in a pytorch model
@@ -129,7 +131,7 @@ def load_tf_weights_in_bert(model, tf_checkpoint_path):
     return model
 
 
-@torch.jit.script
+# @torch.jit.script
 def f_gelu(x):
     pdtype = x.dtype
     x = x.float()
@@ -137,19 +139,19 @@ def f_gelu(x):
     return y.to(pdtype)
 
 
-@torch.jit.script
+# @torch.jit.script
 def bias_gelu(bias, y):
     x = bias + y
     return x * 0.5 * (1.0 + torch.erf(x / 1.41421))
 
 
-@torch.jit.script
+# @torch.jit.script
 def bias_tanh(bias, y):
     x = bias + y
     return torch.tanh(x)
 
 
-def gelu(x):
+def gelu(bias, x):
     """Implementation of the gelu activation function.
         For information: OpenAI GPT's gelu is slightly different (and gives slightly different results):
         0.5 * x * (1 + torch.tanh(math.sqrt(2 / math.pi) * (x + 0.044715 * torch.pow(x, 3))))
@@ -158,11 +160,18 @@ def gelu(x):
     return f_gelu(x)
 
 
-def swish(x):
+def swish(bias, x):
     return x * torch.sigmoid(x)
 
 
-ACT2FN = {"gelu": gelu, "relu": torch.nn.functional.relu, "swish": swish}
+def relu(bias, x):
+    return torch.nn.functional.relu(x)
+
+def tanh(bias, x):
+    return bias_tanh(bias, x)
+
+#ACT2FN = {"gelu": gelu, "relu": torch.nn.functional.relu, "swish": swish}
+ACT2FN = {"gelu": gelu, "relu": relu, "swish": swish, "tanh": tanh}
 
 
 class LinearActivation(Module):
@@ -176,16 +185,20 @@ class LinearActivation(Module):
         self.out_features = out_features
         self.fused_gelu = False
         self.fused_tanh = False
+        self.act_fn = ACT2FN[act]
+
         if isinstance(act, str) or (sys.version_info[0] == 2
                                     and isinstance(act, unicode)):
             if bias and act == 'gelu':
                 self.fused_gelu = True
+                self.act_fn = bias_gelu
             elif bias and act == 'tanh':
                 self.fused_tanh = True
+                self.act_fn = bias_tanh
             else:
                 self.act_fn = ACT2FN[act]
-        else:
-            self.act_fn = act
+#        else:
+#            self.act_fn = act
         self.weight = Parameter(torch.Tensor(out_features, in_features))
         if bias:
             self.bias = Parameter(torch.Tensor(out_features))
@@ -206,7 +219,7 @@ class LinearActivation(Module):
         elif self.fused_tanh:
             return bias_tanh(self.bias, F.linear(input, self.weight, None))
         else:
-            return self.act_fn(F.linear(input, self.weight, self.bias))
+            return self.act_fn(self.bias, F.linear(input, self.weight, self.bias))
 
     def extra_repr(self):
         return 'in_features={}, out_features={}, bias={}'.format(
@@ -216,6 +229,7 @@ class LinearActivation(Module):
 class BertConfig(object):
     """Configuration class to store the configuration of a `BertModel`.
     """
+
     def __init__(self,
                  vocab_size_or_config_json_file,
                  hidden_size=768,
@@ -305,38 +319,57 @@ class BertConfig(object):
         return json.dumps(self.to_dict(), indent=2, sort_keys=True) + "\n"
 
 
-try:
-    import apex
-    #apex.amp.register_half_function(apex.normalization.fused_layer_norm, 'FusedLayerNorm')
-    import apex.normalization
-    #apex.amp.register_float_function(apex.normalization.FusedLayerNorm, 'forward')
-    BertLayerNorm = apex.normalization.FusedLayerNorm
-except ImportError:
-    print(
-        "Better speed can be achieved with apex installed from https://www.github.com/nvidia/apex."
-    )
+# try:
+#    import apex
+#    #apex.amp.register_half_function(apex.normalization.fused_layer_norm, 'FusedLayerNorm')
+#    import apex.normalization
+#    #apex.amp.register_float_function(apex.normalization.FusedLayerNorm, 'forward')
+#    BertLayerNorm = apex.normalization.FusedLayerNorm
+# except ImportError:
+#    print(
+#        "Better speed can be achieved with apex installed from https://www.github.com/nvidia/apex."
+#    )
+#
+#    class BertLayerNorm(nn.Module):
+#        def __init__(self, hidden_size, eps=1e-12):
+#            """Construct a layernorm module in the TF style (epsilon inside the square root).
+#            """
+#            super(BertLayerNorm, self).__init__()
+#            self.weight = nn.Parameter(torch.ones(hidden_size))
+#            self.bias = nn.Parameter(torch.zeros(hidden_size))
+#            self.variance_epsilon = eps
+#
+#        def forward(self, x):
+#            pdtype = x.dtype
+#            x = x.float()
+#            u = x.mean(-1, keepdim=True)
+#            s = (x - u).pow(2).mean(-1, keepdim=True)
+#            x = (x - u) / torch.sqrt(s + self.variance_epsilon)
+#            return self.weight * x.to(pdtype) + self.bias
 
-    class BertLayerNorm(nn.Module):
-        def __init__(self, hidden_size, eps=1e-12):
-            """Construct a layernorm module in the TF style (epsilon inside the square root).
-            """
-            super(BertLayerNorm, self).__init__()
-            self.weight = nn.Parameter(torch.ones(hidden_size))
-            self.bias = nn.Parameter(torch.zeros(hidden_size))
-            self.variance_epsilon = eps
 
-        def forward(self, x):
-            pdtype = x.dtype
-            x = x.float()
-            u = x.mean(-1, keepdim=True)
-            s = (x - u).pow(2).mean(-1, keepdim=True)
-            x = (x - u) / torch.sqrt(s + self.variance_epsilon)
-            return self.weight * x.to(pdtype) + self.bias
+class BertLayerNorm(nn.Module):
+    def __init__(self, hidden_size, eps=1e-12):
+        """Construct a layernorm module in the TF style (epsilon inside the square root).
+        """
+        super(BertLayerNorm, self).__init__()
+        self.weight = nn.Parameter(torch.ones(hidden_size))
+        self.bias = nn.Parameter(torch.zeros(hidden_size))
+        self.variance_epsilon = eps
+
+    def forward(self, x):
+        pdtype = x.dtype
+        x = x.float()
+        u = x.mean(-1, keepdim=True)
+        s = (x - u).pow(2).mean(-1, keepdim=True)
+        x = (x - u) / torch.sqrt(s + self.variance_epsilon)
+        return self.weight * x.to(pdtype) + self.bias
 
 
 class BertEmbeddings(nn.Module):
     """Construct the embeddings from word, position and token_type embeddings.
     """
+
     def __init__(self, config):
         super(BertEmbeddings, self).__init__()
         self.word_embeddings = nn.Embedding(config.vocab_size,
@@ -351,22 +384,23 @@ class BertEmbeddings(nn.Module):
         self.LayerNorm = BertLayerNorm(config.hidden_size, eps=1e-12)
         self.dropout = nn.Dropout(config.hidden_dropout_prob)
 
-    def forward(self, input_ids, token_type_ids=None):
-        seq_length = input_ids.size(1)
-        position_ids = torch.arange(seq_length,
-                                    dtype=torch.long,
-                                    device=input_ids.device)
-        position_ids = position_ids.unsqueeze(0).expand_as(input_ids)
-        if token_type_ids is None:
-            token_type_ids = torch.zeros_like(input_ids)
+    def forward(self, input_ids, token_type_ids=torch.zeros(1, dtype=torch.int)):
+        seq_length=input_ids.size(1)
+        position_ids=torch.arange(seq_length,
+                                    dtype = torch.long,
+                                    device = input_ids.device)
+        position_ids=position_ids.unsqueeze(0).expand_as(input_ids)
 
-        words_embeddings = self.word_embeddings(input_ids)
-        position_embeddings = self.position_embeddings(position_ids)
-        token_type_embeddings = self.token_type_embeddings(token_type_ids)
+        if token_type_ids.shape == torch.Size([1]) and int(token_type_ids.sum()) == 0:
+            token_type_ids=torch.zeros_like(input_ids)
 
-        embeddings = words_embeddings + position_embeddings + token_type_embeddings
-        embeddings = self.LayerNorm(embeddings)
-        embeddings = self.dropout(embeddings)
+        words_embeddings=self.word_embeddings(input_ids)
+        position_embeddings=self.position_embeddings(position_ids)
+        token_type_embeddings=self.token_type_embeddings(token_type_ids)
+
+        embeddings=words_embeddings + position_embeddings + token_type_embeddings
+        embeddings=self.LayerNorm(embeddings)
+        embeddings=self.dropout(embeddings)
         return embeddings
 
 
@@ -393,13 +427,13 @@ class BertSelfAttention(nn.Module):
     def transpose_for_scores(self, x):
         new_x_shape = x.size()[:-1] + (self.num_attention_heads,
                                        self.attention_head_size)
-        x = x.view(*new_x_shape)
+        x = x.view(new_x_shape)
         return x.permute(0, 2, 1, 3)
 
     def transpose_key_for_scores(self, x):
         new_x_shape = x.size()[:-1] + (self.num_attention_heads,
                                        self.attention_head_size)
-        x = x.view(*new_x_shape)
+        x = x.view(new_x_shape)
         return x.permute(0, 2, 3, 1)
 
     def forward(self, hidden_states, attention_mask):
@@ -430,7 +464,7 @@ class BertSelfAttention(nn.Module):
         context_layer = context_layer.permute(0, 2, 1, 3).contiguous()
         new_context_layer_shape = context_layer.size()[:-2] + (
             self.all_head_size, )
-        context_layer = context_layer.view(*new_context_layer_shape)
+        context_layer = context_layer.view(new_context_layer_shape)
         return context_layer
 
 
@@ -513,7 +547,7 @@ class BertEncoder(nn.Module):
     def __init__(self, config, args):
         super(BertEncoder, self).__init__()
 
-        #Added later to make it similar to GPT-2
+        # Added later to make it similar to GPT-2
         self.FinalLayerNorm = BertLayerNorm(config.hidden_size, eps=1e-12)
 
         if args.deepspeed_transformer_kernel:
@@ -562,47 +596,66 @@ class BertEncoder(nn.Module):
     #     if not output_all_encoded_layers:
     #         all_encoder_layers.append(hidden_states)
     #     return all_encoder_layers
+
     def forward(self,
                 hidden_states,
                 attention_mask,
-                output_all_encoded_layers=True,
-                checkpoint_activations=False):
+                output_all_encoded_layers=TRUE_TENSOR,
+                checkpoint_activations=FALSE_TENSOR):
         all_encoder_layers = []
 
-        def custom(start, end):
-            def custom_forward(*inputs):
-                layers = self.layer[start:end]
-                x_ = inputs[0]
-                for layer in layers:
-                    x_ = layer(x_, inputs[1])
-                return x_
+        for i, layer_module in enumerate(self.layer):
+            hidden_states = layer_module(hidden_states, attention_mask)
+            if output_all_encoded_layers:
+                all_encoder_layers.append(hidden_states)
 
-            return custom_forward
-
-        if checkpoint_activations:
-            l = 0
-            num_layers = len(self.layer)
-            chunk_length = math.ceil(math.sqrt(num_layers))
-            while l < num_layers:
-                hidden_states = checkpoint.checkpoint(
-                    custom(l, l + chunk_length), hidden_states,
-                    attention_mask * 1)
-                l += chunk_length
-            # decoder layers
-        else:
-            for i, layer_module in enumerate(self.layer):
-                hidden_states = layer_module(hidden_states, attention_mask)
-
-                if output_all_encoded_layers:
-                    all_encoder_layers.append(hidden_states)
-
-        if not output_all_encoded_layers or checkpoint_activations:
+        if not output_all_encoded_layers:
             hidden_states = self.FinalLayerNorm(hidden_states)
             all_encoder_layers.append(hidden_states)
         return all_encoder_layers
 
+#    def forward(self,
+#                hidden_states,
+#                attention_mask,
+#                output_all_encoded_layers=True,
+#                checkpoint_activations=False):
+#        all_encoder_layers = []
+#
+#        def custom(start, end):
+#            def custom_forward(*inputs):
+#                layers = self.layer[start:end]
+#                x_ = inputs[0]
+#                for layer in layers:
+#                    x_ = layer(x_, inputs[1])
+#                return x_
+#
+#            return custom_forward
+#
+#        if checkpoint_activations:
+#            l = 0
+#            num_layers = len(self.layer)
+#            chunk_length = math.ceil(math.sqrt(num_layers))
+#            while l < num_layers:
+#                hidden_states = checkpoint.checkpoint(
+#                    custom(l, l + chunk_length), hidden_states,
+#                    attention_mask * 1)
+#                l += chunk_length
+#            # decoder layers
+#        else:
+#            for i, layer_module in enumerate(self.layer):
+#                hidden_states = layer_module(hidden_states, attention_mask)
+#
+#                if output_all_encoded_layers:
+#                    all_encoder_layers.append(hidden_states)
+#
+#        if not output_all_encoded_layers or checkpoint_activations:
+#            hidden_states = self.FinalLayerNorm(hidden_states)
+#            all_encoder_layers.append(hidden_states)
+#        return all_encoder_layers
 
-#class BertEncoder(nn.Module):
+
+
+# class BertEncoder(nn.Module):
 #    def __init__(self, config):
 #        super(BertEncoder, self).__init__()
 #        layer = BertLayer(config)
@@ -940,14 +993,16 @@ class BertModel(BertPreTrainedModel):
         self.encoder = BertEncoder(config, args)
         self.pooler = BertPooler(config)
         self.apply(self.init_bert_weights)
+        self.parameters_list = list(self.parameters())
+        self.param_index = 0
         logger.info("Init BERT pretrain model")
 
     def forward(self,
                 input_ids,
                 token_type_ids=None,
                 attention_mask=None,
-                output_all_encoded_layers=True,
-                checkpoint_activations=False):
+                output_all_encoded_layers=TRUE_TENSOR,
+                checkpoint_activations=FALSE_TENSOR):
         if attention_mask is None:
             attention_mask = torch.ones_like(input_ids)
         if token_type_ids is None:
@@ -965,8 +1020,15 @@ class BertModel(BertPreTrainedModel):
         # positions we want to attend and -10000.0 for masked positions.
         # Since we are adding it to the raw scores before the softmax, this is
         # effectively the same as removing these entirely.
+
+        #extended_attention_mask = extended_attention_mask.to(
+        #    dtype=next(self.parameters()).dtype)  # fp16 compatibility
+
+        param_index = self.param_index % len(self.parameters_list)
         extended_attention_mask = extended_attention_mask.to(
-            dtype=next(self.parameters()).dtype)  # fp16 compatibility
+            dtype=self.parameters_list[param_index].dtype)  # fp16 compatibility
+        self.param_index += 1
+
         extended_attention_mask = (1.0 - extended_attention_mask) * -10000.0
 
         embedding_output = self.embeddings(input_ids, token_type_ids)
@@ -977,9 +1039,11 @@ class BertModel(BertPreTrainedModel):
             checkpoint_activations=checkpoint_activations)
         sequence_output = encoded_layers[-1]
         pooled_output = self.pooler(sequence_output)
-        if not output_all_encoded_layers:
-            encoded_layers = encoded_layers[-1]
-        return encoded_layers, pooled_output
+        #if not output_all_encoded_layers:
+        #    encoded_layers = encoded_layers[-1]
+
+
+        return encoded_layers[-1], pooled_output
 
 
 class BertForPreTrainingPreLN(BertPreTrainedModel):
