@@ -9,13 +9,13 @@ NUM_GPUS_PER_WORKER=16
 script_path=$(realpath $0)
 script_dir=$(dirname $script_path)
 
-config_json="$script_dir/ds_zero3_config.json"
+config_json="$script_dir/ds_zero2_config.json"
 gpt_options=" \
        --model-parallel-size ${MP_SIZE} \
-       --num-layers 24 \
+       --num-layers 5 \
        --hidden-size 8192 \
        --num-attention-heads 16 \
-       --batch-size 1 \
+       --batch-size 4 \
        --seq-length 1024 \
        --max-position-embeddings 1024 \
        --train-iters 100000 \
@@ -41,7 +41,7 @@ gpt_options="${gpt_options}
 "
 
 
-run_cmd="deepspeed.pt --num_nodes ${NUM_WORKERS} --num_gpus ${NUM_GPUS_PER_WORKER} pretrain_gpt2_stage3.py $@ ${gpt_options}"
+run_cmd="deepspeed.pt --num_nodes ${NUM_WORKERS} --num_gpus ${NUM_GPUS_PER_WORKER} pretrain_gpt2.py $@ ${gpt_options}"
 echo ${run_cmd}
 eval ${run_cmd}
 

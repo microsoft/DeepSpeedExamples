@@ -426,7 +426,7 @@ def train(model, optimizer, lr_scheduler,
         skipped_iters += skipped_iter
         iteration += 1
         counter += 1
-        if counter > 2:
+        if counter > 10:
             exit(0)
 
         # Update losses.
@@ -648,6 +648,21 @@ def main():
 
     # Arguments.
     args = get_args()
+
+    # import os
+
+    # def new_gpu_tensor(cls, *args):
+    #     dev = torch.device('cuda:{}'.format(int(os.environ["RANK"]) % torch.cuda.device_count()))
+    #     return torch.ones((1,1), device=dev).new_empty(*args)
+
+    # def empty_gpu_tensor(*size, dtype=None, device=None, requires_grad=False):
+    #     dev = torch.device('cuda:{}'.format(int(os.environ["RANK"]) % torch.cuda.device_count()))
+    #     dummy = torch.ones((1,1), device=dev)
+    #     return dummy.new_empty(*size, dtype=dtype, device=dev, requires_grad=requires_grad)
+
+    # torch.Tensor.__new__ = new_gpu_tensor
+    # torch.empty = empty_gpu_tensor
+
 
     # Pytorch distributed.
     initialize_distributed(args)

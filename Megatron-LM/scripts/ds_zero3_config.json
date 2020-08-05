@@ -1,5 +1,5 @@
 {
-  "train_batch_size":16,
+  "train_batch_size":64,
   "gradient_accumulation_steps": 1,
   "steps_per_print": 1,
   "zero_optimization": {
@@ -16,7 +16,7 @@
   "gradient_clipping": 1.0,
   "fp16": {
     "enabled": true,
-    "loss_scale": 0,
+    "loss_scale": 65536.0,
     "loss_scale_window": 1000,
     "hysteresis": 2,
     "min_loss_scale": 1
@@ -25,5 +25,5 @@
     "partition_activations":true,
     "contiguous_memory_optimization":false
   },
-  "wall_clock_breakdown": false
+  "wall_clock_breakdown": true
 }
