@@ -1,0 +1,22 @@
+{
+  "train_batch_size": 8,
+  "train_micro_batch_size_per_gpu": 8,
+  "steps_per_print": 8000000,
+  "prescale_gradients": false,
+  "optimizer": {
+    "type": "OnebitAdam",
+    "params": {
+      "lr": 1e-8,
+      "weight_decay": 0.01,
+      "bias_correction": false
+    }
+  },
+  "gradient_clipping": 1.0,
+
+  "wall_clock_breakdown": false,
+
+  "fp16": {
+    "enabled": true,
+    "loss_scale": 0
+  }
+}
