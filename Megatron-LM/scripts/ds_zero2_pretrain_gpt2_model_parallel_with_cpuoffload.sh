@@ -12,7 +12,7 @@ script_dir=$(dirname $script_path)
 config_json="$script_dir/ds_zero2_cpu_offload_config.json"
 gpt_options=" \
        --model-parallel-size ${MP_SIZE} \
-       --num-layers  11\
+       --num-layers  110\
        --hidden-size 3200 \
        --num-attention-heads 32 \
        --batch-size 16 \
