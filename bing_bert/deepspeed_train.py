@@ -197,7 +197,7 @@ def train(args,
             model.network.backward(loss)
 
             # see_memory_usage('Before setting loss= None')
-            # loss = None
+            loss = None
             # see_memory_usage('After setting loss= None')
 
 
