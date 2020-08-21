@@ -878,17 +878,38 @@ def main():
     param_optimizer = [n for n in param_optimizer if 'pooler' not in n[0]]
 
     no_decay = ['bias', 'LayerNorm.bias', 'LayerNorm.weight']
+    no_freeze = ['qa_outputs']
+    all_remaining = no_decay + no_freeze
+    print([n for n, p in param_optimizer if any(nd in n for nd in no_freeze) and all(nc not in n for nc in no_decay)])
+    print([n for n, p in param_optimizer if any(nd in n for nd in no_decay) and any(nc in n for nc in no_freeze)])
+
     optimizer_grouped_parameters = [{
         'params':
-        [p for n, p in param_optimizer if not any(nd in n for nd in no_decay)],
+        [p for n, p in param_optimizer if not any(nd in n for nd in all_remaining)],
         'weight_decay':
-        0.01
+        0.01,
+        'no_freeze': False
     }, {
         'params':
-        [p for n, p in param_optimizer if any(nd in n for nd in no_decay)],
+        [p for n, p in param_optimizer if any(nd in n for nd in no_decay) and all(nc not in n for nc in no_freeze)],
         'weight_decay':
-        0.0
-    }]
+        0.0,
+        'no_freeze': False
+    }, {
+        'params':
+        [p for n, p in param_optimizer if any(nd in n for nd in no_freeze) and all(nc not in n for nc in no_decay)],
+        'weight_decay':
+        0.0,
+        'no_freeze': True
+    }, {
+        'params':
+        [p for n, p in param_optimizer if any(nd in n for nd in no_decay) and any(nc in n for nc in no_freeze)],
+        'weight_decay':
+        0.0,
+        'no_freeze': True
+    }
+
+    ]
 
     model, optimizer, _, _ = deepspeed.initialize(
         args=args,
