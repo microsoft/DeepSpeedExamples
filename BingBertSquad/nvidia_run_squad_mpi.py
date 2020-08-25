@@ -854,7 +854,7 @@ def main():
         args=args,
         model=model,
         model_parameters=optimizer_grouped_parameters,
-        dist_init_required=False)
+        dist_init_required=True)
 
     if args.local_rank == -1 or args.no_cuda:
         device = torch.device("cuda" if torch.cuda.is_available()
@@ -865,7 +865,7 @@ def main():
         device = torch.device("cuda", args.local_rank)
         n_gpu = 1
         # Initializes the distributed backend which will take care of sychronizing nodes/GPUs
-        torch.distributed.init_process_group(backend='nccl')
+        #torch.distributed.init_process_group(backend='nccl')
     logger.info(
         "device: {} n_gpu: {}, distributed training: {}, 16-bits training: {}".
         format(device, n_gpu, bool(args.local_rank != -1), args.fp16))
@@ -989,6 +989,8 @@ def main():
                     1 - args.loss_plot_alpha) * loss.item()
 
                 model.backward(loss)
+                loss_item = loss.item()
+                loss = None
 
                 sample_count += (args.train_batch_size *
                                  torch.distributed.get_world_size())
@@ -1008,7 +1010,7 @@ def main():
                     ) == 0 and args.summary_writer:
                         summary_events = [
                             (f'Train/Steps/lr', lr_this_step, global_step),
-                            (f'Train/Samples/train_loss', loss.item(),
+                            (f'Train/Samples/train_loss', loss_item,
                              sample_count),
                             (f'Train/Samples/lr', lr_this_step, sample_count),
                             (f'Train/Samples/train_ema_loss', ema_loss,

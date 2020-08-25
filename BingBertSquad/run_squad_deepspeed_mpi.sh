@@ -19,12 +19,12 @@ echo "master port is $MASTER_PORT"
 echo "dropout is ${DROPOUT}"
 
 # Force deepspeed to run with only local node
-NUM_NODES=1
+NUM_NODES=2
 HOSTFILE=/dev/null
 
 NGPU=$((NGPU_PER_NODE*NUM_NODES))
 EFFECTIVE_BATCH_SIZE=24
-MAX_GPU_BATCH_SIZE=1
+MAX_GPU_BATCH_SIZE=3
 PER_GPU_BATCH_SIZE=$((EFFECTIVE_BATCH_SIZE/NGPU))
 if [[ $PER_GPU_BATCH_SIZE -lt $MAX_GPU_BATCH_SIZE ]]; then
        GRAD_ACCUM_STEPS=1
@@ -32,9 +32,9 @@ else
        GRAD_ACCUM_STEPS=$((PER_GPU_BATCH_SIZE/MAX_GPU_BATCH_SIZE))
 fi
 JOB_NAME="deepspeed_${NGPU}GPUs_${EFFECTIVE_BATCH_SIZE}batch_size"
-config_json=deepspeed_bsz24_config.json
+config_json=onebit_deepspeed_bsz24_config.json
 run_cmd="python \
-       nvidia_run_squad_deepspeed.py \
+       nvidia_run_squad_mpi.py \
        --bert_model bert-large-uncased \
        --do_train \
        --do_lower_case \
@@ -52,14 +52,12 @@ run_cmd="python \
        --gradient_accumulation_steps ${GRAD_ACCUM_STEPS} \
        --fp16 \
        --deepspeed \
-       --deepspeed_transformer_kernel \
        --deepspeed_mpi \
        --deepspeed_config ${config_json} \
        --dropout ${DROPOUT} \
        --model_file $MODEL_FILE \
        --seed ${SEED} \
-       --ckpt_type HF \
-       --origin_bert_config_file bert-large-uncased-whole-word-masking-config.json \
+       --preln \
        "
 echo ${run_cmd}
 eval ${run_cmd}
