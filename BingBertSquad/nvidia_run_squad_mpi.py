@@ -746,19 +746,7 @@ def main():
 
     args = parser.parse_args()
 
-    if args.local_rank == -1 or args.no_cuda:
-        device = torch.device("cuda" if torch.cuda.is_available()
-                              and not args.no_cuda else "cpu")
-        n_gpu = torch.cuda.device_count()
-    else:
-        torch.cuda.set_device(args.local_rank)
-        device = torch.device("cuda", args.local_rank)
-        n_gpu = 1
-        # Initializes the distributed backend which will take care of sychronizing nodes/GPUs
-        torch.distributed.init_process_group(backend='nccl')
-    logger.info(
-        "device: {} n_gpu: {}, distributed training: {}, 16-bits training: {}".
-        format(device, n_gpu, bool(args.local_rank != -1), args.fp16))
+
 
     if args.gradient_accumulation_steps < 1:
         raise ValueError(
@@ -771,35 +759,7 @@ def main():
     random.seed(args.seed)
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
-    if n_gpu > 0:
-        torch.cuda.manual_seed_all(args.seed)
 
-    if not args.do_train and not args.do_predict:
-        raise ValueError(
-            "At least one of `do_train` or `do_predict` must be True.")
-
-    if args.do_train:
-        if not args.train_file:
-            raise ValueError(
-                "If `do_train` is True, then `train_file` must be specified.")
-    if args.do_predict:
-        if not args.predict_file:
-            raise ValueError(
-                "If `do_predict` is True, then `predict_file` must be specified."
-            )
-
-    if os.path.exists(args.output_dir) and os.listdir(
-            args.output_dir) and args.do_train:
-        raise ValueError(
-            "Output directory () already exists and is not empty.")
-    os.makedirs(args.output_dir, exist_ok=True)
-
-    # Prepare Summary writer
-    if torch.distributed.get_rank() == 0 and args.job_name is not None:
-        args.summary_writer = get_summary_writer(name=args.job_name,
-                                                 base=args.output_dir)
-    else:
-        args.summary_writer = None
 
     tokenizer = BertTokenizer.from_pretrained(args.bert_model,
                                               do_lower_case=args.do_lower_case)
@@ -895,6 +855,51 @@ def main():
         model=model,
         model_parameters=optimizer_grouped_parameters,
         dist_init_required=False)
+
+    if args.local_rank == -1 or args.no_cuda:
+        device = torch.device("cuda" if torch.cuda.is_available()
+                              and not args.no_cuda else "cpu")
+        n_gpu = torch.cuda.device_count()
+    else:
+        torch.cuda.set_device(args.local_rank)
+        device = torch.device("cuda", args.local_rank)
+        n_gpu = 1
+        # Initializes the distributed backend which will take care of sychronizing nodes/GPUs
+        torch.distributed.init_process_group(backend='nccl')
+    logger.info(
+        "device: {} n_gpu: {}, distributed training: {}, 16-bits training: {}".
+        format(device, n_gpu, bool(args.local_rank != -1), args.fp16))
+
+    if n_gpu > 0:
+        torch.cuda.manual_seed_all(args.seed)
+
+    if not args.do_train and not args.do_predict:
+        raise ValueError(
+            "At least one of `do_train` or `do_predict` must be True.")
+
+    if args.do_train:
+        if not args.train_file:
+            raise ValueError(
+                "If `do_train` is True, then `train_file` must be specified.")
+    if args.do_predict:
+        if not args.predict_file:
+            raise ValueError(
+                "If `do_predict` is True, then `predict_file` must be specified."
+            )
+
+    if os.path.exists(args.output_dir) and os.listdir(
+            args.output_dir) and args.do_train:
+        raise ValueError(
+            "Output directory () already exists and is not empty.")
+    os.makedirs(args.output_dir, exist_ok=True)
+
+    # Prepare Summary writer
+    if torch.distributed.get_rank() == 0 and args.job_name is not None:
+        args.summary_writer = get_summary_writer(name=args.job_name,
+                                                 base=args.output_dir)
+    else:
+        args.summary_writer = None
+
 
     logger.info("propagate deepspeed-config settings to client settings")
     args.train_batch_size = model.train_micro_batch_size_per_gpu()
