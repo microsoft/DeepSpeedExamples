@@ -22,7 +22,7 @@ def set_data(param, array):
         raise
     param.data = torch.from_numpy(array)
 
-def load_tf_weights_in_bert(model, ckpt_path, voc_size_diff):
+def load_tf_weights_in_bert_kernel(model, ckpt_path, voc_size_diff):
     """ Load tf checkpoints in DeepSpeed model.
     """
     try:
@@ -170,7 +170,7 @@ def load_tf_weights_in_bert(model, ckpt_path, voc_size_diff):
 
     return model
 
-def load_hf_weights_in_bert(model, ckpt_path, voc_size_diff):
+def load_hf_weights_in_bert_kernel(model, ckpt_path, voc_size_diff):
     """ Load huggingface checkpoints and convert to a deepspeed model.
     """
     hf_path = os.path.abspath(ckpt_path)
@@ -279,12 +279,62 @@ def load_hf_weights_in_bert(model, ckpt_path, voc_size_diff):
 
     return model
 
-def convert_ckpt_to_deepspeed(model, ckpt_type, ckpt_path, vocab_diff):
+def load_hf_weights_in_bert_torch(model, ckpt_path, voc_size_diff):
+    """ Load huggingface checkpoints and convert to a deepspeed model.
+    """
+    hf_path = os.path.abspath(ckpt_path)
+    logger.info("Converting Huggingface checkpoint from {}".format(hf_path))
+    # Load weights from Huggingface model
+    ckpt = torch.load(hf_path, map_location=torch.device("cpu"))
+
+    qkv = {}
+    for name_str in ckpt.keys():
+        array = ckpt[name_str].numpy()
+        logger.info("Loading Huggingface weight {} with shape {}".format(name_str, array.shape))
+        name = name_str.split(".")
+        pointer = model
+        key = None
+        is_layer = False
+        skipping = False
+        for m_name in name:
+            # Special in deepspeed.
+            if name_str.find("intermediate.dense") >= 0 and m_name == "dense":
+                pointer = getattr(pointer, "dense_act")
+            elif name_str.find("pooler.dense") >= 0 and m_name == "dense":
+                pointer = getattr(pointer, "dense_act")
+            else:
+                try:
+                    pointer = getattr(pointer, m_name)
+                except AttributeError:
+                    logger.info("Skipping {}".format(".".join(name)))
+                    skipping = True
+                    break
+
+        if skipping:
+            continue
+
+        # DeepSpeed BERT model has voc_size 8 aligned.
+        if voc_size_diff > 0 and name_str.find("embeddings.word_embeddings") >= 0:
+            z = np.zeros((voc_size_diff, array.shape[1]), dtype=array.dtype)
+            array = np.concatenate((array, z), axis=0)
+
+        set_data(pointer, array)
+        logger.info("Initialize DeepSpeed weight {}".format(name))
+
+    return model
+
+def convert_ckpt_to_deepspeed(model, ckpt_type, ckpt_path, vocab_diff, kernel_enabled):
 
     # Load weights from checkpoint
     if ckpt_type == "HF":
-        load_hf_weights_in_bert(model, ckpt_path, vocab_diff)
+        if kernel_enabled:
+            load_hf_weights_in_bert_kernel(model, ckpt_path, vocab_diff)
+        else:
+            load_hf_weights_in_bert_torch(model, ckpt_path, vocab_diff)
     elif ckpt_type == "TF":
-        load_tf_weights_in_bert(model, ckpt_path, vocab_diff)
+        if kernel_enabled:
+            load_tf_weights_in_bert_kernel(model, ckpt_path, vocab_diff)
+        else:
+            raise ValueError("--deepspeed_transformer_kernel is required for loading TF checkpoint.")
     else:
         raise ValueError(f"Invalid ckpt_type.")

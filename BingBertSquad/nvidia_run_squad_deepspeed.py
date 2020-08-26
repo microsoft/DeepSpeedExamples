@@ -790,9 +790,7 @@ def main():
 
     if os.path.exists(args.output_dir) and os.listdir(
             args.output_dir) and args.do_train:
-        raise ValueError(
-            "Output directory () already exists and is not empty.")
-    os.makedirs(args.output_dir, exist_ok=True)
+        os.makedirs(args.output_dir, exist_ok=True)
 
     # Prepare Summary writer
     if torch.distributed.get_rank() == 0 and args.job_name is not None:
@@ -842,10 +840,6 @@ def main():
         else:
             bert_config = BertConfig(**bert_model_config)
     else:
-        # Check if transformer kernel is enabled.
-        if not args.deepspeed_transformer_kernel:
-            raise ValueError("--deepspeed_transformer_kernel is required for loading non-DeepSpeed checkpoint.")
-
         # Models from Tensorflow and Huggingface are post-LN.
         if args.preln:
             raise ValueError("Should NOT use --preln if the loading checkpoint doesn't use pre-layer-norm.")
@@ -888,7 +882,7 @@ def main():
                 raise ValueError("Unable to find model state in checkpoint")
         else:
             from convert_bert_ckpt_to_deepspeed import convert_ckpt_to_deepspeed
-            convert_ckpt_to_deepspeed(model, args.ckpt_type, args.model_file, vocab_diff)
+            convert_ckpt_to_deepspeed(model, args.ckpt_type, args.model_file, vocab_diff, args.deepspeed_transformer_kernel)
 
         logger.info(f"Pretrained Bert Encoder Loaded from: {args.model_file}")
 
