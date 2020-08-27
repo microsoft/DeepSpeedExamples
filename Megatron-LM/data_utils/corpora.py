@@ -40,7 +40,7 @@ class webtext(json_dataset):
 
 	command line usage: `--train-data webtext`
 	"""
-	PATH = 'data/webtext/data.json'
+        PATH = 'data/webtext/data.json'
 	assert_str = "make sure to set PATH for webtext data_utils/corpora.py"
 	def __init__(self, **kwargs):
 		assert os.path.exists(webtext.PATH), \
