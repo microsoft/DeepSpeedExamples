@@ -9,13 +9,13 @@ NUM_GPUS_PER_WORKER=16
 script_path=$(realpath $0)
 script_dir=$(dirname $script_path)
 
-config_json="$script_dir/ds_zero2_cpu_offload_config.json"
+config_json="$script_dir/ds_zerodual_config.json"
 gpt_options=" \
        --model-parallel-size ${MP_SIZE} \
-       --num-layers  110\
-       --hidden-size 3200 \
-       --num-attention-heads 32 \
-       --batch-size 16 \
+       --num-layers 64\
+       --hidden-size 2304 \
+       --num-attention-heads 24 \
+       --batch-size 1 \
        --seq-length 1024 \
        --max-position-embeddings 1024 \
        --train-iters 100 \
@@ -34,6 +34,7 @@ gpt_options=" \
        --checkpoint-activations \
        --deepspeed-activation-checkpointing \
        --fp16 \
+       --cpu-optimizer \
 "
 gpt_options="${gpt_options}
                --deepspeed \

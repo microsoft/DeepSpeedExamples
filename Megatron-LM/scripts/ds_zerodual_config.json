@@ -7,7 +7,7 @@
     "cpu_offload":true
   },
   "optimizer": {
-    "type": "Adam",
+    "type": "torch_adam",
     "params": {
       "lr": 0.00015
     }
@@ -22,7 +22,8 @@
   },
   "activation_checkpointing": {
     "partition_activations":true,
-    "contiguous_memory_optimization":false
+    "contiguous_memory_optimization":true,
+    "cpu_checkpointing":true
   },
   "wall_clock_breakdown": false
 }
