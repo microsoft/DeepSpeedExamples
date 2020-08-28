@@ -746,59 +746,12 @@ def main():
 
     args = parser.parse_args()
 
-    if args.local_rank == -1 or args.no_cuda:
-        device = torch.device("cuda" if torch.cuda.is_available()
-                              and not args.no_cuda else "cpu")
-        n_gpu = torch.cuda.device_count()
-    else:
-        torch.cuda.set_device(args.local_rank)
-        device = torch.device("cuda", args.local_rank)
-        n_gpu = 1
-        # Initializes the distributed backend which will take care of sychronizing nodes/GPUs
-        torch.distributed.init_process_group(backend='nccl')
-    logger.info(
-        "device: {} n_gpu: {}, distributed training: {}, 16-bits training: {}".
-        format(device, n_gpu, bool(args.local_rank != -1), args.fp16))
-
-    if args.gradient_accumulation_steps < 1:
-        raise ValueError(
-            "Invalid gradient_accumulation_steps parameter: {}, should be >= 1"
-            .format(args.gradient_accumulation_steps))
-
     args.train_batch_size = int(args.train_batch_size /
                                 args.gradient_accumulation_steps)
 
     random.seed(args.seed)
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
-    if n_gpu > 0:
-        torch.cuda.manual_seed_all(args.seed)
-
-    if not args.do_train and not args.do_predict:
-        raise ValueError(
-            "At least one of `do_train` or `do_predict` must be True.")
-
-    if args.do_train:
-        if not args.train_file:
-            raise ValueError(
-                "If `do_train` is True, then `train_file` must be specified.")
-    if args.do_predict:
-        if not args.predict_file:
-            raise ValueError(
-                "If `do_predict` is True, then `predict_file` must be specified."
-            )
-
-    if os.path.exists(args.output_dir) and os.listdir(
-            args.output_dir) and args.do_train:
-        os.makedirs(args.output_dir, exist_ok=True)
-
-    # Prepare Summary writer
-    if torch.distributed.get_rank() == 0 and args.job_name is not None:
-        args.summary_writer = get_summary_writer(name=args.job_name,
-                                                 base=args.output_dir)
-    else:
-        args.summary_writer = None
-
     tokenizer = BertTokenizer.from_pretrained(args.bert_model,
                                               do_lower_case=args.do_lower_case)
 
@@ -897,22 +850,69 @@ def main():
     no_freeze = ['qa_outputs']
     optimizer_grouped_parameters = [{
         'params':
-        [p for n, p in param_optimizer if not any(nd in n for nd in no_freeze)],
+        [p for n, p in param_optimizer if not any(nd in n for nd in no_decay)],
         'weight_decay':
-        0.01
+        0.00
     }, {
         'params':
-        [p for n, p in param_optimizer if any(nd in n for nd in no_freeze)],
+        [p for n, p in param_optimizer if any(nd in n for nd in no_decay)],
         'weight_decay':
-        0.0,
-        'non_freeze': True
+        0.0
     }]
 
     model, optimizer, _, _ = deepspeed.initialize(
         args=args,
         model=model,
         model_parameters=optimizer_grouped_parameters,
-        dist_init_required=False)
+        dist_init_required=True)
+    
+    if args.local_rank == -1 or args.no_cuda:
+        device = torch.device("cuda" if torch.cuda.is_available()
+                              and not args.no_cuda else "cpu")
+        n_gpu = torch.cuda.device_count()
+    else:
+        torch.cuda.set_device(args.local_rank)
+        device = torch.device("cuda", args.local_rank)
+        n_gpu = 1
+        # Initializes the distributed backend which will take care of sychronizing nodes/GPUs
+        #torch.distributed.init_process_group(backend='nccl')
+    logger.info(
+        "device: {} n_gpu: {}, distributed training: {}, 16-bits training: {}".
+        format(device, n_gpu, bool(args.local_rank != -1), args.fp16))
+
+    if args.gradient_accumulation_steps < 1:
+        raise ValueError(
+            "Invalid gradient_accumulation_steps parameter: {}, should be >= 1"
+            .format(args.gradient_accumulation_steps))
+    if n_gpu > 0:
+        torch.cuda.manual_seed_all(args.seed)
+
+    if not args.do_train and not args.do_predict:
+        raise ValueError(
+            "At least one of `do_train` or `do_predict` must be True.")
+
+    if args.do_train:
+        if not args.train_file:
+            raise ValueError(
+                "If `do_train` is True, then `train_file` must be specified.")
+    if args.do_predict:
+        if not args.predict_file:
+            raise ValueError(
+                "If `do_predict` is True, then `predict_file` must be specified."
+            )
+
+    if os.path.exists(args.output_dir) and os.listdir(
+            args.output_dir) and args.do_train:
+        os.makedirs(args.output_dir, exist_ok=True)
+
+    # Prepare Summary writer
+    if torch.distributed.get_rank() == 0 and args.job_name is not None:
+        args.summary_writer = get_summary_writer(name=args.job_name,
+                                                 base=args.output_dir)
+    else:
+        args.summary_writer = None
+
+
 
     logger.info("propagate deepspeed-config settings to client settings")
     args.train_batch_size = model.train_micro_batch_size_per_gpu()
@@ -1002,6 +1002,8 @@ def main():
                     1 - args.loss_plot_alpha) * loss.item()
 
                 model.backward(loss)
+                loss_item = loss.item()
+                loss = None
 
                 sample_count += (args.train_batch_size *
                                  torch.distributed.get_world_size())
@@ -1021,7 +1023,7 @@ def main():
                     ) == 0 and args.summary_writer:
                         summary_events = [
                             (f'Train/Steps/lr', lr_this_step, global_step),
-                            (f'Train/Samples/train_loss', loss.item(),
+                            (f'Train/Samples/train_loss', loss_item,
                              sample_count),
                             (f'Train/Samples/lr', lr_this_step, sample_count),
                             (f'Train/Samples/train_ema_loss', ema_loss,
