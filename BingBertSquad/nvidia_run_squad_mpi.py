@@ -34,6 +34,7 @@ from utils import get_argument_parser, \
     is_time_to_exit, check_early_exit_warning
 import deepspeed
 
+import time
 import numpy as np
 import torch
 from torch.utils.data import TensorDataset, DataLoader, RandomSampler, SequentialSampler
@@ -850,15 +851,16 @@ def main():
     no_freeze = ['qa_outputs']
     optimizer_grouped_parameters = [{
         'params':
-        [p for n, p in param_optimizer if not any(nd in n for nd in no_decay)],
+        [p for n, p in param_optimizer],
         'weight_decay':
         0.00
-    }, {
-        'params':
-        [p for n, p in param_optimizer if any(nd in n for nd in no_decay)],
-        'weight_decay':
-        0.0
     }]
+    #{
+    #    'params':
+    #    [p for n, p in param_optimizer if any(nd in n for nd in no_decay)],
+    #    'weight_decay':
+    #    0.0
+    #}]
 
     model, optimizer, _, _ = deepspeed.initialize(
         args=args,
@@ -979,11 +981,15 @@ def main():
         ema_loss = 0.
         sample_count = 0
         num_epoch = 0
+        all_step_time = 0.0
+        ave_rounds = 20
         for _ in trange(int(args.num_train_epochs), desc="Epoch"):
             num_epoch += 1
             epoch_step = 0
             for step, batch in enumerate(
                     tqdm(train_dataloader, desc="Iteration", smoothing=0)):
+                start_time = time.time()
+                bs_size = batch[0].size()[0]
                 if n_gpu == 1:
                     batch = tuple(
                         t.to(device)
@@ -1053,7 +1059,12 @@ def main():
                         f'Warning: Early epoch termination due to max steps limit, epoch step ={epoch_step}, global step = {global_step}, epoch = {num_epoch}'
                     )
                     break
-
+                one_step_time = time.time() -start_time
+                all_step_time += one_step_time
+                if (step + 1)%(ave_rounds) == 0 and torch.distributed.get_rank() == 0:
+                    print('At Step {}, Averaged Throughput for {} rounds is: {} Samples/s'.format(step, ave_rounds, bs_size * ave_rounds * torch.distributed.get_world_size() / all_step_time ), flush=True )
+                    all_step_time = 0.0
+      
     # Save a trained model
     # model_to_save = model.module if hasattr(model, 'module') else model  # Only save the model it-self
     #output_model_file = os.path.join(args.output_dir, "pytorch_model.bin")
