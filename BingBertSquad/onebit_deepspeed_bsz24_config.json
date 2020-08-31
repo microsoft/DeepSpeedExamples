@@ -5,7 +5,7 @@
     "type": "OnebitAdam",
     "params": {
       "lr": 3e-5,
-      "freeze_step": 200,
+      "freeze_step": 1400,
       "weight_decay": 0.0,
       "bias_correction": false
     }
