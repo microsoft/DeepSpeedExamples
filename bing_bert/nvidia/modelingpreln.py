@@ -567,7 +567,7 @@ class BertEncoder(nn.Module):
         if args.deepspeed_transformer_kernel:
             from deepspeed import DeepSpeedTransformerLayer, DeepSpeedTransformerConfig
 
-            ds_config = self.get_deepspeed_config(args)
+            ds_config = get_deepspeed_config(args)
             cuda_config = DeepSpeedTransformerConfig(
                 batch_size=ds_config.train_micro_batch_size_per_gpu,
                 max_seq_length=args.max_seq_length,
