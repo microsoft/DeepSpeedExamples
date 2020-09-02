@@ -3,7 +3,8 @@
   "gradient_accumulation_steps": 1,
   "steps_per_print": 1,
   "zero_optimization": {
-    "stage": 2
+    "stage": 2,
+    "cpu_offload": true
   },
   "zero_allow_untested_optimizer": true,
   "gradient_clipping": 1.0,
@@ -16,7 +17,8 @@
   },
   "activation_checkpointing": {
     "partition_activations": true,
-    "contiguous_memory_optimization": false
+    "contiguous_memory_optimization": true,
+    "cpu_checkpointing": true
   },
   "wall_clock_breakdown": false
 }
