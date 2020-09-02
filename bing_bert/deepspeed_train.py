@@ -124,7 +124,8 @@ def master_process(args):
             and dist.get_rank() == 0) or (args.no_cuda
                                           and args.local_rank == -1)
 
-from deepspeed.pt.log_utils import logger
+            
+from deepspeed.utils.logging import logger
 def see_memory_usage(message):
 
     if torch.distributed.is_initialized() and not torch.distributed.get_rank() == 0:
@@ -446,7 +447,7 @@ def prepare_model_optimizer(args):
     model.set_device(args.device)
     args.fp16 = model.network.fp16_enabled()
     args.use_lamb = model.network.optimizer_name(
-    ) == deepspeed.pt.deepspeed_config.LAMB_OPTIMIZER
+    ) == deepspeed.runtime.config.LAMB_OPTIMIZER
 
     # Prepare Summary Writer and saved_models path
     if dist.get_rank() == 0:
