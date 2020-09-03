@@ -126,29 +126,7 @@ def master_process(args):
 
             
 from deepspeed.utils.logging import logger
-def see_memory_usage(message):
 
-    if torch.distributed.is_initialized() and not torch.distributed.get_rank() == 0:
-        return
-
-    # Print message except when distributed but not rank 0
-    logger.info(message)
-    logger.info(
-        "Memory Allocated %s GigaBytes ",
-        torch.cuda.memory_allocated() / (1024 * 1024 * 1024),
-    )
-    logger.info(
-        "Max Memory Allocated %s GigaBytes",
-        torch.cuda.max_memory_allocated() / (1024 * 1024 * 1024),
-    )
-    logger.info(
-        "Cache Allocated %s GigaBytes",
-        torch.cuda.memory_cached() / (1024 * 1024 * 1024),
-    )
-    logger.info(
-        "Max cache Allocated %s GigaBytes",
-        torch.cuda.max_memory_cached() / (1024 * 1024 * 1024),
-    )
 
 
 
@@ -197,16 +175,9 @@ def train(args,
 
             model.network.backward(loss)
 
-            # see_memory_usage('Before setting loss= None')
             loss = None
-            # see_memory_usage('After setting loss= None')
-
-
-            # model.eval()
 
             if model.network.is_gradient_accumulation_boundary():
-                #if dist.get_rank() == 0:
-                #    print('Global step is: ',global_step)
                 if args.fp16:
                     # modify learning rate with special warm up BERT uses
                     # if args.fp16 is False, BertAdam is used that handles this automatically
