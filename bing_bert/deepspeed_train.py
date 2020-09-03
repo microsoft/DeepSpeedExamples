@@ -214,9 +214,9 @@ def train(args,
             one_step_bs = args.train_micro_batch_size_per_gpu * args.gradient_accumulation_steps * dist.get_world_size() * rounds
             # print(model.network.enable_backward_allreduce)
             if model.network.enable_backward_allreduce is True:
-                print('Uncompressed, at step {}, the throughput is {:2f}Samples/s'.format(global_step, one_step_bs / all_step_time ))
+                print(' Uncompressed, at step {}, the throughput is {:2f} Samples/s'.format(global_step, one_step_bs/all_step_time), flush=True)
             else:
-                print('Compressed, at step {}, the throughput is {:2f}Samples/s'.format(global_step, one_step_bs / all_step_time))
+                print(' Compressed, at step {}, the throughput is {:2f}Samples/s'.format(global_step, one_step_bs/all_step_time), flush=True)
             all_step_time = 0.0
 
     pretrain_dataset_provider.release_shard(index)

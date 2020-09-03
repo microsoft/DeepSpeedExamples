@@ -3,11 +3,12 @@
   "steps_per_print": 8000000,
   "prescale_gradients": false,
   "optimizer": {
-    "type": "OnebitAdam",
+    "type": "onebitadam",
     "params": {
       "lr": 1e-8,
       "weight_decay": 0.01,
-      "bias_correction": false
+      "bias_correction": false,
+      "freeze_step": 200
     }
   },
   "gradient_clipping": 1.0,
