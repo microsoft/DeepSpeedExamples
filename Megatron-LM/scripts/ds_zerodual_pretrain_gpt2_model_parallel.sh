@@ -1,7 +1,7 @@
 #! /bin/bash
 
 # Change for multinode config
-MP_SIZE=1
+MP_SIZE=4
 
 NUM_WORKERS=1
 NUM_GPUS_PER_WORKER=16
@@ -12,13 +12,13 @@ script_dir=$(dirname $script_path)
 config_json="$script_dir/ds_zerodual_config.json"
 gpt_options=" \
        --model-parallel-size ${MP_SIZE} \
-       --num-layers 64\
-       --hidden-size 2304 \
-       --num-attention-heads 24 \
-       --batch-size 1 \
+       --num-layers 4\
+       --hidden-size 1024 \
+       --num-attention-heads 16 \
+       --batch-size 12 \
        --seq-length 1024 \
        --max-position-embeddings 1024 \
-       --train-iters 100 \
+       --train-iters 400 \
        --resume-dataloader \
        --train-data webtext \
        --lazy-loader \
@@ -34,15 +34,15 @@ gpt_options=" \
        --checkpoint-activations \
        --deepspeed-activation-checkpointing \
        --fp16 \
-       --cpu-optimizer \
+       --cpu-optimizer
+       --log-interval 5 \
 "
 gpt_options="${gpt_options}
                --deepspeed \
                --deepspeed_config ${config_json} \
 "
 
-
-run_cmd="deepspeed.pt --num_nodes ${NUM_WORKERS} --num_gpus ${NUM_GPUS_PER_WORKER} pretrain_gpt2.py $@ ${gpt_options}"
+run_cmd="deepspeed --num_nodes ${NUM_WORKERS} --num_gpus ${NUM_GPUS_PER_WORKER} pretrain_gpt2.py $@ ${gpt_options}"
 echo ${run_cmd}
 eval ${run_cmd}
 
