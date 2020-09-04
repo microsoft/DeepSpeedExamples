@@ -469,7 +469,7 @@ def train(model, optimizer, lr_scheduler,
             print('rank: {} | time: {} | exiting the program at iteration {}'.
                   format(rank, time_str, iteration), flush=True)
             exit()
-    exit(0)
+
     return iteration, skipped_iters
 
 
