@@ -51,6 +51,7 @@ from utils import print_rank_0
 import torch.distributed as dist
 
 from gpt2_data_loader import make_gpt2_dataloaders
+from deepspeed.ops.adam import DeepSpeedCPUAdam
 
 
 def get_model(args):
@@ -110,9 +111,15 @@ def get_optimizer(model, args):
             if not hasattr(param, 'model_parallel'):
                 param.model_parallel = False
 
-    # Use Adam.
-    optimizer = Adam(param_groups,
-                     lr=args.lr, weight_decay=args.weight_decay)
+    if args.cpu_optimizer:
+        optimizer = DeepSpeedCPUAdam(param_groups,
+                        lr=args.lr, weight_decay=args.weight_decay)
+        #optimizer = torch.optim.Adam(param_groups,
+        #                     lr=args.lr, weight_decay=args.weight_decay)
+    else:
+        # Use FusedAdam.
+        optimizer = Adam(param_groups,
+                         lr=args.lr, weight_decay=args.weight_decay)
 
     if args.deepspeed:
         # fp16 wrapper is not required for DeepSpeed.
@@ -528,11 +535,11 @@ def evaluate_and_print_results(prefix, data_iterator, model,
     Gives access to partition activations, contiguous memory optimizations
     and cpu checkpointing.
 
-    Activation checkpoint requires keep track of the random states 
+    Activation checkpoint requires keep track of the random states
     and setting the random seed for each MP process. Megatron uses
     mpu.get_cuda_rng_tracker and mpu.model_parallel_cuda_manual_seed
     for keeping track of the random states and setting the random seeds.
-    Since they are used in places outside of activation checkpointing, 
+    Since they are used in places outside of activation checkpointing,
     we overwrite them to maintain consistency.
 
     This must be done before all the calls to mpu.model_parallel_cuda_manual_seed
@@ -566,7 +573,7 @@ def initialize_distributed(args):
     mpu.initialize_model_parallel(args.model_parallel_size)
 
     # Optional DeepSpeed Activation Checkpointing Features
-    # 
+    #
     if args.deepspeed and args.deepspeed_activation_checkpointing:
         set_deepspeed_activation_checkpointing(args)
 
