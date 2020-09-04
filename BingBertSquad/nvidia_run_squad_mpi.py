@@ -851,16 +851,16 @@ def main():
     no_freeze = ['qa_outputs']
     optimizer_grouped_parameters = [{
         'params':
-        [p for n, p in param_optimizer],
+        [p for n, p in param_optimizer if not any(nd in n for nd in no_freeze)],
         'weight_decay':
         0.00
+    },{
+        'params':
+        [p for n, p in param_optimizer if any(nd in n for nd in no_freeze)],
+        'weight_decay':
+        0.0,
+        'non_freeze': False
     }]
-    #{
-    #    'params':
-    #    [p for n, p in param_optimizer if any(nd in n for nd in no_decay)],
-    #    'weight_decay':
-    #    0.0
-    #}]
 
     model, optimizer, _, _ = deepspeed.initialize(
         args=args,
@@ -1008,7 +1008,7 @@ def main():
                     1 - args.loss_plot_alpha) * loss.item()
 
                 model.backward(loss)
-                loss_item = loss.item()
+                loss_item = loss.item() * args.gradient_accumulation_steps
                 loss = None
 
                 sample_count += (args.train_batch_size *

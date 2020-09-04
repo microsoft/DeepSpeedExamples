@@ -1,21 +1,21 @@
-NGPU_PER_NODE=4
+NGPU_PER_NODE=16
 MODEL_FILE="./ckpt/bert-large-uncased-whole-word-masking-pytorch_model.bin"
-ORIGIN_CONFIG_FILE="./bert-large-uncased-whole-word-masking-config.json"
+ORIGIN_CONFIG_FILE="./ckpt/bert-large-uncased-whole-word-masking-config.json"
 SQUAD_DIR="./data"
 OUTPUT_DIR=$1
 LR=4e-5
 SEED=$RANDOM
 MASTER_PORT=12345
-DROPOUT=0.1
+DROPOUT=0.09
 
 sudo rm -rf ${OUTPUT_DIR}
 
 # Force deepspeed to run with only local node
-NUM_NODES=2
+NUM_NODES=1
 HOSTFILE=hosts
 
 NGPU=$((NGPU_PER_NODE*NUM_NODES))
-EFFECTIVE_BATCH_SIZE=24
+EFFECTIVE_BATCH_SIZE=96
 MAX_GPU_BATCH_SIZE=3
 PER_GPU_BATCH_SIZE=$((EFFECTIVE_BATCH_SIZE/NGPU))
 if [[ $PER_GPU_BATCH_SIZE -lt $MAX_GPU_BATCH_SIZE ]]; then
@@ -24,7 +24,7 @@ else
        GRAD_ACCUM_STEPS=$((PER_GPU_BATCH_SIZE/MAX_GPU_BATCH_SIZE))
 fi
 JOB_NAME="onebit_deepspeed_${NGPU}GPUs_${EFFECTIVE_BATCH_SIZE}batch_size"
-config_json=deepspeed_bsz24_config.json
+config_json=onebit_deepspeed_bsz24_config.json
 #run_cmd="deepspeed --num_nodes ${NUM_NODES} --num_gpus ${NGPU_PER_NODE} \
 #       --master_port=${MASTER_PORT} \
 run_cmd="python3.6 \
