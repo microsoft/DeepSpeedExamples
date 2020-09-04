@@ -16,7 +16,7 @@ from turing.logger import Logger
 from turing.utils import get_sample_writer
 from turing.models import BertMultiTask
 from turing.dataset import PreTrainingDataset, PretrainBatch, PretrainDataType
-from turing.sources import PretrainingDataCreator
+from turing.sources import PretrainingDataCreator, WikiPretrainingDataCreator, TokenInstance
 from pytorch_pretrained_bert.tokenization import BertTokenizer
 from pytorch_pretrained_bert.optimization import BertAdam, warmup_linear, warmup_linear_decay_exp, warmup_exp_decay_exp, warmup_exp_decay_poly
 from utils import get_argument_parser, is_time_to_exit
@@ -368,9 +368,6 @@ def prepare_optimizer_parameters(args, model):
 
 
 def prepare_model_optimizer(args):
-    # Initialize torch distributed
-    torch.distributed.init_process_group(backend="nccl")
-
     # Loading Model
     model = BertMultiTask(args)
 
@@ -394,8 +391,7 @@ def prepare_model_optimizer(args):
     args.device = model.network.device
     model.set_device(args.device)
     args.fp16 = model.network.fp16_enabled()
-    args.use_lamb = model.network.optimizer_name(
-    ) == deepspeed.pt.deepspeed_config.LAMB_OPTIMIZER
+    args.use_lamb = model.network.optimizer_name() == deepspeed.LAMB_OPTIMIZER
 
     # Prepare Summary Writer and saved_models path
     if dist.get_rank() == 0:
