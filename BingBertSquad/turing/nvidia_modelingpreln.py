@@ -725,12 +725,11 @@ class BertPreTrainedModel(nn.Module):
             # cf https://github.com/pytorch/pytorch/pull/5617
             num_layers = self.config.num_hidden_layers
             std = self.config.initializer_range
-            #remove the dist dependence for running with MPI
             if hasattr(module, 'bert_output_layer'):
-                #if torch.distributed.get_rank() == 0:
-                print("Accounting for accumulation on the residual path")
-                std = self.config.initializer_range / math.sqrt(
-                    2.0 * num_layers)
+                if torch.distributed.get_rank() == 0:
+                    print("Accounting for accumulation on the residual path")
+                    std = self.config.initializer_range / math.sqrt(
+                        2.0 * num_layers)
             module.weight.data.normal_(mean=0.0, std=std)
         elif isinstance(module, BertLayerNorm):
             module.bias.data.zero_()
