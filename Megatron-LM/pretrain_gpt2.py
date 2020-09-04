@@ -111,8 +111,8 @@ def get_optimizer(model, args):
                 param.model_parallel = False
 
     if args.cpu_optimizer:
-        optimizer = torch.optim.Adam(param_groups,
-                             lr=args.lr, weight_decay=args.weight_decay)
+        optimizer = DeepSpeedCPUAdam(param_groups,
+                        lr=args.lr, weight_decay=args.weight_decay)
     else:
         # Use FusedAdam.
         optimizer = Adam(param_groups,
