@@ -43,7 +43,7 @@ from torch.nn.parameter import Parameter
 import torch.nn.functional as F
 import torch.nn.init as init
 
-from deepspeed.ops.sparse_attention import SparseAttentionUtils
+#from deepspeed.ops.sparse_attention import SparseAttentionUtils
 
 logger = logging.getLogger(__name__)
 
