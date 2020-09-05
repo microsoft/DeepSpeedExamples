@@ -28,7 +28,7 @@ config_json=onebit_deepspeed_bsz24_config.json
 #run_cmd="deepspeed --num_nodes ${NUM_NODES} --num_gpus ${NGPU_PER_NODE} \
 #       --master_port=${MASTER_PORT} \
 run_cmd="python3.6 \
-       nvidia_run_squad_mpi.py \
+       nvidia_run_squad_deepspeed.py \
        --bert_model bert-large-uncased \
        --do_train \
        --do_lower_case \
