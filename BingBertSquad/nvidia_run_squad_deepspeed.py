@@ -789,9 +789,7 @@ def main():
 
     if os.path.exists(args.output_dir) and os.listdir(
             args.output_dir) and args.do_train:
-        raise ValueError(
-            "Output directory () already exists and is not empty.")
-    os.makedirs(args.output_dir, exist_ok=True)
+        os.makedirs(args.output_dir, exist_ok=True)
 
     # Prepare Summary writer
     if torch.distributed.get_rank() == 0 and args.job_name is not None:
@@ -834,15 +832,31 @@ def main():
         "type_vocab_size": 2,
         "initializer_range": 0.02
     }
-    if args.preln:
-        bert_config = BertConfigPreLN(**bert_model_config)
+
+    if args.ckpt_type == "DS":
+        if args.preln:
+            bert_config = BertConfigPreLN(**bert_model_config)
+        else:
+            bert_config = BertConfig(**bert_model_config)
     else:
-        bert_config = BertConfig(**bert_model_config)
+        # Models from Tensorflow and Huggingface are post-LN.
+        if args.preln:
+            raise ValueError("Should NOT use --preln if the loading checkpoint doesn't use pre-layer-norm.")
+
+        # Use the original bert config if want to load from non-DeepSpeed checkpoint.
+        if args.origin_bert_config_file is None:
+            raise ValueError("--origin_bert_config_file is required for loading non-DeepSpeed checkpoint.")
+
+        bert_config = BertConfig.from_json_file(args.origin_bert_config_file)
+
+        if bert_config.vocab_size != len(tokenizer.vocab):
+            raise ValueError("vocab size from original checkpoint mismatch.")
 
     bert_config.vocab_size = len(tokenizer.vocab)
     # Padding for divisibility by 8
     if bert_config.vocab_size % 8 != 0:
-        bert_config.vocab_size += 8 - (bert_config.vocab_size % 8)
+        vocab_diff = 8 - (bert_config.vocab_size % 8)
+        bert_config.vocab_size += vocab_diff
 
     if args.preln:
         model = BertForQuestionAnsweringPreLN(bert_config, args)
@@ -853,20 +867,22 @@ def main():
     if args.model_file is not "0":
         logger.info(f"Loading Pretrained Bert Encoder from: {args.model_file}")
 
-        checkpoint_state_dict = torch.load(args.model_file,
-                                           map_location=torch.device("cpu"))
-        if 'module' in checkpoint_state_dict:
-            logger.info('Loading DeepSpeed v2.0 style checkpoint')
-            model.load_state_dict(checkpoint_state_dict['module'],
-                                  strict=False)
-        elif 'model_state_dict' in checkpoint_state_dict:
-            model.load_state_dict(checkpoint_state_dict['model_state_dict'],
-                                  strict=False)
+        if args.ckpt_type == "DS":
+            checkpoint_state_dict = torch.load(args.model_file,
+                                               map_location=torch.device("cpu"))
+            if 'module' in checkpoint_state_dict:
+                logger.info('Loading DeepSpeed v2.0 style checkpoint')
+                model.load_state_dict(checkpoint_state_dict['module'],
+                                      strict=False)
+            elif 'model_state_dict' in checkpoint_state_dict:
+                model.load_state_dict(checkpoint_state_dict['model_state_dict'],
+                                      strict=False)
+            else:
+                raise ValueError("Unable to find model state in checkpoint")
         else:
-            raise ValueError("Unable to find model state in checkpoint")
+            from convert_bert_ckpt_to_deepspeed import convert_ckpt_to_deepspeed
+            convert_ckpt_to_deepspeed(model, args.ckpt_type, args.model_file, vocab_diff, args.deepspeed_transformer_kernel)
 
-        #bert_state_dict = torch.load(args.model_file)
-        #model.bert.load_state_dict(bert_state_dict, strict=False)
         logger.info(f"Pretrained Bert Encoder Loaded from: {args.model_file}")
 
     # Prepare optimizer
@@ -877,16 +893,18 @@ def main():
     param_optimizer = [n for n in param_optimizer if 'pooler' not in n[0]]
 
     no_decay = ['bias', 'LayerNorm.bias', 'LayerNorm.weight']
+    no_freeze = ['qa_outputs']
     optimizer_grouped_parameters = [{
         'params':
-        [p for n, p in param_optimizer if not any(nd in n for nd in no_decay)],
+        [p for n, p in param_optimizer if not any(nd in n for nd in no_freeze)],
         'weight_decay':
         0.01
     }, {
         'params':
-        [p for n, p in param_optimizer if any(nd in n for nd in no_decay)],
+        [p for n, p in param_optimizer if any(nd in n for nd in no_freeze)],
         'weight_decay':
-        0.0
+        0.0,
+        'non_freeze': True
     }]
 
     model, optimizer, _, _ = deepspeed.initialize(
