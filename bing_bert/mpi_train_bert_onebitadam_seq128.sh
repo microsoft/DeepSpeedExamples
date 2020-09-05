@@ -3,7 +3,7 @@
 base_dir=`pwd`
 
 # Where should we save checkpoints and tensorboard events?
-JOB_NAME=lamb_64k_seq128
+JOB_NAME=onebit_adam_seq128
 OUTPUT_DIR=${base_dir}/bert_model_outputs
 
 mkdir -p $OUTPUT_DIR
