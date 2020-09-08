@@ -62,6 +62,8 @@ def add_model_config_args(parser):
                        'This is added for computational efficieny reasons.')
     group.add_argument('--cpu-optimizer', action='store_true',
                                    help='Run optimizer on CPU')
+    group.add_argument('--cpu_torch_adam', action='store_true',
+                                   help='Use Torch Adam as optimizer on CPU.')
 
     return parser
 
