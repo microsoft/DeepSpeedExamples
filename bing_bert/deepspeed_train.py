@@ -212,11 +212,7 @@ def train(args,
         all_step_time += step_time
         if global_step % rounds == 0 and global_step != 0 and model.network.is_gradient_accumulation_boundary() and dist.get_rank() == 0:
             one_step_bs = args.train_micro_batch_size_per_gpu * args.gradient_accumulation_steps * dist.get_world_size() * rounds
-            # print(model.network.enable_backward_allreduce)
-            if model.network.enable_backward_allreduce is True:
-                print(' Uncompressed, at step {}, the throughput is {:2f} Samples/s'.format(global_step, one_step_bs/all_step_time), flush=True)
-            else:
-                print(' Compressed, at step {}, the throughput is {:2f}Samples/s'.format(global_step, one_step_bs/all_step_time), flush=True)
+            print(' At step {}, the throughput is {:2f} Samples/s'.format(global_step * args.gradient_accumulation_steps, one_step_bs/all_step_time), flush=True)
             all_step_time = 0.0
 
     pretrain_dataset_provider.release_shard(index)
