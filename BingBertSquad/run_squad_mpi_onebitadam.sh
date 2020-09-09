@@ -24,7 +24,7 @@ else
        GRAD_ACCUM_STEPS=$((PER_GPU_BATCH_SIZE/MAX_GPU_BATCH_SIZE))
 fi
 JOB_NAME="onebit_deepspeed_${NGPU}GPUs_${EFFECTIVE_BATCH_SIZE}batch_size"
-config_json=onebit_deepspeed_bsz24_config.json
+config_json=deepspeed_onebitadam_bsz96_config.json
 #run_cmd="deepspeed --num_nodes ${NUM_NODES} --num_gpus ${NGPU_PER_NODE} \
 #       --master_port=${MASTER_PORT} \
 run_cmd="python3.6 \
