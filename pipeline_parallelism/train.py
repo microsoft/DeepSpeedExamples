@@ -121,8 +121,8 @@ def join_layers(vision_model):
 
 def train_pipe(args, part='parameters'):
     torch.manual_seed(args.seed)
-    #net = AlexNet(num_classes=10)
-    net = vgg19(num_classes=10)
+    net = AlexNet(num_classes=10)
+    #net = vgg19(num_classes=10)
     net = PipelineModule(layers=join_layers(net),
                          loss_fn=torch.nn.CrossEntropyLoss(),
                          num_stages=args.pipeline_parallel_size,
@@ -142,6 +142,9 @@ def train_pipe(args, part='parameters'):
         loss = engine.train_batch()
         if rank == 0 and (step % 10 == 0):
             print(f'step: {step:3d} / {args.steps:3d} loss: {loss}')
+        
+        if step > 0 and step % 1000 == 0:
+            engine.save_checkpoint(save_dir='ckpt-test',tag=step)
 
 
 if __name__ == '__main__':

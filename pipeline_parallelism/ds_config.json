@@ -1,6 +1,6 @@
  {
   "train_batch_size" : 256,
-  "train_micro_batch_size_per_gpu" : 32,
+  "train_micro_batch_size_per_gpu" : 16,
 
    "optimizer": {
     "type": "Adam",
@@ -19,8 +19,8 @@
   "wall_clock_breakdown" : false,
 
   "tensorboard": {
-    "enabled": false,
-    "output_path": "/data/users/shsmit/tensorboard/vgg19/cifar10-batch256-dp4-pp2-mb8-part_parameters",
-    "job_name" : "cifar10-vgg19-baseline"
+    "enabled": true,
+    "output_path": "/data/users/shsmit/tensorboard/alexnet/cifar10-batch256-dp4-pp2-mb16-part_parameters",
+    "job_name" : "cifar10-alexnet-pipeline"
   }
  }
