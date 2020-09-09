@@ -3,10 +3,10 @@ MODEL_FILE="./ckpt/bert-large-uncased-whole-word-masking-pytorch_model.bin"
 ORIGIN_CONFIG_FILE="./ckpt/bert-large-uncased-whole-word-masking-config.json"
 SQUAD_DIR="./data"
 OUTPUT_DIR=$1
-LR=4e-5
+LR=3e-5
 SEED=$RANDOM
 MASTER_PORT=12345
-DROPOUT=0.09
+DROPOUT=0.1
 
 sudo rm -rf ${OUTPUT_DIR}
 
