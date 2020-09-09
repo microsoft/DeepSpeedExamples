@@ -17,10 +17,4 @@
   "steps_per_print" : 10,
 
   "wall_clock_breakdown" : false,
-
-  "tensorboard": {
-    "enabled": true,
-    "output_path": "/data/users/shsmit/tensorboard/alexnet/cifar10-batch256-dp4-pp2-mb16-part_parameters",
-    "job_name" : "cifar10-alexnet-pipeline"
-  }
  }
