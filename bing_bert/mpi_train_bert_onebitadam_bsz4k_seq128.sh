@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Note: Please use the deepspeed launch script for most cases.
+# For advanced users, mpirun or other MPI launchers can be used
+# with this script as follows.
+# mpirun -n 2 [launcher-args] bash mpi_train_bert_onebitadam_bsz4k_seq128.sh
+
 base_dir=`pwd`
 
 # Where should we save checkpoints and tensorboard events?
