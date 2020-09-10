@@ -1,3 +1,9 @@
+#
+# Implementation of AlexNet for illustrative purposes. The train.py driver
+# can import AlexNet from here or directly from torchvision.
+#
+# Taken from torchvision.models.alexnet:
+# https://pytorch.org/docs/1.6.0/_modules/torchvision/models/alexnet.html#alexnet
 
 
 import torch
@@ -5,11 +11,6 @@ import torch.nn as nn
 
 
 class AlexNet(nn.Module):
-    """Taken from torchvision.models.alexnet:
-
-     https://pytorch.org/docs/1.6.0/_modules/torchvision/models/alexnet.html#alexnet
-     """
-
     def __init__(self, num_classes=1000):
         super(AlexNet, self).__init__()
         self.features = nn.Sequential(
