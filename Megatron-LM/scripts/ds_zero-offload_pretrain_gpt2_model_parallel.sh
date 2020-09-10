@@ -9,7 +9,7 @@ NUM_GPUS_PER_WORKER=16
 script_path=$(realpath $0)
 script_dir=$(dirname $script_path)
 
-config_json="$script_dir/ds_zerodual_config.json"
+config_json="$script_dir/ds_zero-offload_config.json"
 gpt_options=" \
        --model-parallel-size ${MP_SIZE} \
        --num-layers 4\

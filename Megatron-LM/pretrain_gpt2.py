@@ -26,7 +26,6 @@ import numpy as np
 import torch
 
 import deepspeed
-from deepspeed.ops.adam import DeepSpeedCPUAdam
 
 from arguments import get_args
 from configure_data import configure_data
@@ -112,7 +111,11 @@ def get_optimizer(model, args):
                 param.model_parallel = False
 
     if args.cpu_optimizer:
-        cpu_adam_optimizer = torch.optim.Adam if args.cpu_torch_adam else DeepSpeedCPUAdam
+        if args.cpu_torch_adam:
+            cpu_adam_optimizer = torch.optim.Adam
+        else:
+        from deepspeed.ops.adam import DeepSpeedCPUAdam
+            cpu_adam_optimizer = DeepSpeedCPUAdam
         optimizer = cpu_adam_optimizer(param_groups,
                         lr=args.lr, weight_decay=args.weight_decay)
     else:
