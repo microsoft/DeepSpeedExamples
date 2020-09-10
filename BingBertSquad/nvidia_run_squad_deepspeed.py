@@ -847,18 +847,16 @@ def main():
     param_optimizer = [n for n in param_optimizer if 'pooler' not in n[0]]
 
     no_decay = ['bias', 'LayerNorm.bias', 'LayerNorm.weight']
-    no_freeze = ['qa_outputs']
     optimizer_grouped_parameters = [{
         'params':
-        [p for n, p in param_optimizer if not any(nd in n for nd in no_freeze)],
+        [p for n, p in param_optimizer if not any(nd in n for nd in no_decay)],
         'weight_decay':
-        0.00
+        0.01
     },{
         'params':
-        [p for n, p in param_optimizer if any(nd in n for nd in no_freeze)],
+        [p for n, p in param_optimizer if any(nd in n for nd in no_decay)],
         'weight_decay':
-        0.0,
-        'non_freeze': False
+        0.0
     }]
 
     model, optimizer, _, _ = deepspeed.initialize(
