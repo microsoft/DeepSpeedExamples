@@ -14,10 +14,8 @@ import deepspeed
 from deepspeed.pipe import PipelineModule
 from deepspeed.utils import RepeatingLoader
 
-#from model import AlexNet
 
 def cifar_trainset(local_rank, dl_path='/tmp/cifar10-data'):
-
     transform = transforms.Compose([
         transforms.Resize(256),
         transforms.CenterCrop(224),
@@ -69,8 +67,9 @@ def get_args():
 def train_base(args):
     torch.manual_seed(args.seed)
 
-    #net = AlexNet(num_classes=10)
-    net = vgg19(num_classes=10)
+    # VGG also works :-)
+    #net = vgg19(num_classes=10)
+    net = AlexNet(num_classes=10)
 
     trainset = cifar_trainset(args.local_rank)
 
@@ -79,10 +78,10 @@ def train_base(args):
         model=net,
         model_parameters=[p for p in net.parameters() if p.requires_grad],
         training_data=trainset)
-    
+
     dataloader = RepeatingLoader(dataloader)
     data_iter = iter(dataloader)
-    
+
     rank = dist.get_rank()
     gas = engine.gradient_accumulation_steps()
 
@@ -104,10 +103,8 @@ def train_base(args):
             step += 1
             if rank == 0 and (step % 10 == 0):
                 print(f'step: {step:3d} / {args.steps:3d} loss: {loss}')
-            if step == args.steps:
-                break
 
-            
+
 
 def join_layers(vision_model):
     layers = [
@@ -121,44 +118,40 @@ def join_layers(vision_model):
 
 def train_pipe(args, part='parameters'):
     torch.manual_seed(args.seed)
-    net = AlexNet(num_classes=10)
+    deepspeed.runtime.utils.set_random_seed(args.seed)
+
+    #
+    # Build the model
+    #
+
+    # VGG also works :-)
     #net = vgg19(num_classes=10)
+    net = AlexNet(num_classes=10)
     net = PipelineModule(layers=join_layers(net),
                          loss_fn=torch.nn.CrossEntropyLoss(),
                          num_stages=args.pipeline_parallel_size,
                          partition_method=part,
                          activation_checkpoint_interval=0)
-    
+
     trainset = cifar_trainset(args.local_rank)
+
     engine, _, _, _ = deepspeed.initialize(
         args=args,
         model=net,
         model_parameters=[p for p in net.parameters() if p.requires_grad],
         training_data=trainset)
-    
-    rank = dist.get_rank()
 
     for step in range(args.steps):
         loss = engine.train_batch()
-        if rank == 0 and (step % 10 == 0):
-            print(f'step: {step:3d} / {args.steps:3d} loss: {loss}')
-        
-        if step > 0 and step % 1000 == 0:
-            engine.save_checkpoint(save_dir='ckpt-test',tag=step)
 
 
 if __name__ == '__main__':
     args = get_args()
 
-    # TODO: remove once distributed API is available. I'll switch to calling it in the
-    # PipelineModule constructor?
     torch.cuda.set_device(args.local_rank)
     dist.init_process_group(backend=args.backend)
 
     if args.pipeline_parallel_size == 0:
         train_base(args)
     else:
-        train_pipe(args, part='parameters')
-
-    for part in ['parameters']:
-        pass
+        train_pipe(args)
