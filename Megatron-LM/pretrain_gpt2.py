@@ -26,7 +26,6 @@ import numpy as np
 import torch
 
 import deepspeed
-from deepspeed.ops.adam import DeepSpeedCPUAdam
 
 from arguments import get_args
 from configure_data import configure_data
