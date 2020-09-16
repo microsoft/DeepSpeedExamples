@@ -4,6 +4,11 @@
   "steps_per_print": 1,
   "zero_optimization": {
     "stage":3,
+    "stage3_max_live_parameters": 700000000,
+    "stage3_max_reuse_distance": 1000000000,
+    "stage3_prefetch_bucket_size": 25000000,
+    "stage3_param_persitance_threshold": 100000, 
+    "overlap_comm": false,
     "reduce_bucket_size": 50000000,
     "contiguous_gradients": true
   },
@@ -23,7 +28,8 @@
   },
   "activation_checkpointing": {
     "partition_activations":true,
-    "contiguous_memory_optimization":false
+    "contiguous_memory_optimization":false,
+    "number_checkpoints": 2
   },
   "wall_clock_breakdown": true
 }

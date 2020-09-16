@@ -24,7 +24,6 @@ import random
 import math
 import numpy as np
 import torch
-
 import deepspeed
 
 from arguments import get_args
@@ -57,7 +56,8 @@ def get_model(args):
     """Build the model."""
 
     print_rank_0('building GPT2 model ...')
-    with deepspeed.ScatteredParameters():
+    see_memory_usage(f"Before Building Model", force=True)
+    with deepspeed.ScatteredParameters(zero_modules=True):
         model = GPT2Model(num_layers=args.num_layers,
                         vocab_size=args.vocab_size,
                         hidden_size=args.hidden_size,
@@ -69,6 +69,7 @@ def get_model(args):
                         checkpoint_activations=args.checkpoint_activations,
                         checkpoint_num_layers=args.checkpoint_num_layers,
                         parallel_output=True)
+    see_memory_usage(f"After Building Model", force=True)
     
     if mpu.get_data_parallel_rank() == 0:
         print(' > number of parameters on model parallel rank {}: {}'.format(
@@ -79,6 +80,7 @@ def get_model(args):
     if args.deepspeed and args.fp16:
         model.half()
 
+    see_memory_usage(f"After Halving the Building Model", force=True)
     # GPU allocation.
     model.cuda(torch.cuda.current_device())
 
@@ -349,24 +351,31 @@ def backward_step(optimizer, model, lm_loss, args, timers):
 
     return lm_loss_reduced
 
+
 def see_memory_usage(message, force=False):
+    # Print message except when distributed but not rank 0
     if not force:
         return
     dist.barrier()
     if dist.get_rank() == 0:
+    
         print(message)
-        print("Memory Allocated ", torch.cuda.memory_allocated()/(1024*1024*1024), "GigaBytes")
-        print("Max Memory Allocated ", torch.cuda.max_memory_allocated()/(1024*1024*1024), "GigaBytes")
-        print("Cache Allocated ", torch.cuda.memory_cached()/(1024*1024*1024), "GigaBytes")
-        print("Max cache Allocated ", torch.cuda.max_memory_cached()/(1024*1024*1024), "GigaBytes")
+        print(
+            f"MA {round(torch.cuda.memory_allocated() / (1024 * 1024 * 1024),2 )} GB \
+            Max_MA {round(torch.cuda.max_memory_allocated() / (1024 * 1024 * 1024),2)} GB \
+            CA {round(torch.cuda.memory_cached() / (1024 * 1024 * 1024),2)} GB \
+            Max_CA {round(torch.cuda.max_memory_cached() / (1024 * 1024 * 1024))} GB"
+        )
         print(" ")
-        #input("Press Any Key To Continue ..")
-
+        
 def train_step(data_iterator, model, optimizer, lr_scheduler,
                args, timers):
     """Single training step."""
     #torch.cuda.synchronize()
     # Forward model for one step.
+    deepspeed.pt.deepspeed_partition_parameters.reuse_buffers = True
+    see_memory_usage("Before forward" , force=True)
+    
     timers('forward').start()
     lm_loss = forward_step(data_iterator, model, args, timers)
     timers('forward').stop()
@@ -374,12 +383,13 @@ def train_step(data_iterator, model, optimizer, lr_scheduler,
     #print_rank_0("loss is {}".format(lm_loss))
     torch.distributed.barrier()
     print_rank_0("Starting Backward Pass")
+    see_memory_usage("After forward" , force=True)
     
     # Calculate gradients, reduce across processes, and clip.
     timers('backward').start()
     lm_loss_reduced = backward_step(optimizer, model, lm_loss, args, timers)
     timers('backward').stop()
-
+    #exit(0)
     #return lm_loss_reduced, 0
     # Update parameters.
     skipped_iter = 0
@@ -426,7 +436,7 @@ def train(model, optimizer, lr_scheduler,
         skipped_iters += skipped_iter
         iteration += 1
         counter += 1
-        if counter > 10:
+        if counter > 5:
             exit(0)
 
         # Update losses.
@@ -559,6 +569,8 @@ def initialize_distributed(args):
     """Initialize torch.distributed."""
 
     # Manually set the device ids.
+    print(f"rank {args.rank} and device count {torch.cuda.device_count()}")
+    #exit(0)
     device = args.rank % torch.cuda.device_count()
     if args.local_rank is not None:
         device = args.local_rank

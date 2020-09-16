@@ -27,6 +27,7 @@ from .layers import RowParallelLinear
 from .mappings import gather_from_model_parallel_region
 
 import deepspeed
+from deepspeed.pt.deepspeed_utils import see_memory_usage
 
 from .random import checkpoint
 from .random import get_cuda_rng_tracker
@@ -113,46 +114,76 @@ class GPT2ParallelSelfAttention(torch.nn.Module):
         # ltor_mask: [1, 1, s, s]
 
         # Attention heads. [b, s, hp]
+        see_memory_usage("Before QKV",force=True)
         mixed_x_layer = self.query_key_value(hidden_states)
+        see_memory_usage("After QKV",force=True)
+        
         (mixed_query_layer,
          mixed_key_layer,
          mixed_value_layer) = split_tensor_along_last_dim(mixed_x_layer, 3)
+
+        see_memory_usage("After Split",force=True)
+        
 
         # Reshape and transpose [b, np, s, hn]
         query_layer = self._transpose_for_scores(mixed_query_layer)
         key_layer = self._transpose_for_scores(mixed_key_layer)
         value_layer = self._transpose_for_scores(mixed_value_layer)
 
+        see_memory_usage("After Transpose", force=True)
+        
         # Raw attention scores. [b, np, s, s]
         attention_scores = torch.matmul(query_layer,
                                         key_layer.transpose(-1, -2))
+        see_memory_usage("After Attention Scores", force=True)
+        
         attention_scores = attention_scores / math.sqrt(
             self.hidden_size_per_attention_head)
+
+        see_memory_usage("After Scaling", force= True)
+        
         # Apply the left to right attention mask.
         attention_scores = torch.mul(attention_scores, ltor_mask) - \
                            10000.0 * (1.0 - ltor_mask)
 
+        see_memory_usage("After mul", force= True)
+        
         # Attention probabilities. [b, np, s, s]
         attention_probs = torch.nn.Softmax(dim=-1)(attention_scores)
+        
+        see_memory_usage("Before Dropout", force= True)
+        
         # This is actually dropping out entire tokens to attend to, which might
         # seem a bit unusual, but is taken from the original Transformer paper.
         with get_cuda_rng_tracker().fork():
             attention_probs = self.attention_dropout(attention_probs)
 
+        see_memory_usage("Before Dropout", force= True)
+        
         # Context layer.
         # [b, np, s, hn]
         context_layer = torch.matmul(attention_probs, value_layer)
+        see_memory_usage("After Dropout", force= True)
+        
         # [b, s, np, hn]
         context_layer = context_layer.permute(0, 2, 1, 3).contiguous()
+        see_memory_usage("After Permute", force= True)
+        
         new_context_layer_shape = context_layer.size()[:-2] + \
                                   (self.hidden_size_per_partition,)
+        see_memory_usage("After new context", force= True)
+        
         # [b, s, hp]
         context_layer = context_layer.view(*new_context_layer_shape)
-
+        see_memory_usage("After view", force= True)
+        
         # Output. [b, s, h]
         output = self.dense(context_layer)
+        see_memory_usage("After Dense", force= True)
+        
         output = self.output_dropout(output)
-
+        see_memory_usage("After Dropout2", force= True)
+        
         return output
 
 
@@ -204,13 +235,22 @@ class GPT2ParallelMLP(torch.nn.Module):
         self.dropout = torch.nn.Dropout(output_dropout_prob)
 
     def forward(self, hidden_states):
+        see_memory_usage("Before dh to 4h",force=True)
+        
         # [b, s, 4hp]
         intermediate_parallel = self.dense_h_to_4h(hidden_states)
+        see_memory_usage("Before gelu",force=True)
+        
         intermediate_parallel = gelu(intermediate_parallel)
-
+        see_memory_usage("Before 4h to h",force=True)
+        
         # [b, s, h]
         output = self.dense_4h_to_h(intermediate_parallel)
+        see_memory_usage("Before dropout",force=True)
+        
         output = self.dropout(output)
+        see_memory_usage("After mlp dropout",force=True)
+        
         return output
 
 
@@ -281,17 +321,31 @@ class GPT2ParallelTransformerLayer(torch.nn.Module):
     def forward(self, hidden_states, ltor_mask):
         # hidden_states: [b, s, h]
         # ltor_mask: [1, 1, s, s]
-
+        see_memory_usage("Before Layer Norm 1",force=True)
+        
         # Layer norm at the begining of the transformer layer.
         layernorm_output = self.input_layernorm(hidden_states)
+        see_memory_usage("After Layer Norm 1",force=True)
+        
         # Self attention.
         attention_output = self.attention(layernorm_output, ltor_mask)
+        
+        see_memory_usage("Before Residual",force=True)
+        
         # Residual connection.
         layernorm_input = hidden_states + attention_output
+        
+        see_memory_usage("Before Post Attentiona Layernomr",force=True)
+        
         # Layer norm post the self attention.
         layernorm_output = self.post_attention_layernorm(layernorm_input)
+        see_memory_usage("Before MLP",force=True)
+        
         # MLP.
         mlp_output = self.mlp(layernorm_output)
+        
+        see_memory_usage("Before Second Residual",force=True)
+        
         # Second residual connection.
         output = layernorm_input + mlp_output
 
