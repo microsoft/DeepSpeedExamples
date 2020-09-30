@@ -5,6 +5,8 @@ import torch.utils.data
 import torchvision.datasets as dset
 import torchvision.transforms as transforms
 import torchvision.utils as vutils
+from torch.utils.tensorboard import SummaryWriter
+from datetime import datetime
 
 from gan_model import Generator, Discriminator, weights_init
 from utils import get_argument_parser, set_seed, create_folder
@@ -70,6 +72,7 @@ def get_dataset(args):
     return dataset, nc
 
 def train(args):
+    writer = SummaryWriter()
     create_folder(args.outf)
     set_seed(args.manualSeed)
     cudnn.benchmark = True
@@ -110,9 +113,7 @@ def train(args):
             netD.zero_grad()
             real_cpu = data[0].to(device)
             batch_size = real_cpu.size(0)
-            label = torch.full((batch_size,), real_label,
-                            dtype=real_cpu.dtype, device=device)
-
+            label = torch.full((batch_size,), real_label, dtype=real_cpu.dtype, device=device)
             output = netD(real_cpu)
             errD_real = criterion(output, label)
             errD_real.backward()
@@ -143,6 +144,8 @@ def train(args):
             print('[%d/%d][%d/%d] Loss_D: %.4f Loss_G: %.4f D(x): %.4f D(G(z)): %.4f / %.4f'
                 % (epoch, args.epochs, i, len(dataloader),
                     errD.item(), errG.item(), D_x, D_G_z1, D_G_z2))
+            writer.add_scalar("Loss_D", errD.item(), epoch*len(dataloader)+i)
+            writer.add_scalar("Loss_G", errG.item(), epoch*len(dataloader)+i)
             if i % 100 == 0:
                 vutils.save_image(real_cpu,
                         '%s/real_samples.png' % args.outf,
@@ -158,7 +161,6 @@ def train(args):
 
 def main():
     parser = get_argument_parser()
-    #parser = deepspeed.add_config_arguments(parser)
     args = parser.parse_args()
     train(args)
 

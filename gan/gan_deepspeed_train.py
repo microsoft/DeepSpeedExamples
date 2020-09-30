@@ -5,6 +5,8 @@ import torch.utils.data
 import torchvision.datasets as dset
 import torchvision.transforms as transforms
 import torchvision.utils as vutils
+from torch.utils.tensorboard import SummaryWriter
+from datetime import datetime
 
 from gan_model import Generator, Discriminator, weights_init
 from utils import get_argument_parser, set_seed, create_folder
@@ -72,13 +74,15 @@ def get_dataset(args):
     return dataset, nc
 
 def train(args):
+    writer = SummaryWriter()
     create_folder(args.outf)
     set_seed(args.manualSeed)
     cudnn.benchmark = True
     dataset, nc = get_dataset(args)
     dataloader = torch.utils.data.DataLoader(dataset, batch_size=args.batchSize, shuffle=True, num_workers=int(args.workers))
-    device = torch.device("cuda:0" if args.cuda else "cpu")
-    ngpu = int(args.ngpu)
+    torch.cuda.set_device(args.local_rank)
+    device = torch.device("cuda", args.local_rank) #torch.device("cuda:0" if args.cuda else "cpu")
+    ngpu = 0
     nz = int(args.nz)
     ngf = int(args.ngf)
     ndf = int(args.ndf)
@@ -103,8 +107,8 @@ def train(args):
     optimizerD = torch.optim.Adam(netD.parameters(), lr=args.lr, betas=(args.beta1, 0.999))
     optimizerG = torch.optim.Adam(netG.parameters(), lr=args.lr, betas=(args.beta1, 0.999))
 
-    model_engineG, optimizerG, _, _ = deepspeed.initialize(args=args, model=netG, model_parameters=netG.parameters(), optimizer=optimizerD)
-    model_engineD, optimizerD, _, _ = deepspeed.initialize(args=args, model=netD, model_parameters=netD.parameters(), optimizer=optimizerG)
+    model_engineD, optimizerD, _, _ = deepspeed.initialize(args=args, model=netD, model_parameters=netD.parameters(), optimizer=optimizerD)
+    model_engineG, optimizerG, _, _ = deepspeed.initialize(args=args, model=netG, model_parameters=netG.parameters(), optimizer=optimizerG)
 
     for epoch in range(args.epochs):
         for i, data in enumerate(dataloader, 0):
@@ -130,8 +134,8 @@ def train(args):
             model_engineD.backward(errD_fake)
             D_G_z1 = output.mean().item()
             errD = errD_real + errD_fake
-            optimizerD.step()
-            #model_engineD.step()
+            #optimizerD.step() # alternative (equivalent) step
+            model_engineD.step()
 
             ############################
             # (2) Update G network: maximize log(D(G(z)))
@@ -142,12 +146,14 @@ def train(args):
             errG = criterion(output, label)
             model_engineG.backward(errG)
             D_G_z2 = output.mean().item()
-            optimizerG.step()
-            #model_engineG.step()
+            #optimizerG.step() # alternative (equivalent) step
+            model_engineG.step()
 
             print('[%d/%d][%d/%d] Loss_D: %.4f Loss_G: %.4f D(x): %.4f D(G(z)): %.4f / %.4f'
                 % (epoch, args.epochs, i, len(dataloader),
                     errD.item(), errG.item(), D_x, D_G_z1, D_G_z2))
+            writer.add_scalar("Loss_D", errD.item(), epoch*len(dataloader)+i)
+            writer.add_scalar("Loss_G", errG.item(), epoch*len(dataloader)+i)
             if i % 100 == 0:
                 vutils.save_image(real_cpu,
                         '%s/real_samples.png' % args.outf,

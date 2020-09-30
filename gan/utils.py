@@ -2,6 +2,7 @@ import argparse
 import random
 import os
 import torch
+import numpy as np
 
 def get_argument_parser():
     parser = argparse.ArgumentParser(description="GAN")
@@ -11,7 +12,7 @@ def get_argument_parser():
 
     parser.add_argument('--dataset', required=True, help='cifar10 | lsun | mnist | imagenet | folder | lfw | fake | celeba')
     parser.add_argument('--dataroot', type=str, required=False, default='/data/celeba/', help='path to dataset')
-    parser.add_argument('--workers', type=int, help='number of data loading workers', default=1)
+    parser.add_argument('--workers', type=int, help='number of data loading workers', default=2)
     parser.add_argument('--batchSize', type=int, default=64, help='input batch size')
     parser.add_argument('--imageSize', type=int, default=64, help='the height / width of the input image to network')
     parser.add_argument('--nz', type=int, default=100, help='size of the latent z vector')
@@ -35,6 +36,8 @@ def set_seed(value):
     print("Random Seed: ", value)
     random.seed(value)
     torch.manual_seed(value)
+    torch.cuda.manual_seed_all(value)
+    np.random.seed(value)
 
 def create_folder(folder):
     try:
