@@ -27,7 +27,8 @@ def get_argument_parser():
     parser.add_argument('--netD', default='', help="path to netD (to continue training)")
     parser.add_argument('--outf', default='./gan_output', help='folder to output images and model checkpoints')
     parser.add_argument('--manualSeed', type=int, default=999, help='manual seed')
-    parser.add_argument('--classes', default='bedroom', help='comma separated list of classes for the lsun data set')    
+    parser.add_argument('--classes', default='bedroom', help='comma separated list of classes for the lsun data set')
+    parser.add_argument('--tensorboard_path', default='./runs/deepspeed', help='tensorboard log dir')
     parser.add_argument("--local_rank", type=int, default=-1, help="local_rank for distributed training on gpus")
 
     return parser

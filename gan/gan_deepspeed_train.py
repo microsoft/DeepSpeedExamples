@@ -74,7 +74,7 @@ def get_dataset(args):
     return dataset, nc
 
 def train(args):
-    writer = SummaryWriter()
+    writer = SummaryWriter(log_dir=args.tensorboard_path)
     create_folder(args.outf)
     set_seed(args.manualSeed)
     cudnn.benchmark = True
