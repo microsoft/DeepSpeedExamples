@@ -117,10 +117,10 @@ def train(args):
             ###########################
             # train with real
             netD.zero_grad()
-            real_cpu = data[0].to(device)
-            batch_size = real_cpu.size(0)
-            label = torch.full((batch_size,), real_label, dtype=real_cpu.dtype, device=device)
-            output = netD(real_cpu)
+            real = data[0].to(device)
+            batch_size = real.size(0)
+            label = torch.full((batch_size,), real_label, dtype=real.dtype, device=device)
+            output = netD(real)
             errD_real = criterion(output, label)
             model_engineD.backward(errD_real)
             D_x = output.mean().item()
@@ -155,7 +155,7 @@ def train(args):
             writer.add_scalar("Loss_D", errD.item(), epoch*len(dataloader)+i)
             writer.add_scalar("Loss_G", errG.item(), epoch*len(dataloader)+i)
             if i % 100 == 0:
-                vutils.save_image(real_cpu,
+                vutils.save_image(real,
                         '%s/real_samples.png' % args.outf,
                         normalize=True)
                 fake = netG(fixed_noise)
