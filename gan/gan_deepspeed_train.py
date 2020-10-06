@@ -6,7 +6,7 @@ import torchvision.datasets as dset
 import torchvision.transforms as transforms
 import torchvision.utils as vutils
 from torch.utils.tensorboard import SummaryWriter
-from datetime import datetime
+from time import time
 
 from gan_model import Generator, Discriminator, weights_init
 from utils import get_argument_parser, set_seed, create_folder
@@ -110,6 +110,8 @@ def train(args):
     model_engineD, optimizerD, _, _ = deepspeed.initialize(args=args, model=netD, model_parameters=netD.parameters(), optimizer=optimizerD)
     model_engineG, optimizerG, _, _ = deepspeed.initialize(args=args, model=netG, model_parameters=netG.parameters(), optimizer=optimizerG)
 
+    torch.cuda.synchronize()
+    start = time()
     for epoch in range(args.epochs):
         for i, data in enumerate(dataloader, 0):
             ############################
@@ -164,8 +166,11 @@ def train(args):
                         normalize=True)
 
         # do checkpointing
-        torch.save(netG.state_dict(), '%s/netG_epoch_%d.pth' % (args.outf, epoch))
-        torch.save(netD.state_dict(), '%s/netD_epoch_%d.pth' % (args.outf, epoch))
+        #torch.save(netG.state_dict(), '%s/netG_epoch_%d.pth' % (args.outf, epoch))
+        #torch.save(netD.state_dict(), '%s/netD_epoch_%d.pth' % (args.outf, epoch))
+    torch.cuda.synchronize()
+    stop = time()
+    print(f"total wall clock time for {args.epochs} epochs is {stop-start} secs")
 
 def main():
     parser = get_argument_parser()
