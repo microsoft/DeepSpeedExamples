@@ -3,7 +3,7 @@
 # Change for multinode config
 MP_SIZE=1
 
-NUM_WORKERS=8
+NUM_WORKERS=1
 NUM_GPUS_PER_WORKER=16
 
 script_path=$(realpath $0)
@@ -12,10 +12,10 @@ script_dir=$(dirname $script_path)
 config_json="$script_dir/ds_zero-offload_10B_config.json"
 gpt_options=" \
        --model-parallel-size ${MP_SIZE} \
-       --num-layers 50 \
-       --hidden-size 4096 \
-       --num-attention-heads 32 \
-       --batch-size 1280 \
+       --num-layers 150 \
+       --hidden-size 8192 \
+       --num-attention-heads 64 \
+       --batch-size 12 \
        --seq-length 1024 \
        --max-position-embeddings 1024 \
        --train-iters 30 \
