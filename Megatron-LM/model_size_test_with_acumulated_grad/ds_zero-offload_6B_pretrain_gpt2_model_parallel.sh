@@ -15,10 +15,10 @@ gpt_options=" \
        --num-layers 52 \
        --hidden-size 3074 \
        --num-attention-heads 24 \
-       --batch-size 20 \
+       --batch-size 16 \
        --seq-length 1024 \
        --max-position-embeddings 1024 \
-       --train-iters 50 \
+       --train-iters 10 \
        --resume-dataloader \
        --train-data webtext \
        --lazy-loader \

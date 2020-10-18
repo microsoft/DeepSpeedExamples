@@ -1,6 +1,6 @@
 {
-  "train_batch_size":3,
-  "gradient_accumulation_steps": 4,
+  "train_batch_size":512,
+  "gradient_accumulation_steps": 128,
   "steps_per_print": 1,
   "zero_optimization": {
     "stage":2,
