@@ -111,11 +111,9 @@ def get_optimizer(model, args):
                 param.model_parallel = False
 
     if args.cpu_optimizer:
-        #Apex FusedAdam uses decoupled weight decay so use the same here
         if args.cpu_torch_adam:
-            cpu_adam_optimizer = torch.optim.AdamW
+            cpu_adam_optimizer = torch.optim.Adam
         else:
-            #TODO add option for decoupled weight decay in DeepCPUAdam
             from deepspeed.ops.adam import DeepSpeedCPUAdam
             cpu_adam_optimizer = DeepSpeedCPUAdam
         optimizer = cpu_adam_optimizer(param_groups,
@@ -126,12 +124,13 @@ def get_optimizer(model, args):
                          lr=args.lr, weight_decay=args.weight_decay)
 
     print(f'Optimizer = {optimizer.__class__.__name__}')
+
     if args.deepspeed:
-        # fp16 wrapper is not required for DeepSpeed.
-        return optimizer
+        return optimizer, param_groups
 
     # Wrap into fp16 optimizer.
     if args.fp16:
+        
         optimizer = FP16_Optimizer(optimizer,
                                    static_loss_scale=args.loss_scale,
                                    dynamic_loss_scale=args.dynamic_loss_scale,
@@ -140,7 +139,7 @@ def get_optimizer(model, args):
                                        'min_scale': args.min_scale,
                                        'delayed_shift': args.hysteresis})
 
-    return optimizer
+    return optimizer, param_groups
 
 
 def get_learning_rate_scheduler(optimizer, args):
@@ -168,7 +167,7 @@ def setup_model_and_optimizer(args):
     """Setup model and optimizer."""
 
     model = get_model(args)
-    optimizer = get_optimizer(model, args)
+    optimizer, param_groups = get_optimizer(model, args)
     lr_scheduler = get_learning_rate_scheduler(optimizer, args)
 
     if args.deepspeed:
@@ -176,7 +175,7 @@ def setup_model_and_optimizer(args):
 
         model, optimizer, _, lr_scheduler = deepspeed.initialize(
             model=model,
-            optimizer=optimizer,
+            model_parameters=param_groups,
             args=args,
             lr_scheduler=lr_scheduler,
             mpu=mpu,
