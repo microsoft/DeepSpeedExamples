@@ -196,6 +196,16 @@ def get_argument_parser():
                         action='store_true',
                         help='Use Nvidia pretraining dataset.')
 
+    parser.add_argument('--progressive_layer_drop',
+                        default=False,
+                        action='store_true',
+                        help="Whether to enable progressive layer dropping or not")
+
+    parser.add_argument('--layerdrop_theta',
+                        type=float,
+                        default=0.5,
+                        help='Curriculum layerdrop target drop rate (0, 1). The higher the value, the higher the drop ratio.')
+
     return parser
 
 
