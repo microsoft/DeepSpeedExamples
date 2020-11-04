@@ -15,7 +15,7 @@ declare -a configs=(
                     )
 
 checkpoint_id="100"
-JOBNAME="bert_base_v2.1_stochastic_preLN_depth12_fp16_seq128_adam_chkpt${checkpoint_id}_v3.2.1"
+JOBNAME="bert_base_progressive_layer_dropping_preLN_depth12_fp16_seq128_adam_chkpt${checkpoint_id}"
 CHECKPOINT_PATH="~/workspace/dev/DeepSpeed-PLD/DeepSpeedExamples/bing_bert/bert_model_outputs/saved_models/adam_4k_seq128_progressive_layer_drop/epoch100_step65480/mp_rank_00_model_states.pt"
 CHECKPOINT_PATH="$(echo -e "${CHECKPOINT_PATH}" | tr -d '[:space:]')" 
 

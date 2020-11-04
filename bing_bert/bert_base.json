@@ -1,5 +1,5 @@
 {
-    "name": "bing_bert_base_lamb_seq",
+    "name": "bing_bert_base_seq",
     "bert_token_file": "bert-base-uncased",
     "bert_model_file": "bert-base-uncased",
     "bert_model_config": {
