@@ -9,17 +9,14 @@ NGPU=1
 
 echo "Started scripts"
 
-MASTER_PORT=$1
-
-config=$2
-echo $config
-EFFECTIVE_BATCH_SIZE=$(echo $config | cut -f1 -d' ')
-LR=$(echo $config | cut -f2 -d' ')
-NUM_EPOCH=$(echo $config | cut -f3 -d' ')
+TASK=$1
+EFFECTIVE_BATCH_SIZE=$2
+LR=$3
+NUM_EPOCH=$4
 
 model_name="bert_base"
-JOBNAME=$3
-CHECKPOINT_PATH=$4
+JOBNAME=$5
+CHECKPOINT_PATH=$6
 OUTPUT_DIR="${SCRIPT_DIR}/outputs/${model_name}/${JOBNAME}_bsz${EFFECTIVE_BATCH_SIZE}_lr${LR}_epoch${NUM_EPOCH}"
 
 GLUE_DIR="/data/GlueData"
@@ -32,28 +29,25 @@ else
        GRAD_ACCUM_STEPS=$((PER_GPU_BATCH_SIZE/MAX_GPU_BATCH_SIZE))
 fi
 
-for TASK in SST-2 MNLI CoLA STS-B QQP MNLI-MM QNLI RTE WNLI MRPC
-    do
-       echo "Fine Tuning $CHECKPOINT_PATH"
-       run_cmd="python3.6 -m torch.distributed.launch \
-              --nproc_per_node=${NGPU} \
-              --master_port=${MASTER_PORT} \
-              run_glue_classifier_bert_base.py \
-              --task_name $TASK \
-              --do_train \
-              --do_eval \
-              --do_lower_case \
-              --data_dir $GLUE_DIR/$TASK/ \
-              --bert_model bert-large-uncased \
-              --max_seq_length 128 \
-              --train_batch_size ${PER_GPU_BATCH_SIZE} \
-              --gradient_accumulation_steps ${GRAD_ACCUM_STEPS} \
-              --learning_rate ${LR} \
-              --num_train_epochs ${NUM_EPOCH} \
-              --output_dir ${OUTPUT_DIR}_${TASK} \
-              --progressive_layer_drop \
-              --model_file $CHECKPOINT_PATH &> $LOG_DIR/${model_name}/${JOBNAME}_${TASK}_bzs${EFFECTIVE_BATCH_SIZE}_lr${LR}_epoch${NUM_EPOCH}.txt
-              "
-       echo ${run_cmd}
-       eval ${run_cmd} 
-    done   
+echo "Fine Tuning $CHECKPOINT_PATH"
+run_cmd="python3.6 -m torch.distributed.launch \
+       --nproc_per_node=${NGPU} \
+       --master_port=${MASTER_PORT} \
+       run_glue_classifier_bert_base.py \
+       --task_name $TASK \
+       --do_train \
+       --do_eval \
+       --do_lower_case \
+       --data_dir $GLUE_DIR/$TASK/ \
+       --bert_model bert-large-uncased \
+       --max_seq_length 128 \
+       --train_batch_size ${PER_GPU_BATCH_SIZE} \
+       --gradient_accumulation_steps ${GRAD_ACCUM_STEPS} \
+       --learning_rate ${LR} \
+       --num_train_epochs ${NUM_EPOCH} \
+       --output_dir ${OUTPUT_DIR}_${TASK} \
+       --progressive_layer_drop \
+       --model_file $CHECKPOINT_PATH &> $LOG_DIR/${model_name}/${JOBNAME}_${TASK}_bzs${EFFECTIVE_BATCH_SIZE}_lr${LR}_epoch${NUM_EPOCH}.txt
+       "
+echo ${run_cmd}
+eval ${run_cmd} 
