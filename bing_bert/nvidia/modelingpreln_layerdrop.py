@@ -108,11 +108,13 @@ def get_sparse_attention_config(args, num_heads):
     else:
         return None
 
+
 def get_sparse_attention_utils(sparse_attention_config):
     if sparse_attention_config is not None:
         from deepspeed.ops.sparse_attention import SparseAttentionUtils
         return SparseAttentionUtils
     return None
+
 
 def load_tf_weights_in_bert(model, tf_checkpoint_path):
     """ Load tf checkpoints in a pytorch model
@@ -551,16 +553,17 @@ class BertLayer(nn.Module):
             attention_output = self.attention(input_layer_norm, attention_mask)
             attention_output = attention_output * 1 / keep_prob
             intermediate_input = hidden_states + attention_output
-        
+
         if action == 0:
             layer_output = intermediate_input
         else:
-            intermediate_layer_norm = self.PostAttentionLayerNorm(intermediate_input)
+            intermediate_layer_norm = self.PostAttentionLayerNorm(
+                intermediate_input)
             intermediate_output = self.intermediate(intermediate_layer_norm)
             layer_output = self.output(intermediate_output)
             layer_output = layer_output * 1 / keep_prob
             layer_output = layer_output + intermediate_input
-        
+
         return layer_output
 
 
@@ -630,7 +633,8 @@ class BertEncoder(nn.Module):
                 attention_mask,
                 output_all_encoded_layers=True,
                 checkpoint_activations=False,
-                progressive_layer_drop=False, theta=0.5):
+                progressive_layer_drop=False,
+                theta=0.5):
         all_encoder_layers = []
 
         def custom(start, end):
@@ -666,11 +670,12 @@ class BertEncoder(nn.Module):
                 p = 1.0
                 # print("+ stochastic drop, depth, Theta {}:".format(theta))
 
-                for i,layer_module in enumerate(self.layer):
+                for i, layer_module in enumerate(self.layer):
 
-                    action = np.random.choice([1, 0], p=[p, 1-p])
+                    action = np.random.choice([1, 0], p=[p, 1 - p])
                     p = p - step
-                    hidden_states = layer_module(hidden_states, attention_mask, action, p)
+                    hidden_states = layer_module(hidden_states, attention_mask,
+                                                 action, p)
                     if output_all_encoded_layers:
                         all_encoder_layers.append(hidden_states)
 
@@ -1021,7 +1026,8 @@ class BertModel(BertPreTrainedModel):
         # set sparse_attention_config if it has been selected
         self.sparse_attention_config = get_sparse_attention_config(
             args, config.num_attention_heads)
-        self.sparse_attention_utils = get_sparse_attention_utils(self.sparse_attention_config)
+        self.sparse_attention_utils = get_sparse_attention_utils(
+            self.sparse_attention_config)
         self.encoder = BertEncoder(
             config, args, sparse_attention_config=self.sparse_attention_config)
         self.pooler = BertPooler(config)
@@ -1034,7 +1040,8 @@ class BertModel(BertPreTrainedModel):
                 attention_mask=None,
                 output_all_encoded_layers=True,
                 checkpoint_activations=False,
-                progressive_layer_drop=False, theta=0.5):
+                progressive_layer_drop=False,
+                theta=0.5):
         if attention_mask is None:
             attention_mask = torch.ones_like(input_ids)
         if token_type_ids is None:
@@ -1074,14 +1081,16 @@ class BertModel(BertPreTrainedModel):
             extended_attention_mask,
             output_all_encoded_layers=output_all_encoded_layers,
             checkpoint_activations=checkpoint_activations,
-            progressive_layer_drop=progressive_layer_drop, theta=theta)
+            progressive_layer_drop=progressive_layer_drop,
+            theta=theta)
         sequence_output = encoded_layers[-1]
         pooled_output = self.pooler(sequence_output)
 
         # If BertEncoder uses sparse attention, and input_ids were padded, sequence output needs to be unpadded to original length
         if self.sparse_attention_config is not None and pad_len > 0:
-            encoded_layers[-1] = self.sparse_attention_utils.unpad_sequence_output(
-                pad_len, encoded_layers[-1])
+            encoded_layers[
+                -1] = self.sparse_attention_utils.unpad_sequence_output(
+                    pad_len, encoded_layers[-1])
 
         if not output_all_encoded_layers:
             encoded_layers = encoded_layers[-1]
@@ -1147,9 +1156,8 @@ class BertForPreTrainingPreLN(BertPreTrainedModel):
         self.args = args
 
     def forward(self, batch, **kwargs):
-        progressive_layer_drop = kwargs['progressive_layer_drop']
-        theta = kwargs['theta']
-        log = kwargs['log']
+        progressive_layer_drop = kwargs.get('progressive_layer_drop', False)
+        theta = kwargs.get('pld_theta', 1.0)
 
         input_ids = batch[1]
         token_type_ids = batch[3]
@@ -1164,7 +1172,8 @@ class BertForPreTrainingPreLN(BertPreTrainedModel):
             attention_mask,
             output_all_encoded_layers=False,
             checkpoint_activations=checkpoint_activations,
-            progressive_layer_drop=progressive_layer_drop, theta=theta)
+            progressive_layer_drop=progressive_layer_drop,
+            theta=theta)
 
         if masked_lm_labels is not None and next_sentence_label is not None:
             # filter out all masked labels.

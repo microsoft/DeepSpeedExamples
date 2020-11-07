@@ -8,9 +8,10 @@ OUTPUT_DIR=${base_dir}/bert_model_outputs
 
 mkdir -p $OUTPUT_DIR
 
-config="--progressive_layer_drop --layerdrop_theta 0.5"
+config="--progressive_layer_drop"
 
-NCCL_TREE_THRESHOLD=0 deepspeed ${base_dir}/deepspeed_train.py \
+NCCL_TREE_THRESHOLD=0 deepspeed \
+${base_dir}/deepspeed_train.py \
 --cf ${base_dir}/bert_base_large_lr.json \
 --max_seq_length 128 \
 --output_dir $OUTPUT_DIR \

@@ -103,11 +103,7 @@ def pretrain_validation(args, index, model):
     nb_eval_steps = 0
     for batch in tqdm(data_batches):
         batch = tuple(t.to(args.device) for t in batch)
-        if args.progressive_layer_drop:
-            kwargs = {'log': False, 'progress_layer_drop': False, 'theta': 1.0}
-            tmp_eval_loss = model.network(batch, **kwargs)
-        else:
-            tmp_eval_loss = model.network(batch, log=False)
+        tmp_eval_loss = model.network(batch, log=False)
         dist.reduce(tmp_eval_loss, 0)
         # Reduce to get the loss from all the GPU's
         tmp_eval_loss = tmp_eval_loss / dist.get_world_size()
@@ -128,10 +124,8 @@ def master_process(args):
             and dist.get_rank() == 0) or (args.no_cuda
                                           and args.local_rank == -1)
 
-            
+
 from deepspeed.utils.logging import logger
-
-
 
 
 def train(args,
@@ -161,7 +155,6 @@ def train(args,
     rounds = 20
     all_step_time = 0.0
     step_counts = 0
-    theta = 1.0
 
     for _, batch_index in enumerate(tqdm(dataset_iterator, smoothing=1)):
         try:
@@ -170,11 +163,7 @@ def train(args,
             batch = tuple(t.to(args.device) for t in batch)  # Move to GPU
 
             # Calculate forward pass
-            if args.progressive_layer_drop:
-                kwargs = {'progressive_layer_drop': True, 'theta': theta, 'log': True}
-                loss = model.network(batch, **kwargs)
-            else:
-                loss = model.network(batch)
+            loss = model.network(batch)
             unscaled_loss = loss.item()
             current_data_sample_count += (args.train_micro_batch_size_per_gpu *
                                           dist.get_world_size())
@@ -193,16 +182,10 @@ def train(args,
                     lr_this_step = update_learning_rate(
                         args, config, global_step, optimizer)
 
-                if args.progressive_layer_drop:
-                    def _prob(x, gamma, p):
-                        return (1.-p) * np.exp(-gamma*x) + p
-                    theta = _prob(global_step, 0.001, args.layerdrop_theta)
-
                 report_step_metrics(args, lr_this_step, unscaled_loss,
                                     global_step, current_data_sample_count)
 
                 model.network.step()
-
 
                 report_lamb_coefficients(args, optimizer)
                 global_step += 1
@@ -224,9 +207,14 @@ def train(args,
             break
         step_time = time.time() - step_start
         all_step_time += step_time
-        if global_step % rounds == 0 and global_step != 0 and model.network.is_gradient_accumulation_boundary() and dist.get_rank() == 0:
-            one_step_bs = args.train_micro_batch_size_per_gpu * args.gradient_accumulation_steps * dist.get_world_size() * rounds
-            print(' At step {}, the throughput is {:2f} Samples/s'.format(global_step * args.gradient_accumulation_steps, one_step_bs/all_step_time), flush=True)
+        if global_step % rounds == 0 and global_step != 0 and model.network.is_gradient_accumulation_boundary(
+        ) and dist.get_rank() == 0:
+            one_step_bs = args.train_micro_batch_size_per_gpu * args.gradient_accumulation_steps * dist.get_world_size(
+            ) * rounds
+            print(' At step {}, the throughput is {:2f} Samples/s'.format(
+                global_step * args.gradient_accumulation_steps,
+                one_step_bs / all_step_time),
+                  flush=True)
             all_step_time = 0.0
 
     pretrain_dataset_provider.release_shard(index)
@@ -370,9 +358,6 @@ def construct_arguments():
     if args.max_steps_per_epoch < sys.maxsize:
         logging.warning('Early epoch exit is set after {} global steps'.format(
             args.max_steps_per_epoch))
-
-    if args.progressive_layer_drop:
-        print("Enabled progressive layer dropping (theta = {}). ".format(args.layerdrop_theta))
 
     return args
 

@@ -13,11 +13,14 @@
     }
   },
   "gradient_clipping": 1.0,
-
   "wall_clock_breakdown": false,
-
   "fp16": {
     "enabled": true,
     "loss_scale": 0
+  },
+  "progressive_layer_drop": {
+    "enabled": true,
+    "theta": 0.5,
+    "gamma": 0.001
   }
 }
