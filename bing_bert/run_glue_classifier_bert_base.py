@@ -756,14 +756,15 @@ def main():
         raise ValueError(
             "At least one of `do_train` or `do_eval` must be True.")
 
-    if (torch.distributed.get_rank() == 0):
+    if (args.local_rank == -1 or torch.distributed.get_rank() == 0):
         # if os.path.exists(args.output_dir) and os.listdir(args.output_dir) and args.do_train:
         #     raise ValueError(
         #         "Output directory ({}) already exists and is not empty.".format(args.output_dir))
         if not os.path.exists(args.output_dir):
             os.makedirs(args.output_dir)
 
-    torch.distributed.barrier()
+    if args.local_rank != -1:
+        torch.distributed.barrier()
 
     task_name = args.task_name.lower()
 
