@@ -110,16 +110,18 @@ def get_optimizer(model, args):
             if not hasattr(param, 'model_parallel'):
                 param.model_parallel = False
 
-    # Use Adam.
+    # Use FusedAdam.
     optimizer = Adam(param_groups,
-                     lr=args.lr, weight_decay=args.weight_decay)
+                         lr=args.lr, weight_decay=args.weight_decay)
+
+    print(f'Optimizer = {optimizer.__class__.__name__}')
 
     if args.deepspeed:
-        # fp16 wrapper is not required for DeepSpeed.
-        return optimizer
+        return optimizer, param_groups
 
     # Wrap into fp16 optimizer.
     if args.fp16:
+        
         optimizer = FP16_Optimizer(optimizer,
                                    static_loss_scale=args.loss_scale,
                                    dynamic_loss_scale=args.dynamic_loss_scale,
@@ -128,7 +130,7 @@ def get_optimizer(model, args):
                                        'min_scale': args.min_scale,
                                        'delayed_shift': args.hysteresis})
 
-    return optimizer
+    return optimizer, param_groups
 
 
 def get_learning_rate_scheduler(optimizer, args):
@@ -156,7 +158,7 @@ def setup_model_and_optimizer(args):
     """Setup model and optimizer."""
 
     model = get_model(args)
-    optimizer = get_optimizer(model, args)
+    optimizer, param_groups = get_optimizer(model, args)
     lr_scheduler = get_learning_rate_scheduler(optimizer, args)
 
     if args.deepspeed:
@@ -164,7 +166,7 @@ def setup_model_and_optimizer(args):
 
         model, optimizer, _, lr_scheduler = deepspeed.initialize(
             model=model,
-            optimizer=optimizer,
+            model_parameters=param_groups,
             args=args,
             lr_scheduler=lr_scheduler,
             mpu=mpu,
@@ -528,11 +530,11 @@ def evaluate_and_print_results(prefix, data_iterator, model,
     Gives access to partition activations, contiguous memory optimizations
     and cpu checkpointing.
 
-    Activation checkpoint requires keep track of the random states 
+    Activation checkpoint requires keep track of the random states
     and setting the random seed for each MP process. Megatron uses
     mpu.get_cuda_rng_tracker and mpu.model_parallel_cuda_manual_seed
     for keeping track of the random states and setting the random seeds.
-    Since they are used in places outside of activation checkpointing, 
+    Since they are used in places outside of activation checkpointing,
     we overwrite them to maintain consistency.
 
     This must be done before all the calls to mpu.model_parallel_cuda_manual_seed
@@ -566,7 +568,7 @@ def initialize_distributed(args):
     mpu.initialize_model_parallel(args.model_parallel_size)
 
     # Optional DeepSpeed Activation Checkpointing Features
-    # 
+    #
     if args.deepspeed and args.deepspeed_activation_checkpointing:
         set_deepspeed_activation_checkpointing(args)
 
