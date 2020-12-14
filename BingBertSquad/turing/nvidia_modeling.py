@@ -517,6 +517,8 @@ class BertEncoder(nn.Module):
                 hidden_dropout_ratio=config.hidden_dropout_prob,
                 num_hidden_layers=config.num_hidden_layers,
                 initializer_range=config.initializer_range,
+                local_rank=args.local_rank
+                if hasattr(args, 'local_rank') else -1,
                 seed=args.seed,
                 fp16=ds_config.fp16_enabled,
                 pre_layer_norm=False)

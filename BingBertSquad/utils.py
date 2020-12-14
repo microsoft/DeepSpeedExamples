@@ -213,13 +213,16 @@ def get_argument_parser():
         '--ckpt_type',
         type=str,
         default="DS",
-        help="Checkpoint's type, DS - DeepSpeed, TF - Tensorflow, HF - Huggingface.")
+        help=
+        "Checkpoint's type, DS - DeepSpeed, TF - Tensorflow, HF - Huggingface."
+    )
 
     parser.add_argument(
         "--origin_bert_config_file",
         type=str,
         default=None,
-        help="The config json file corresponding to the non-DeepSpeed pre-trained BERT model."
+        help=
+        "The config json file corresponding to the non-DeepSpeed pre-trained BERT model."
     )
 
     return parser
