@@ -209,6 +209,19 @@ def get_argument_parser():
 
     parser.add_argument('--dropout', type=float, default=0.1, help='dropout')
 
+    parser.add_argument(
+        '--ckpt_type',
+        type=str,
+        default="DS",
+        help="Checkpoint's type, DS - DeepSpeed, TF - Tensorflow, HF - Huggingface.")
+
+    parser.add_argument(
+        "--origin_bert_config_file",
+        type=str,
+        default=None,
+        help="The config json file corresponding to the non-DeepSpeed pre-trained BERT model."
+    )
+
     return parser
 
 
@@ -222,6 +235,7 @@ def get_summary_writer(name, base=".."):
 def write_summary_events(summary_writer, summary_events):
     for event in summary_events:
         summary_writer.add_scalar(event[0], event[1], event[2])
+
 
 def is_time_to_exit(args, epoch_steps=0, global_steps=0):
     return (epoch_steps >= args.max_steps_per_epoch) or \

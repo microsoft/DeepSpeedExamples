@@ -1,11 +1,12 @@
 {
   "train_batch_size": 24,
-  "train_micro_batch_size_per_gpu": 3,
+  "train_micro_batch_size_per_gpu": 24,
+   "gradient_accumulation_steps": 1,
   "steps_per_print": 10,
   "optimizer": {
     "type": "Adam",
     "params": {
-      "lr": 3e-5,
+      "lr": 5e-5,
       "weight_decay": 0.0,
       "bias_correction": false
     }
@@ -13,6 +14,7 @@
   "gradient_clipping": 1.0,
   "fp16": {
     "enabled": true
-  }
+  },
+   "wall_clock_breakdown": true
 
 }

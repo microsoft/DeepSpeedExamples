@@ -111,13 +111,19 @@ def get_optimizer(model, args):
                 param.model_parallel = False
 
     if args.cpu_optimizer:
-        optimizer = DeepSpeedCPUAdam(param_groups,
+        if args.cpu_torch_adam:
+            cpu_adam_optimizer = torch.optim.AdamW
+        else:
+            from deepspeed.ops.adam import DeepSpeedCPUAdam
+            cpu_adam_optimizer = DeepSpeedCPUAdam
+        optimizer = cpu_adam_optimizer(param_groups,
                         lr=args.lr, weight_decay=args.weight_decay)
     else:
         # Use FusedAdam.
         optimizer = Adam(param_groups,
                          lr=args.lr, weight_decay=args.weight_decay)
 
+    print(f'Optimizer = {optimizer.__class__.__name__}')
     if args.deepspeed:
         # fp16 wrapper is not required for DeepSpeed.
         return optimizer

@@ -1,10 +1,10 @@
 #! /bin/bash
 
 # Change for multinode config
-MP_SIZE=4
+MP_SIZE=1
 
 NUM_WORKERS=1
-NUM_GPUS_PER_WORKER=16
+NUM_GPUS_PER_WORKER=1
 
 script_path=$(realpath $0)
 script_dir=$(dirname $script_path)
@@ -15,10 +15,10 @@ gpt_options=" \
        --num-layers 24 \
        --hidden-size 1024 \
        --num-attention-heads 16 \
-       --batch-size 8 \
+       --batch-size 24 \
        --seq-length 1024 \
        --max-position-embeddings 1024 \
-       --train-iters 100000 \
+       --train-iters 100 \
        --resume-dataloader \
        --train-data webtext \
        --lazy-loader \

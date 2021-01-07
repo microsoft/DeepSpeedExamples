@@ -3,8 +3,8 @@
 # Change for multinode config
 MP_SIZE=1
 
-NUM_WORKERS=8
-NUM_GPUS_PER_WORKER=16
+NUM_WORKERS=1
+NUM_GPUS_PER_WORKER=1
 
 script_path=$(realpath $0)
 script_dir=$(dirname $script_path)
@@ -15,10 +15,10 @@ gpt_options=" \
        --num-layers 50 \
        --hidden-size 4096 \
        --num-attention-heads 32 \
-       --batch-size 1280 \
+       --batch-size 10 \
        --seq-length 1024 \
        --max-position-embeddings 1024 \
-       --train-iters 30 \
+       --train-iters 100 \
        --resume-dataloader \
        --train-data webtext \
        --lazy-loader \
@@ -34,7 +34,7 @@ gpt_options=" \
        --checkpoint-activations \
        --deepspeed-activation-checkpointing \
        --fp16 \
-       --log-interval 5 \
+       --log-interval 1 \
        --cpu-optimizer
 "
 gpt_options="${gpt_options}

@@ -55,7 +55,6 @@ run_cmd="deepspeed --num_nodes ${NUM_NODES} --num_gpus ${NGPU_PER_NODE} \
        --fp16 \
        --deepspeed \
        --deepspeed_config ${config_json} \
-       --deepspeed_transformer_kernel \
        --dropout ${DROPOUT} \
        --model_file $MODEL_FILE \
        --seed ${SEED} \
