@@ -8,8 +8,9 @@
       "lr": 4e-4,
       "weight_decay": 0.01,
       "bias_correction": false,
-      "freeze_step": 23000,
-      "cuda_aware": true
+      "freeze_step": 100,
+      "cuda_aware": false,
+      "comm_backend_name": "nccl"
     }
   },
   "gradient_clipping": 1.0,

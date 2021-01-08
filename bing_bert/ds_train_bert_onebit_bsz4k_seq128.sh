@@ -8,7 +8,7 @@ OUTPUT_DIR=${base_dir}/bert_model_outputs
 
 mkdir -p $OUTPUT_DIR
 
-NCCL_TREE_THRESHOLD=0 deepspeed --launcher=mvapich ${base_dir}/deepspeed_train.py \
+NCCL_TREE_THRESHOLD=0 deepspeed -e worker-7@worker-13 --launcher=openmpi ${base_dir}/deepspeed_train.py \
 --cf ${base_dir}/bert_large.json \
 --max_seq_length 128 \
 --output_dir $OUTPUT_DIR \
