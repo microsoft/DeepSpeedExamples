@@ -696,7 +696,7 @@ def main():
         action='store_true',
         default=False,
         help=
-        "Whether to display the breakdown of the wall-clock time for foraward, backward and step"
+        "Switching to the variant of Transformer blocks that use pre-LayerNorm."
     )
 
     parser = deepspeed.add_config_arguments(parser)
