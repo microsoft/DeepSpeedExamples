@@ -29,6 +29,7 @@ import deepspeed
 global_step = 0
 global_data_samples = 0
 last_global_step_from_restore = 0
+all_step_time = 0.0
 
 
 def checkpoint_model(PATH, ckpt_id, model, epoch, last_global_step,
@@ -137,6 +138,7 @@ def train(args,
     global global_step
     global global_data_samples
     global last_global_step_from_restore
+    global all_step_time
 
     dataset_iterator, total_length = pretrain_dataset_provider.get_shard(index)
     current_data_sample_count = global_data_samples
@@ -153,7 +155,6 @@ def train(args,
 
     epoch_step = 0
     rounds = 20
-    all_step_time = 0.0
     step_counts = 0
 
     for _, batch_index in enumerate(tqdm(dataset_iterator, smoothing=1)):
