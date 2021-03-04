@@ -1,5 +1,12 @@
 #!/bin/bash
 
+# If you are able to install pytorch >= 1.8 and nccl >= 2.8.3,
+# we highly recommend you to use the NCCL-based 1-bit Adam
+# which has better performance and ease of use
+# (see scripts in DeepSpeedExamples/bing_bert/1-bit_adam/nccl
+# and read the tutorial for more details:
+# https://www.deepspeed.ai/tutorials/onebit-adam/)
+
 base_dir=`pwd`
 
 # Where should we save checkpoints and tensorboard events?
@@ -8,10 +15,9 @@ OUTPUT_DIR=${base_dir}/bert_model_outputs
 
 mkdir -p $OUTPUT_DIR
 
-# LD_PRELOAD is used to load a specific nccl version. Remove it if needed.
 # NCCL_IB_DISABLE=1 NCCL_SOCKET_IFNAME=eth0 are used to disable infiniband. Remove it if needed.
-LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libnccl.so.2.8.3 NCCL_TREE_THRESHOLD=0 NCCL_IB_DISABLE=1 NCCL_SOCKET_IFNAME=eth0 deepspeed --launcher=openmpi ${base_dir}/../deepspeed_train.py \
---cf ${base_dir}/../bert_large.json \
+NCCL_TREE_THRESHOLD=0 NCCL_IB_DISABLE=1 NCCL_SOCKET_IFNAME=eth0 deepspeed --launcher=openmpi ${base_dir}/../../deepspeed_train.py \
+--cf ${base_dir}/../../bert_large.json \
 --max_seq_length 128 \
 --output_dir $OUTPUT_DIR \
 --deepspeed_mpi \
