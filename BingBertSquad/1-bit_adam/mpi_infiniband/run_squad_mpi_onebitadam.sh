@@ -1,3 +1,10 @@
+# If you are able to install pytorch >= 1.8 and nccl >= 2.8.3,
+# we highly recommend you to use the NCCL-based 1-bit Adam
+# which has better performance and ease of use
+# (see scripts in DeepSpeedExamples/BingBertSquad/1-bit_adam/nccl
+# and read the tutorial for more details:
+# https://www.deepspeed.ai/tutorials/onebit-adam/)
+
 NUM_NODES=4
 NGPU_PER_NODE=8
 MODEL_FILE="../../ckpt/bert-large-uncased-whole-word-masking-pytorch_model.bin"

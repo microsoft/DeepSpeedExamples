@@ -1,9 +1,6 @@
-# If you are able to install pytorch >= 1.8 and nccl >= 2.8.3,
-# we highly recommend you to use the NCCL-based 1-bit Adam
-# which has better performance and ease of use
-# (see scripts in DeepSpeedExamples/BingBertSquad/1-bit_adam/nccl
-# and read the tutorial for more details:
-# https://www.deepspeed.ai/tutorials/onebit-adam/)
+# This script requires pytorch >= 1.8 and nccl >= 2.8.3.
+# Read the tutorial for more details:
+# https://www.deepspeed.ai/tutorials/onebit-adam/
 
 NUM_NODES=4
 NGPU_PER_NODE=8
@@ -30,7 +27,8 @@ fi
 JOB_NAME="onebit_deepspeed_${NGPU}GPUs_${EFFECTIVE_BATCH_SIZE}batch_size"
 config_json=deepspeed_onebitadam_bsz96_config.json
 
-NCCL_TREE_THRESHOLD=0 deepspeed --launcher=mvapich ../../nvidia_run_squad_deepspeed.py \
+# NCCL_IB_DISABLE=1 NCCL_SOCKET_IFNAME=eth0 are used to disable infiniband. Remove it if needed.
+NCCL_TREE_THRESHOLD=0 NCCL_IB_DISABLE=1 NCCL_SOCKET_IFNAME=eth0 deepspeed ../../nvidia_run_squad_deepspeed.py \
 --bert_model bert-large-uncased \
 --do_train \
 --do_lower_case \
@@ -48,7 +46,6 @@ NCCL_TREE_THRESHOLD=0 deepspeed --launcher=mvapich ../../nvidia_run_squad_deepsp
 --gradient_accumulation_steps ${GRAD_ACCUM_STEPS} \
 --fp16 \
 --deepspeed \
---deepspeed_mpi \
 --deepspeed_transformer_kernel \
 --deepspeed_config ${config_json} \
 --dropout ${DROPOUT} \

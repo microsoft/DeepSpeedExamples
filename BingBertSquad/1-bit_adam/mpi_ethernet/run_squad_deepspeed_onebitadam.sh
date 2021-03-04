@@ -30,7 +30,8 @@ fi
 JOB_NAME="onebit_deepspeed_${NGPU}GPUs_${EFFECTIVE_BATCH_SIZE}batch_size"
 config_json=deepspeed_onebitadam_bsz96_config.json
 
-NCCL_TREE_THRESHOLD=0 deepspeed --launcher=mvapich ../../nvidia_run_squad_deepspeed.py \
+# NCCL_IB_DISABLE=1 NCCL_SOCKET_IFNAME=eth0 are used to disable infiniband. Remove it if needed.
+NCCL_TREE_THRESHOLD=0 NCCL_IB_DISABLE=1 NCCL_SOCKET_IFNAME=eth0 deepspeed --launcher=openmpi ../../nvidia_run_squad_deepspeed.py \
 --bert_model bert-large-uncased \
 --do_train \
 --do_lower_case \
