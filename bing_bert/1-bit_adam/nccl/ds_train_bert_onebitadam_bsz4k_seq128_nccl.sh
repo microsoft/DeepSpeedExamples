@@ -1,6 +1,7 @@
 #!/bin/bash
 
-# This script requires pytorch >= 1.8 and nccl >= 2.8.3.
+# This script requires pytorch >= 1.8
+# (and nccl >= 2.8.3 if you have 64 or more GPUs).
 # Read the tutorial for more details:
 # https://www.deepspeed.ai/tutorials/onebit-adam/
 

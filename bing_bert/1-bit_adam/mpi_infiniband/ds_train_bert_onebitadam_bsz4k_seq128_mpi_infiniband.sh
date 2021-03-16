@@ -1,6 +1,7 @@
 #!/bin/bash
 
-# If you are able to install pytorch >= 1.8 and nccl >= 2.8.3,
+# If you are able to install pytorch >= 1.8
+# (and nccl >= 2.8.3 if you have 64 or more GPUs),
 # we highly recommend you to use the NCCL-based 1-bit Adam
 # which has better performance and ease of use
 # (see scripts in DeepSpeedExamples/bing_bert/1-bit_adam/nccl
