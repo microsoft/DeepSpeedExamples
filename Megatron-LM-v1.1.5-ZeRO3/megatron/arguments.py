@@ -98,7 +98,7 @@ def parse_args(extra_args_provider=None, defaults={},
     # Check required arguments.
     required_args = ['num_layers', 'hidden_size', 'num_attention_heads',
                      'max_position_embeddings']
-    for req_arg in required_args: 
+    for req_arg in required_args:
         _check_arg_is_not_none(args, req_arg)
 
     # Checks.
@@ -512,7 +512,7 @@ def _add_zero_args(parser):
                        help='Use contigious memory optimizaiton if specified')
     group.add_argument("--zero-reduce-bucket-size", type=int, default=0.0)
     group.add_argument("--zero-allgather-bucket-size", type=int, default=0.0)
-    group.add_argument('--remote-device', type=str, default=None, choices=[None, 'cpu'],
+    group.add_argument('--remote-device', type=str, default=None, choices=[None, 'cpu', 'nvme'],
                       help='Remote device for ZeRO-3 initialized parameters.')
     group.add_argument('--use-pin-memory', action='store_true',
                      help='Use pinned CPU memory for ZeRO-3 initialized model parameters.')

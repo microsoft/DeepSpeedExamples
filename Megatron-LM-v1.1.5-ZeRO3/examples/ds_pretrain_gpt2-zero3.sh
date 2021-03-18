@@ -1,23 +1,24 @@
 #! /bin/bash
 
 # Change for multinode config
-MP_SIZE=2
+MP_SIZE=1
 
-DEBUG=0
+DEBUG=1
 if [[ ${DEBUG} == 1 ]];  then
+       MP_SIZE=1
        NUM_WORKERS=1
        NUM_GPUS_PER_WORKER=1
        HIDDEN_SIZE=1024
        NUM_ATTN_HEADS=16
        NUM_LAYERS=5
-       BATCHSIZE=1
+       BATCHSIZE=4
 else
-       NUM_WORKERS=1 #${DLTS_NUM_WORKER}
-       NUM_GPUS_PER_WORKER=8 #${DLTS_NUM_GPU_PER_WORKER}
-       HIDDEN_SIZE=1024
+       NUM_WORKERS=${DLTS_NUM_WORKER}
+       NUM_GPUS_PER_WORKER=${DLTS_NUM_GPU_PER_WORKER}
+       HIDDEN_SIZE=8192
        NUM_ATTN_HEADS=32
-       NUM_LAYERS=8 # 50
-       BATCHSIZE=32
+       NUM_LAYERS=50
+       BATCHSIZE=4
 
        #HIDDEN_SIZE=4096
        #NUM_LAYERS=24 # 50
@@ -25,9 +26,10 @@ else
 fi
 
 
-DATA_PATH=/data/megatron-data/indexed/my-gpt2_text_document
-VOCAB_PATH=/data/megatron-data/gpt2-vocab.json
-MERGE_PATH=/data/megatron-data/gpt2-merges.txt
+BASE_DATA_PATH=/data/Megatron-LM/data
+DATA_PATH=${BASE_DATA_PATH}/indexed_datasets/megatron
+VOCAB_PATH=${BASE_DATA_PATH}/gpt2-vocab.json
+MERGE_PATH=${BASE_DATA_PATH}/gpt2-merges.txt
 CHECKPOINT_PATH=checkpoints/gpt2_345m_ds
 
 script_path=$(realpath $0)
@@ -45,10 +47,10 @@ contigious_gradients=true
 rbs=50000000
 agbs=5000000000
 
-#Actication Checkpointing and Contigious Memory
-chkp_layers=1
+#Activation Checkpointing and Contigious Memory
+chkp_layers=5
 PA=true
-PA_CPU=false
+PA_CPU=true
 CC=true
 SYNCHRONIZE=true
 PROFILE=false
@@ -62,7 +64,7 @@ gpt_options=" \
         --model-parallel-size ${MP_SIZE} \
         --num-layers $NUM_LAYERS \
         --hidden-size $HIDDEN_SIZE \
-        --num-attention-heads 16 \
+        --num-attention-heads ${NUM_ATTN_HEADS} \
         --seq-length 1024 \
         --max-position-embeddings 1024 \
         --batch-size $BATCHSIZE \
@@ -95,13 +97,13 @@ gpt_options=" \
         --hto4h-4htoh-splits 8020208 \
 "
         #--tensorboard-dir ${LOGDIR}
-  
+
  deepspeed_options=" \
                 --deepspeed \
                 --deepspeed_config ${config_json} \
                 --zero-stage ${stage} \
                 --zero-reduce-bucket-size ${rbs} \
-                --zero-allgather-bucket-size ${agbs} 
+                --zero-allgather-bucket-size ${agbs}
             "
 
 if [ "${contigious_gradients}" = "true" ]; then
