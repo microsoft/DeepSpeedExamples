@@ -527,7 +527,12 @@ def _add_memoryopt_args(parser):
                             'Introduces dropout differences across MP configurations.')
     group.add_argument("--split-transformers", action='store_true',
                        help='Save memory by splitting transformer layers into two parts.')
-
+    group.add_argument("--sequential-parallel", action='store_true',
+                       help='Save memory by using DeepSpeed sequential parallel layers.')
+    group.add_argument('--qkv-dense-splits', type=int, default=3010101,
+                     help='Configure the seq-parallel-linear for qkv and dense linear layers in attention in GPT model')
+    group.add_argument('--hto4h-4htoh-splits', type=int, default=4010104,
+                     help='Configure the seq-parallel-linear for hto4h and 4htoh layers in MLP in GPTModel')
 
     return parser
 

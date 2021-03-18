@@ -36,6 +36,7 @@ from .initialize import model_parallel_is_initialized
 from .layers import LayerNorm
 from .layers import ColumnParallelLinear
 from .layers import RowParallelLinear
+from .layers import SequentialParallelLinear
 from .layers import VocabParallelEmbedding
 
 from .mappings import copy_to_model_parallel_region

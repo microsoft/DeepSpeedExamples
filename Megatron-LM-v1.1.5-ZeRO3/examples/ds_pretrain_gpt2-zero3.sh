@@ -88,6 +88,11 @@ gpt_options=" \
         --eval-interval 2000 \
         --eval-iters 10 \
         --fp16 \
+        --scattered-embeddings \
+        --split-transformers \
+        --sequential-parallel \  # Expensive on small models
+        --qkv-dense-splits 6020202 \
+        --hto4h-4htoh-splits 8020208 \
 "
         #--tensorboard-dir ${LOGDIR}
   
