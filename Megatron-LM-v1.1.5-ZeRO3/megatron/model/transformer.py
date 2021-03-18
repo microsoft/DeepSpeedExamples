@@ -93,9 +93,6 @@ class ParallelMLP(MegatronModule):
             init_method=output_layer_init_method,
             skip_bias_add=True)
          
-        if self.dense_h_to_4h.bias is not None:
-            deepspeed.zero.register_external_parameter(self, self.dense_h_to_4h.bias)
-
     def forward(self, hidden_states):
 
         # [s, b, 4hp]
@@ -413,6 +410,9 @@ class ParallelTransformerLayer(MegatronModule):
         self.apply_residual_connection_post_layernorm \
             = args.apply_residual_connection_post_layernorm
 
+        # Memory-saving optimization
+        self.scattered_attn_output = args.scattered_embeddings
+
         # Layernorm on the input data.
         self.input_layernorm = LayerNorm(
             args.hidden_size,
@@ -434,10 +434,6 @@ class ParallelTransformerLayer(MegatronModule):
         self.mlp = ParallelMLP(init_method,
                                output_layer_init_method)
 
-        if self.attention.dense.bias is not None:
-            deepspeed.zero.register_external_parameter(self, self.attention.dense.bias)
-        if self.mlp.dense_4h_to_h.bias is not None:
-            deepspeed.zero.register_external_parameter(self, self.mlp.dense_4h_to_h.bias)
 
     def forward(self, hidden_states, attention_mask, layer_past=None,
                 get_key_value=False):
@@ -454,12 +450,19 @@ class ParallelTransformerLayer(MegatronModule):
 
         if get_key_value:
             attention_output, presents = attention_output
+
+        if self.scattered_attn_output:
+            attention_output = mpu.scatter_to_model_parallel_region(attention_output)
+            attention_bias = mpu.scatter_to_model_parallel_region(attention_bias)
     
         # Residual connection.
         if self.apply_residual_connection_post_layernorm:
             residual = layernorm_output
         else:
             residual = hidden_states
+
+        if self.scattered_attn_output:
+            residual = mpu.scatter_to_model_parallel_region(residual)
 
         # jit scripting for a nn.module (with dropout) is not 
         # trigerring the fusion kernel. For now, we use two 
@@ -480,6 +483,11 @@ class ParallelTransformerLayer(MegatronModule):
                 attention_bias.expand_as(residual),
                 residual,
                 self.hidden_dropout)
+
+        # Collect the scattered result from the fused dropout.
+        if self.scattered_attn_output:
+            layernorm_input = mpu.gather_from_model_parallel_region(layernorm_input)
+            # Attention output/bias are not used again, so no need to gather
 
         # Layer norm post the self attention.
         layernorm_output = self.post_attention_layernorm(layernorm_input)

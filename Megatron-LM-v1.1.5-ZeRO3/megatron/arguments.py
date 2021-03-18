@@ -43,6 +43,7 @@ def parse_args(extra_args_provider=None, defaults={},
     parser = _add_autoresume_args(parser)
     parser = _add_realm_args(parser)
     parser = _add_zero_args(parser)
+    parser = _add_memoryopt_args(parser)
     parser = _add_activation_checkpoint_args(parser)
 
     # Custom arguments.
@@ -516,6 +517,18 @@ def _add_zero_args(parser):
     group.add_argument('--use-pin-memory', action='store_true',
                      help='Use pinned CPU memory for ZeRO-3 initialized model parameters.')
     return parser
+
+def _add_memoryopt_args(parser):
+    """Memory optimization arguments."""
+
+    group = parser.add_argument_group('Memory optimizations', 'configurations')
+    group.add_argument("--scattered-embeddings", action='store_true',
+                       help='Save memory by scattering embedding activations. '
+                            'Introduces dropout differences across MP configurations.')
+
+    return parser
+
+
 
 
 def _add_activation_checkpoint_args(parser):
