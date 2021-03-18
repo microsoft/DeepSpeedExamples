@@ -104,6 +104,8 @@ def setup_deepspeed_random_and_activation_checkpointing(args):
     '''
     num_layers = args.num_layers // args.checkpoint_num_layers
     num_layers = num_layers if args.num_layers % args.checkpoint_num_layers == 0 else num_layers + 1
+    if args.split_transformers:
+        num_layers *= 2
 
     deepspeed.checkpointing.configure(
         mpu,

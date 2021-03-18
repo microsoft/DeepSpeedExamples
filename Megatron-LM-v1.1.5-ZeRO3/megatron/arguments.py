@@ -525,6 +525,9 @@ def _add_memoryopt_args(parser):
     group.add_argument("--scattered-embeddings", action='store_true',
                        help='Save memory by scattering embedding activations. '
                             'Introduces dropout differences across MP configurations.')
+    group.add_argument("--split-transformers", action='store_true',
+                       help='Save memory by splitting transformer layers into two parts.')
+
 
     return parser
 
