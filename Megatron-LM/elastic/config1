@@ -1,0 +1,17 @@
+
+Host ps-0
+  HostName 10.228.58.124
+  Port 40526
+  User amawa
+  StrictHostKeyChecking no
+  UserKnownHostsFile /dev/null
+
+
+Host worker-0
+  HostName 10.228.58.124
+  Port 42320
+  User amawa
+  StrictHostKeyChecking no
+  UserKnownHostsFile /dev/null
+
+

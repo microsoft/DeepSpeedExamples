@@ -32,7 +32,8 @@ from model import GPT2Model
 from model import gpt2_get_params_for_weight_decay_optimization
 from model import DistributedDataParallel as DDP
 import mpu
-from apex.optimizers import FusedAdam as Adam
+from torch.optim import AdamW as Adam
+#from apex.optimizers import FusedAdam as Adam
 from utils import Timers
 from utils import load_checkpoint
 from utils import report_memory

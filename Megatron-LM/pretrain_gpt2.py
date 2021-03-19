@@ -40,7 +40,8 @@ if USE_TORCH_DDP:
 else:
     from model import DistributedDataParallel as DDP
 import mpu
-from apex.optimizers import FusedAdam as Adam
+from torch.optim import AdamW as Adam
+#from apex.optimizers import FusedAdam as Adam
 from utils import Timers
 from utils import save_checkpoint
 from utils import load_checkpoint
@@ -473,6 +474,8 @@ def train(model, optimizer, lr_scheduler,
 
 def evaluate(data_iterator, model, args, timers, verbose=False):
     """Evaluation."""
+    print("program ended. not evaluating")
+    exit(0)
 
     # Turn on evaluation mode which disables dropout.
     model.eval()

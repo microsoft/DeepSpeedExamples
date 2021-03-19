@@ -1,0 +1,287 @@
+
+Host ps-0
+  HostName 10.228.58.124
+  Port 40526
+  User amawa
+  StrictHostKeyChecking no
+  UserKnownHostsFile /dev/null
+
+
+Host worker-0
+  HostName 10.228.58.124
+  Port 42320
+  User amawa
+  StrictHostKeyChecking no
+  UserKnownHostsFile /dev/null
+
+
+Host worker-1
+  HostName 10.228.58.111
+  Port 42283
+  User amawa
+  StrictHostKeyChecking no
+  UserKnownHostsFile /dev/null
+
+
+Host worker-2
+  HostName 10.228.58.108
+  Port 46392
+  User amawa
+  StrictHostKeyChecking no
+  UserKnownHostsFile /dev/null
+
+
+Host worker-3
+  HostName 10.228.58.115
+  Port 48020
+  User amawa
+  StrictHostKeyChecking no
+  UserKnownHostsFile /dev/null
+
+
+Host worker-4
+  HostName 10.228.58.104
+  Port 42231
+  User amawa
+  StrictHostKeyChecking no
+  UserKnownHostsFile /dev/null
+
+
+Host worker-5
+  HostName 10.228.58.116
+  Port 45831
+  User amawa
+  StrictHostKeyChecking no
+  UserKnownHostsFile /dev/null
+
+
+Host worker-6
+  HostName 10.228.58.117
+  Port 46930
+  User amawa
+  StrictHostKeyChecking no
+  UserKnownHostsFile /dev/null
+
+
+Host worker-7
+  HostName 10.228.58.114
+  Port 43681
+  User amawa
+  StrictHostKeyChecking no
+  UserKnownHostsFile /dev/null
+
+
+Host worker-8
+  HostName 10.228.58.143
+  Port 44775
+  User amawa
+  StrictHostKeyChecking no
+  UserKnownHostsFile /dev/null
+
+
+Host worker-9
+  HostName 10.228.58.144
+  Port 43702
+  User amawa
+  StrictHostKeyChecking no
+  UserKnownHostsFile /dev/null
+
+Host worker-10
+  HostName 10.228.58.158
+  Port 42782
+  User amawa
+  StrictHostKeyChecking no
+  UserKnownHostsFile /dev/null
+
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET
+Host *
+  LogLevel QUIET

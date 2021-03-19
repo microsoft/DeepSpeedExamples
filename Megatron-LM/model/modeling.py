@@ -240,7 +240,8 @@ class BertConfig(object):
         return json.dumps(self.to_dict(), indent=2, sort_keys=True) + "\n"
 
 try:
-    from apex.normalization.fused_layer_norm import FusedLayerNorm as BertLayerNorm
+    from torch.nn import LayerNorm as BertLayerNorm
+    #from apex.normalization.fused_layer_norm import FusedLayerNorm as BertLayerNorm
 except ImportError:
     print("Better speed can be achieved with apex installed from https://www.github.com/nvidia/apex.")
     class BertLayerNorm(nn.Module):
