@@ -182,6 +182,10 @@ def train(args,
                     # if args.fp16 is False, BertAdam is used that handles this automatically
                     lr_this_step = update_learning_rate(
                         args, config, global_step, optimizer)
+                else:
+                    # case for args.fp16 is set to be false
+                    lr_this_step = config['training']['learning_rate']
+
 
                 report_step_metrics(args, lr_this_step, unscaled_loss,
                                     global_step, current_data_sample_count)
