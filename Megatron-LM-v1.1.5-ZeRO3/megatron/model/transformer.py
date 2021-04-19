@@ -71,7 +71,7 @@ class ParallelMLP(MegatronModule):
         args = get_args()
 
         # Project to 4h.
-        if not args.sequential_parallel:
+        if not args.memory_centric_tiled_linear:
             self.dense_h_to_4h = mpu.ColumnParallelLinear(
                 args.hidden_size,
                 4 * args.hidden_size,
@@ -79,16 +79,14 @@ class ParallelMLP(MegatronModule):
                 init_method=init_method,
                 skip_bias_add=True)
         else:
-            hto4h_col_splits, hto4h_row_splits, h4toh_col_splits, h4toh_row_splits = \
-                mpu.SequentialParallelLinear.seq_parallel_splits(args.hto4h_4htoh_splits)
-            self.dense_h_to_4h = mpu.SequentialParallelLinear(
-                combine_col_splits=True,
+            self.dense_h_to_4h = deepspeed.zero.TiledLinearReturnBias(
+                in_features=args.hidden_size,
+                out_features=4*args.hidden_size,
+                linear_cls=mpu.ColumnParallelLinear,
+                in_splits=args.tile_factor,
+                out_splits=4*args.tile_factor,
+                combine_out_splits=True,
                 gather_output=False,
-                is_row_parallel=False,
-                col_splits=hto4h_col_splits,
-                row_splits=hto4h_row_splits,
-                input_size=args.hidden_size,
-                output_size=4 * args.hidden_size,
                 init_method=init_method,
                 skip_bias_add=True)
 
@@ -100,7 +98,7 @@ class ParallelMLP(MegatronModule):
             self.activation_func = erf_gelu
 
         # Project back to h.
-        if not args.sequential_parallel:
+        if not args.memory_centric_tiled_linear:
             self.dense_4h_to_h = mpu.RowParallelLinear(
                 4 * args.hidden_size,
                 args.hidden_size,
@@ -108,16 +106,14 @@ class ParallelMLP(MegatronModule):
                 init_method=output_layer_init_method,
                 skip_bias_add=True)
         else:
-            hto4h_col_splits, hto4h_row_splits, h4toh_col_splits, h4toh_row_splits = \
-                mpu.SequentialParallelLinear.seq_parallel_splits(args.hto4h_4htoh_splits)
-            self.dense_4h_to_h = mpu.SequentialParallelLinear(
-                is_row_parallel=True,
-                row_splits = h4toh_row_splits,
-                col_splits = h4toh_col_splits,
-                input_is_already_split = False,
-                combine_col_splits=True,
-                input_size=4 * args.hidden_size,
-                output_size=args.hidden_size,
+            self.dense_4h_to_h = deepspeed.zero.TiledLinearReturnBias(
+                in_features=4*args.hidden_size,
+                out_features=args.hidden_size,
+                linear_cls=mpu.RowParallelLinear,
+                in_splits=4*args.tile_factor,
+                out_splits=args.tile_factor,
+                input_is_already_split=False,
+                combine_out_splits=True,
                 input_is_parallel=True,
                 init_method=output_layer_init_method,
                 skip_bias_add=True)
@@ -169,23 +165,22 @@ class ParallelSelfAttention(MegatronModule):
             args.num_attention_heads, world_size)
 
         # Strided linear layer.
-        if not args.sequential_parallel:
+        if not args.memory_centric_tiled_linear:
             self.query_key_value = mpu.ColumnParallelLinear(
                 args.hidden_size,
                 3 * args.hidden_size,
                 gather_output=False,
                 init_method=init_method)
         else:
-            qkv_col_splits, qkv_row_splits, dense_col_splits, dense_row_splits = mpu.SequentialParallelLinear.seq_parallel_splits(args.qkv_dense_splits)
-            self.query_key_value = mpu.SequentialParallelLinear(
-                args.hidden_size,
-                3 * args.hidden_size,
+            self.query_key_value = deepspeed.zero.TiledLinearReturnBias(
+                in_features=args.hidden_size,
+                out_features=3*args.hidden_size,
+                linear_cls=mpu.ColumnParallelLinear,
                 gather_output=False,
                 init_method=init_method,
-                is_row_parallel=False,
-                col_splits=qkv_col_splits,
-                row_splits=qkv_row_splits,
-                combine_col_splits=True
+                in_splits=args.tile_factor,
+                out_splits=3*args.tile_factor,
+                combine_out_splits=True
             )
 
         coeff = None
@@ -208,7 +203,7 @@ class ParallelSelfAttention(MegatronModule):
         self.attention_dropout = torch.nn.Dropout(args.attention_dropout)
 
         # Output.
-        if not args.sequential_parallel:
+        if not args.memory_centric_tiled_linear:
             self.dense = mpu.RowParallelLinear(
                 args.hidden_size,
                 args.hidden_size,
@@ -216,17 +211,16 @@ class ParallelSelfAttention(MegatronModule):
                 init_method=output_layer_init_method,
                 skip_bias_add=True)
         else:
-            #qkv_col_splits, qkv_row_splits, dense_col_splits, dense_row_splits = mpu.SequentialParallelLinear.seq_parallel_splits(args.qkv_dense_splits)
-            self.dense = mpu.SequentialParallelLinear(
-                args.hidden_size,
-                args.hidden_size,
+            self.dense = deepspeed.zero.TiledLinearReturnBias(
+                in_features=args.hidden_size,
+                out_features=args.hidden_size,
+                linear_cls=mpu.RowParallelLinear,
                 input_is_parallel=True,
                 init_method=output_layer_init_method,
                 skip_bias_add=True,
-                is_row_parallel=True,
-                col_splits=dense_col_splits,
-                row_splits=dense_row_splits,
-                combine_col_splits=True
+                out_splits=args.tile_factor,
+                in_splits=args.tile_factor,
+                combine_out_splits=True
             )
 
 

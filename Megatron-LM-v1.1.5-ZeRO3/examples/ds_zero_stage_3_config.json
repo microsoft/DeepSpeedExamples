@@ -4,12 +4,11 @@
   "steps_per_print": 1,
   "zero_optimization": {
     "stage": 3,
-    "stage3_max_live_parameters": 100000000,
-    "stage3_max_reuse_distance": 100000000,
-    "stage3_prefetch_bucket_size": 25000000,
-    "stage3_param_persitance_threshold": 100000,
-    "overlap_comm": true,
-    "reduce_bucket_size": 50000000,
+    "stage3_max_live_parameters": 1e9,
+    "stage3_max_reuse_distance": 1e9,
+    "stage3_prefetch_bucket_size": 1e7,
+    "stage3_param_persitence_threshold": 1e5,
+    "reduce_bucket_size": 1e7,
     "contiguous_gradients": true
   },
   "gradient_clipping": 1.0,

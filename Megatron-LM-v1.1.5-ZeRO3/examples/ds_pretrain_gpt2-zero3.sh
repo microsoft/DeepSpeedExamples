@@ -36,6 +36,9 @@ script_path=$(realpath $0)
 script_dir=$(dirname $script_path)
 if [[ -z $1 ]]; then
        config_json="$script_dir/ds_zero_stage_3_config.json"
+
+       # offloads to NVMe
+       #config_json="$script_dir/ds_zero_stage_infinity_config.json"
 else
        config_json=$script_dir/`basename $1`
 fi
@@ -48,12 +51,16 @@ rbs=50000000
 agbs=5000000000
 
 #Activation Checkpointing and Contigious Memory
-chkp_layers=5
+chkp_layers=1
 PA=true
 PA_CPU=true
 CC=true
 SYNCHRONIZE=true
 PROFILE=false
+
+# TiledLinear splits, 0 is disable
+TILED_LINEAR="false"
+TILE_DIM=1
 
 
 # Megatron Model Parallelism
@@ -92,9 +99,6 @@ gpt_options=" \
         --fp16 \
         --scattered-embeddings \
         --split-transformers \
-        --sequential-parallel \  # Expensive on small models
-        --qkv-dense-splits 6020202 \
-        --hto4h-4htoh-splits 8020208 \
 "
         #--tensorboard-dir ${LOGDIR}
 
@@ -144,8 +148,14 @@ chkp_opt="${chkp_opt} \
         --profile-backward"
 fi
 
+if [ "${TILED_LINEAR}" = "true" ]; then
+tile_opt="${tile_opt} \
+        --memory-centric-tiled-linear \
+        --tile-factor=${TILE_DIM}"
+fi
 
-full_options="${gpt_options} ${deepspeed_options} ${chkp_opt}"
+
+full_options="${gpt_options} ${deepspeed_options} ${chkp_opt} ${tile_opt}"
 
 run_cmd="deepspeed --num_nodes ${NUM_WORKERS} --num_gpus ${NUM_GPUS_PER_WORKER}  pretrain_gpt2.py ${@:2} ${full_options}"
 echo ${run_cmd}

@@ -526,13 +526,16 @@ def _add_memoryopt_args(parser):
                        help='Save memory by scattering embedding activations. '
                             'Introduces dropout differences across MP configurations.')
     group.add_argument("--split-transformers", action='store_true',
-                       help='Save memory by splitting transformer layers into two parts.')
-    group.add_argument("--sequential-parallel", action='store_true',
-                       help='Save memory by using DeepSpeed sequential parallel layers.')
-    group.add_argument('--qkv-dense-splits', type=int, default=3010101,
-                     help='Configure the seq-parallel-linear for qkv and dense linear layers in attention in GPT model')
-    group.add_argument('--hto4h-4htoh-splits', type=int, default=4010104,
-                     help='Configure the seq-parallel-linear for hto4h and 4htoh layers in MLP in GPTModel')
+                       help='Save memory by splitting transformer layers into two parts, '
+                       'allowing for more frequent activation checkpoint savings.')
+    group.add_argument("--memory-centric-tiled-linear", action="store_true",
+                       help='Save memory by tiling with deepspeed.zero.TiledLinear.')
+    group.add_argument("--tile-factor", type=int, default=1,
+                       help='Make all linear layers the same size of [hidden/tile_factor, hidden/tile_factor]. ' 
+                            'Must be enabled with --memory-centric-tiled-linear. '
+                            'Example A: if tile_factor=1, the qkv layer [hidden, 3* hidden] would be converted into [1,3] tiles of size [hidden,hidden]. '
+                            'Example B: if tile_factor=2, the intermediate layer [4*hidden, hidden] will be converted into [8, 2] tiles of size [hidden/2, hidden/2]. '
+                            'Default is 1.')
 
     return parser
 
