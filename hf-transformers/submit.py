@@ -37,13 +37,13 @@ if __name__ == "__main__":
 
     # https://huggingface.co/transformers/pretrained_models.html
     model_checkpoints = [
-        "distilbert-base-uncased",  # 66M
+        # "distilbert-base-uncased",  # 66M
         # "bert-base-uncased",  # 110M
         # "bert-large-uncased",  # 336M
         # "gpt2",  # 117M
         # "gpt2-medium",  # 345M
         # "gpt2-large",  # 774M
-        # "gpt2-xl",  # 1558M
+        "gpt2-xl",  # 1558M
     ]
 
     # https://openreview.net/pdf?id=rJ4km2R5t7
@@ -66,4 +66,4 @@ if __name__ == "__main__":
                 task=task,
             )
         
-        print_run_cmd(args)
+            print_run_cmd(args)
