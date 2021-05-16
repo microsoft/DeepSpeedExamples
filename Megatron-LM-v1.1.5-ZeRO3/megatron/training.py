@@ -532,7 +532,7 @@ def evaluate(forward_step_func, data_iterator, model, verbose=False):
                 print_rank_0('Evaluating iter {}/{}'.format(iteration,
                                                             args.eval_iters))
             # Forward evaluation.
-            _, loss_dict = forward_step_func(data_iterator, model)
+            _, loss_dict, _ = forward_step_func(data_iterator, model)
 
             # When contiguous memory optimizations are enabled, the buffers
             # allocated by the optimizations are deallocated during backward pass
