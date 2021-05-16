@@ -19,6 +19,7 @@ from datetime import datetime
 import math
 import sys
 import torch
+import json
 from torch.nn.parallel.distributed import DistributedDataParallel as torchDDP
 from apex.optimizers import FusedAdam as Adam
 
@@ -76,6 +77,13 @@ def pretrain(train_valid_test_dataset_provider, model_provider,
 
     args = get_args()
     timers = get_timers()
+
+    args.curriculum_learning = False
+    if args.deepspeed:
+        args.deepspeed_configuration = json.load(
+            open(args.deepspeed_config, 'r', encoding='utf-8'))
+        if "curriculum_learning" in args.deepspeed_configuration:
+            args.curriculum_learning = True
 
     # Model, optimizer, and learning rate.
     timers('model and optimizer').start()
@@ -315,8 +323,11 @@ def train_step(forward_step_func, data_iterator,
     see_memory_usage(f'before forward {model.global_steps}', force=True)
     # Forward model for one step.
     timers('forward').start()
-    loss, loss_reduced = forward_step_func(data_iterator, model)
+    loss, loss_reduced, seqlen = forward_step_func(data_iterator, model, args.curriculum_learning)
     timers('forward').stop()
+
+    if args.curriculum_learning:
+        args.curriculum_seqlen = seqlen
 
     see_memory_usage(f'before backward {model.global_steps}', force=True)
     # Calculate gradients, reduce across processes, and clip.
@@ -388,6 +399,9 @@ def training_log(loss_dict, total_loss_dict, learning_rate, iteration,
     # Tensorboard values.
     if writer and torch.distributed.get_rank() == 0:
         writer.add_scalar('learning_rate', learning_rate, iteration)
+        if args.curriculum_learning:
+            writer.add_scalar('seqlen',
+                args.curriculum_seqlen, iteration)
         for key in loss_dict:
             writer.add_scalar(key, loss_dict[key], iteration)
         if args.fp16:

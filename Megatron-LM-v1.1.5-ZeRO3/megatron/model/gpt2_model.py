@@ -54,7 +54,17 @@ class GPT2Model(MegatronModule):
 
     def forward(self, input_ids, position_ids, attention_mask, labels=None,
                 tokentype_ids=None, layer_past=None, get_key_value=False,
-                forward_method_parallel_output=None):
+                forward_method_parallel_output=None, seqlen=None):
+
+        if seqlen is not None and seqlen < input_ids.size()[1]:
+            # seqlen-based curriculum learning
+            # input_ids, position_ids, labels have size [batch size, seqlen]
+            input_ids = input_ids[:, :seqlen].contiguous()
+            position_ids = position_ids[:, :seqlen].contiguous()
+            labels = labels[:, :seqlen].contiguous()
+
+            # attention_mask has size [1, 1, seqlen, seqlen]
+            attention_mask = attention_mask[:, :, :seqlen, :seqlen].contiguous()
 
         # Language model.
         lm_output = self.language_model(input_ids,
@@ -81,14 +91,14 @@ class GPT2Model(MegatronModule):
             output = [output, presents]
 
         if labels is None:
-            return output
+            return output, seqlen
         else:
             if self.fp16_lm_cross_entropy:
                 assert output.dtype == torch.half
                 loss = mpu.vocab_parallel_cross_entropy(output, labels)
             else:
                 loss = mpu.vocab_parallel_cross_entropy(output.float(), labels)
-            return loss
+            return loss, seqlen
 
 
     def state_dict_for_save_checkpoint(self, destination=None, prefix='',
