@@ -312,20 +312,20 @@ def train_step(forward_step_func, data_iterator,
     args = get_args()
     timers = get_timers()
 
-    see_memory_usage(f'before forward {model.global_steps}', force=True)
+    see_memory_usage(f'before forward {model.global_steps}', force=False)
     # Forward model for one step.
     timers('forward').start()
     loss, loss_reduced = forward_step_func(data_iterator, model)
     timers('forward').stop()
 
-    see_memory_usage(f'before backward {model.global_steps}', force=True)
+    see_memory_usage(f'before backward {model.global_steps}', force=False)
     # Calculate gradients, reduce across processes, and clip.
     timers('backward').start()
     backward_step(optimizer, model, loss)
     timers('backward').stop()
 
 
-    see_memory_usage(f'before optimizer {model.global_steps}', force=True)
+    see_memory_usage(f'before optimizer {model.global_steps}', force=False)
     # Update parameters.
     skipped_iter = 0
     timers('optimizer').start()
