@@ -75,7 +75,6 @@ gpt_options=" \
         --weight-decay 1e-2 \
         --clip-grad 1.0 \
         --warmup 0.01 \
-        --checkpoint-activations \
         --log-interval 1 \
         --save-interval 500 \
         --eval-interval 100 \
