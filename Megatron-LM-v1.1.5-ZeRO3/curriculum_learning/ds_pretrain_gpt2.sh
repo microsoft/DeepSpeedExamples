@@ -63,11 +63,8 @@ script_dir=$(dirname $script_path)
 host="${HOSTNAME}"
 
 config_json="$script_dir/ds_zero_stage_${stage}_config_${CONFIG}.json"
-if [[ -z ${12} ]]; then
-        JOB_NAME="gpt2_${MODEL_SIZE}M_lr${LR}_bsz${TOTAL_BATCHSIZE}_seql${SEQ_LEN}_iter${NUM_ITER}_lriter${LR_ITER}_warmup${LR_WARMUP}_seed${SEED}_${TAG}_stage${stage}_${NUM_WORKERS}n_${NUM_GPUS_PER_WORKER}g_${MP_SIZE}mp_${host}_${current_time}"
-else
-        JOB_NAME=${12}
-fi
+JOB_NAME="gpt2_${MODEL_SIZE}M_lr${LR}_bsz${TOTAL_BATCHSIZE}_seql${SEQ_LEN}_iter${NUM_ITER}_lriter${LR_ITER}_warmup${LR_WARMUP}_seed${SEED}_${TAG}_stage${stage}_${NUM_WORKERS}n_${NUM_GPUS_PER_WORKER}g_${MP_SIZE}mp"
+LOG_NAME="gpt2_${MODEL_SIZE}M_lr${LR}_bsz${TOTAL_BATCHSIZE}_seql${SEQ_LEN}_iter${NUM_ITER}_lriter${LR_ITER}_warmup${LR_WARMUP}_seed${SEED}_${TAG}_stage${stage}_${NUM_WORKERS}n_${NUM_GPUS_PER_WORKER}g_${MP_SIZE}mp_${host}_${current_time}"
 
 #Actication Checkpointing and Contigious Memory
 chkp_layers=1
@@ -78,7 +75,7 @@ SYNCHRONIZE=true
 PROFILE=false
 
 # Megatron Model Parallelism
-LOGDIR="tboard/${JOB_NAME}"
+LOGDIR="tboard/${LOG_NAME}"
 CHECKPOINT_PATH="checkpoints/${JOB_NAME}"
 
 gpt_options=" \
@@ -164,7 +161,7 @@ fi
 
 full_options="${gpt_options} ${deepspeed_options} ${chkp_opt}"
 
-run_cmd="deepspeed --num_nodes ${NUM_WORKERS} --num_gpus ${NUM_GPUS_PER_WORKER}  pretrain_gpt2.py ${@:13} ${full_options} &> ${JOB_NAME}.log"
+run_cmd="deepspeed --num_nodes ${NUM_WORKERS} --num_gpus ${NUM_GPUS_PER_WORKER}  pretrain_gpt2.py ${@:12} ${full_options} &>> ${JOB_NAME}.log"
 echo ${run_cmd}
 eval ${run_cmd}
 
