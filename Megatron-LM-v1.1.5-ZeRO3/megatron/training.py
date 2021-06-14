@@ -175,8 +175,8 @@ def get_optimizer(model):
                                        weight_decay=args.weight_decay)
     else:
         # Use torch Adam instead of Fused Adam from NVIDIA which seems to have some issue.
-        #optimizer = Adam(param_groups,
-        optimizer = torch.optim.AdamW(param_groups,
+        optimizer = Adam(param_groups,
+        #optimizer = torch.optim.AdamW(param_groups,
                          lr=args.lr,
                          weight_decay=args.weight_decay,
                          betas=(args.adam_beta1, args.adam_beta2),
@@ -312,20 +312,20 @@ def train_step(forward_step_func, data_iterator,
     args = get_args()
     timers = get_timers()
 
-    see_memory_usage(f'before forward {model.global_steps}', force=True)
+    #see_memory_usage(f'before forward {model.global_steps}', force=True)
     # Forward model for one step.
     timers('forward').start()
     loss, loss_reduced = forward_step_func(data_iterator, model)
     timers('forward').stop()
 
-    see_memory_usage(f'before backward {model.global_steps}', force=True)
+    #see_memory_usage(f'before backward {model.global_steps}', force=True)
     # Calculate gradients, reduce across processes, and clip.
     timers('backward').start()
     backward_step(optimizer, model, loss)
     timers('backward').stop()
 
 
-    see_memory_usage(f'before optimizer {model.global_steps}', force=True)
+    #see_memory_usage(f'before optimizer {model.global_steps}', force=True)
     # Update parameters.
     skipped_iter = 0
     timers('optimizer').start()
@@ -412,7 +412,8 @@ def training_log(loss_dict, total_loss_dict, learning_rate, iteration,
             1, args.log_interval - total_loss_dict[skipped_iters_key])
         for key in total_loss_dict:
             if key not in [skipped_iters_key, got_nan_key]:
-                avg = total_loss_dict[key].item() / float(num_iterations)
+#                avg = total_loss_dict[key].item() / float(num_iterations)
+                avg = total_loss_dict[key] / float(num_iterations)
                 log_string += ' {}: {:.6E} |'.format(key, avg)
                 total_loss_dict[key] = 0.0
         if args.fp16:

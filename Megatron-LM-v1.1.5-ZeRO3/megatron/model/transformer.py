@@ -29,6 +29,7 @@ from megatron.model.fused_bias_gelu import bias_gelu_impl
 from megatron.model.utils import openai_gelu, erf_gelu
 
 import deepspeed
+from deepspeed.utils.timer import SynchronizedWallClockTimer as Timers
 
 # flags required to enable jit fusion kernels
 torch._C._jit_set_profiling_mode(False)
@@ -969,7 +970,6 @@ class ParallelTransformer(MegatronModule):
 
     def forward(self, hidden_states, attention_mask, layer_past=None,
                 get_key_value=False):
-
         # Checks
         if layer_past is not None:
             assert get_key_value, \
@@ -984,8 +984,12 @@ class ParallelTransformer(MegatronModule):
         hidden_states = hidden_states.transpose(0, 1).contiguous()
 
         if self.checkpoint_activations:
+            timers = Timers()
+            timers('checkpointed_forward').start()            
             hidden_states = self._checkpointed_forward(hidden_states,
                                                        attention_mask)
+            timers('checkpointed_forward').stop()
+            timers.log(['checkpointed_forward'])                                                       
         else:
             if get_key_value:
                 presents = []

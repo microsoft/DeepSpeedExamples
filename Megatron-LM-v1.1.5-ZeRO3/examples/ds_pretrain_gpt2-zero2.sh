@@ -1,7 +1,7 @@
 #! /bin/bash
 
 # Change for multinode config
-MP_SIZE=4
+MP_SIZE=1
 
 DEBUG=0
 if [[ ${DEBUG} == 1 ]];  then
@@ -13,12 +13,16 @@ if [[ ${DEBUG} == 1 ]];  then
        NUM_LAYERS=40
        BATCHSIZE=8
 else
-       NUM_WORKERS=${DLTS_NUM_WORKER}
+       NUM_WORKERS=1 # ${DLTS_NUM_WORKER}
        NUM_GPUS_PER_WORKER=${DLTS_NUM_GPU_PER_WORKER}
-       HIDDEN_SIZE=8192
-       NUM_ATTN_HEADS=32
-       NUM_LAYERS=24
-       BATCHSIZE=16
+       HIDDEN_SIZE=1600
+       NUM_ATTN_HEADS=16
+       NUM_LAYERS=40
+       BATCHSIZE=8
+
+       #HIDDEN_SIZE=4096
+       #NUM_LAYERS=24 # 50
+       #BATCHSIZE=16
 fi
 
 
@@ -31,25 +35,28 @@ CHECKPOINT_PATH=checkpoints/gpt2_345m_ds
 script_path=$(realpath $0)
 script_dir=$(dirname $script_path)
 if [[ -z $1 ]]; then
-       config_json="$script_dir/ds_zero_stage_3_config.json"
+       config_json="$script_dir/ds_zero_stage_2_config.json"
+
+       # offloads to NVMe
+       #config_json="$script_dir/ds_zero_stage_infinity_config.json"
 else
        config_json=$script_dir/`basename $1`
 fi
 
 #ZeRO Configs
-stage=3
+stage=2
 reduce_scatter=true
 contigious_gradients=true
 rbs=50000000
 agbs=5000000000
 
 #Activation Checkpointing and Contigious Memory
-chkp_layers=2
+chkp_layers=1
 PA=true
-#PA_CPU=true
+PA_CPU=true
 #CC=true
-#SYNCHRONIZE=true
-#PROFILE=true 
+SYNCHRONIZE=true
+PROFILE=true
 
 # TiledLinear splits, 0 is disable
 TILED_LINEAR="false"
@@ -68,7 +75,7 @@ gpt_options=" \
         --seq-length 1024 \
         --max-position-embeddings 1024 \
         --batch-size $BATCHSIZE \
-        --train-iters 1000 \
+        --train-iters 5 \
         --lr-decay-iters 320000 \
         --data-path $DATA_PATH \
         --vocab-file $VOCAB_PATH \
@@ -87,10 +94,7 @@ gpt_options=" \
         --eval-interval 2000 \
         --eval-iters 10 \
         --fp16 \
-        --scattered-embeddings \
 "
-#        --scattered-embeddings \
-#        --split-transformers \
         #--tensorboard-dir ${LOGDIR}
 
  deepspeed_options=" \
