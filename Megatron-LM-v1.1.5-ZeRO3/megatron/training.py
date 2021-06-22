@@ -174,9 +174,7 @@ def get_optimizer(model):
                                        lr=args.lr,
                                        weight_decay=args.weight_decay)
     else:
-        # Use torch Adam instead of Fused Adam from NVIDIA which seems to have some issue.
-        #optimizer = Adam(param_groups,
-        optimizer = torch.optim.AdamW(param_groups,
+        optimizer = Adam(param_groups,
                          lr=args.lr,
                          weight_decay=args.weight_decay,
                          betas=(args.adam_beta1, args.adam_beta2),
