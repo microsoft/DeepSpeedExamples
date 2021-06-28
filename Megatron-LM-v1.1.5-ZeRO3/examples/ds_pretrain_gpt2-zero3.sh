@@ -1,9 +1,9 @@
 #! /bin/bash
 
 # Change for multinode config
-MP_SIZE=1
+MP_SIZE=4
 
-DEBUG=1
+DEBUG=0
 if [[ ${DEBUG} == 1 ]];  then
        MP_SIZE=1
        NUM_WORKERS=1
@@ -17,8 +17,8 @@ else
        NUM_GPUS_PER_WORKER=${DLTS_NUM_GPU_PER_WORKER}
        HIDDEN_SIZE=8192
        NUM_ATTN_HEADS=32
-       NUM_LAYERS=50
-       BATCHSIZE=4
+       NUM_LAYERS=64
+       BATCHSIZE=52
 
        #HIDDEN_SIZE=4096
        #NUM_LAYERS=24 # 50
@@ -51,10 +51,10 @@ rbs=50000000
 agbs=5000000000
 
 #Activation Checkpointing and Contigious Memory
-chkp_layers=1
+chkp_layers=2
 PA=true
-PA_CPU=true
-CC=true
+#PA_CPU=true
+#CC=true
 SYNCHRONIZE=true
 PROFILE=false
 
@@ -99,6 +99,7 @@ gpt_options=" \
         --fp16 \
         --scattered-embeddings \
         --split-transformers \
+	--cpu-optimizer \
 "
         #--tensorboard-dir ${LOGDIR}
 
