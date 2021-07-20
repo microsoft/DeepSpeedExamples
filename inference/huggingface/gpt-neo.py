@@ -17,11 +17,19 @@ print(
             world_size))
 
 generator = pipeline('text-generation',
-                     model='EleutherAI/gpt-neo-2.7B',
-                     device=local_rank)
+                     model='EleutherAI/gpt-neo-2.7B')
+print(
+    f'({local_rank}) before deepspeed: {torch.cuda.memory_allocated()}, {torch.cuda.memory_cached()}'
+)
+
 generator.model = deepspeed.init_inference(generator.model,
                                            mp_size=world_size,
-                                           dtype=torch.float,
+                                           dtype=torch.half,
                                            replace_method='auto')
+generator.device = torch.device(f'cuda:{local_rank}')
+
+print(
+    f'({local_rank}) after deepspeed: {torch.cuda.memory_allocated()}, {torch.cuda.memory_cached()}'
+)
 string = generator("DeepSpeed is", do_sample=True, min_length=50)
-print(string)
+print(f'[{local_rank}]: {string}')
