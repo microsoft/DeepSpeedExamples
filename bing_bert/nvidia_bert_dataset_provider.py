@@ -110,7 +110,7 @@ class NvidiaBertDatasetProvider(BertDatasetProviderInterface):
         self.dataset_files.sort()
         random.shuffle(self.dataset_files)
         self.num_files = len(self.dataset_files)
-        self.data_sampler = RandomSampler
+        self.data_sampler = DistributedSampler
 
         self.worker_init = WorkerInitObj(args.seed + args.local_rank)
         self.dataset_future = None
