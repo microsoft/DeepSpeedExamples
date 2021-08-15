@@ -6,11 +6,16 @@ MODEL_SIZE=$3
 LR=$4
 TOTAL_BATCHSIZE=$5
 SEQ_LEN=$6
-NUM_ITER=$7
-MP_SIZE=$8
-LR_ITER=$9
-LR_WARMUP=${10}
-SEED=${11}
+MP_SIZE=$7
+SEED=$8
+SAVE_INTERVAL=$9
+NUM_ITER=${10}
+NUM_TOKEN=${11}
+LR_DECAY_ITER=${12}
+LR_WARMUP_ITER=${13}
+CONFIG_TEMPLATE=${14}
+CURRICULUM_STEP=${15}
+CURRICULUM_MIN=${16}
 
 # 12-layer, 768-hidden, 12-heads, 117M parameters
 # 24-layer, 1024-hidden, 16-heads, 345M parameters
@@ -38,17 +43,13 @@ else
 fi
 
 # Change for multinode config
-NUM_WORKERS=4
-NUM_GPUS_PER_WORKER=16
+NUM_WORKERS=16
+NUM_GPUS_PER_WORKER=8
 BATCHSIZE=$((MP_SIZE*TOTAL_BATCHSIZE/NUM_WORKERS/NUM_GPUS_PER_WORKER)) # per gpu batch size
 
-# DATA_PATH=/data/Megatron-LM/data/indexed_datasets/megatron
-# VOCAB_PATH=/data/Megatron-LM/data/gpt2-vocab.json
-# MERGE_PATH=/data/Megatron-LM/data/gpt2-merges.txt
-
-DATA_PATH=~/ssd/Megatron-LM/data/indexed_datasets/megatron
-VOCAB_PATH=~/ssd/Megatron-LM/data/gpt2-vocab.json
-MERGE_PATH=~/ssd/Megatron-LM/data/gpt2-merges.txt
+DATA_PATH=/vc_data/Megatron-LM/data/indexed_datasets/megatron
+VOCAB_PATH=/vc_data/Megatron-LM/data/gpt2-vocab.json
+MERGE_PATH=/vc_data/Megatron-LM/data/gpt2-merges.txt
 
 #ZeRO Configs
 stage=2
@@ -62,9 +63,19 @@ script_path=$(realpath $0)
 script_dir=$(dirname $script_path)
 host="${HOSTNAME}"
 
+if [ "${CONFIG_TEMPLATE}" = "true" ]; then
+template_json="$script_dir/ds_zero_stage_${stage}_config_${CONFIG}.json"
+config_json="$script_dir/ds_zero_stage_${stage}_config_${CONFIG}_min${CURRICULUM_MIN}_max${SEQ_LEN}_step${CURRICULUM_STEP}.json"
+sed "s/CONFIG_CL_MIN/${CURRICULUM_MIN}/" ${template_json} \
+    | sed "s/CONFIG_CL_MAX/${SEQ_LEN}/" \
+    | sed "s/CONFIG_CL_DURATION/${CURRICULUM_STEP}/" \
+	  > ${config_json}
+else
 config_json="$script_dir/ds_zero_stage_${stage}_config_${CONFIG}.json"
-JOB_NAME="gpt2_${MODEL_SIZE}M_lr${LR}_bsz${TOTAL_BATCHSIZE}_seql${SEQ_LEN}_iter${NUM_ITER}_lriter${LR_ITER}_warmup${LR_WARMUP}_seed${SEED}_${TAG}_stage${stage}_${NUM_WORKERS}n_${NUM_GPUS_PER_WORKER}g_${MP_SIZE}mp"
-LOG_NAME="gpt2_${MODEL_SIZE}M_lr${LR}_bsz${TOTAL_BATCHSIZE}_seql${SEQ_LEN}_iter${NUM_ITER}_lriter${LR_ITER}_warmup${LR_WARMUP}_seed${SEED}_${TAG}_stage${stage}_${NUM_WORKERS}n_${NUM_GPUS_PER_WORKER}g_${MP_SIZE}mp_${host}_${current_time}"
+fi
+
+JOB_NAME="gpt2_${MODEL_SIZE}M_bsz${TOTAL_BATCHSIZE}_seq${SEQ_LEN}_lr${LR}_warmup${LR_WARMUP_ITER}_decay${LR_DECAY_ITER}_seed${SEED}_${TAG}_stage${stage}_n${NUM_WORKERS}_g${NUM_GPUS_PER_WORKER}_mp${MP_SIZE}"
+LOG_NAME="${JOB_NAME}_${host}_${current_time}"
 
 #Actication Checkpointing and Contigious Memory
 chkp_layers=1
@@ -74,9 +85,12 @@ CC=true
 SYNCHRONIZE=true
 PROFILE=false
 
-# Megatron Model Parallelism
-LOGDIR="tboard/${LOG_NAME}"
-CHECKPOINT_PATH="checkpoints/${JOB_NAME}"
+OUTPUT_BASEPATH="/vc_data_blob/users/conglli"
+mkdir -p "${OUTPUT_BASEPATH}/tensorboard/curriculum/"
+mkdir -p "${OUTPUT_BASEPATH}/checkpoint/curriculum/"
+mkdir -p "${OUTPUT_BASEPATH}/log/curriculum/"
+LOGDIR="${OUTPUT_BASEPATH}/tensorboard/curriculum/${LOG_NAME}"
+CHECKPOINT_PATH="${OUTPUT_BASEPATH}/checkpoint/curriculum/${JOB_NAME}"
 
 gpt_options=" \
         --model-parallel-size ${MP_SIZE} \
@@ -87,7 +101,8 @@ gpt_options=" \
         --max-position-embeddings $SEQ_LEN \
         --batch-size $BATCHSIZE \
         --train-iters $NUM_ITER \
-        --lr-decay-iters $LR_ITER \
+        --train-tokens $NUM_TOKEN \
+        --lr-decay-iters $LR_DECAY_ITER \
         --save $CHECKPOINT_PATH \
         --load $CHECKPOINT_PATH \
         --data-path $DATA_PATH \
@@ -101,10 +116,10 @@ gpt_options=" \
         --min-lr 1.0e-5 \
         --weight-decay 1e-2 \
         --clip-grad 1.0 \
-        --warmup $LR_WARMUP \
+        --warmup-iters $LR_WARMUP_ITER \
         --checkpoint-activations \
         --log-interval 100 \
-        --save-interval 1000 \
+        --save-interval $SAVE_INTERVAL \
         --eval-interval 100 \
         --eval-iters 10 \
         --fp16 \
@@ -161,7 +176,7 @@ fi
 
 full_options="${gpt_options} ${deepspeed_options} ${chkp_opt}"
 
-run_cmd="deepspeed --num_nodes ${NUM_WORKERS} --num_gpus ${NUM_GPUS_PER_WORKER}  pretrain_gpt2.py ${@:12} ${full_options} &>> ${JOB_NAME}.log"
+run_cmd="deepspeed --num_nodes ${NUM_WORKERS} --num_gpus ${NUM_GPUS_PER_WORKER}  pretrain_gpt2.py ${@:17} ${full_options} &>> ${OUTPUT_BASEPATH}/log/curriculum/${JOB_NAME}.log"
 echo ${run_cmd}
 eval ${run_cmd}
 

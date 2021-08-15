@@ -97,16 +97,16 @@ def forward_step(data_iterator, model, curriculum_learning=False):
         data_iterator)
     timers('batch generator').stop()
     # Forward model.
-    losses, seqlen = model(tokens, position_ids, attention_mask, labels=labels)
-    if curriculum_learning:
-        loss_mask = loss_mask[:, :seqlen].contiguous()
+    losses = model(tokens, position_ids, attention_mask, labels=labels)
+    if curriculum_learning and args.curriculum_seqlen < args.seq_length:
+        loss_mask = loss_mask[:, :args.curriculum_seqlen].contiguous()
     loss_mask = loss_mask.view(-1)
     loss = torch.sum(losses.view(-1) * loss_mask) / loss_mask.sum()
 
     # Reduce loss for logging.
     reduced_loss = reduce_losses([loss])
 
-    return loss, {'lm loss': reduced_loss[0]}, seqlen
+    return loss, {'lm loss': reduced_loss[0]}
 
 
 def train_valid_test_datasets_provider(train_val_test_num_samples):
