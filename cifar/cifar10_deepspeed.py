@@ -36,6 +36,11 @@ def add_argument():
                         default=-1,
                         help='local rank passed from distributed launcher')
 
+    parser.add_argument('--moe',
+                        default=False,
+                        action='store_true',
+                        help='use deepspeed mixture of experts (moe)')
+
     # Include DeepSpeed configuration arguments
     parser = deepspeed.add_config_arguments(parser)
 
@@ -43,6 +48,8 @@ def add_argument():
 
     return args
 
+
+deepspeed.init_distributed()
 
 ########################################################################
 # The output of torchvision datasets are PILImage images of range [0, 1].
@@ -56,10 +63,19 @@ transform = transforms.Compose([
     transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
 ])
 
+if torch.distributed.get_rank() != 0:
+    # might be downloading cifar data, let rank 0 download first
+    torch.distributed.barrier()
+
 trainset = torchvision.datasets.CIFAR10(root='./data',
                                         train=True,
                                         download=True,
                                         transform=transform)
+
+if torch.distributed.get_rank() == 0:
+    # cifar data is downloaded, indicate other ranks can proceed
+    torch.distributed.barrier()
+
 trainloader = torch.utils.data.DataLoader(trainset,
                                           batch_size=4,
                                           shuffle=True,
@@ -112,6 +128,12 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
+args = add_argument()
+
+if args.moe:
+    deepspeed.utils.groups.initialize(ep_size=2)
+
+
 class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
@@ -120,7 +142,10 @@ class Net(nn.Module):
         self.conv2 = nn.Conv2d(6, 16, 5)
         self.fc1 = nn.Linear(16 * 5 * 5, 120)
         self.fc2 = nn.Linear(120, 84)
-        self.fc3 = nn.Linear(84, 10)
+        self.fc3 = nn.Linear(84, 84)
+        if args.moe:
+            self.fc3 = deepspeed.moe.layer.MoE(hidden_size=84, output_dropout_prob=0.5, expert=self.fc3, num_experts=2, k=2) 
+        self.fc4 = nn.Linear(84, 10)
 
     def forward(self, x):
         x = self.pool(F.relu(self.conv1(x)))
@@ -128,13 +153,12 @@ class Net(nn.Module):
         x = x.view(-1, 16 * 5 * 5)
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
-        x = self.fc3(x)
+        x, _, _ = self.fc3(x)
+        x = self.fc4(x)
         return x
-
 
 net = Net()
 parameters = filter(lambda p: p.requires_grad, net.parameters())
-args = add_argument()
 
 # Initialize DeepSpeed to use the following features
 # 1) Distributed model
@@ -170,7 +194,6 @@ for epoch in range(2):  # loop over the dataset multiple times
         # get the inputs; data is a list of [inputs, labels]
         inputs, labels = data[0].to(model_engine.local_rank), data[1].to(
             model_engine.local_rank)
-
         outputs = model_engine(inputs)
         loss = criterion(outputs, labels)
 
