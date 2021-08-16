@@ -7,5 +7,6 @@ deepspeed cifar10_deepspeed.py \
 	--moe \
 	--ep-world-size 2 \
 	--num-experts 2 \
-	--top-k 2 \
+	--top-k 1 \
+	--noisy-gate-policy 'RSample' \
 	--moe-param-group
