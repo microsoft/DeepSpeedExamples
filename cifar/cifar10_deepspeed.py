@@ -36,10 +36,20 @@ def add_argument():
                         default=-1,
                         help='local rank passed from distributed launcher')
 
+    parser.add_argument('--log-interval',
+                        type=int,
+                        default=2000,
+                        help="output logging information at a given interval")
+
     parser.add_argument('--moe',
                         default=False,
                         action='store_true',
                         help='use deepspeed mixture of experts (moe)')
+
+    parser.add_argument('--ep-world-size', default=1, type=int, help='(moe) expert parallel world size')
+    parser.add_argument('--num-experts', default=1, type=int, help='(moe) number of total experts')
+    parser.add_argument('--top-k', default=1, type=int, help='(moe) gating top 1 and 2 supported')
+    parser.add_argument('--moe-param-group', default=False, action='store_true', help='(moe) create separate moe param groups, required when using ZeRO w. MoE')
 
     # Include DeepSpeed configuration arguments
     parser = deepspeed.add_config_arguments(parser)
@@ -131,7 +141,7 @@ import torch.nn.functional as F
 args = add_argument()
 
 if args.moe:
-    deepspeed.utils.groups.initialize(ep_size=2)
+    deepspeed.utils.groups.initialize(ep_size=args.ep_world_size)
 
 
 class Net(nn.Module):
@@ -144,7 +154,12 @@ class Net(nn.Module):
         self.fc2 = nn.Linear(120, 84)
         self.fc3 = nn.Linear(84, 84)
         if args.moe:
-            self.fc3 = deepspeed.moe.layer.MoE(hidden_size=84, output_dropout_prob=0.5, expert=self.fc3, num_experts=2, k=2) 
+            self.fc3 = deepspeed.moe.layer.MoE(
+                    hidden_size=84, 
+                    expert=self.fc3,
+                    num_experts=args.num_experts,
+                    k=args.top_k,
+                    output_dropout_prob=0.1)
         self.fc4 = nn.Linear(84, 10)
 
     def forward(self, x):
@@ -153,12 +168,31 @@ class Net(nn.Module):
         x = x.view(-1, 16 * 5 * 5)
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
-        x, _, _ = self.fc3(x)
+        if args.moe:
+            x, _, _ = self.fc3(x)
+        else:
+            x = self.fc3(x)
         x = self.fc4(x)
         return x
 
 net = Net()
+
+def create_moe_param_groups(model):
+    from deepspeed.moe.utils import is_moe_param
+    
+    params_with_weight_decay = {'params': [], 'name' : 'weight_decay_params'}
+    moe_params_with_weight_decay = {'params': [], 'moe': True, 'name' : 'weight_decay_moe_params'}
+    
+    for module_ in model.modules():
+        moe_params_with_weight_decay['params'].extend([p for n,p in list(module_._parameters.items()) if p is not None and is_moe_param(p)])
+        params_with_weight_decay['params'].extend([p for n,p in list(module_._parameters.items()) if p is not None and not is_moe_param(p)])
+    
+    return params_with_weight_decay, moe_params_with_weight_decay
+
 parameters = filter(lambda p: p.requires_grad, net.parameters())
+if args.moe_param_group:
+    parameters = create_moe_param_groups(net)
+
 
 # Initialize DeepSpeed to use the following features
 # 1) Distributed model
@@ -166,6 +200,9 @@ parameters = filter(lambda p: p.requires_grad, net.parameters())
 # 3) DeepSpeed optimizer
 model_engine, optimizer, trainloader, __ = deepspeed.initialize(
     args=args, model=net, model_parameters=parameters, training_data=trainset)
+
+fp16 = model_engine.fp16_enabled()
+print(f'fp16={fp16}')
 
 #device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 #net.to(device)
@@ -194,6 +231,8 @@ for epoch in range(2):  # loop over the dataset multiple times
         # get the inputs; data is a list of [inputs, labels]
         inputs, labels = data[0].to(model_engine.local_rank), data[1].to(
             model_engine.local_rank)
+        if fp16:
+            inputs = inputs.half()
         outputs = model_engine(inputs)
         loss = criterion(outputs, labels)
 
@@ -202,9 +241,9 @@ for epoch in range(2):  # loop over the dataset multiple times
 
         # print statistics
         running_loss += loss.item()
-        if i % 2000 == 1999:  # print every 2000 mini-batches
+        if i % args.log_interval == (args.log_interval - 1):  # print every 2000 mini-batches
             print('[%d, %5d] loss: %.3f' %
-                  (epoch + 1, i + 1, running_loss / 2000))
+                  (epoch + 1, i + 1, running_loss / args.log_interval))
             running_loss = 0.0
 
 print('Finished Training')
