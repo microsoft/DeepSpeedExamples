@@ -176,7 +176,7 @@ fi
 
 full_options="${gpt_options} ${deepspeed_options} ${chkp_opt}"
 
-run_cmd="deepspeed --num_nodes ${NUM_WORKERS} --num_gpus ${NUM_GPUS_PER_WORKER}  pretrain_gpt2.py ${@:17} ${full_options} &>> ${OUTPUT_BASEPATH}/log/curriculum/${JOB_NAME}.log"
+run_cmd="deepspeed --num_nodes ${NUM_WORKERS} --num_gpus ${NUM_GPUS_PER_WORKER}  ../pretrain_gpt2.py ${@:17} ${full_options} &>> ${OUTPUT_BASEPATH}/log/curriculum/${JOB_NAME}.log"
 echo ${run_cmd}
 eval ${run_cmd}
 
