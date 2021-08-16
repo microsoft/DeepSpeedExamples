@@ -35,7 +35,7 @@
     "max_difficulty": CONFIG_CL_MAX,
     "schedule_type": "fixed_linear",
     "schedule_config": {
-      "total_step": CONFIG_CL_DURATION,
+      "total_curriculum_step": CONFIG_CL_DURATION,
       "difficulty_step": 8
     }
   }
