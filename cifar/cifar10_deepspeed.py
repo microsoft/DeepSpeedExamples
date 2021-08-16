@@ -116,7 +116,7 @@ if torch.distributed.get_rank() == 0:
     torch.distributed.barrier()
 
 trainloader = torch.utils.data.DataLoader(trainset,
-                                          batch_size=4,
+                                          batch_size=16,
                                           shuffle=True,
                                           num_workers=2)
 
@@ -283,8 +283,9 @@ for epoch in range(2):  # loop over the dataset multiple times
 
         # print statistics
         running_loss += loss.item()
-        if i % args.log_interval == (args.log_interval -
-                                     1):  # print every log_interval mini-batches
+        if i % args.log_interval == (
+                args.log_interval -
+                1):  # print every log_interval mini-batches
             print('[%d, %5d] loss: %.3f' %
                   (epoch + 1, i + 1, running_loss / args.log_interval))
             running_loss = 0.0
@@ -313,7 +314,8 @@ print('GroundTruth: ', ' '.join('%5s' % classes[labels[j]] for j in range(4)))
 
 ########################################################################
 # Okay, now let us see what the neural network thinks these examples above are:
-
+if fp16:
+    images = images.half()
 outputs = net(images.to(model_engine.local_rank))
 
 ########################################################################
@@ -335,6 +337,8 @@ total = 0
 with torch.no_grad():
     for data in testloader:
         images, labels = data
+        if fp16:
+            images = images.half()
         outputs = net(images.to(model_engine.local_rank))
         _, predicted = torch.max(outputs.data, 1)
         total += labels.size(0)
@@ -357,6 +361,8 @@ class_total = list(0. for i in range(10))
 with torch.no_grad():
     for data in testloader:
         images, labels = data
+        if fp16:
+            images = images.half()
         outputs = net(images.to(model_engine.local_rank))
         _, predicted = torch.max(outputs, 1)
         c = (predicted == labels.to(model_engine.local_rank)).squeeze()
