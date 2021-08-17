@@ -180,8 +180,8 @@ class Net(nn.Module):
         self.conv2 = nn.Conv2d(6, 16, 5)
         self.fc1 = nn.Linear(16 * 5 * 5, 120)
         self.fc2 = nn.Linear(120, 84)
-        self.fc3 = nn.Linear(84, 84)
         if args.moe:
+            self.fc3 = nn.Linear(84, 84)
             self.fc3 = deepspeed.moe.layer.MoE(
                 hidden_size=84,
                 expert=self.fc3,
@@ -190,7 +190,9 @@ class Net(nn.Module):
                 output_dropout_prob=0.1,
                 min_capacity=args.min_capacity,
                 noisy_gate_policy=args.noisy_gate_policy)
-        self.fc4 = nn.Linear(84, 10)
+            self.fc4 = nn.Linear(84, 10)
+        else:
+            self.fc3 = nn.Linear(84, 10)
 
     def forward(self, x):
         x = self.pool(F.relu(self.conv1(x)))
@@ -200,9 +202,9 @@ class Net(nn.Module):
         x = F.relu(self.fc2(x))
         if args.moe:
             x, _, _ = self.fc3(x)
+            x = self.fc4(x)
         else:
             x = self.fc3(x)
-        x = self.fc4(x)
         return x
 
 
