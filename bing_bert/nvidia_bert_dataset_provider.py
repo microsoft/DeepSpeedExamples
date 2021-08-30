@@ -4,6 +4,7 @@ import h5py
 import logging
 import json
 from concurrent.futures import ProcessPoolExecutor
+import gc
 
 import numpy as np
 
@@ -139,6 +140,7 @@ class NvidiaBertDatasetProvider(BertDatasetProviderInterface):
 
     def release_shard(self, index):
         del self.train_dataloader
+        gc.collect()
 
     def prefetch_shard(self, index):
         data_file = self._get_shard_file(index)
@@ -155,15 +157,5 @@ class NvidiaBertDatasetProvider(BertDatasetProviderInterface):
         pass
 
     def _get_shard_file(self, shard_index):
-        file_index = self._get_shard_file_index(shard_index, self.global_rank)
-        return self.dataset_files[file_index % self.num_files]
+        return self.dataset_files[shard_index]
 
-    def _get_shard_file_index(self, shard_index, global_rank):
-        if dist.is_initialized() and self.world_size > self.num_files:
-            remainder = self.world_size % self.num_files
-            file_index = (shard_index * self.world_size) + global_rank + (
-                remainder * shard_index)
-        else:
-            file_index = shard_index * self.world_size + global_rank
-
-        return file_index % self.num_files

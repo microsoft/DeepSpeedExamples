@@ -5,6 +5,7 @@ import logging
 import numpy as np
 import random
 import json
+import gc
 import torch
 import torch.distributed as dist
 from torch.utils.data import DataLoader, Dataset
@@ -32,7 +33,7 @@ last_global_step_from_restore = 0
 all_step_time = 0.0
 
 
-def checkpoint_model(PATH, ckpt_id, model, epoch, last_global_step,
+def checkpoint_model(PATH, ckpt_id, model, optimizer, epoch, last_global_step,
                      last_global_data_samples, **kwargs):
     """Utility function for checkpointing model + optimizer dictionaries
        The main purpose for this is to be able to resume training from that instant again
@@ -40,7 +41,8 @@ def checkpoint_model(PATH, ckpt_id, model, epoch, last_global_step,
     checkpoint_state_dict = {
         'epoch': epoch,
         'last_global_step': last_global_step,
-        'last_global_data_samples': last_global_data_samples
+        'last_global_data_samples': last_global_data_samples,
+        'optimizer': optimizer.state_dict()
     }
     # Add extra kwargs too
     checkpoint_state_dict.update(kwargs)
@@ -55,7 +57,7 @@ def checkpoint_model(PATH, ckpt_id, model, epoch, last_global_step,
     return
 
 
-def load_training_checkpoint(args, model, PATH, ckpt_id):
+def load_training_checkpoint(args, model, optimizer, PATH, ckpt_id):
     """Utility function for checkpointing model + optimizer dictionaries
        The main purpose for this is to be able to resume training from that instant again
     """
@@ -65,7 +67,12 @@ def load_training_checkpoint(args, model, PATH, ckpt_id):
     last_global_step = checkpoint_state_dict['last_global_step']
     last_global_data_samples = checkpoint_state_dict[
         'last_global_data_samples']
+    try:
+    	optimizer.load_state_dict(checkpoint_state_dict['optimizer'])
+    except:
+        pass
     del checkpoint_state_dict
+    gc.collect()
     return (epoch, last_global_step, last_global_data_samples)
 
 
@@ -140,16 +147,17 @@ def train(args,
     global last_global_step_from_restore
     global all_step_time
 
-    dataset_iterator, total_length = pretrain_dataset_provider.get_shard(index)
     current_data_sample_count = global_data_samples
-
     config = args.config
     logger = args.logger
+
+    dataset_iterator, total_length = pretrain_dataset_provider.get_shard(index % pretrain_dataset_provider.num_files)
     logger.info(
         f'worker-{dist.get_rank()}: begin epoch {index+1} current_sample_count {current_data_sample_count} shard_length {total_length} global_data_samples {global_data_samples}'
     )
 
-    pretrain_dataset_provider.prefetch_shard(index + 1)
+    if index < config["training"]["num_epochs"] - 1:
+        pretrain_dataset_provider.prefetch_shard((index+1) % pretrain_dataset_provider.num_files)
 
     model.train()
 
@@ -158,7 +166,7 @@ def train(args,
     step_counts = 0
 
     for _, batch_index in enumerate(tqdm(dataset_iterator, smoothing=1)):
-        try:
+        try:        
             step_start = time.time()
             batch = pretrain_dataset_provider.get_batch(batch_index)
             batch = tuple(t.to(args.device) for t in batch)  # Move to GPU
@@ -218,7 +226,7 @@ def train(args,
                   flush=True)
             all_step_time = 0.0
 
-    pretrain_dataset_provider.release_shard(index)
+    pretrain_dataset_provider.release_shard(index % pretrain_dataset_provider.num_files)
 
     global_data_samples = current_data_sample_count
 
@@ -230,7 +238,8 @@ def train(args,
 def update_learning_rate(args, config, current_global_step, optimizer):
     global last_global_step_from_restore
 
-    global_step_for_lr = current_global_step - last_global_step_from_restore
+    #global_step_for_lr = current_global_step - last_global_step_from_restore
+    global_step_for_lr = current_global_step
 
     if args.lr_schedule == "EE":
         #print(f'LR Schedule is {args.lr_schedule} EE')
@@ -341,7 +350,10 @@ def construct_arguments():
     args.n_gpu = 1
 
     # Loading Tokenizer
-    tokenizer = BertTokenizer.from_pretrained(config["bert_token_file"])
+    #tokenizer = BertTokenizer.from_pretrained(config["bert_token_file"])
+    #tokenizer = BertTokenizer.from_pretrained("./bert-large-uncased-vocab.txt")
+    tokenizer = CuBertHugTokenizer("model/vocab.txt")
+
     args.tokenizer = tokenizer
 
     # Set validation dataset path
@@ -496,7 +508,7 @@ def prepare_model_optimizer(args):
     return model, optimizer
 
 
-def load_checkpoint(args, model):
+def load_checkpoint(args, model, optimizer):
     global global_step
     global global_data_samples
     global last_global_step_from_restore
@@ -510,6 +522,7 @@ def load_checkpoint(args, model):
     start_epoch, global_step, global_data_samples = load_training_checkpoint(
         args=args,
         model=model,
+        optimizer=optimizer,
         PATH=args.load_training_checkpoint,
         ckpt_id=args.load_checkpoint_id)
     logger.info(
@@ -568,6 +581,7 @@ def run(args, model, optimizer, start_epoch):
                              ckpt_id='epoch{}_step{}'.format(
                                  index + 1, global_step),
                              model=model,
+                             optimizer=optimizer,
                              epoch=index + 1,
                              last_global_step=global_step,
                              last_global_data_samples=global_data_samples)
@@ -589,7 +603,7 @@ def main():
     model, optimizer = prepare_model_optimizer(args)
     start_epoch = 0
     if not None in [args.load_training_checkpoint, args.load_checkpoint_id]:
-        start_epoch = load_checkpoint(args, model)
+        start_epoch = load_checkpoint(args, model, optimizer)
     run(args, model, optimizer, start_epoch)
     elapsed = time.time() - start
     logger = args.logger
