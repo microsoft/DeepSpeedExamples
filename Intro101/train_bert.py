@@ -1,7 +1,8 @@
 import datetime
 import json
 import pathlib
-import uuid
+import re
+import string
 from functools import partial
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
@@ -390,6 +391,15 @@ def create_model(
 ######################################################################
 
 
+def get_unique_identifier(length: int = 8) -> str:
+    """Create a unique identifier by choosing `length`
+    random characters from list of ascii characters and numbers
+    """
+    alphabet = string.ascii_lowercase + string.digits
+    uuid = "".join(alphabet[ix] for ix in np.random.choice(len(alphabet), length))
+    return uuid
+
+
 def create_experiment_dir(
     checkpoint_dir: pathlib.Path, all_arguments: Dict[str, Any]
 ) -> pathlib.Path:
@@ -423,7 +433,7 @@ def create_experiment_dir(
         current_time.hour,
         current_time.minute,
         current_time.second,
-        str(uuid.uuid4()),
+        get_unique_identifier(),
     )
     exp_dir = checkpoint_dir / expname
     exp_dir.mkdir(exist_ok=False)
@@ -468,7 +478,8 @@ def create_experiment_dir(
 
 
 def train(
-    checkpoint_dir: str,
+    checkpoint_dir: str = None,
+    load_checkpoint_dir: str = None,
     # Dataset Parameters
     mask_prob: float = 0.15,
     random_replace_prob: float = 0.1,
@@ -545,6 +556,67 @@ def train(
         else torch.device("cpu")
     )
     ################################
+    ###### Create Exp. Dir #########
+    ################################
+    if checkpoint_dir is None and load_checkpoint_dir is None:
+        logger.error("Need to specify one of checkpoint_dir" " or load_checkpoint_dir")
+        return
+    if checkpoint_dir is not None and load_checkpoint_dir is not None:
+        logger.error("Cannot specify both checkpoint_dir" " and load_checkpoint_dir")
+        return
+    if checkpoint_dir:
+        logger.info("Creating Experiment Directory")
+        checkpoint_dir = pathlib.Path(checkpoint_dir)
+        checkpoint_dir.mkdir(exist_ok=True)
+        all_arguments = {
+            # Dataset Params
+            "mask_prob": mask_prob,
+            "random_replace_prob": random_replace_prob,
+            "unmask_replace_prob": unmask_replace_prob,
+            "max_seq_length": max_seq_length,
+            "tokenizer": tokenizer,
+            # Model Params
+            "num_layers": num_layers,
+            "num_heads": num_heads,
+            "ff_dim": ff_dim,
+            "h_dim": h_dim,
+            "dropout": dropout,
+            # Training Params
+            "batch_size": batch_size,
+            "num_iterations": num_iterations,
+            "checkpoint_every": checkpoint_every,
+        }
+        exp_dir = create_experiment_dir(checkpoint_dir, all_arguments)
+        tb_dir = exp_dir / "tb_dir"
+        assert tb_dir.exists()
+        summary_writer = SummaryWriter(log_dir=tb_dir)
+        logger.info(f"Experiment Directory created at {exp_dir}")
+    else:
+        logger.info("Loading from Experiment Directory")
+        load_checkpoint_dir = pathlib.Path(load_checkpoint_dir)
+        assert load_checkpoint_dir.exists()
+        with (load_checkpoint_dir / "hparams.json").open("r") as handle:
+            hparams = json.load(handle)
+        # Set the hparams
+        # Dataset Params
+        mask_prob = hparams.get("mask_prob", mask_prob)
+        tokenizer = hparams.get("tokenizer", tokenizer)
+        random_replace_prob = hparams.get("random_replace_prob", random_replace_prob)
+        unmask_replace_prob = hparams.get("unmask_replace_prob", unmask_replace_prob)
+        max_seq_length = hparams.get("max_seq_length", max_seq_length)
+        # Model Params
+        ff_dim = hparams.get("ff_dim", ff_dim)
+        h_dim = hparams.get("h_dim", h_dim)
+        dropout = hparams.get("dropout", dropout)
+        num_layers = hparams.get("num_layers", num_layers)
+        num_heads = hparams.get("num_heads", num_heads)
+        # Training Params
+        batch_size = hparams.get("batch_size", batch_size)
+        num_iterations = hparams.get("num_iterations", num_iterations)
+        checkpoint_every = hparams.get("checkpoint_every", checkpoint_every)
+        exp_dir = load_checkpoint_dir
+
+    ################################
     ###### Create Datasets #########
     ################################
     logger.info("Creating Datasets")
@@ -571,46 +643,54 @@ def train(
     model = model.to(device)
     logger.info("Model Creation Done")
     ################################
-    ###### Create Exp. Dir #########
-    ################################
-    logger.info("Creating Experiment Directory")
-    checkpoint_dir = pathlib.Path(checkpoint_dir)
-    checkpoint_dir.mkdir(exist_ok=True)
-    all_arguments = {
-        # Dataset Params
-        "mask_prob": mask_prob,
-        "random_replace_prob": random_replace_prob,
-        "unmask_replace_prob": unmask_replace_prob,
-        "max_seq_length": max_seq_length,
-        "tokenizer": tokenizer,
-        # Model Params
-        "num_layers": num_layers,
-        "num_heads": num_heads,
-        "ff_dim": ff_dim,
-        "h_dim": h_dim,
-        "dropout": dropout,
-        # Training Params
-        "batch_size": batch_size,
-        "num_iterations": num_iterations,
-        "checkpoint_every": checkpoint_every,
-    }
-    exp_dir = create_experiment_dir(checkpoint_dir, all_arguments)
-    tb_dir = exp_dir / "tb_dir"
-    assert tb_dir.exists()
-    summary_writer = SummaryWriter(log_dir=tb_dir)
-    logger.info(f"Experiment Directory created at {exp_dir}")
-    ################################
     ###### Create Optimizer #######
     ################################
     logger.info("Creating Optimizer")
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
     logger.info("Optimizer Creation Done")
     ################################
+    #### Load Model checkpoint #####
+    ################################
+    start_step = 1
+    if load_checkpoint_dir is not None:
+        logger.info(
+            f"Loading model and optimizer checkpoint from {load_checkpoint_dir}"
+        )
+        checkpoint_files = list(
+            filter(
+                lambda path: re.search(r"iter_(?P<iter_no>\d+)\.pt", path.name)
+                is not None,
+                load_checkpoint_dir.glob("*.pt"),
+            )
+        )
+        assert len(checkpoint_files) > 0, "No checkpoints found in directory"
+        checkpoint_files = sorted(
+            checkpoint_files,
+            key=lambda path: int(
+                re.search(r"iter_(?P<iter_no>\d+)\.pt", path.name).group("iter_no")
+            ),
+        )
+        latest_checkpoint_path = checkpoint_files[-1]
+        start_step = (
+            int(
+                re.search(
+                    r"iter_(?P<iter_no>\d+)\.pt", latest_checkpoint_path.name
+                ).group("iter_no")
+            )
+            + 1
+        )
+        state_dict = torch.load(latest_checkpoint_path)
+        model.load_state_dict(state_dict["model"], strict=True)
+        optimizer.load_state_dict(state_dict["optimizer"])
+        logger.info(
+            f"Loading model and optimizer checkpoints done. Loaded from {latest_checkpoint_path}"
+        )
+    ################################
     ####### The Training Loop ######
     ################################
     model.train()
     losses = []
-    for step, batch in enumerate(data_iterator, start=1):
+    for step, batch in enumerate(data_iterator, start=start_step):
         optimizer.zero_grad()
         # Move the tensors to device
         for key, value in batch.items():
@@ -631,6 +711,9 @@ def train(
                 "optimizer": optimizer.state_dict(),
             }
             torch.save(obj=state_dict, f=str(exp_dir / f"checkpoint.iter_{step}.pt"))
+            logger.info(
+                "Saved model to {0}".format((exp_dir / f"checkpoint.iter_{step}.pt"))
+            )
         if step == num_iterations:
             break
 
