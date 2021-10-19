@@ -1,25 +1,26 @@
-from typing import Iterable, Dict, Any, Callable, Tuple, List, Union, Optional
-import fire
+import datetime
+import json
 import pathlib
 import uuid
-import datetime
-import pytz
-import json
-import numpy as np
 from functools import partial
-import loguru
-import sh
-
-import torch
-import torch.nn as nn
-from torch.utils.data import Dataset, DataLoader
-from torch.utils.tensorboard import SummaryWriter
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import datasets
-from transformers import AutoTokenizer
-from transformers import PreTrainedTokenizer, PreTrainedTokenizerFast
+import fire
+import loguru
+import numpy as np
+import pytz
+import sh
+import torch
+import torch.nn as nn
+from torch.utils.data import DataLoader, Dataset
+from torch.utils.tensorboard import SummaryWriter
+from transformers import AutoTokenizer, PreTrainedTokenizer, PreTrainedTokenizerFast
 from transformers.models.roberta import RobertaConfig, RobertaModel
-from transformers.models.roberta.modeling_roberta import RobertaLMHead, RobertaPreTrainedModel
+from transformers.models.roberta.modeling_roberta import (
+    RobertaLMHead,
+    RobertaPreTrainedModel,
+)
 
 logger = loguru.logger
 
@@ -30,17 +31,14 @@ logger = loguru.logger
 
 TokenizerType = Union[PreTrainedTokenizer, PreTrainedTokenizerFast]
 
+
 def collate_function(
-    batch: List[Tuple[List[int], List[int]]],
-    pad_token_id: int
+    batch: List[Tuple[List[int], List[int]]], pad_token_id: int
 ) -> Dict[str, torch.Tensor]:
     """Collect a list of masked token indices, and labels, and
     batch them, padding to max length in the batch.
     """
-    max_length = max(
-        len(token_ids)
-        for token_ids, _ in batch 
-    )
+    max_length = max(len(token_ids) for token_ids, _ in batch)
     padded_token_ids = [
         token_ids + [pad_token_id for _ in range(0, max_length - len(token_ids))]
         for token_ids, _ in batch
@@ -55,23 +53,53 @@ def collate_function(
     return {
         "src_tokens": src_tokens,
         "tgt_tokens": tgt_tokens,
-        "attention_mask": attention_mask
+        "attention_mask": attention_mask,
     }
 
-def masking_function(text: str,
-                     tokenizer: TokenizerType,
-                     mask_prob: float,
-                     random_replace_prob: float,
-                     unmask_replace_prob: float,
-                     max_length: int) -> Tuple[List[int], List[int]]:
+
+def masking_function(
+    text: str,
+    tokenizer: TokenizerType,
+    mask_prob: float,
+    random_replace_prob: float,
+    unmask_replace_prob: float,
+    max_length: int,
+) -> Tuple[List[int], List[int]]:
+    """Given a text string, randomly mask wordpieces for Bert MLM
+    training.
+
+    Args:
+        text (str):
+            The input text
+        tokenizer (TokenizerType):
+            The tokenizer for tokenization
+        mask_prob (float):
+            What fraction of tokens to mask
+        random_replace_prob (float):
+            Of the masked tokens, how many should be replaced with
+            random tokens (improves performance)
+        unmask_replace_prob (float):
+            Of the masked tokens, how many should be replaced with
+            the original token (improves performance)
+        max_length (int):
+            The maximum sequence length to consider. Note that for
+            Bert style models, this is a function of the number of
+            positional embeddings you learn
+
+    Returns:
+        Tuple[List[int], List[int]]:
+            The masked token ids (based on the tokenizer passed),
+            and the output labels (padded with `tokenizer.pad_token_id`)
+    """
     # Note: By default, encode does add the BOS and EOS token
     # Disabling that behaviour to make this more clear
-    tokenized_ids = [tokenizer.bos_token_id] + \
-        tokenizer.encode(text,
-                         add_special_tokens=False,
-                         truncation=True,
-                         max_length=max_length - 2) + \
-            [tokenizer.eos_token_id]
+    tokenized_ids = (
+        [tokenizer.bos_token_id]
+        + tokenizer.encode(
+            text, add_special_tokens=False, truncation=True, max_length=max_length - 2
+        )
+        + [tokenizer.eos_token_id]
+    )
     seq_len = len(tokenized_ids)
     tokenized_ids = np.array(tokenized_ids)
     subword_mask = np.full(len(tokenized_ids), False)
@@ -81,7 +109,9 @@ def masking_function(text: str,
     high = len(subword_mask) - 1
     mask_choices = np.arange(low, high)
     num_subwords_to_mask = max(int((mask_prob * (high - low)) + np.random.rand()), 1)
-    subword_mask[np.random.choice(mask_choices, num_subwords_to_mask, replace=False)] = True
+    subword_mask[
+        np.random.choice(mask_choices, num_subwords_to_mask, replace=False)
+    ] = True
 
     # Create the labels first
     labels = np.full(seq_len, tokenizer.pad_token_id)
@@ -92,7 +122,9 @@ def masking_function(text: str,
     # Now of the masked tokens, choose how many to replace with random and how many to unmask
     rand_or_unmask_prob = random_replace_prob + unmask_replace_prob
     if rand_or_unmask_prob > 0:
-        rand_or_unmask = subword_mask & (np.random.rand(len(tokenized_ids)) < rand_or_unmask_prob)
+        rand_or_unmask = subword_mask & (
+            np.random.rand(len(tokenized_ids)) < rand_or_unmask_prob
+        )
         if random_replace_prob == 0:
             unmask = rand_or_unmask
             rand_mask = None
@@ -112,40 +144,76 @@ def masking_function(text: str,
             probs = weights / weights.sum()
             num_rand = rand_mask.sum()
             tokenized_ids[rand_mask] = np.random.choice(
-                tokenizer.vocab_size,
-                num_rand,
-                p=probs
+                tokenizer.vocab_size, num_rand, p=probs
             )
     return tokenized_ids.tolist(), labels.tolist()
 
+
 class WikiTextMLMDataset(Dataset):
-    def __init__(self,
-                 dataset: datasets.arrow_dataset.Dataset,
-                 masking_function: Callable[[str], Tuple[List[int], List[int]]]) -> None:
+    """A [Map style dataset](https://pytorch.org/docs/stable/data.html)
+    for iterating over the wikitext dataset. Note that this assumes
+    the dataset can fit in memory. For larger datasets
+    you'd want to shard them and use an iterable dataset (eg: see
+    [Infinibatch](https://github.com/microsoft/infinibatch))
+
+    Args:
+        Dataset (datasets.arrow_dataset.Dataset):
+            The wikitext dataset
+        masking_function (Callable[[str], Tuple[List[int], List[int]]])
+            The masking function. To generate one training instance,
+            the masking function is applied to the `text` of a dataset
+            record
+
+    """
+
+    def __init__(
+        self,
+        dataset: datasets.arrow_dataset.Dataset,
+        masking_function: Callable[[str], Tuple[List[int], List[int]]],
+    ) -> None:
         self.dataset = dataset
         self.masking_function = masking_function
-    
+
     def __len__(self) -> int:
         return len(self.dataset)
-    
+
     def __getitem__(self, idx: int) -> Tuple[List[int], List[int]]:
         tokens, labels = self.masking_function(self.dataset[idx]["text"])
         return (tokens, labels)
 
-def create_data_iterator(mask_prob: float,
-                         random_replace_prob: float,
-                         unmask_replace_prob: float,
-                         batch_size: int,
-                         max_seq_length: int = 512,
-                         tokenizer: str = "roberta-base") -> DataLoader:
-    wikitext_dataset = datasets.load_dataset(
-        "wikitext",
-        "wikitext-2-v1",
-        split="train"
-    )
-    wikitext_dataset = wikitext_dataset.filter(
-        lambda record: record["text"] != ""
-    ).map(
+
+def create_data_iterator(
+    mask_prob: float,
+    random_replace_prob: float,
+    unmask_replace_prob: float,
+    batch_size: int,
+    max_seq_length: int = 512,
+    tokenizer: str = "roberta-base",
+) -> DataLoader:
+    """Create the dataloader.
+
+    Args:
+        mask_prob (float):
+            Fraction of tokens to mask
+        random_replace_prob (float):
+            Fraction of masked tokens to replace with random token
+        unmask_replace_prob (float):
+            Fraction of masked tokens to replace with the actual token
+        batch_size (int):
+            The batch size of the generated tensors
+        max_seq_length (int, optional):
+            The maximum sequence length for the MLM task. Defaults to 512.
+        tokenizer (str, optional):
+            The tokenizer to use. Defaults to "roberta-base".
+
+    Returns:
+        DataLoader:
+            The torch DataLoader. Note that the dataloader is iterable,
+        but is not an iterator.
+
+    """
+    wikitext_dataset = datasets.load_dataset("wikitext", "wikitext-2-v1", split="train")
+    wikitext_dataset = wikitext_dataset.filter(lambda record: record["text"] != "").map(
         lambda record: {"text": record["text"].rstrip("\n")}
     )
     tokenizer = AutoTokenizer.from_pretrained(tokenizer)
@@ -155,19 +223,14 @@ def create_data_iterator(mask_prob: float,
         mask_prob=mask_prob,
         random_replace_prob=random_replace_prob,
         unmask_replace_prob=unmask_replace_prob,
-        max_length=max_seq_length
+        max_length=max_seq_length,
     )
     dataset = WikiTextMLMDataset(wikitext_dataset, masking_function_partial)
-    collate_fn_partial = partial(
-        collate_function,
-        pad_token_id=tokenizer.pad_token_id
-    )
+    collate_fn_partial = partial(collate_function, pad_token_id=tokenizer.pad_token_id)
     dataloader = DataLoader(
-        dataset,
-        batch_size=batch_size,
-        shuffle=True,
-        collate_fn=collate_fn_partial
+        dataset, batch_size=batch_size, shuffle=True, collate_fn=collate_fn_partial
     )
+
     return dataloader
 
 
@@ -175,29 +238,36 @@ def create_data_iterator(mask_prob: float,
 ############### Model Creation Related Functions #####################
 ######################################################################
 
+
 class RobertaLMHeadWithMaskedPredict(RobertaLMHead):
-    def __init__(self,
-                 config,
-                 embedding_weight: Optional[torch.Tensor] = None) -> None:
+    def __init__(
+        self, config: RobertaConfig, embedding_weight: Optional[torch.Tensor] = None
+    ) -> None:
         super(RobertaLMHeadWithMaskedPredict, self).__init__(config)
         if embedding_weight is not None:
             self.decoder.weight = embedding_weight
 
     def forward(  # pylint: disable=arguments-differ
-            self,
-            features: torch.Tensor,
-            masked_token_indices: Optional[
-                torch.Tensor] = None,
-            **kwargs) -> torch.Tensor:
-        """The current ``Transformers'' library does not provide support
-        for masked_token_indices. This function provides the support
+        self,
+        features: torch.Tensor,
+        masked_token_indices: Optional[torch.Tensor] = None,
+        **kwargs,
+    ) -> torch.Tensor:
+        """The current `transformers` library does not provide support
+        for masked_token_indices. This function provides the support, by
+        running the final forward pass only for the masked indices. This saves
+        memory
 
         Args:
+            features (torch.Tensor):
+                The features to select from. Shape (batch, seq_len, h_dim)
             masked_token_indices (torch.Tensor, optional):
-            The indices of masked tokens for index select. Defaults to None.
+                The indices of masked tokens for index select. Defaults to None.
+                Shape: (num_masked_tokens,)
 
         Returns:
-            torch.Tensor: The output logits
+            torch.Tensor:
+                The index selected features. Shape (num_masked_tokens, h_dim)
 
         """
         if masked_token_indices is not None:
@@ -206,47 +276,91 @@ class RobertaLMHeadWithMaskedPredict(RobertaLMHead):
             )
         return super().forward(features)
 
+
 class RobertaMLMModel(RobertaPreTrainedModel):
-    def __init__(self,
-                 config: RobertaConfig,
-                 encoder: RobertaModel) -> None:
+    def __init__(self, config: RobertaConfig, encoder: RobertaModel) -> None:
         super().__init__(config)
         self.encoder = encoder
         self.lm_head = RobertaLMHeadWithMaskedPredict(
             config, self.encoder.embeddings.word_embeddings.weight
         )
         self.lm_head.apply(self._init_weights)
-    
-    def forward(self,
-                src_tokens,
-                attention_mask,
-                tgt_tokens) -> torch.Tensor:
-        sequence_output, *_ = self.encoder(input_ids=src_tokens,
-                                           attention_mask=attention_mask, return_dict=False)
-        
+
+    def forward(
+        self,
+        src_tokens: torch.Tensor,
+        attention_mask: torch.Tensor,
+        tgt_tokens: torch.Tensor,
+    ) -> torch.Tensor:
+        """The forward pass for the MLM task
+
+        Args:
+            src_tokens (torch.Tensor):
+                The masked token indices. Shape: (batch, seq_len)
+            attention_mask (torch.Tensor):
+                The attention mask, since the batches are padded
+                to the largest sequence. Shape: (batch, seq_len)
+            tgt_tokens (torch.Tensor):
+                The output tokens (padded with `config.pad_token_id`)
+
+        Returns:
+            torch.Tensor:
+                The MLM loss
+        """
+        # shape: (batch, seq_len, h_dim)
+        sequence_output, *_ = self.encoder(
+            input_ids=src_tokens, attention_mask=attention_mask, return_dict=False
+        )
+
         pad_token_id = self.config.pad_token_id
         # (labels have also been padded with pad_token_id)
         # filter out all masked labels
+        # shape: (num_masked_tokens,)
         masked_token_indexes = torch.nonzero(
-            (tgt_tokens != pad_token_id).view(-1)).view(-1)
-
-        prediction_scores = self.lm_head(sequence_output,
-                                         masked_token_indexes)
-
-        target = torch.index_select(tgt_tokens.view(-1), 0,
-                                    masked_token_indexes)
+            (tgt_tokens != pad_token_id).view(-1)
+        ).view(-1)
+        # shape: (num_masked_tokens, vocab_size)
+        prediction_scores = self.lm_head(sequence_output, masked_token_indexes)
+        # shape: (num_masked_tokens,)
+        target = torch.index_select(tgt_tokens.view(-1), 0, masked_token_indexes)
 
         loss_fct = nn.CrossEntropyLoss(ignore_index=-1)
 
         masked_lm_loss = loss_fct(
-            prediction_scores.view(-1, self.config.vocab_size), target)
+            prediction_scores.view(-1, self.config.vocab_size), target
+        )
         return masked_lm_loss
 
-def create_model(num_layers: int,
-                 num_heads: int,
-                 ff_dim: int,
-                 h_dim: int,
-                 dropout: float) -> RobertaModel:
+
+def create_model(
+    num_layers: int, num_heads: int, ff_dim: int, h_dim: int, dropout: float
+) -> RobertaMLMModel:
+    """Create a Bert model with the specified `num_heads`, `ff_dim`,
+    `h_dim` and `dropout`
+
+    Args:
+        num_layers (int):
+            The number of layers
+        num_heads (int):
+            The number of attention heads
+        ff_dim (int):
+            The intermediate hidden size of
+            the feed forward block of the
+            transformer
+        h_dim (int):
+            The hidden dim of the intermediate
+            representations of the transformer
+        dropout (float):
+            The value of dropout to be used.
+            Note that we apply the same dropout
+            to both the attention layers and the
+            FF layers
+
+    Returns:
+        RobertaMLMModel:
+            A Roberta model for MLM task
+
+    """
     roberta_config_dict = {
         "attention_probs_dropout_prob": dropout,
         "bos_token_id": 0,
@@ -263,7 +377,7 @@ def create_model(num_layers: int,
         "num_hidden_layers": num_layers,
         "pad_token_id": 1,
         "type_vocab_size": 1,
-        "vocab_size": 50265
+        "vocab_size": 50265,
     }
     roberta_config = RobertaConfig.from_dict(roberta_config_dict)
     roberta_encoder = RobertaModel(roberta_config)
@@ -275,8 +389,30 @@ def create_model(num_layers: int,
 ########### Experiment Management Related Functions ##################
 ######################################################################
 
-def create_experiment_dir(checkpoint_dir: pathlib.Path,
-                          all_arguments: Dict[str, Any]):
+
+def create_experiment_dir(
+    checkpoint_dir: pathlib.Path, all_arguments: Dict[str, Any]
+) -> pathlib.Path:
+    """Create an experiment directory and save all arguments in it.
+    Additionally, also store the githash and gitdiff. Finally create
+    a directory for `Tensorboard` logs. The structure would look something
+    like
+        checkpoint_dir
+            `-experiment-name
+                |- hparams.json
+                |- githash.log
+                |- gitdiff.log
+                `- tb_dir/
+
+    Args:
+        checkpoint_dir (pathlib.Path):
+            The base checkpoint directory
+        all_arguments (Dict[str, Any]):
+            The arguments to save
+
+    Returns:
+        pathlib.Path: The experiment directory
+    """
     # experiment name follows the following convention
     # {exp_type}.{YYYY}.{MM}.{DD}.{HH}.{MM}.{SS}.{uuid}
     current_time = datetime.datetime.now(pytz.timezone("US/Pacific"))
@@ -287,44 +423,49 @@ def create_experiment_dir(checkpoint_dir: pathlib.Path,
         current_time.hour,
         current_time.minute,
         current_time.second,
-        str(uuid.uuid4())
+        str(uuid.uuid4()),
     )
-    exp_dir = (checkpoint_dir / expname)
+    exp_dir = checkpoint_dir / expname
     exp_dir.mkdir(exist_ok=False)
     hparams_file = exp_dir / "hparams.json"
     with hparams_file.open("w") as handle:
         json.dump(obj=all_arguments, fp=handle, indent=2)
     # Save the git hash
     try:
-        
         gitlog = sh.git.log("-1", format="%H", _tty_out=False, _fg=False)
         with (exp_dir / "githash.log").open("w") as handle:
             handle.write(gitlog.stdout.decode("utf-8"))
     except sh.ErrorReturnCode_128:
-        logger.info("Seems like the code is not running from"
-                    " within a git repo, so hash will"
-                    " not be stored. However, it"
-                    " is strongly advised to use"
-                    " version control.")
+        logger.info(
+            "Seems like the code is not running from"
+            " within a git repo, so hash will"
+            " not be stored. However, it"
+            " is strongly advised to use"
+            " version control."
+        )
     # And the git diff
     try:
         gitdiff = sh.git.diff(_fg=False, _tty_out=False)
         with (exp_dir / "gitdiff.log").open("w") as handle:
             handle.write(gitdiff.stdout.decode("utf-8"))
     except sh.ErrorReturnCode_129:
-        logger.info("Seems like the code is not running from"
-                    " within a git repo, so diff will"
-                    " not be stored. However, it"
-                    " is strongly advised to use"
-                    " version control.")
+        logger.info(
+            "Seems like the code is not running from"
+            " within a git repo, so diff will"
+            " not be stored. However, it"
+            " is strongly advised to use"
+            " version control."
+        )
     # Finally create the Tensorboard Dir
     tb_dir = exp_dir / "tb_dir"
     tb_dir.mkdir()
     return exp_dir
 
+
 ######################################################################
 ####################### Driver Functions #############################
 ######################################################################
+
 
 def train(
     checkpoint_dir: str,
@@ -345,11 +486,64 @@ def train(
     num_iterations: int = 10000,
     checkpoint_every: int = 1000,
     log_every: int = 10,
-    device: int = -1
-) -> None: 
-    device = torch.device("cuda", device) \
-        if (device > -1) and torch.cuda.is_available() \
-            else torch.device("cpu")
+    device: int = -1,
+) -> None:
+    """Trains a [Bert style](https://arxiv.org/pdf/1810.04805.pdf)
+    (transformer encoder only) model for MLM Task
+
+    Args:
+        checkpoint_dir (str):
+            The base experiment directory to save experiments to
+        mask_prob (float, optional):
+            The fraction of tokens to mask. Defaults to 0.15.
+        random_replace_prob (float, optional):
+            The fraction of masked tokens to replace with random token.
+            Defaults to 0.1.
+        unmask_replace_prob (float, optional):
+            The fraction of masked tokens to leave unchanged.
+            Defaults to 0.1.
+        max_seq_length (int, optional):
+            The maximum sequence length of the examples. Defaults to 512.
+        tokenizer (str, optional):
+            The tokenizer to use. Defaults to "roberta-base".
+        num_layers (int, optional):
+            The number of layers in the Bert model. Defaults to 6.
+        num_heads (int, optional):
+            Number of attention heads to use. Defaults to 8.
+        ff_dim (int, optional):
+            Size of the intermediate dimension in the FF layer.
+            Defaults to 512.
+        h_dim (int, optional):
+            Size of intermediate representations.
+            Defaults to 256.
+        dropout (float, optional):
+            Amout of Dropout to use. Defaults to 0.1.
+        batch_size (int, optional):
+            The minibatch size. Defaults to 8.
+        num_iterations (int, optional):
+            Total number of iterations to run the model for.
+            Defaults to 10000.
+        checkpoint_every (int, optional):
+            Save checkpoint after these many steps.
+
+            ..note ::
+
+                You want this to be frequent enough that you can
+                resume training in case it crashes, but not so much
+                that you fill up your entire storage !
+
+            Defaults to 1000.
+        log_every (int, optional):
+            Print logs after these many steps. Defaults to 10.
+        device (int, optional):
+            Which GPU to run on (-1 for CPU). Defaults to -1.
+
+    """
+    device = (
+        torch.device("cuda", device)
+        if (device > -1) and torch.cuda.is_available()
+        else torch.device("cpu")
+    )
     ################################
     ###### Create Datasets #########
     ################################
@@ -360,7 +554,7 @@ def train(
         unmask_replace_prob=unmask_replace_prob,
         tokenizer=tokenizer,
         max_seq_length=max_seq_length,
-        batch_size=batch_size
+        batch_size=batch_size,
     )
     logger.info("Dataset Creation Done")
     ################################
@@ -372,7 +566,7 @@ def train(
         num_heads=num_heads,
         ff_dim=ff_dim,
         h_dim=h_dim,
-        dropout=dropout
+        dropout=dropout,
     )
     model = model.to(device)
     logger.info("Model Creation Done")
@@ -434,17 +628,12 @@ def train(
         if step % checkpoint_every == 0:
             state_dict = {
                 "model": model.state_dict(),
-                "optimizer": optimizer.state_dict()
+                "optimizer": optimizer.state_dict(),
             }
             torch.save(obj=state_dict, f=str(exp_dir / f"checkpoint.iter_{step}.pt"))
         if step == num_iterations:
             break
 
 
-
 if __name__ == "__main__":
-    fire.Fire({
-        "train": train,
-        "data": create_data_iterator,
-        "model": create_model
-    })
+    fire.Fire({"train": train, "data": create_data_iterator, "model": create_model})
