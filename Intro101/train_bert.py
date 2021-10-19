@@ -30,7 +30,13 @@ logger = loguru.logger
 
 TokenizerType = Union[PreTrainedTokenizer, PreTrainedTokenizerFast]
 
-def collate_function(batch: List[Tuple[List[int], List[int]]], pad_token_id: int) -> Dict[str, torch.Tensor]:
+def collate_function(
+    batch: List[Tuple[List[int], List[int]]],
+    pad_token_id: int
+) -> Dict[str, torch.Tensor]:
+    """Collect a list of masked token indices, and labels, and
+    batch them, padding to max length in the batch.
+    """
     max_length = max(
         len(token_ids)
         for token_ids, _ in batch 
@@ -289,13 +295,28 @@ def create_experiment_dir(checkpoint_dir: pathlib.Path,
     with hparams_file.open("w") as handle:
         json.dump(obj=all_arguments, fp=handle, indent=2)
     # Save the git hash
-    gitlog = sh.git.log("-1", format="%H", _tty_out=False, _fg=False)
-    with (exp_dir / "githash.log").open("w") as handle:
-        handle.write(gitlog.stdout.decode("utf-8"))
+    try:
+        
+        gitlog = sh.git.log("-1", format="%H", _tty_out=False, _fg=False)
+        with (exp_dir / "githash.log").open("w") as handle:
+            handle.write(gitlog.stdout.decode("utf-8"))
+    except sh.ErrorReturnCode_128:
+        logger.info("Seems like the code is not running from"
+                    " within a git repo, so hash will"
+                    " not be stored. However, it"
+                    " is strongly advised to use"
+                    " version control.")
     # And the git diff
-    gitdiff = sh.git.diff(_fg=False, _tty_out=False)
-    with (exp_dir / "gitdiff.log").open("w") as handle:
-        handle.write(gitdiff.stdout.decode("utf-8"))
+    try:
+        gitdiff = sh.git.diff(_fg=False, _tty_out=False)
+        with (exp_dir / "gitdiff.log").open("w") as handle:
+            handle.write(gitdiff.stdout.decode("utf-8"))
+    except sh.ErrorReturnCode_129:
+        logger.info("Seems like the code is not running from"
+                    " within a git repo, so diff will"
+                    " not be stored. However, it"
+                    " is strongly advised to use"
+                    " version control.")
     # Finally create the Tensorboard Dir
     tb_dir = exp_dir / "tb_dir"
     tb_dir.mkdir()
@@ -327,7 +348,7 @@ def train(
     device: int = -1
 ) -> None: 
     device = torch.device("cuda", device) \
-        if (device > 0) and torch.cuda.is_available() \
+        if (device > -1) and torch.cuda.is_available() \
             else torch.device("cpu")
     ################################
     ###### Create Datasets #########
@@ -393,6 +414,7 @@ def train(
     ################################
     ####### The Training Loop ######
     ################################
+    model.train()
     losses = []
     for step, batch in enumerate(data_iterator, start=1):
         optimizer.zero_grad()
