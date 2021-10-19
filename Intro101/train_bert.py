@@ -4,7 +4,7 @@ import pathlib
 import re
 import string
 from functools import partial
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, TypeVar, Union
 
 import datasets
 import fire
@@ -183,6 +183,27 @@ class WikiTextMLMDataset(Dataset):
         return (tokens, labels)
 
 
+T = TypeVar("T")
+
+
+class InfiniteIterator(object):
+    def __init__(self, iterable: Iterable[T]) -> None:
+        self._iterable = iterable
+        self._iterator = iter(self._iterable)
+
+    def __iter__(self):
+        return self
+
+    def __next__(self) -> T:
+        next_item = None
+        try:
+            next_item = next(self._iterator)
+        except StopIteration:
+            self._iterator = iter(self._iterable)
+            next_item = next(self._iterator)
+        return next_item
+
+
 def create_data_iterator(
     mask_prob: float,
     random_replace_prob: float,
@@ -190,7 +211,7 @@ def create_data_iterator(
     batch_size: int,
     max_seq_length: int = 512,
     tokenizer: str = "roberta-base",
-) -> DataLoader:
+) -> InfiniteIterator:
     """Create the dataloader.
 
     Args:
@@ -208,9 +229,9 @@ def create_data_iterator(
             The tokenizer to use. Defaults to "roberta-base".
 
     Returns:
-        DataLoader:
-            The torch DataLoader. Note that the dataloader is iterable,
-        but is not an iterator.
+        InfiniteIterator:
+            The torch DataLoader, wrapped in an InfiniteIterator class, to
+            be able to continuously generate samples
 
     """
     wikitext_dataset = datasets.load_dataset("wikitext", "wikitext-2-v1", split="train")
@@ -232,7 +253,7 @@ def create_data_iterator(
         dataset, batch_size=batch_size, shuffle=True, collate_fn=collate_fn_partial
     )
 
-    return dataloader
+    return InfiniteIterator(dataloader)
 
 
 ######################################################################
@@ -473,7 +494,65 @@ def create_experiment_dir(
 
 
 ######################################################################
-####################### Driver Functions #############################
+################ Checkpoint Related Functions ########################
+######################################################################
+
+
+def load_model_checkpoint(
+    load_checkpoint_dir: pathlib.Path,
+    model: torch.nn.Module,
+    optimizer: torch.optim.Optimizer,
+) -> Tuple[int, torch.nn.Module, torch.optim.Optimizer]:
+    """Loads the optimizer state dict and model state dict from the load_checkpoint_dir
+    into the passed model and optimizer. Searches for the most recent checkpoint to
+    load from
+
+    Args:
+        load_checkpoint_dir (pathlib.Path):
+            The base checkpoint directory to load from
+        model (torch.nn.Module):
+            The model to load the checkpoint weights into
+        optimizer (torch.optim.Optimizer):
+            The optimizer to load the checkpoint weigths into
+
+    Returns:
+        Tuple[int, torch.nn.Module, torch.optim.Optimizer]:
+            The checkpoint step, model with state_dict loaded and
+            optimizer with state_dict loaded
+
+    """
+    logger.info(f"Loading model and optimizer checkpoint from {load_checkpoint_dir}")
+    checkpoint_files = list(
+        filter(
+            lambda path: re.search(r"iter_(?P<iter_no>\d+)\.pt", path.name) is not None,
+            load_checkpoint_dir.glob("*.pt"),
+        )
+    )
+    assert len(checkpoint_files) > 0, "No checkpoints found in directory"
+    checkpoint_files = sorted(
+        checkpoint_files,
+        key=lambda path: int(
+            re.search(r"iter_(?P<iter_no>\d+)\.pt", path.name).group("iter_no")
+        ),
+    )
+    latest_checkpoint_path = checkpoint_files[-1]
+    checkpoint_step = int(
+        re.search(r"iter_(?P<iter_no>\d+)\.pt", latest_checkpoint_path.name).group(
+            "iter_no"
+        )
+    )
+
+    state_dict = torch.load(latest_checkpoint_path)
+    model.load_state_dict(state_dict["model"], strict=True)
+    optimizer.load_state_dict(state_dict["optimizer"])
+    logger.info(
+        f"Loading model and optimizer checkpoints done. Loaded from {latest_checkpoint_path}"
+    )
+    return checkpoint_step, model, optimizer
+
+
+######################################################################
+######################## Driver Functions ############################
 ######################################################################
 
 
@@ -498,7 +577,7 @@ def train(
     checkpoint_every: int = 1000,
     log_every: int = 10,
     device: int = -1,
-) -> None:
+) -> pathlib.Path:
     """Trains a [Bert style](https://arxiv.org/pdf/1810.04805.pdf)
     (transformer encoder only) model for MLM Task
 
@@ -549,6 +628,9 @@ def train(
         device (int, optional):
             Which GPU to run on (-1 for CPU). Defaults to -1.
 
+    Returns:
+        pathlib.Path: The final experiment directory
+
     """
     device = (
         torch.device("cuda", device)
@@ -587,9 +669,6 @@ def train(
             "checkpoint_every": checkpoint_every,
         }
         exp_dir = create_experiment_dir(checkpoint_dir, all_arguments)
-        tb_dir = exp_dir / "tb_dir"
-        assert tb_dir.exists()
-        summary_writer = SummaryWriter(log_dir=tb_dir)
         logger.info(f"Experiment Directory created at {exp_dir}")
     else:
         logger.info("Loading from Experiment Directory")
@@ -612,10 +691,14 @@ def train(
         num_heads = hparams.get("num_heads", num_heads)
         # Training Params
         batch_size = hparams.get("batch_size", batch_size)
-        num_iterations = hparams.get("num_iterations", num_iterations)
+        _num_iterations = hparams.get("num_iterations", num_iterations)
+        num_iterations = max(num_iterations, _num_iterations)
         checkpoint_every = hparams.get("checkpoint_every", checkpoint_every)
         exp_dir = load_checkpoint_dir
-
+    # Tensorboard writer
+    tb_dir = exp_dir / "tb_dir"
+    assert tb_dir.exists()
+    summary_writer = SummaryWriter(log_dir=tb_dir)
     ################################
     ###### Create Datasets #########
     ################################
@@ -653,44 +736,19 @@ def train(
     ################################
     start_step = 1
     if load_checkpoint_dir is not None:
-        logger.info(
-            f"Loading model and optimizer checkpoint from {load_checkpoint_dir}"
+        checkpoint_step, model, optimizer = load_model_checkpoint(
+            load_checkpoint_dir, model, optimizer
         )
-        checkpoint_files = list(
-            filter(
-                lambda path: re.search(r"iter_(?P<iter_no>\d+)\.pt", path.name)
-                is not None,
-                load_checkpoint_dir.glob("*.pt"),
-            )
-        )
-        assert len(checkpoint_files) > 0, "No checkpoints found in directory"
-        checkpoint_files = sorted(
-            checkpoint_files,
-            key=lambda path: int(
-                re.search(r"iter_(?P<iter_no>\d+)\.pt", path.name).group("iter_no")
-            ),
-        )
-        latest_checkpoint_path = checkpoint_files[-1]
-        start_step = (
-            int(
-                re.search(
-                    r"iter_(?P<iter_no>\d+)\.pt", latest_checkpoint_path.name
-                ).group("iter_no")
-            )
-            + 1
-        )
-        state_dict = torch.load(latest_checkpoint_path)
-        model.load_state_dict(state_dict["model"], strict=True)
-        optimizer.load_state_dict(state_dict["optimizer"])
-        logger.info(
-            f"Loading model and optimizer checkpoints done. Loaded from {latest_checkpoint_path}"
-        )
+        start_step = checkpoint_step + 1
+
     ################################
     ####### The Training Loop ######
     ################################
     model.train()
     losses = []
     for step, batch in enumerate(data_iterator, start=start_step):
+        if step >= num_iterations:
+            break
         optimizer.zero_grad()
         # Move the tensors to device
         for key, value in batch.items():
@@ -714,8 +772,18 @@ def train(
             logger.info(
                 "Saved model to {0}".format((exp_dir / f"checkpoint.iter_{step}.pt"))
             )
-        if step == num_iterations:
-            break
+    # Save the last checkpoint if not saved yet
+    if step % checkpoint_every != 0:
+        state_dict = {
+            "model": model.state_dict(),
+            "optimizer": optimizer.state_dict(),
+        }
+        torch.save(obj=state_dict, f=str(exp_dir / f"checkpoint.iter_{step}.pt"))
+        logger.info(
+            "Saved model to {0}".format((exp_dir / f"checkpoint.iter_{step}.pt"))
+        )
+
+    return exp_dir
 
 
 if __name__ == "__main__":
