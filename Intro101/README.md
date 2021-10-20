@@ -134,13 +134,13 @@ The parameters are explained in more details in the docstring of `train`.
 ## References
 > <a id="1">[1]</a> 
 [Vaswani, Asish et al. Attention is all you need. 
-In Proceedings of the 31st International Conference on Neural Information Processing Systems (NIPS'17)](https://arxiv.org/pdf/1706.03762.pdf)
+_In Proceedings of the 31st International Conference on Neural Information Processing Systems (NIPS'17)_](https://arxiv.org/pdf/1706.03762.pdf)
 >
 > <a id="2">[2]</a>
-[Devlin, Jacob et al. BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding. In Proceedings of the 2019 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies (NAACL-HLT'19)](https://aclanthology.org/N19-1423.pdf)
+[Devlin, Jacob et al. BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding. _In Proceedings of the 2019 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies (NAACL-HLT'19)_](https://aclanthology.org/N19-1423.pdf)
 >
 > <a id="3">[3]</a>
-[Liu, Yinhan et al. RoBERTa: A Robustly Optimized BERT Pretraining Approach. ArXiv abs/1907.11692 (2019)](https://arxiv.org/pdf/1907.11692.pdf)
+[Liu, Yinhan et al. RoBERTa: A Robustly Optimized BERT Pretraining Approach. _ArXiv abs/1907.11692 (2019)_](https://arxiv.org/pdf/1907.11692.pdf)
 
 ---------
 
