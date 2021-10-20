@@ -60,7 +60,7 @@ The main idea behind the MLM task is to get the model to fill in the blanks base
 
 > In the beautiful season of ____ the ____ shed their leaves. 
 
-Given the left context `season` and the right context `shed their leaves`, one can guess that the blanks are `Autumn` and `trees` respectively. This is exactly what we want the model to do: utilize both the left and right context to be to fill in blanks.
+Given the left context `season` and the right context `shed their leaves`, one can guess that the blanks are `Autumn` and `trees` respectively. This is exactly what we want the model to do: utilize both the left and right context to fill in blanks.
 
 In order to do that, we do the following:
 
