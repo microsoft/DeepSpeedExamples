@@ -182,8 +182,10 @@ This will create the DeepSpeed training engine based on the previously instantia
 
 Next we want to update our training-loop to use the new model engine with the following changes:
 
+* `model.to(device)` can be removed
+  * DeepSpeed will be careful on when to move the model to GPU to reduce GPU memory usage (e.g., converts to half on CPU then moves to GPU)
 * `optimizer.zero_grad()` can be removed
-  * The DeepSpeed engine will do this for you at the right time.
+  * DeepSpeed will do this for you at the right time.
 * Replace `loss.backward()` with `model.backward(loss)`
   * There are several cases where the engine will properly scale the loss when using certain features (e.g., fp16, gradient-accumulation).
 * Replace `optimizer.step()` with `model.step()`

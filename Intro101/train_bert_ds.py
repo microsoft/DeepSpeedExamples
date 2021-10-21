@@ -1,3 +1,7 @@
+"""
+Modified version of train_bert.py that adds DeepSpeed
+"""
+
 import datetime
 import json
 import pathlib
@@ -14,6 +18,7 @@ import pytz
 import sh
 import torch
 import torch.nn as nn
+import deepspeed
 from torch.utils.data import DataLoader, Dataset
 from torch.utils.tensorboard import SummaryWriter
 from transformers import AutoTokenizer, PreTrainedTokenizer, PreTrainedTokenizerFast
@@ -723,22 +728,40 @@ def train(
         h_dim=h_dim,
         dropout=dropout,
     )
-    model = model.to(device)
     logger.info("Model Creation Done")
     ################################
-    ###### Create Optimizer #######
+    ###### DeepSpeed engine ########
     ################################
-    logger.info("Creating Optimizer")
-    optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
-    logger.info("Optimizer Creation Done")
+    logger.info("Creating DeepSpeed engine")
+    ds_config = {
+      "train_micro_batch_size_per_gpu": batch_size,
+      "optimizer": {
+          "type": "Adam",
+          "params": {
+              "lr": 1e-4
+          }
+      },
+      "fp16": {
+          "enabled": True
+      },
+      "zero_optimization": {
+          "stage": 1,
+          "offload_optimizer": {
+             "device": "cpu"
+          }
+      }
+    }
+    model, _, _, _ = deepspeed.initialize(model=model, 
+                                          model_parameters=model.parameters(), 
+                                          config=ds_config)
+    logger.info("DeepSpeed engine created")
     ################################
     #### Load Model checkpoint #####
     ################################
     start_step = 1
     if load_checkpoint_dir is not None:
-        checkpoint_step, model, optimizer = load_model_checkpoint(
-            load_checkpoint_dir, model, optimizer
-        )
+        _, client_state = model.load_checkpoint(load_dir=load_checkpoint_dir)
+        checkpoint_step = client_state['checkpoint_step']
         start_step = checkpoint_step + 1
 
     ################################
@@ -750,38 +773,29 @@ def train(
     for step, batch in enumerate(data_iterator, start=start_step):
         if step >= num_iterations:
             break
-        optimizer.zero_grad()
         # Move the tensors to device
         for key, value in batch.items():
             batch[key] = value.to(device)
         # Forward pass
         loss = model(**batch)
         # Backward pass
-        loss.backward()
+        model.backward(loss)
         # Optimizer Step
-        optimizer.step()
+        model.step()
         losses.append(loss.item())
         if step % log_every == 0:
             logger.info("Loss: {0:.4f}".format(np.mean(losses)))
             summary_writer.add_scalar(f"Train/loss", np.mean(losses), step)
         if step % checkpoint_every == 0:
-            state_dict = {
-                "model": model.state_dict(),
-                "optimizer": optimizer.state_dict(),
-            }
-            torch.save(obj=state_dict, f=str(exp_dir / f"checkpoint.iter_{step}.pt"))
+            model.save_checkpoint(save_dir=exp_dir, client_state={'checkpoint_step': step})
             logger.info(
-                "Saved model to {0}".format((exp_dir / f"checkpoint.iter_{step}.pt"))
+                "Saved model to {0}".format(exp_dir)
             )
     # Save the last checkpoint if not saved yet
     if step % checkpoint_every != 0:
-        state_dict = {
-            "model": model.state_dict(),
-            "optimizer": optimizer.state_dict(),
-        }
-        torch.save(obj=state_dict, f=str(exp_dir / f"checkpoint.iter_{step}.pt"))
+        model.save_checkpoint(save_dir=exp_dir, client_state={'checkpoint_step': step})
         logger.info(
-            "Saved model to {0}".format((exp_dir / f"checkpoint.iter_{step}.pt"))
+            "Saved model to {0}".format(exp_dir)
         )
 
     return exp_dir
