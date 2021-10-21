@@ -2,6 +2,23 @@
 
 In this tutorial, we will create and train a Transformer encoder on the Masked Language Modeling (MLM) task. Then we will show the changes necessary to integrate Deepspeed, and show some of the advantages of doing so.
 
+Table of contents
+=================
+
+<!--toc-start-->
+  * [(1) Training a Transformer Encoder (BERT / Roberta) model for MLM](#1-training-a-transformer-encoder-bert--roberta-model-for-mlm)
+    * [1.0 Some Good Practices](#10-some-good-practices)
+    * [1.1 The Masked Language Modeling Task](#11-the-masked-language-modeling-task)
+    * [1.2 Creating a Transformer model](#12-creating-a-transformer-model)
+    * [1.3 Training the Model](#13-training-the-model)
+  * [(2) Integrating DeepSpeed For More Efficient Training](#2-integrating-deepspeed-for-more-efficient-training)
+    * [2.0 Core DeepSpeed Code Changes](#20-core-deepspeed-code-changes)
+    * [2.1 Launching Training](#21-launching-training)
+    * [2.2 Mixed Precision Training (fp16)](#22-mixed-precision-training-fp16)
+    * [2.3 Zero Redundancy Optimizer (ZeRO)](#23-zero-redundancy-optimizer-zero)
+  * [References](#references)
+<!--toc-end-->
+
 ## 1. Training a Transformer Encoder (BERT / Roberta) model for MLM
 
 ### 1.0 Some Good Practices
@@ -189,7 +206,7 @@ _, client_state = model.load_checkpoint(load_dir=load_checkpoint_dir)
 checkpoint_step = client_state['checkpoint_step']
 ```
 
-## 2.1 Launching training
+## 2.1 Launching Training
 
 We are now ready to launch our training! As a convenience, DeepSpeed provides its own launcher that is seamlessly compatible with internal clusters at MSFT (e.g., ITP). You can now try running your model on your available GPU(s) with the command below. By default this will attempt to run data-parallel training across all available GPUs on the current machine + any external machines listed in your `/job/hostfile`. Please read [more details about the DeepSpeed launcher](https://www.deepspeed.ai/getting-started/#launching-deepspeed-training) on our website.
 
