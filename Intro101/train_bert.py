@@ -725,6 +725,7 @@ def train(
     )
     model = model.to(device)
     logger.info("Model Creation Done")
+    logger.info(f"Total number of model parameters: {sum([p.numel() for p in model.parameters()]):,d}")
     ################################
     ###### Create Optimizer #######
     ################################
