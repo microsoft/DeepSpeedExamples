@@ -1,6 +1,6 @@
-# Training an Masked Language Model with PyTorch and Deepspeed
+# Training a Masked Language Model with PyTorch and DeepSpeed
 
-In this tutorial, we will create and train a Transformer encoder on the Masked Language Modeling (MLM) task. Then we will show the changes necessary to integrate Deepspeed, and show some of the advantages of doing so.
+In this tutorial, we will create and train a Transformer encoder on the Masked Language Modeling (MLM) task. Then we will show the changes necessary to integrate DeepSpeed, and show some of the advantages of doing so.
 
 Table of contents
 =================
