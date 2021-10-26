@@ -507,15 +507,12 @@ def train(forward_step_func, model, optimizer, lr_scheduler,
             save_checkpoint(iteration, model, optimizer, lr_scheduler)
 
         # Evaluation
-        # XXX temporarily disabled for ZeRO-3
-        """
         if args.eval_interval and iteration % args.eval_interval == 0 and \
            args.do_valid:
             prefix = 'iteration {}'.format(iteration)
             evaluate_and_print_results(prefix, forward_step_func,
                                        valid_data_iterator, model,
                                        iteration, False)
-        """
 
         if args.exit_interval and iteration % args.exit_interval == 0:
             torch.distributed.barrier()
