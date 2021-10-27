@@ -637,11 +637,7 @@ def train(
         pathlib.Path: The final experiment directory
 
     """
-    device = (
-        torch.device("cuda", local_rank)
-        if (local_rank > -1) and torch.cuda.is_available()
-        else torch.device("cpu")
-    )
+
     ################################
     ###### Create Exp. Dir #########
     ################################
@@ -745,15 +741,19 @@ def train(
           "enabled": True
       },
       "zero_optimization": {
-          "stage": 1,
-          "offload_optimizer": {
-             "device": "cpu"
-          }
+          "stage": 0,
       }
     }
     model, _, _, _ = deepspeed.initialize(model=model, 
                                           model_parameters=model.parameters(), 
                                           config=ds_config)
+    
+    from deepspeed.comm import get_local_rank
+    device = (
+        torch.device("cuda", get_local_rank())
+        if (get_local_rank() > -1) and torch.cuda.is_available()
+        else torch.device("cpu")
+    )
     logger.info("DeepSpeed engine created")
     ################################
     #### Load Model checkpoint #####
