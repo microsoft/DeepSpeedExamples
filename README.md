@@ -4,6 +4,8 @@ This repo contains example models that use [DeepSpeed](https://github.com/micros
 
 # Note on Megatron examples
 
+NOTE: We plan to deprecate/stop updating the following 3 Megatron-LM snapshots, and switch to use this [fork](https://github.com/microsoft/Megatron-DeepSpeed) as the only showcase of DeepSpeed features applied to Megatron-LM. However, currently the Megatron-DeepSpeed fork still has some limitations. For example, we do not have support for ZeRO-1/2/3, it's not integrated and tested in the fork. (We do have PP + ZeRO-1 but that's essentially it) We will keep you updated about this migration process.
+
 Megatron-LM : This is a fairly old snapshot of Megatron-LM , and we have been using it show case the earlier features of DeepSpeed. This does not contain ZeRO-3 or 3D parallelism.
 
 Megatron-LM-v1.1.5-3D_parallelism: This is a relatively new Megatron (Oct 2020), but before Megatron started supporting 3D parallelism. We ported this version to showcase how to use 3D parallelism inside DeepSpeed with Megatron.
