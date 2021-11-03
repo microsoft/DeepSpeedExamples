@@ -15,13 +15,14 @@ print(
     "***************** Creating model in RANK ({0}) with WORLD_SIZE = {1} *****************"
     .format(local_rank,
             world_size))
-
+import pdb;pdb.set_trace()
 generator = pipeline('text-generation',
                      model='EleutherAI/gpt-neo-2.7B',
                      device=local_rank)
 generator.model = deepspeed.init_inference(generator.model,
                                            mp_size=world_size,
                                            dtype=torch.float,
-                                           replace_method='auto')
+                                           replace_method='auto',
+                                           replace_with_kernel_inject=True)
 string = generator("DeepSpeed is", do_sample=True, min_length=50)
 print(string)
