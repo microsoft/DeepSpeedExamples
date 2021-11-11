@@ -16,7 +16,7 @@ The training uses 1 node with 16 Nvidia V100 GPUs, fp32, max_train_batch_size = 
 
 ## Throughput Comparsion
 
-The table below shows the throughput (samples per second) comparsion. The corresponding train micro batch size per GPU (mbs or tmbspg) and ZeRO stage used to achieve the throughput value is also shown in the parentheses. Assume the strategy users would usein the handtuning process is to start from `mbs = 1` and increase mbs by 2 each time until running out of GPU memory.
+The table below shows the throughput (samples per second) comparsion. The corresponding train micro batch size per GPU (mbs or tmbspg) and ZeRO stage used to achieve the throughput value is also shown in the parentheses. Assume the strategy users would use in the handtuning process is to start from `mbs = 1` and increase mbs by 2 each time until running out of GPU memory.
  - `baseline` is the vanila Hugging Face (HF) without DeepSpeed (DS) and mbs is hand-tuned.
  - `HF + DS hand-tuned` is HF with DS, and mbs is hand-tuned while other DS configuration uses default values.
  - `HF + DS autotuning` is HF with DS, and the DS configuration selected from autotuning.

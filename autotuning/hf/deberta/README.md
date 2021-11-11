@@ -16,16 +16,16 @@ The training use fp16 and runs on 1 node with 16 Nvidia V100 GPUs. The autotunin
 
 ## Throughput Comparsion
 
-The table below shows the throughput (samples per second) comparsion. The corresponding train micro batch size per GPU (mbs or tmbspg) and ZeRO stage used to achieve the throughput value is also shown in the parentheses. Assume the strategy users would usein the handtuning process is to start from `mbs = 1` and increase mbs by 2 each time until running out of GPU memory.
+The table below shows the throughput (samples per second) comparsion. The corresponding train micro batch size per GPU (mbs or tmbspg) and ZeRO stage used to achieve the throughput value is also shown in the parentheses. Assume the strategy users would use in the handtuning process is to start from `mbs = 1` and increase mbs by 2 each time until running out of GPU memory.
  - `baseline` is the vanila Hugging Face (HF) without DeepSpeed (DS) and mbs is hand-tuned.
  - `HF + DS hand-tuned` is HF with DS, and mbs is hand-tuned while other DS configuration uses default values.
  - `HF + DS autotuning` is HF with DS, and the DS configuration selected from autotuning.
 
+Notation: Hugging Face (HF), DeepSpeed (DS), ZeRO stage (z), graident accumulation steps (gas), train micro batch size per GPU (mbs or tmbspg), reduce_bucket_size (rbs), allgather_bucket_size (abs).
+
 | Model name | baseline (vanila HF) | HF + DS hand-tuned                | HF + DS autotuning (fast-mode) |
 | ---------- | -------------------- | --------------------------------- | ------------------------------ |
 | DeBERTa    | Not runnable         | 140.587 (z = 1, gas = 1 mbs = 8), | 162.395  (z1_gas1_tmbspg11)    |
-
-Notation: Hugging Face (HF), DeepSpeed (DS), ZeRO stage (z), graident accumulation steps (gas), train micro batch size per GPU (mbs or tmbspg), reduce_bucket_size (rbs), allgather_bucket_size (abs).
 
 ## Detailed `HF + DS autotuning` Result Summary
 
