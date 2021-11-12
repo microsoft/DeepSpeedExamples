@@ -27,6 +27,17 @@ Each model folder has a `test_tune.sh` script:
 
 The training runs on 1 node with 16 Nvidia V100 GPUs. The autotuning uses the same hardware resource as the training. The HF packages below are used.
 
+HF examples require installing the transformers package from source.
+
+```bash
+    git clone https://github.com/huggingface/transformers.git
+    cd transformers
+    pip install .
+```
+datasets can be installed by `pip install datasets`
+
+Below are the versions used in this test.
+
 - transformers (4.12.0.dev0)
 - datasets (1.11.0)
 
