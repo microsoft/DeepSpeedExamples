@@ -17,7 +17,6 @@ then
     --model_name_or_path $MODEL_NAME \
     --task_name $TASK_NAME \
     --do_train \
-    --do_eval \
     --max_seq_length 128 \
     --per_device_train_batch_size $PER_DEVICE_TRAIN_BATCH_SIZE \
     --learning_rate 2e-5 \
@@ -33,7 +32,6 @@ then
     --model_name_or_path $MODEL_NAME \
     --task_name $TASK_NAME \
     --do_train \
-    --do_eval \
     --max_seq_length 128 \
     --per_device_train_batch_size $PER_DEVICE_TRAIN_BATCH_SIZE \
     --learning_rate 2e-5 \
@@ -48,7 +46,6 @@ then
     --model_name_or_path $MODEL_NAME \
     --task_name $TASK_NAME \
     --do_train \
-    --do_eval \
     --max_seq_length 128 \
     --per_device_train_batch_size $PER_DEVICE_TRAIN_BATCH_SIZE \
     --learning_rate 2e-5 \
@@ -63,7 +60,6 @@ then
     --model_name_or_path $MODEL_NAME \
     --task_name $TASK_NAME \
     --do_train \
-    --do_eval \
     --max_seq_length 128 \
     --per_device_train_batch_size $PER_DEVICE_TRAIN_BATCH_SIZE \
     --learning_rate 2e-5 \
@@ -78,7 +74,6 @@ then
     --model_name_or_path $MODEL_NAME \
     --task_name $TASK_NAME \
     --do_train \
-    --do_eval \
     --max_seq_length 128 \
     --per_device_train_batch_size $PER_DEVICE_TRAIN_BATCH_SIZE \
     --learning_rate 2e-5 \
@@ -89,11 +84,10 @@ then
     --max_steps $MAX_STEPS
 elif [ ${TEST} == "tune" ]
 then
-    deepspeed --autotuning run --num_nodes=$NNODES $HF_PATH/transformers/examples/pytorch/text-classification/run_glue.py --deepspeed ../dsconfigs/ds_config_tune.json \
+    deepspeed --autotuning run --num_nodes=$NNODES $HF_PATH/transformers/examples/pytorch/text-classification/run_glue.py --deepspeed ./ds_config_tune.json \
     --model_name_or_path $MODEL_NAME \
     --task_name $TASK_NAME \
     --do_train \
-    --do_eval \
     --max_seq_length 128 \
     --per_device_train_batch_size $PER_DEVICE_TRAIN_BATCH_SIZE \
     --learning_rate 2e-5 \
@@ -108,7 +102,6 @@ then
     --model_name_or_path $MODEL_NAME \
     --task_name $TASK_NAME \
     --do_train \
-    --do_eval \
     --max_seq_length 128 \
     --per_device_train_batch_size $PER_DEVICE_TRAIN_BATCH_SIZE \
     --learning_rate 2e-5 \

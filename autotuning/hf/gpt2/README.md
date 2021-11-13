@@ -11,7 +11,7 @@ Refer to [GPT-2/GPT and causal language modeling](https://github.com/huggingface
 
 ## Environment
 
-The training use fp16 and runs on 1 node with 16 Nvidia V100 GPUs. The autotuning uses the same hardware resource as the training. `max_train_batch_size` is set to 512.
+The training use fp16 and runs on 1 node with 16 Nvidia V100 GPUs. The autotuning uses the same hardware resource as the training. `max_train_batch_size` is not defined.
 The HF packages below are used.
 
 HF examples require installing the `transformers` package from source:
@@ -37,7 +37,7 @@ Notation: Hugging Face (HF), DeepSpeed (DS), ZeRO stage (z), gradient accumulati
 
 | Model name | baseline (vanila HF) | HF + DS hand-tuned       | HF + DS autotuning (fast-mode) |
 | ---------- | -------------------- | ------------------------ | ------------------------------ |
-| GPT2       | 284.142 (mbs = 8)    | 397.827 (z = 1, mbs = 8) | 431.586 (z1_gas1_tmbspg14)     |
+| GPT2       | 284.142 (mbs = 8)    | 397.827 (z = 1, mbs = 8) | 431.586 (z1_gas1_tmbspg15)     |
 
 
 ## Detailed `HF + DS autotuning` Result Summary

@@ -9,7 +9,7 @@ This model has the following configuration:
 
 ## Environment
 
-The training uses 1 node with 16 Nvidia V100 GPUs, fp32, max_train_batch_size = 4096. The autotuning uses the same hardware resource as the training.
+The training uses 1 node with 16 Nvidia V100 GPUs, fp32, max_train_batch_size = 4096. The autotuning uses the same hardware resource as the training. `"max_train_batch_size"` is set to `4096`.
 The HF packages below are used.
 
 HF examples require installing the `transformers` package from source:
@@ -37,6 +37,8 @@ Notation: Hugging Face (HF), DeepSpeed (DS), ZeRO stage (z), gradient accumulati
 | ---------- | ----------------------------- | ------------------------------------ | ------------------------------ |
 | DistilBERT | 5161.902 (gas = 1, mbs = 256) | 5305.067 (z = 0, gas = 1 mbs = 256), | 5305.067 (z0_gas1_tmbspg256)   |
 
+3700.296
+
 ## Detailed `HF + DS autotuning` Result Summary
 
 Note that the performance metric used in autotuning is calculated using the timings captured within DeepSpeed forward, backward, and step functions. The sum of these timings is less than the actual training step latency, thus the throughput metric values used by autotuning would be higher than the end-to-end throughput in training.
@@ -54,3 +56,14 @@ Note that the performance metric used in autotuning is calculated using the timi
 | global       |              11 |         5759.96 | z0_gas1_tmbspg256 |
 
 Tuning completed in 0:10:45.085016. Total number of experiments: 11.
+
+
+| tuning_space | num_experiments | best_metric_val | best_exp_name      |
+| :----------- | --------------: | --------------: | :----------------- |
+| z0           |               7 |         5759.98 | z0_gas22_tmbspg179 |
+| z1           |               2 |         5543.49 | z1_gas1_tmbspg269  |
+| z2           |               2 |         5044.88 | z2_gas15_tmbspg269 |
+| z3           |               2 |         4627.63 | z3_gas1_tmbspg269  |
+| global       |              13 |         5759.98 | z0_gas22_tmbspg179 |
+
+Tuning completed in 0:25:44.502148. Total number of experiments: 13.

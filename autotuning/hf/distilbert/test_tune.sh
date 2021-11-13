@@ -1,7 +1,7 @@
 TASK_NAME=mnli
 MODEL_NAME=distilbert-base-uncased
 HF_PATH=~/projects
-PER_DEVICE_TRAIN_BATCH_SIZE=256
+PER_DEVICE_TRAIN_BATCH_SIZE=64
 MAX_TRAIN_BATCH_SIZE=4096
 NEPOCHS=1
 NGPUS=16
@@ -88,7 +88,7 @@ then
     --save_strategy "no"
 elif [ ${TEST} == "tune" ]
 then
-    deepspeed --autotuning tune --num_nodes=$NNODES --num_gpus=$NGPUS $HF_PATH/transformers/examples/pytorch/text-classification/run_glue.py --deepspeed ./ds_config_tune.json \
+    deepspeed --autotuning run --num_nodes=$NNODES --num_gpus=$NGPUS $HF_PATH/transformers/examples/pytorch/text-classification/run_glue.py --deepspeed ./ds_config_tune.json \
     --model_name_or_path $MODEL_NAME \
     --task_name $TASK_NAME \
     --do_train \

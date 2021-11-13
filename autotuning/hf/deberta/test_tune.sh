@@ -15,7 +15,7 @@ then
     python -m torch.distributed.launch --nproc_per_node=$NGPUS $HF_PATH/transformers/examples/pytorch/text-classification/run_glue.py \
     --model_name_or_path $MODEL_NAME \
     --task_name $TASK_NAME \
-    --do_train --do_eval \
+    --do_train \
     --fp16 \
     --max_seq_length 256 \
     --per_device_train_batch_size $PER_DEVICE_TRAIN_BATCH_SIZE \
@@ -31,7 +31,7 @@ then
     deepspeed --num_nodes=$NNODES --num_gpus=$NGPUS $HF_PATH/transformers/examples/pytorch/text-classification/run_glue.py --deepspeed ../dsconfigs/ds_config_fp16_z0.json\
     --model_name_or_path $MODEL_NAME \
     --task_name $TASK_NAME \
-    --do_train --do_eval \
+    --do_train \
     --fp16 \
     --max_seq_length 256 \
     --per_device_train_batch_size $PER_DEVICE_TRAIN_BATCH_SIZE \
@@ -48,7 +48,7 @@ then
     deepspeed --num_nodes=$NNODES --num_gpus=$NGPUS $HF_PATH/transformers/examples/pytorch/text-classification/run_glue.py --deepspeed ../dsconfigs/ds_config_fp16_z1.json\
     --model_name_or_path $MODEL_NAME \
     --task_name $TASK_NAME \
-    --do_train --do_eval \
+    --do_train \
     --fp16 \
     --max_seq_length 256 \
     --per_device_train_batch_size $PER_DEVICE_TRAIN_BATCH_SIZE \
@@ -64,7 +64,7 @@ then
     deepspeed --num_nodes=$NNODES --num_gpus=$NGPUS $HF_PATH/transformers/examples/pytorch/text-classification/run_glue.py --deepspeed ../dsconfigs/ds_config_fp16_z2.json\
     --model_name_or_path $MODEL_NAME \
     --task_name $TASK_NAME \
-    --do_train --do_eval \
+    --do_train \
     --fp16 \
     --max_seq_length 256 \
     --per_device_train_batch_size $PER_DEVICE_TRAIN_BATCH_SIZE \
@@ -80,7 +80,7 @@ then
     deepspeed --num_nodes=$NNODES --num_gpus=$NGPUS $HF_PATH/transformers/examples/pytorch/text-classification/run_glue.py --deepspeed ../dsconfigs/ds_config_fp16_z3.json\
     --model_name_or_path $MODEL_NAME \
     --task_name $TASK_NAME \
-    --do_train --do_eval \
+    --do_train \
     --fp16 \
     --max_seq_length 256 \
     --per_device_train_batch_size $PER_DEVICE_TRAIN_BATCH_SIZE \
@@ -96,7 +96,7 @@ then
     deepspeed --autotuning run --num_nodes=$NNODES --num_gpus=$NGPUS $HF_PATH/transformers/examples/pytorch/text-classification/run_glue.py --deepspeed ./ds_config_fp16_tune.json\
     --model_name_or_path $MODEL_NAME \
     --task_name $TASK_NAME \
-    --do_train --do_eval \
+    --do_train \
     --fp16 \
     --max_seq_length 256 \
     --per_device_train_batch_size $PER_DEVICE_TRAIN_BATCH_SIZE \
@@ -112,7 +112,7 @@ then
     python -m torch.distributed.launch --nproc_per_node=$NGPUS $HF_PATH/transformers/examples/pytorch/text-classification/run_glue.py \
     --model_name_or_path $MODEL_NAME \
     --task_name $TASK_NAME \
-    --do_train --do_eval \
+    --do_train \
     --fp16 \
     --max_seq_length 256 \
     --per_device_train_batch_size $PER_DEVICE_TRAIN_BATCH_SIZE \
