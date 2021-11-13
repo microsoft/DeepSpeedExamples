@@ -2,7 +2,6 @@ MODEL_NAME=microsoft/deberta-v2-xxlarge
 TASK_NAME=mnli
 PER_DEVICE_TRAIN_BATCH_SIZE=1
 HF_PATH=~/projects
-
 NEPOCHS=1
 NGPUS=16
 NNODES=1

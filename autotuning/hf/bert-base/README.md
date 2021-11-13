@@ -9,7 +9,7 @@ This model has the following configuration:
 
 ## Environment
 
-The training use fp32 and runs on 1 node with 16 Nvidia V100 GPUs. The autotuning uses the same hardware resource as the training. `max_train_batch_size` is not defined.
+The training use fp32 and runs on 1 node with 16 Nvidia V100 GPUs. The autotuning uses the same hardware resource as the training. `max_train_batch_size` is set to `4096`.
 The HF packages below are used.
 
 HF examples require installing the `transformers` package from source:
@@ -36,22 +36,23 @@ Notation: Hugging Face (HF), DeepSpeed (DS), ZeRO stage (z), gradient accumulati
 
 | Model name | baseline (vanila HF)          | HF + DS handtuned                    | HF + DS autotuning           |
 | ---------- | ----------------------------- | ------------------------------------ | ---------------------------- |
-| BERT-base  | 2502.236 (gas = 1, mbs = 128) | 2523.684 (z = 0, gas = 1, mbs = 128) | 2682.849 (z0_gas1_tmbspg220) |
+| BERT-base  | 2502.236 (gas = 1, mbs = 128) | 2523.684 (z = 0, gas = 1, mbs = 128) | 2736.561 (z0_gas1_tmbspg235) |
 
 ## Detailed `HF + DS autotuning` Result Summary
 
 Note that the performance metric used in autotuning is calculated using the timings captured within DeepSpeed forward, backward, and step functions. The sum of these timings is less than the actual training step latency, thus the throughput metric values used by autotuning would be higher than the end-to-end throughput in training.
 
-- Fast-mode Autotuning time: 43 mins
-- Number of experiments: 35
-- Throughput Improvement over baseline: 1.07x
+- Fast-mode Autotuning time: 35 mins
+- Number of experiments: 34
+- Throughput Improvement over baseline: 1.09x
+
 
 | tuning_space | num_experiments | best_metric_val | best_exp_name     |
 | :----------- | --------------: | --------------: | :---------------- |
-| z0           |               9 |         2880.94 | z0_gas1_tmbspg220 |
-| z1           |               7 |         2861.43 | z1_gas1_tmbspg220 |
-| z2           |               8 |         2714.96 | z2_gas1_tmbspg240 |
-| z3           |              11 |         2420.78 | z3_gas1_tmbspg240 |
-| global       |              35 |         2880.94 | z0_gas1_tmbspg220 |
+| z0           |               9 |         2930.18 | z0_gas1_tmbspg235 |
+| z1           |               7 |         2930.17 | z1_gas1_tmbspg235 |
+| z2           |               8 |         2744.16 | z2_gas1_tmbspg235 |
+| z3           |              10 |         2479.47 | z3_gas1_tmbspg238 |
+| global       |              34 |         2930.18 | z0_gas1_tmbspg235 |
 
-Tuning completed in 0:43:33.853567. Total number of experiments: 35.
+Tuning completed in 0:34:41.842250. Total number of experiments: 34.

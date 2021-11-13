@@ -9,7 +9,7 @@ This model has the following configuration:
 Refer to [DeBERTa: Decoding-enhanced BERT with Disentangled Attention](https://github.com/microsoft/DeBERTa).
 ## Environment
 
-The training use fp16 and runs on 1 node with 16 Nvidia V100 GPUs. The autotuning uses the same hardware resource as the training.
+The training use fp16 and runs on 1 node with 16 Nvidia V100 GPUs. The autotuning uses the same hardware resource as the training. `max_train_batch_size` is not defined.
 The HF packages below are used.
 
 HF examples require installing the `transformers` package from source:

@@ -11,7 +11,7 @@ Refer to [GPT-2/GPT and causal language modeling](https://github.com/huggingface
 
 ## Environment
 
-The training use fp16 and runs on 1 node with 16 Nvidia V100 GPUs. The autotuning uses the same hardware resource as the training. `max_train_batch_size` is not defined.
+The training use fp16 and runs on 1 node with 16 Nvidia V100 GPUs. The autotuning uses the same hardware resource as the training. `max_train_batch_size` is set to 512.
 The HF packages below are used.
 
 HF examples require installing the `transformers` package from source:
