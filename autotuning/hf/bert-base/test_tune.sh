@@ -20,7 +20,7 @@ then
     --do_eval \
     --max_seq_length 128 \
     --per_device_train_batch_size $PER_DEVICE_TRAIN_BATCH_SIZE \
-    # --learning_rate 2e-5 \
+    --learning_rate 2e-5 \
     --num_train_epochs $NEPOCHS \
     --output_dir ${OUTPUT_DIR}_b${PER_DEVICE_TRAIN_BATCH_SIZE}_0 \
     --overwrite_output_dir \

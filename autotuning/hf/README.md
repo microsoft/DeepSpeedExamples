@@ -15,7 +15,7 @@ This showcases the [autotuning](https://github.com/microsoft/DeepSpeed/tree/mast
 
 Each model folder has a `test_tune.sh` script:
 
-- `./test_tune.sh tune` tunes the model training and and then runs it using the selected tuned DeepSpeed configuration.
+- `./test_tune.sh tune` tunes the model training and then runs it using the selected tuned DeepSpeed configuration.
 - `./test_tune.sh 0` runs the model using HF without DeepSpeed.
 - `./test_tune.sh z0` runs the model using HF + DS with ZeRO optimization disabled.
 - `./test_tune.sh z1` runs the model using HF + DS with ZeRO optimization stage 1.
@@ -25,30 +25,30 @@ Each model folder has a `test_tune.sh` script:
 
 ## Testing Environment
 
-The training runs on 1 node with 16 Nvidia V100 GPUs. The autotuning uses the same hardware resource as the training. The HF packages below are used.
+The training runs on 1 node with 16 Nvidia V100 GPUs. The autotuning uses the same hardware resource as the training.
+The HF packages below are used.
 
-HF examples require installing the transformers package from source.
-
+HF examples require installing the `transformers` package from source:
 ```bash
     git clone https://github.com/huggingface/transformers.git
     cd transformers
     pip install .
 ```
-datasets can be installed by `pip install datasets`
+The `datasets` package can be installed by `pip install datasets`
 
 Below are the versions used in this test.
 
-- transformers (4.12.0.dev0)
+- transformers (4.12.0)
 - datasets (1.11.0)
 
-## Throughput Comparsion
+## Throughput Comparison
 
-The table below shows the throughput (samples per second) comparsion. The corresponding train micro batch size per GPU (mbs or tmbspg) and ZeRO stage used to achieve the throughput value is also shown in the parentheses. Assume the strategy users would use in the handtuning process is to start from `mbs = 1` and increase mbs by 2 each time until running out of GPU memory.
+The table below shows the throughput (samples per second) comparison. The corresponding train micro-batch size per GPU (mbs or tmbspg) and ZeRO stage used to achieve the throughput value is also shown in the parentheses. Assume the strategy users would use in the handtuning process is to start from `mbs = 1` and increase mbs by 2 each time until running out of GPU memory.
  - `baseline` is the vanila HF without DeepSpeed (DS) and mbs is hand-tuned.
  - `HF + DS hand-tuned` is HF with DS, and mbs is hand-tuned while other DS configuration uses default values.
- - `HF + DS autotuning` is HF with DS, and the DS configuration selected from autotuning.
+ - `HF + DS autotuning` is HF with DS, and the DS configuration is selected from autotuning.
 
-Notation: Hugging Face (HF), DeepSpeed (DS), ZeRO stage (z), graident accumulation steps (gas), train micro batch size per GPU (mbs or tmbspg).
+Notation: Hugging Face (HF), DeepSpeed (DS), ZeRO stage (z), gradient accumulation steps (gas), train micro-batch size per GPU (mbs or tmbspg).
 
 | Model   name | num_params |     baseline (vanila HF)      |          HF + DS hand-tuned          | HF + DS autotuning (fast-mode) | throughput improvement over baseline | autotuning time (mins) | number of experiments |
 | :----------: | :--------: | :---------------------------: | :----------------------------------: | :----------------------------: | :----------------------------------: | :--------------------: | :-------------------: |

@@ -10,18 +10,28 @@ Refer to [DeBERTa: Decoding-enhanced BERT with Disentangled Attention](https://g
 ## Environment
 
 The training use fp16 and runs on 1 node with 16 Nvidia V100 GPUs. The autotuning uses the same hardware resource as the training.
+The HF packages below are used.
 
-- transformers (4.12.0.dev0)
+HF examples require installing the `transformers` package from source:
+```bash
+    git clone https://github.com/huggingface/transformers.git
+    cd transformers
+    pip install .
+```
+The `datasets` package can be installed by `pip install datasets`
+
+Below are the versions used in this test.
+
+- transformers (4.12.0)
 - datasets (1.11.0)
+## Throughput Comparison
 
-## Throughput Comparsion
-
-The table below shows the throughput (samples per second) comparsion. The corresponding train micro batch size per GPU (mbs or tmbspg) and ZeRO stage used to achieve the throughput value is also shown in the parentheses. Assume the strategy users would use in the handtuning process is to start from `mbs = 1` and increase mbs by 2 each time until running out of GPU memory.
- - `baseline` is the vanila Hugging Face (HF) without DeepSpeed (DS) and mbs is hand-tuned.
+The table below shows the throughput (samples per second) comparison. The corresponding train micro-batch size per GPU (mbs or tmbspg) and ZeRO stage used to achieve the throughput value is also shown in the parentheses. Assume the strategy users would use in the handtuning process is to start from `mbs = 1` and increase mbs by 2 each time until running out of GPU memory.
+ - `baseline` is the vanila HF without DeepSpeed (DS) and mbs is hand-tuned.
  - `HF + DS hand-tuned` is HF with DS, and mbs is hand-tuned while other DS configuration uses default values.
- - `HF + DS autotuning` is HF with DS, and the DS configuration selected from autotuning.
+ - `HF + DS autotuning` is HF with DS, and the DS configuration is selected from autotuning.
 
-Notation: Hugging Face (HF), DeepSpeed (DS), ZeRO stage (z), graident accumulation steps (gas), train micro batch size per GPU (mbs or tmbspg), reduce_bucket_size (rbs), allgather_bucket_size (abs).
+Notation: Hugging Face (HF), DeepSpeed (DS), ZeRO stage (z), gradient accumulation steps (gas), train micro-batch size per GPU (mbs or tmbspg), reduce_bucket_size (rbs), allgather_bucket_size (abs).
 
 | Model name | baseline (vanila HF) | HF + DS hand-tuned                | HF + DS autotuning (fast-mode) |
 | ---------- | -------------------- | --------------------------------- | ------------------------------ |
@@ -29,7 +39,7 @@ Notation: Hugging Face (HF), DeepSpeed (DS), ZeRO stage (z), graident accumulati
 
 ## Detailed `HF + DS autotuning` Result Summary
 
-Note that the performance metric used in autotuning is calculated using the timings captured within DeepSpeed foward, backward and step functions. The sum of these timings is less than the actual training step latency, thus the throughput metric values used by autotuning would be higher than the end-to-end throughput in training.
+Note that the performance metric used in autotuning is calculated using the timings captured within DeepSpeed forward, backward, and step functions. The sum of these timings is less than the actual training step latency, thus the throughput metric values used by autotuning would be higher than the end-to-end throughput in training.
 ### Fast-mode
 - Autotuning time: 40 mins
 - Number of experiments: 12
@@ -45,7 +55,7 @@ Note that the performance metric used in autotuning is calculated using the timi
 
 Tuning completed in 0:39:25.253998. Total number of experiments: 12.
 
-### Full-mode
+### Full-mode ("fast" set to false)
 - Autotuning time: 1 hr 2 mins
 - Number of experiments: 24
 - Throughput Improvement over baseline: Inf
