@@ -1,4 +1,4 @@
-OOO=increase3em5_second
+OOO=increase3em5_MAYDEL
 MASTER_PORT=12401
 GPU=1
 
@@ -41,6 +41,7 @@ echo $evalbsz
 CUDA_VISIBLE_DEVICES=$GPU nohup python -m torch.distributed.launch \
   --master_port $PORT \
   --nproc_per_node 1 run_glue.py \
+  --task_name ${TSK} \
   --model_name_or_path bert-base-uncased \
   --max_seq_length 128 \
   --do_train \
