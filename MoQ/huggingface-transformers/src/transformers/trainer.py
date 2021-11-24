@@ -28,6 +28,8 @@ import warnings
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Tuple, Union
 
+eval_print = True
+#eval_print = False
 
 # Integrations must be imported before ML frameworks:
 from .integrations import (  # isort: split
@@ -102,6 +104,8 @@ from .trainer_utils import (
 )
 from .training_args import ParallelMode, TrainingArguments
 from .utils import logging
+
+import matplotlib.pyplot as plt
 
 
 _is_native_amp_available = False
@@ -307,8 +311,10 @@ class Trainer:
                 "Passing a `model_init` is incompatible with providing the `optimizers` argument."
                 "You should subclass `Trainer` and override the `create_optimizer_and_scheduler` method."
             )
-        default_callbacks = DEFAULT_CALLBACKS + get_reporting_integration_callbacks(self.args.report_to)
-        callbacks = default_callbacks if callbacks is None else default_callbacks + callbacks
+        ## default_callbacks = DEFAULT_CALLBACKS + get_reporting_integration_callbacks(self.args.report_to)
+        ## callbacks = default_callbacks if callbacks is None else default_callbacks + callbacks
+        default_callbacks = DEFAULT_CALLBACKS
+        callbacks = default_callbacks
         self.callback_handler = CallbackHandler(
             callbacks, self.model, self.tokenizer, self.optimizer, self.lr_scheduler
         )
@@ -1397,9 +1403,9 @@ class Trainer:
 
         if self.use_amp:
             with autocast():
-                loss = self.compute_loss(model, inputs)
+                loss = self.compute_loss(model, inputs, train_time=True)
         else:
-            loss = self.compute_loss(model, inputs)
+            loss = self.compute_loss(model, inputs, train_time=True)
 
         if self.args.n_gpu > 1:
             loss = loss.mean()  # mean() to average on multi-gpu parallel training
@@ -1419,7 +1425,7 @@ class Trainer:
 
         return loss.detach()
 
-    def compute_loss(self, model, inputs, return_outputs=False):
+    def compute_loss(self, model, inputs, return_outputs=False, ll=11, train_time=False): # ll is layer index
         """
         How the loss is computed by Trainer. By default, all models return the loss in the first element.
 
@@ -1429,19 +1435,52 @@ class Trainer:
             labels = inputs.pop("labels")
         else:
             labels = None
-        outputs = model(**inputs)
+        tmp = model(**inputs)
+        outputs, min_exit_point, num_flips = tmp[0][ll], tmp[1], tmp[2]
+        outputs = tmp[0][min_exit_point]
+        #print(f'COMPUTE LOSS TRUE LABEL = {labels}')
+        
+        regul = 1 # 0.1
+        layer_weights = range(1,13)
+        #layer_weights = [1]*11 # equal weights
+        slw = sum(layer_weights)
+        if slw == 0:
+            slw = 1
+        layer_weights = [regul*l/slw for l in layer_weights]
+        print(f'training layer weights = {layer_weights}, and length of layer weights = {len(layer_weights)}')
+
         # Save past state if it exists
         # TODO: this needs to be fixed and made cleaner later.
         if self.args.past_index >= 0:
             self._past = outputs[self.args.past_index]
 
-        if labels is not None:
-            loss = self.label_smoother(outputs, labels)
-        else:
-            # We don't use .loss here since the model may return tuples instead of ModelOutput.
-            loss = outputs["loss"] if isinstance(outputs, dict) else outputs[0]
+        if not train_time: # True: #self.args.do_eval:
+            if labels is not None:
+                loss = self.label_smoother(outputs, labels)
+            else:
+                # We don't use .loss here since the model may return tuples instead of ModelOutput.
+                loss = outputs["loss"] if isinstance(outputs, dict) else outputs[0]
+        else: # False: # self.args.do_train:
+            loss = 0
+            for i in range(12):
+                if labels is not None:
+                    loss += layer_weights[i]*self.label_smoother(outputs[i], labels) # weighting policy for each layer
+                else:
+                    # We don't use .loss here since the model may return tuples instead of ModelOutput.
+                    ''' # for analysis in logs
+                    slog = nn.functional.softmax(tmp[0][i]["logits"]) if isinstance(outputs, dict) else None
+                    if slog is not None:
+                        diff = slog[0][0]-slog[0][1]
+                        #print("******************************")
+                        #print(slog)
+                        #print("----------------")
+                        #print(diff)
+                        loss += layer_weights[i]*tmp[0][i]["loss"] + torch.abs(diff) if isinstance(outputs, dict) else layer_weights[i]*tmp[0][i][0]
+                    else:
+                    '''    
+                    loss += layer_weights[i]*tmp[0][i]["loss"] if isinstance(outputs, dict) else layer_weights[i]*tmp[0][i][0]
 
-        return (loss, outputs) if return_outputs else loss
+        return (loss, outputs, min_exit_point, num_flips) if return_outputs else loss
 
     def is_local_process_zero(self) -> bool:
         """
@@ -1741,8 +1780,15 @@ class Trainer:
 
         self.callback_handler.eval_dataloader = dataloader
 
+        distro = [0]*12
+        flip_distro = [0]*12
         for step, inputs in enumerate(dataloader):
-            loss, logits, labels = self.prediction_step(model, inputs, prediction_loss_only, ignore_keys=ignore_keys)
+            # print(self.prediction_step(model, inputs, prediction_loss_only, ignore_keys=ignore_keys, ll=11))
+            loss, logits, labels, min_exit_point, num_flips = self.prediction_step(model, inputs, prediction_loss_only, ignore_keys=ignore_keys, ll=11)
+            distro[min_exit_point] += 1
+            flip_distro[num_flips] += 1
+            if eval_print:
+                print(f'TRAINER.PY prediction_loop: step = {step}, loss = {loss}, logits = {logits}')
             if loss is not None:
                 losses = loss.repeat(batch_size)
                 losses_host = losses if losses_host is None else torch.cat((losses_host, losses), dim=0)
@@ -1789,6 +1835,21 @@ class Trainer:
             if not key.startswith(f"{metric_key_prefix}_"):
                 metrics[f"{metric_key_prefix}_{key}"] = metrics.pop(key)
 
+        if eval_print:
+            sample_count = np.sum(distro)
+            print(f'SUM: {sample_count}')
+            distro = [d/np.sum(distro) for d in distro]
+            print(f'DISTRO: {distro}')
+            flip_distro = [d/np.sum(flip_distro) for d in flip_distro]
+            print(f'FLIP DISTRO: {flip_distro}')
+            pred_depth = np.sum([(i+1)*distro[i] for i in range(len(distro))])
+            print(f'AVG PRED DEPTH: {pred_depth}')
+            plt.bar(np.arange(1, 13), distro)
+            plt.xlabel('Bert Base Exit Layer')
+            plt.ylabel('Fraction of Samples')
+            plt.title(f'Highest Label Disagreement Point: {sample_count} Samples')
+            plt.savefig(f'fig_{sample_count}.png')
+
         return PredictionOutput(predictions=preds, label_ids=label_ids, metrics=metrics)
 
     def _gather_and_numpify(self, tensors, name):
@@ -1810,7 +1871,7 @@ class Trainer:
         model: nn.Module,
         inputs: Dict[str, Union[torch.Tensor, Any]],
         prediction_loss_only: bool,
-        ignore_keys: Optional[List[str]] = None,
+        ignore_keys: Optional[List[str]] = None, ll = 11 # layer index
     ) -> Tuple[Optional[float], Optional[torch.Tensor], Optional[torch.Tensor]]:
         """
         Perform an evaluation step on :obj:`model` using obj:`inputs`.
@@ -1845,10 +1906,12 @@ class Trainer:
 
         with torch.no_grad():
             if has_labels:
-                loss, outputs = self.compute_loss(model, inputs, return_outputs=True)
+                loss, outputs, min_exit_point, num_flips = self.compute_loss(model, inputs, return_outputs=True, ll=ll)
                 loss = loss.mean().detach()
                 if isinstance(outputs, dict):
                     logits = tuple(v for k, v in outputs.items() if k not in ignore_keys + ["loss"])
+                    if eval_print:
+                        print(f'TRAINER.PY prediction_step logits = {logits}')
                 else:
                     logits = outputs[1:]
             else:
@@ -1867,7 +1930,8 @@ class Trainer:
                     self._past = outputs[self.args.past_index - 1]
 
         if prediction_loss_only:
-            return (loss, None, None)
+            #return (loss, None, None, min_exit_point, num_flips) # uncomment for gpt2
+            return (loss, None, None) # niranjan commented for gpt2
 
         logits = nested_detach(logits)
         if len(logits) == 1:
@@ -1880,7 +1944,9 @@ class Trainer:
         else:
             labels = None
 
-        return (loss, logits, labels)
+        if eval_print:
+            print(f'PREDICTION STEP TRUE LABEL = {labels}')
+        return (loss, logits, labels, min_exit_point, num_flips)
 
     def floating_point_ops(self, inputs: Dict[str, Union[torch.Tensor, Any]]):
         """

@@ -5,7 +5,7 @@
       "initial_scale_power": 16,
       "enabled": true
     },
-    "quantize_training": {
+    "_quantize_training": {
       "enabled": true,
       "quantize_verbose": true,
       "quantizer_kernel": true,
@@ -13,13 +13,27 @@
         "q_type": "symmetric"
       },
       "quantize_bits": {
-        "start_bits": 16,
-        "target_bits": 8
+        "start_bits": 8,
+        "target_bits": 2
       },
       "quantize_schedule": {
-        "quantize_period": 400,
+        "quantize_period": 4,
         "schedule_offset": 0
       },
-      "quantize_groups": 8
+      "quantize_groups": 8,
+      "eigenvalue": {
+        "enabled": true,
+        "verbose": true,
+        "max_iter": 10,
+        "tol": 1e-2,
+        "stability": 0,
+        "gas_boundary_resolution": 1,
+        "layer_name": "bert.encoder.layer",
+        "layer_num": 12
+      }
+    },
+    "tensorboard": {
+      "enabled": true,
+      "output_path": "./two_bit_tensorboard"
     }
 }

@@ -27,6 +27,12 @@ import torch.utils.checkpoint
 from torch import nn
 from torch.nn import CrossEntropyLoss, MSELoss
 
+import time
+import numpy as np
+
+eval_print = True # dynamic depth debug and analysis flag
+#eval_print = False
+
 from ...activations import ACT2FN
 from ...file_utils import (
     ModelOutput,
@@ -426,7 +432,7 @@ class BertOutput(nn.Module):
         return hidden_states
 
 
-class BertLayer(nn.Module):
+class BertLayer(nn.Module): # intermediate, cls
     def __init__(self, config):
         super().__init__()
         self.chunk_size_feed_forward = config.chunk_size_feed_forward
@@ -450,6 +456,9 @@ class BertLayer(nn.Module):
         past_key_value=None,
         output_attentions=False,
     ):
+        torch.cuda.synchronize()
+        tic = time.time()
+        
         # decoder uni-directional self-attention cached key/values tuple is at positions 1,2
         self_attn_past_key_value = past_key_value[:2] if past_key_value is not None else None
         self_attention_outputs = self.attention(
@@ -501,6 +510,10 @@ class BertLayer(nn.Module):
         if self.is_decoder:
             outputs = outputs + (present_key_value,)
 
+        torch.cuda.synchronize()
+        toc = time.time()
+        ###print(f'latency of bert single layer = {toc-tic}')
+
         return outputs
 
     def feed_forward_chunk(self, attention_output):
@@ -533,6 +546,7 @@ class BertEncoder(nn.Module):
         all_cross_attentions = () if output_attentions and self.config.add_cross_attention else None
 
         next_decoder_cache = () if use_cache else None
+        hs = [-1]*len(self.layer)
         for i, layer_module in enumerate(self.layer):
             if output_hidden_states:
                 all_hidden_states = all_hidden_states + (hidden_states,)
@@ -574,7 +588,8 @@ class BertEncoder(nn.Module):
                     output_attentions,
                 )
 
-            hidden_states = layer_outputs[0]
+            hidden_states = layer_outputs[0] # comment for decoupling
+            hs[i] = layer_outputs[0]
             if use_cache:
                 next_decoder_cache += (layer_outputs[-1],)
             if output_attentions:
@@ -597,13 +612,23 @@ class BertEncoder(nn.Module):
                 ]
                 if v is not None
             )
-        return BaseModelOutputWithPastAndCrossAttentions(
-            last_hidden_state=hidden_states,
-            past_key_values=next_decoder_cache,
-            hidden_states=all_hidden_states,
-            attentions=all_self_attentions,
-            cross_attentions=all_cross_attentions,
-        )
+        tmp = [-1]*len(hs)
+        for i in range(len(hs)):
+            tmp[i] = BaseModelOutputWithPastAndCrossAttentions(
+                last_hidden_state=hs[i],
+                past_key_values=next_decoder_cache,
+                hidden_states=all_hidden_states,
+                attentions=all_self_attentions,
+                cross_attentions=all_cross_attentions,
+            )
+        return tmp # return all layers instead of just last
+        # return BaseModelOutputWithPastAndCrossAttentions(
+        #     last_hidden_state=hidden_states,
+        #     past_key_values=next_decoder_cache,
+        #     hidden_states=all_hidden_states,
+        #     attentions=all_self_attentions,
+        #     cross_attentions=all_cross_attentions,
+        # )
 
 
 class BertPooler(nn.Module):
@@ -862,7 +887,7 @@ class BertModel(BertPreTrainedModel):
     @add_start_docstrings_to_model_forward(BERT_INPUTS_DOCSTRING.format("batch_size, sequence_length"))
     @add_code_sample_docstrings(
         tokenizer_class=_TOKENIZER_FOR_DOC,
-        checkpoint="bert-base-uncased",
+        checkpoint="bert-base-uncased", # "bert-large-uncased", #
         output_type=BaseModelOutputWithPoolingAndCrossAttentions,
         config_class=_CONFIG_FOR_DOC,
     )
@@ -975,20 +1000,37 @@ class BertModel(BertPreTrainedModel):
             output_hidden_states=output_hidden_states,
             return_dict=return_dict,
         )
-        sequence_output = encoder_outputs[0]
-        pooled_output = self.pooler(sequence_output) if self.pooler is not None else None
+        # below 2 lines are the original, ie, last layer only
+        #sequence_output = encoder_outputs[0]
+        #pooled_output = self.pooler(sequence_output) if self.pooler is not None else None
+        sequence_output = [-1]*self.config.num_hidden_layers
+        pooled_output = [-1]*self.config.num_hidden_layers
+        for i in range(self.config.num_hidden_layers):
+            sequence_output[i] = encoder_outputs[i][0]
+            pooled_output[i] = self.pooler(sequence_output[i]) if self.pooler is not None else None
 
         if not return_dict:
             return (sequence_output, pooled_output) + encoder_outputs[1:]
 
-        return BaseModelOutputWithPoolingAndCrossAttentions(
-            last_hidden_state=sequence_output,
-            pooler_output=pooled_output,
-            past_key_values=encoder_outputs.past_key_values,
-            hidden_states=encoder_outputs.hidden_states,
-            attentions=encoder_outputs.attentions,
-            cross_attentions=encoder_outputs.cross_attentions,
+        tmp = [-1]*self.config.num_hidden_layers
+        for i in range(self.config.num_hidden_layers):
+            tmp[i] = BaseModelOutputWithPoolingAndCrossAttentions(
+            last_hidden_state=sequence_output[i],
+            pooler_output=pooled_output[i],
+            past_key_values=encoder_outputs[i].past_key_values,
+            hidden_states=encoder_outputs[i].hidden_states,
+            attentions=encoder_outputs[i].attentions,
+            cross_attentions=encoder_outputs[i].cross_attentions,
         )
+        return tmp
+        # return BaseModelOutputWithPoolingAndCrossAttentions(
+        #     last_hidden_state=sequence_output,
+        #     pooler_output=pooled_output,
+        #     past_key_values=encoder_outputs.past_key_values,
+        #     hidden_states=encoder_outputs.hidden_states,
+        #     attentions=encoder_outputs.attentions,
+        #     cross_attentions=encoder_outputs.cross_attentions,
+        # )
 
 
 @add_start_docstrings(
@@ -1461,7 +1503,9 @@ class BertForSequenceClassification(BertPreTrainedModel):
 
         self.bert = BertModel(config)
         self.dropout = nn.Dropout(config.hidden_dropout_prob)
-        self.classifier = nn.Linear(config.hidden_size, config.num_labels)
+        #self.classifier = nn.Linear(config.hidden_size, config.num_labels) # original
+
+        self.classifier_sep = nn.ModuleList([nn.Linear(config.hidden_size, config.num_labels) for _ in range(config.num_hidden_layers)])
 
         self.init_weights()
 
@@ -1493,6 +1537,8 @@ class BertForSequenceClassification(BertPreTrainedModel):
         """
         return_dict = return_dict if return_dict is not None else self.config.use_return_dict
 
+        torch.cuda.synchronize()
+        tic = time.time()
         outputs = self.bert(
             input_ids,
             attention_mask=attention_mask,
@@ -1504,34 +1550,117 @@ class BertForSequenceClassification(BertPreTrainedModel):
             output_hidden_states=output_hidden_states,
             return_dict=return_dict,
         )
+        torch.cuda.synchronize()
+        toc = time.time()
+        ###print(f'latency of bert {config.num_hidden_layers} layers = {toc-tic}')
 
-        pooled_output = outputs[1]
+        pooled_output = [-1]*self.config.num_hidden_layers
+        logits = [-1]*self.config.num_hidden_layers
+        loss = [-1]*self.config.num_hidden_layers
+        tmp = [-1]*self.config.num_hidden_layers
+        for i in range(self.config.num_hidden_layers):
+            pooled_output[i] = outputs[i][1]
 
-        pooled_output = self.dropout(pooled_output)
-        logits = self.classifier(pooled_output)
+            pooled_output[i] = self.dropout(pooled_output[i])
+            
+            if i == 0:
+                torch.cuda.synchronize()
+                tic = time.time()
+            #logits[i] = self.classifier(pooled_output[i])
+            logits[i] = self.classifier_sep[i](pooled_output[i])
+            if i == 0:
+                torch.cuda.synchronize()
+                toc = time.time()
+                ###print(f'latency of classifier = {toc-tic}')
 
-        loss = None
-        if labels is not None:
-            if self.num_labels == 1:
-                #  We are doing regression
-                if logits.dtype != labels.dtype:
-                    labels = labels.half()
-                loss_fct = MSELoss()
-                loss = loss_fct(logits.view(-1), labels.view(-1))
+            loss[i] = None
+            if labels is not None:
+                if self.num_labels == 1:
+                    #  We are doing regression
+                    if logits.dtype != labels.dtype:
+                        labels = labels.half()
+                    loss_fct = MSELoss()
+                    loss = loss_fct(logits.view(-1), labels.view(-1))
+                else:
+                    loss_fct = CrossEntropyLoss()
+                    loss[i] = loss_fct(logits[i].view(-1, self.num_labels), labels.view(-1))
+
+            if not return_dict:
+                output = (logits,) + outputs[2:]
+                return ((loss,) + output) if loss is not None else output
+
+            tmp[i] = SequenceClassifierOutput(
+                loss=loss[i],
+                logits=logits[i],
+                hidden_states=outputs[i].hidden_states,
+                attentions=outputs[i].attentions,
+            )
+        ## dynamic depth thresholding rules for inference below
+        idx = [-1]*self.config.num_hidden_layers
+        rat = []
+        diff = []
+        s = [[-1]*2]*self.config.num_hidden_layers
+        for i in range(self.config.num_hidden_layers):
+            idx[i] = np.argmax(logits[i].cpu().detach().numpy())
+            slog = nn.functional.softmax(logits[i]).cpu().detach().numpy()[0]
+            if eval_print:
+                print(f'layer {i}, logits = {logits[i].cpu().detach().numpy()}, softmax = {slog}, ratio = {(slog[0] * 1) + (slog[1] * 2)}, diff = {slog[0]-slog[1]}')
+            rat.append((slog[0] * 1) + (slog[1] * 2))
+            diff.append((slog[0]-slog[1]))
+            s[i][0] = slog[0]
+            s[i][1] = slog[1]
+            idx[i] = np.argmax(slog)
+
+        if eval_print:
+            print(idx)
+        pred_exit_point = self.config.num_hidden_layers-1 # predicted exit point
+        thresh = 11 # change from 0 to 11 to obtain pareto curve
+        thresh_count = 0
+        for i in range(0, self.config.num_hidden_layers-1):
+            #if (rat[i]-rat[i-1] > rat[i-1]-rat[i-2] and rat[i]>rat[i-1]>rat[i-2]) or (rat[i]-rat[i-1] < rat[i-1]-rat[i-2] and rat[i]<rat[i-1]<rat[i-2]):
+            #if np.absolute(diff[i])>np.absolute(diff[i-1]): #  and np.sign(rat[i-1]-0.5)!=np.sign(rat[i]-0.5): # can try varying the threshold
+            #if (rat[i]-rat[i-1] > rat[i-1]-rat[i-2] and rat[i-2]>1.5): # or (rat[i]-rat[i-1] < rat[i-1]-rat[i-2] and rat[i]<rat[i-1]<rat[i-2]): # latest
+            #if (s[i][1]-s[i-1][1] > s[i-1][1]-s[i-2][1] and rat[i-2]>1.5): # or (s[i][0]-s[i-1][0] > s[i-1][0]-s[i-2][0] and rat[i-2]<1.5):
+            
+            #if np.sign(diff[i-5])!=np.sign(diff[i-4]) and np.sign(diff[i-4])==np.sign(diff[i-3]) and np.sign(diff[i-3])==np.sign(diff[i-2]) and np.sign(diff[i-2])==np.sign(diff[i-1]) and np.sign(diff[i-1])==np.sign(diff[i]): # np.sign([i-2]-0.5)!=np.sign(rat[i-1]-0.5) and np.sign(rat[i-1]-0.5)==np.sign(rat[i]-0.5):
+            #if np.sign(diff[i-4])!=np.sign(diff[i-3]) and np.sign(diff[i-3])==np.sign(diff[i-2]) and np.sign(diff[i-2])==np.sign(diff[i-1]) and np.sign(diff[i-1])==np.sign(diff[i]): # np.sign([i-2]-0.5)!=np.sign(rat[i-1]-0.5) and np.sign(rat[i-1]-0.5)==np.sign(rat[i]-0.5):
+            
+            if np.sign(diff[i]) == np.sign(diff[i+1]):
+                thresh_count += 1
             else:
-                loss_fct = CrossEntropyLoss()
-                loss = loss_fct(logits.view(-1, self.num_labels), labels.view(-1))
+                thresh_count = 0
+            
+            if thresh_count == thresh:
 
-        if not return_dict:
-            output = (logits,) + outputs[2:]
-            return ((loss,) + output) if loss is not None else output
+            #if np.sign(diff[i-3])==np.sign(diff[i-2]) and np.sign(diff[i-2])==np.sign(diff[i-1]) and np.sign(diff[i-1])==np.sign(diff[i]):
+            #if np.sign(diff[i-3])!=np.sign(diff[i-2]) and np.sign(diff[i-2])==np.sign(diff[i-1]) and np.sign(diff[i-1])==np.sign(diff[i]): # np.sign([i-2]-0.5)!=np.sign(rat[i-1]-0.5) and np.sign(rat[i-1]-0.5)==np.sign(rat[i]-0.5):
+            #if np.absolute(diff[i])>0.2:
+            #if np.sign(diff[i])!=np.sign(diff[i-1]):
+            
+            #if np.sign(diff[i-2])!=np.sign(diff[i-1]) and np.sign(diff[i-1])==np.sign(diff[i]): # np.sign([i-2]-0.5)!=np.sign(rat[i-1]-0.5) and np.sign(rat[i-1]-0.5)==np.sign(rat[i]-0.5):
+            #if np.sign(rat[i-2]-0.5)!=np.sign(rat[i-1]-0.5) and np.sign(rat[i-1]-0.5)==np.sign(rat[i]-0.5) :
+                pred_exit_point = i+1
+                break
 
-        return SequenceClassifierOutput(
-            loss=loss,
-            logits=logits,
-            hidden_states=outputs.hidden_states,
-            attentions=outputs.attentions,
-        )
+        #min_exit_point = np.min(np.where(idx == idx[11])) # min angle
+        #print(np.asarray(np.where(idx[:10] != idx[11])).size == 0)
+        if np.asarray(np.where(idx[:10] != idx[11])).size == 0:
+            min_exit_point = 0
+        else:
+            #min_exit_point = np.max(np.where(idx[:10] != idx[11])) # logits flip angle
+            #min_exit_point = np.min(np.where(idx[:10] == idx[11])) # softmax min flip
+            min_exit_point = np.max(np.where(idx[:10] != idx[11]))+1 # softmax flip
+        if eval_print:
+            print(f'pred_exit_point = {pred_exit_point}')
+            print(f'softmax min_exit_point = {min_exit_point}')
+        
+        num_flips = 0
+        for i in range(1, self.config.num_hidden_layers-1):
+            if idx[i-1] != idx[i]:
+                num_flips += 1
+
+        #pred_exit_point = self.config.num_hidden_layers-1
+        return tmp, pred_exit_point, num_flips # min_exit_point # np.min([min_exit_point+1, 11])
 
 
 @add_start_docstrings(

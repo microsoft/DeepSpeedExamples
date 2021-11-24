@@ -340,16 +340,22 @@ def main():
     if not training_args.do_train:
         import torch
         # loading the model from the MoQ-trained checkpoint
-        sd = torch.load('output/qnli/pytorch_model.bin')
-        model.load_state_dict(sd)
+        #tasks = [data_args.task_name]
+        #sd = torch.load(f'output/sst2/pytorch_model.bin')
+        #sd = torch.load(f'output_increase_allinclusive_3e5_8gpu/{data_args.task_name}/pytorch_model.bin')
+        sd = torch.load(f'increase3em5/{data_args.task_name}/pytorch_model.bin') # successful dynamic depth checkpoints
+        #sd = torch.load(f'output/{data_args.task_name}/pytorch_model.bin')
+        model.load_state_dict(sd) # comment this for bert large
 
+        '''
         import deepspeed
         import deepspeed.module_inject as module_inject
         deepspeed.init_inference(model,
                                  mp_size=1,
                                  dtype=torch.int8,
-                                 replace_method='auto',
-                                 quantization_setting=8)
+                                 replace_method='auto')#,
+                                 #quantization_setting=8)
+        '''
 
     # Preprocessing the datasets
 
@@ -428,6 +434,11 @@ def main():
     # Log a few random samples from the training set:
     for index in random.sample(range(len(train_dataset)), 3):
         logger.info(f"Sample {index} of the training set: {train_dataset[index]}.")
+
+    #with open("myfile.txt", "a") as file1:
+    #    for index in range(len(eval_dataset)):
+    #        file1.write(f"Sample {index} of the eval set: {eval_dataset[index]}.")
+            #logger.info(f"Sample {index} of the eval set: {eval_dataset[index]}.")
 
     # Get the metric function
     if data_args.task_name is not None:
