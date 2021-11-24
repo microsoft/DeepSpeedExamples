@@ -1617,11 +1617,7 @@ class BertForSequenceClassification(BertPreTrainedModel):
         thresh = 11 # change from 0 to 11 to obtain pareto curve
         thresh_count = 0
         for i in range(0, self.config.num_hidden_layers-1):
-            #if (rat[i]-rat[i-1] > rat[i-1]-rat[i-2] and rat[i]>rat[i-1]>rat[i-2]) or (rat[i]-rat[i-1] < rat[i-1]-rat[i-2] and rat[i]<rat[i-1]<rat[i-2]):
             #if np.absolute(diff[i])>np.absolute(diff[i-1]): #  and np.sign(rat[i-1]-0.5)!=np.sign(rat[i]-0.5): # can try varying the threshold
-            #if (rat[i]-rat[i-1] > rat[i-1]-rat[i-2] and rat[i-2]>1.5): # or (rat[i]-rat[i-1] < rat[i-1]-rat[i-2] and rat[i]<rat[i-1]<rat[i-2]): # latest
-            #if (s[i][1]-s[i-1][1] > s[i-1][1]-s[i-2][1] and rat[i-2]>1.5): # or (s[i][0]-s[i-1][0] > s[i-1][0]-s[i-2][0] and rat[i-2]<1.5):
-            
             #if np.sign(diff[i-5])!=np.sign(diff[i-4]) and np.sign(diff[i-4])==np.sign(diff[i-3]) and np.sign(diff[i-3])==np.sign(diff[i-2]) and np.sign(diff[i-2])==np.sign(diff[i-1]) and np.sign(diff[i-1])==np.sign(diff[i]): # np.sign([i-2]-0.5)!=np.sign(rat[i-1]-0.5) and np.sign(rat[i-1]-0.5)==np.sign(rat[i]-0.5):
             #if np.sign(diff[i-4])!=np.sign(diff[i-3]) and np.sign(diff[i-3])==np.sign(diff[i-2]) and np.sign(diff[i-2])==np.sign(diff[i-1]) and np.sign(diff[i-1])==np.sign(diff[i]): # np.sign([i-2]-0.5)!=np.sign(rat[i-1]-0.5) and np.sign(rat[i-1]-0.5)==np.sign(rat[i]-0.5):
             
@@ -1631,14 +1627,8 @@ class BertForSequenceClassification(BertPreTrainedModel):
                 thresh_count = 0
             
             if thresh_count == thresh:
-
             #if np.sign(diff[i-3])==np.sign(diff[i-2]) and np.sign(diff[i-2])==np.sign(diff[i-1]) and np.sign(diff[i-1])==np.sign(diff[i]):
-            #if np.sign(diff[i-3])!=np.sign(diff[i-2]) and np.sign(diff[i-2])==np.sign(diff[i-1]) and np.sign(diff[i-1])==np.sign(diff[i]): # np.sign([i-2]-0.5)!=np.sign(rat[i-1]-0.5) and np.sign(rat[i-1]-0.5)==np.sign(rat[i]-0.5):
             #if np.absolute(diff[i])>0.2:
-            #if np.sign(diff[i])!=np.sign(diff[i-1]):
-            
-            #if np.sign(diff[i-2])!=np.sign(diff[i-1]) and np.sign(diff[i-1])==np.sign(diff[i]): # np.sign([i-2]-0.5)!=np.sign(rat[i-1]-0.5) and np.sign(rat[i-1]-0.5)==np.sign(rat[i]-0.5):
-            #if np.sign(rat[i-2]-0.5)!=np.sign(rat[i-1]-0.5) and np.sign(rat[i-1]-0.5)==np.sign(rat[i]-0.5) :
                 pred_exit_point = i+1
                 break
 
