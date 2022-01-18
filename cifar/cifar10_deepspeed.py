@@ -213,7 +213,7 @@ net = Net()
 def create_moe_param_groups(model):
     from deepspeed.moe.utils import split_params_into_different_moe_groups_for_optimizer
 
-    params_with_weight_decay = {'params': model.parameters(), 'name': 'weight_decay_params'}
+    params_with_weight_decay = {'params': model.parameters(), 'name': 'parameters'}
 
     return split_params_into_different_moe_groups_for_optimizer(params_with_weight_decay)
 
