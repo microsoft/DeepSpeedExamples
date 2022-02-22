@@ -22,7 +22,6 @@ generator.model = deepspeed.init_inference(generator.model,
                                            mp_size=world_size,
                                            dtype=torch.float,
                                            replace_method='auto',
-                                           #injection_policy={gpt2_transformer: ('attention.out_proj','mlp.c_proj')},
                                            replace_with_kernel_inject=True)
 string = generator("DeepSpeed is", do_sample=True, min_length=50)
 print(string)
