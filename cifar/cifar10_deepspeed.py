@@ -177,9 +177,6 @@ import torch.nn.functional as F
 
 args = add_argument()
 
-# if args.moe:
-#     deepspeed.utils.groups.initialize(ep_size=args.ep_world_size)
-
 
 class Net(nn.Module):
     def __init__(self):
@@ -190,29 +187,21 @@ class Net(nn.Module):
         self.fc1 = nn.Linear(16 * 5 * 5, 120)
         self.fc2 = nn.Linear(120, 84)
         if args.moe:
-            assert len(
-                args.num_experts) <= 2, 'Only 1 or 2 MoE layer supported'
-            self.fc3 = nn.Linear(84, 84)
-            self.fc3 = deepspeed.moe.layer.MoE(
-                hidden_size=84,
-                expert=self.fc3,
-                num_experts=args.num_experts[0],
-                ep_size=args.ep_world_size,
-                use_residual=args.mlp_type == 'residual',
-                k=args.top_k,
-                min_capacity=args.min_capacity,
-                noisy_gate_policy=args.noisy_gate_policy)
-            if len(args.num_experts) == 2:
-                self.fc3_pyramid = nn.Linear(84, 84)
-                self.fc3_pyramid = deepspeed.moe.layer.MoE(
-                    hidden_size=84,
-                    expert=self.fc3,
-                    num_experts=args.num_experts[0],
-                    ep_size=args.ep_world_size,
-                    use_residual=args.mlp_type == 'residual',
-                    k=args.top_k,
-                    min_capacity=args.min_capacity,
-                    noisy_gate_policy=args.noisy_gate_policy)
+            fc3 = nn.Linear(84, 84)
+            self.moe_layer_list = []
+            for n_e in args.num_experts:
+                # create moe layers based on the number of experts
+                self.moe_layer_list.append(
+                    deepspeed.moe.layer.MoE(
+                        hidden_size=84,
+                        expert=fc3,
+                        num_experts=n_e,
+                        ep_size=args.ep_world_size,
+                        use_residual=args.mlp_type == 'residual',
+                        k=args.top_k,
+                        min_capacity=args.min_capacity,
+                        noisy_gate_policy=args.noisy_gate_policy))
+            self.moe_layer_list = nn.ModuleList(self.moe_layer_list)
             self.fc4 = nn.Linear(84, 10)
         else:
             self.fc3 = nn.Linear(84, 10)
@@ -224,9 +213,8 @@ class Net(nn.Module):
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
         if args.moe:
-            x, _, _ = self.fc3(x)
-            if len(args.num_experts) == 2:
-                x, _, _ = self.fc3_pyramid(x)
+            for layer in self.moe_layer_list:
+                x, _, _ = layer(x)
             x = self.fc4(x)
         else:
             x = self.fc3(x)
@@ -248,7 +236,6 @@ def create_moe_param_groups(model):
 
 
 parameters = filter(lambda p: p.requires_grad, net.parameters())
-# print(parameters)
 if args.moe_param_group:
     parameters = create_moe_param_groups(net)
 
