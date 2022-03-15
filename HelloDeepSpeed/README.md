@@ -99,7 +99,7 @@ A Transformer model repeatedly applies a (Multi-Headed) Self-Attention block and
 3. The number of Self Attention Heads
 4. The size of the intermediate representation between the FeedForward block
 
-Check out the `create_model` function in [train_bert.py](./train_bert.py) to see how this is done in code. In this example, we create a Roberta model[3](#3)
+Check out the `create_model` function in [train_bert.py](./train_bert.py) to see how this is done in code. In this example, we create a Roberta model [[3](#3)]
 
 ---
 📌 **Note:** You can check out [[1](#1), [2](#2)] as a starting point for better understanding Transformers. Additionally, there are a number of blogs that do a nice deep dive into the workings of these models (eg: [this](https://nlp.seas.harvard.edu/2018/04/03/attention.html), [this](https://jalammar.github.io/illustrated-bert/) and [this](https://jalammar.github.io/illustrated-transformer/)).
