@@ -31,6 +31,11 @@ from transformers.models.roberta.modeling_roberta import (
     RobertaPreTrainedModel,
 )
 
+
+def is_rank_0() -> bool:
+    return int(os.environ.get("RANK", "0")) == 0
+
+
 ######################################################################
 ####################### Logging Functions ############################
 ######################################################################
@@ -481,7 +486,9 @@ def create_experiment_dir(checkpoint_dir: pathlib.Path,
         get_unique_identifier(),
     )
     exp_dir = checkpoint_dir / expname
-    exp_dir.mkdir(exist_ok=True)
+    if not is_rank_0():
+        return exp_dir
+    exp_dir.mkdir(exist_ok=False)
     hparams_file = exp_dir / "hparams.json"
     with hparams_file.open("w") as handle:
         json.dump(obj=all_arguments, fp=handle, indent=2)
@@ -515,7 +522,7 @@ def create_experiment_dir(checkpoint_dir: pathlib.Path,
             level=logging.INFO)
     # Finally create the Tensorboard Dir
     tb_dir = exp_dir / "tb_dir"
-    tb_dir.mkdir(exist_ok=True)
+    tb_dir.mkdir(exist_ok=False)
     return exp_dir
 
 
@@ -737,9 +744,10 @@ def train(
         checkpoint_every = hparams.get("checkpoint_every", checkpoint_every)
         exp_dir = load_checkpoint_dir
     # Tensorboard writer
-    tb_dir = exp_dir / "tb_dir"
-    assert tb_dir.exists()
-    summary_writer = SummaryWriter(log_dir=tb_dir)
+    if is_rank_0():
+        tb_dir = exp_dir / "tb_dir"
+        assert tb_dir.exists()
+        summary_writer = SummaryWriter(log_dir=tb_dir)
     ################################
     ###### Create Datasets #########
     ################################
@@ -780,6 +788,12 @@ def train(
         "fp16": {
             "enabled": True
         },
+        "zero_optimization": {
+            "stage": 1,
+            "offload_optimizer": {
+                "device": "cpu"
+            }
+        }
     }
     model, _, _, _ = deepspeed.initialize(model=model,
                                           model_parameters=model.parameters(),
@@ -820,7 +834,8 @@ def train(
             log_dist("Loss: {0:.4f}".format(np.mean(losses)),
                      ranks=[0],
                      level=logging.INFO)
-            summary_writer.add_scalar(f"Train/loss", np.mean(losses), step)
+            if is_rank_0():
+                summary_writer.add_scalar(f"Train/loss", np.mean(losses), step)
         if step % checkpoint_every == 0:
             model.save_checkpoint(save_dir=exp_dir,
                                   client_state={'checkpoint_step': step})
