@@ -278,7 +278,12 @@ def load_checkpoint(model, optimizer, lr_scheduler, args):
         
     if args.deepspeed:
 
-        checkpoint_name, sd = model.load_checkpoint(args.load, iteration)
+        checkpoint_name, sd = model.load_checkpoint(args.load, iteration,
+                                                    load_optimizer_states=not args.no_load_optim
+                                                                          and not args.finetune,
+                                                    load_lr_scheduler_states=not args.override_lr_scheduler
+                                                                             and not args.finetune,
+                                                    finetune=args.finetune)
 
         if checkpoint_name is None:
             if mpu.get_data_parallel_rank() == 0:

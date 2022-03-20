@@ -209,7 +209,12 @@ def load_checkpoint(model, optimizer, lr_scheduler, load_arg='load'):
         tracker_filename)
 
     if args.deepspeed:
-        checkpoint_name, state_dict = model.load_checkpoint(load_dir)
+        checkpoint_name, state_dict = model.load_checkpoint(load_dir,
+                                                            load_optimizer_states=not args.no_load_optim
+                                                                                  and not args.finetune,
+                                                            load_lr_scheduler_states=not args.override_lr_scheduler
+                                                                                     and not args.finetune,
+                                                            finetune=args.finetune)
 
         if checkpoint_name is None:
             if mpu.get_data_parallel_rank() == 0:
