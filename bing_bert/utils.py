@@ -7,7 +7,7 @@ def get_argument_parser():
 
     # Required_parameter
     parser.add_argument(
-        "--config-file",
+        "--config_file",
         "--cf",
         help="pointer to the configuration file of the experiment",
         type=str,
