@@ -25,6 +25,8 @@ import logging
 import time
 import numpy as np
 import torch
+from pathlib import Path
+from typing import Callable, Dict
 from transformers.models.gpt2.modeling_gpt2 import GPT2Block as gpt2_transformer
 from transformers import (
     CTRLLMHeadModel,
@@ -41,6 +43,25 @@ from transformers import (
     XLNetLMHeadModel,
     XLNetTokenizer,
 )
+
+from transformers.generation_utils import GenerationMixin
+from transformers.modeling_outputs import CausalLMOutputWithCrossAttentions
+
+import tensorrt as trt
+import torch
+from tensorrt import ICudaEngine
+from tensorrt.tensorrt import Logger, Runtime
+from torch.nn import Module
+from transformers import AutoConfig, AutoTokenizer, BatchEncoding, PretrainedConfig, PreTrainedTokenizer, TensorType
+
+from ort_utils import create_model_for_provider, inference_onnx_binding, optimize_onnx
+from pytorch_utils import convert_to_onnx, get_model_size
+from trt_utils import build_engine, load_engine, save_engine
+
+from itertools import chain
+from torch.onnx import export
+from transformers.models.gpt2 import GPT2OnnxConfig
+from transformers.onnx.features import FeaturesManager
 
 
 logging.basicConfig(
@@ -170,6 +191,25 @@ def print_latency(latency_set, title=""):
         print("\tP99 Latency: {0:8.2f} ms".format(p99 * 1000))
         print("\t999 Latency: {0:8.2f} ms".format(p999 * 1000))
 
+class GPTModelWrapper(Module, GenerationMixin):
+    def __init__(
+        self, config: PretrainedConfig, device: torch.device, inference: Callable[[torch.Tensor], torch.Tensor]
+    ):
+        super().__init__()
+        self.config: PretrainedConfig = config
+        self.device: torch.device = device
+        self.inference: Callable[[torch.Tensor], torch.Tensor] = inference
+        self.main_input_name = "input_ids"  # https://github.com/huggingface/transformers/pull/14803
+
+    def prepare_inputs_for_generation(self, input_ids, **kwargs):
+        return {
+            self.main_input_name: input_ids,
+        }
+
+    def forward(self, input_ids, **_):
+        logits = self.inference(input_ids)
+        return CausalLMOutputWithCrossAttentions(logits=logits)
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -193,7 +233,7 @@ def main():
         required=False,
         help="Path to pre-trained model or shortcut name selected in the list: " + ", ".join(MODEL_CLASSES.keys()),
     )
-    
+
     parser.add_argument("--prompt", type=str, default="")
     parser.add_argument("--length", type=int, default=20)
     parser.add_argument("--stop_token", type=str, default=None, help="Token at which text generation is stopped")
@@ -214,7 +254,7 @@ def main():
     parser.add_argument("--padding_text", type=str, default="", help="Deprecated, the use of `--prefix` is preferred.")
     parser.add_argument("--xlm_language", type=str, default="", help="Optional language when used with the XLM model.")
 
-    parser.add_argument("--local_rank", type=int, default=0, help="local rank")  
+    parser.add_argument("--local_rank", type=int, default=0, help="local rank")
     parser.add_argument("--seed", type=int, default=42, help="random seed for initialization")
     parser.add_argument("--no_cuda", action="store_true", help="Avoid using CUDA when available")
     parser.add_argument("--num_return_sequences", type=int, default=1, help="The number of samples to generate.")
@@ -224,6 +264,10 @@ def main():
         help="Whether to use 16-bit (mixed) precision (through NVIDIA apex) instead of 32-bit",
     )
     parser.add_argument('--ds-inference', action="store_true", help="Use deepspeed")
+    parser.add_argument('--ort', action="store_true", help="Use ORT")
+    # parser.add_argument('--ort-cache', action="store_true", help="Use ORT")
+    parser.add_argument('--trt', action="store_true", help="Use TRT")
+    parser.add_argument('--base', action="store_true", help="Use pytorch baseline")
     args = parser.parse_args()
 
     args.device = torch.device("cuda" if torch.cuda.is_available() and not args.no_cuda else "cpu")
@@ -235,7 +279,7 @@ def main():
         args.n_gpu,
         args.fp16,
     )
-    
+
     set_seed(args)
 
     # Initialize the model and tokenizer
@@ -247,23 +291,118 @@ def main():
 
     tokenizer = tokenizer_class.from_pretrained(args.model_name_or_path)
     model = model_class.from_pretrained(args.model_name_or_path)
-    model.cuda(torch.cuda.current_device())
-
-    if args.fp16:
-        model.half()
+    model.eval()
 
     # intialize deepspeed engine
     if args.ds_inference:
+        model.cuda(torch.cuda.current_device())
+
+        if args.fp16:
+            model.half()
+
         import deepspeed.module_inject as module_inject
         import deepspeed
-        injection_policy={gpt2_transformer: 
+        injection_policy={gpt2_transformer:
                           module_inject.replace_policy.HFGPT2LayerPolicy}
-        model = deepspeed.init_inference(model, 
+        model = deepspeed.init_inference(model,
                                          mp_size=1,
                                          dtype=(torch.half if args.fp16 else torch.float),
                                          injection_policy=injection_policy,
                                          replace_with_kernel_inject=True)
         model = model.module
+
+    elif args.ort:
+        ort_model_name = "test-gpt2.onnx"
+        if not Path(ort_model_name).exists():
+            input_ids: BatchEncoding = tokenizer(
+            "Here is some text to encode Hello World", add_special_tokens=True, return_attention_mask=False, return_tensors="pt"
+            )
+            # some inference engines don't support int64 tensor as inputs, we convert all input tensors to int32 type
+            for k, v in input_ids.items():  # type: str, torch.Tensor
+                input_ids[k] = v.type(dtype=torch.int32)
+
+                convert_to_onnx(
+                model_pytorch=model,
+                output_path=ort_model_name,
+                inputs_pytorch=dict(input_ids),
+                quantization=False,
+                var_output_seq=True,  # we inform ONNX export tool that the output shape will vary with the input shape
+            )
+            # model may switch to train mode for some unknown reasons, we force the eval mode.
+        _ = model.eval()
+
+        ort_opt_model_name = "test-gpt2-opt.onnx"
+        if not Path(ort_opt_model_name).exists():
+            num_attention_heads, hidden_size = get_model_size(path=args.model_name_or_path)
+            optimize_onnx(
+                onnx_path=ort_model_name,
+                onnx_optim_model_path= ort_opt_model_name,
+                fp16=True if args.fp16 else False,
+                use_cuda=True,
+                num_attention_heads=num_attention_heads,
+                hidden_size=hidden_size,
+                architecture="gpt2",
+            )
+
+        model_onnx = create_model_for_provider(path=ort_opt_model_name, provider_to_use="CUDAExecutionProvider")
+
+        def inference_onnx_optimized(input_ids: torch.Tensor) -> torch.Tensor:
+            data = {"input_ids": input_ids}
+            return inference_onnx_binding(model_onnx=model_onnx, inputs=data, device="cuda")["output"]
+
+        model = GPTModelWrapper(config=model.config, device=torch.device("cuda"), inference=inference_onnx_optimized)
+    elif args.trt:
+        ort_model_name = "test-gpt2.onnx"
+        if not Path(ort_model_name).exists():
+            input_ids: BatchEncoding = tokenizer(
+            "Here is some text to encode Hello World", add_special_tokens=True, return_attention_mask=False, return_tensors="pt"
+            )
+            # some inference engines don't support int64 tensor as inputs, we convert all input tensors to int32 type
+            for k, v in input_ids.items():  # type: str, torch.Tensor
+                input_ids[k] = v.type(dtype=torch.int32)
+
+                convert_to_onnx(
+                model_pytorch=model,
+                output_path=ort_model_name,
+                inputs_pytorch=dict(input_ids),
+                quantization=False,
+                var_output_seq=True,  # we inform ONNX export tool that the output shape will vary with the input shape
+            )
+            # model may switch to train mode for some unknown reasons, we force the eval mode.
+        _ = model.eval()
+
+        trt_logger: Logger = trt.Logger(trt.Logger.ERROR)
+        runtime: Runtime = trt.Runtime(trt_logger)
+        trt_model_name = "test-gpt2.plan"
+
+        if not Path(trt_model_name).exists():
+            engine: ICudaEngine = build_engine(
+                runtime=runtime,
+                onnx_file_path="test-gpt2.onnx",
+                logger=trt_logger,
+                min_shape=(1, 1),
+                optimal_shape=(1, 128),  # num beam, batch size
+                max_shape=(1, 384),  # num beam, batch size
+                workspace_size=10000 * 1024**2,
+                fp16=True,
+                int8=False,
+            )
+            save_engine(engine, trt_model_name)
+
+        tensorrt_model: Callable[[Dict[str, torch.Tensor]], torch.Tensor] = load_engine(
+            engine_file_path="test-gpt2.plan", runtime=runtime
+        )
+
+        def inference_tensorrt(input_ids: torch.Tensor) -> torch.Tensor:
+            data = {"input_ids": input_ids}
+            return tensorrt_model(data)[0]
+
+        model = GPTModelWrapper(config=model.config, device=torch.device("cuda"), inference=inference_tensorrt)
+    else:
+        model.cuda(torch.cuda.current_device())
+
+        if args.fp16:
+            model.half()
 
     args.length = adjust_length_to_model(args.length, max_sequence_length=model.config.max_position_embeddings)
     logger.info(args)
@@ -293,7 +432,7 @@ def main():
         prefix = args.prefix if args.prefix else args.padding_text
         for ppt in prompt_text:
             eprompt.append(tokenizer.encode(prefix + ppt, add_special_tokens=False, return_tensors="pt"))
-    
+
     latencies = []
     for encoded_prompt, ppt in zip(eprompt, prompt_text):
         encoded_prompt = encoded_prompt.to(args.device)
@@ -302,10 +441,10 @@ def main():
             input_ids = None
         else:
             input_ids = encoded_prompt
-            
+
         torch.cuda.synchronize()
         t0 = time.time()
-        
+
         output_sequences = model.generate(
             input_ids=input_ids,
             max_length=args.length + len(encoded_prompt[0]),
@@ -315,6 +454,7 @@ def main():
             repetition_penalty=args.repetition_penalty,
             do_sample=True,
             num_return_sequences=args.num_return_sequences,
+            use_cache=False,
         )
         torch.cuda.synchronize()
         latencies.append((time.time()-t0) / output_sequences.numel())
