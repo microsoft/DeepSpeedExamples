@@ -25,8 +25,10 @@ import logging
 import time
 import numpy as np
 import torch
+import os
 from transformers.models.gpt2.modeling_gpt2 import GPT2Block as gpt2_transformer
 from transformers import (
+    AutoModelForSeq2SeqLM,
     CTRLLMHeadModel,
     CTRLTokenizer,
     GPT2LMHeadModel,
@@ -42,6 +44,10 @@ from transformers import (
     XLNetTokenizer,
 )
 
+import deepspeed.module_inject as module_inject
+import deepspeed
+from deepspeed.runtime.zero.constants import *
+from transformers.deepspeed import HfDeepSpeedConfig
 
 logging.basicConfig(
     format="%(asctime)s - %(levelname)s - %(name)s -   %(message)s",
@@ -193,7 +199,7 @@ def main():
         required=False,
         help="Path to pre-trained model or shortcut name selected in the list: " + ", ".join(MODEL_CLASSES.keys()),
     )
-    
+
     parser.add_argument("--prompt", type=str, default="")
     parser.add_argument("--length", type=int, default=20)
     parser.add_argument("--stop_token", type=str, default=None, help="Token at which text generation is stopped")
@@ -214,7 +220,7 @@ def main():
     parser.add_argument("--padding_text", type=str, default="", help="Deprecated, the use of `--prefix` is preferred.")
     parser.add_argument("--xlm_language", type=str, default="", help="Optional language when used with the XLM model.")
 
-    parser.add_argument("--local_rank", type=int, default=0, help="local rank")  
+    parser.add_argument("--local_rank", type=int, default=0, help="local rank")
     parser.add_argument("--seed", type=int, default=42, help="random seed for initialization")
     parser.add_argument("--no_cuda", action="store_true", help="Avoid using CUDA when available")
     parser.add_argument("--num_return_sequences", type=int, default=1, help="The number of samples to generate.")
@@ -224,6 +230,8 @@ def main():
         help="Whether to use 16-bit (mixed) precision (through NVIDIA apex) instead of 32-bit",
     )
     parser.add_argument('--ds-inference', action="store_true", help="Use deepspeed")
+    parser.add_argument('--ds-zero-inference', action="store_true", help="Use deepspeed ZeRO")
+    parser.add_argument('--ds_config_path', type=str, default="tmp_config.json", help="path to DeepSpeed ZeRO config")
     args = parser.parse_args()
 
     args.device = torch.device("cuda" if torch.cuda.is_available() and not args.no_cuda else "cpu")
@@ -235,7 +243,7 @@ def main():
         args.n_gpu,
         args.fp16,
     )
-    
+
     set_seed(args)
 
     # Initialize the model and tokenizer
@@ -247,23 +255,46 @@ def main():
 
     tokenizer = tokenizer_class.from_pretrained(args.model_name_or_path)
     model = model_class.from_pretrained(args.model_name_or_path)
-    model.cuda(torch.cuda.current_device())
-
-    if args.fp16:
-        model.half()
 
     # intialize deepspeed engine
     if args.ds_inference:
-        import deepspeed.module_inject as module_inject
-        import deepspeed
-        injection_policy={gpt2_transformer: 
+        model.cuda(torch.cuda.current_device())
+        if args.fp16:
+            model.half()
+
+        injection_policy={gpt2_transformer:
                           module_inject.replace_policy.HFGPT2LayerPolicy}
-        model = deepspeed.init_inference(model, 
+        model = deepspeed.init_inference(model,
                                          mp_size=1,
                                          dtype=(torch.half if args.fp16 else torch.float),
                                          injection_policy=injection_policy,
                                          replace_with_kernel_inject=True)
         model = model.module
+    elif args.ds_zero_inference:
+        ds_config_path = args.ds_config_path
+        assert os.path.exists(ds_config_path), '{ds_config_path} does not exist'
+        import json
+        ds_config = json.load(open(ds_config_path, "r"))
+        dschf = HfDeepSpeedConfig(ds_config)  # keep this object alive
+        model = GPT2LMHeadModel.from_pretrained(args.model_name_or_path)
+
+        def check_zero_ds_config(config):
+            config_zero = config.get(ZERO_OPTIMIZATION, {})
+            stage = config_zero.get(ZERO_OPTIMIZATION_STAGE, None)
+            if stage != ZERO_OPTIMIZATION_WEIGHTS:
+                assert False, "DeepSpeed ZeRO inference is only supported for ZeRO 3 optimization stage"
+        check_zero_ds_config(ds_config)
+
+        # initialise Deepspeed ZeRO and store only the engine object
+        ds_engine = deepspeed.initialize(model=model,
+                                         config_params=ds_config)[0]
+        ds_engine.module.eval()  # inference
+        model = ds_engine.module
+
+    else:
+        model.cuda(torch.cuda.current_device())
+        if args.fp16:
+            model.half()
 
     args.length = adjust_length_to_model(args.length, max_sequence_length=model.config.max_position_embeddings)
     logger.info(args)
@@ -293,58 +324,58 @@ def main():
         prefix = args.prefix if args.prefix else args.padding_text
         for ppt in prompt_text:
             eprompt.append(tokenizer.encode(prefix + ppt, add_special_tokens=False, return_tensors="pt"))
-    
+
     latencies = []
-    for encoded_prompt, ppt in zip(eprompt, prompt_text):
-        encoded_prompt = encoded_prompt.to(args.device)
+    with torch.no_grad():
+        for encoded_prompt, ppt in zip(eprompt, prompt_text):
+            encoded_prompt = encoded_prompt.to(args.device)
 
-        if encoded_prompt.size()[-1] == 0:
-            input_ids = None
-        else:
-            input_ids = encoded_prompt
-            
-        torch.cuda.synchronize()
-        t0 = time.time()
-        
-        output_sequences = model.generate(
-            input_ids=input_ids,
-            max_length=args.length + len(encoded_prompt[0]),
-            temperature=args.temperature,
-            top_k=args.k,
-            top_p=args.p,
-            repetition_penalty=args.repetition_penalty,
-            do_sample=True,
-            num_return_sequences=args.num_return_sequences,
-        )
-        torch.cuda.synchronize()
-        latencies.append((time.time()-t0) / output_sequences.numel())
+            if encoded_prompt.size()[-1] == 0:
+                input_ids = None
+            else:
+                input_ids = encoded_prompt
 
-        # Remove the batch dimension when returning multiple sequences
-        if len(output_sequences.shape) > 2:
-            output_sequences.squeeze_()
+            torch.cuda.synchronize()
+            t0 = time.time()
 
-        generated_sequences = []
-
-        for generated_sequence_idx, generated_sequence in enumerate(output_sequences):
-            print("=== GENERATED SEQUENCE {} ===".format(generated_sequence_idx + 1))
-            generated_sequence = generated_sequence.tolist()
-
-            # Decode text
-            text = tokenizer.decode(generated_sequence, clean_up_tokenization_spaces=True)
-
-            # Remove all text after the stop token
-            text = text[: text.find(args.stop_token) if args.stop_token else None]
-
-            # Add the prompt at the beginning of the sequence. Remove the excess text that was used for pre-processing
-            total_sequence = (
-                ppt + text[len(tokenizer.decode(encoded_prompt[0], clean_up_tokenization_spaces=True)) :]
+            output_sequences = model.generate(
+                input_ids=input_ids,
+                max_length=args.length + len(encoded_prompt[0]),
+                temperature=args.temperature,
+                top_k=args.k,
+                top_p=args.p,
+                repetition_penalty=args.repetition_penalty,
+                do_sample=True,
+                num_return_sequences=args.num_return_sequences,
             )
+            torch.cuda.synchronize()
+            latencies.append((time.time()-t0) / output_sequences.numel())
 
-            generated_sequences.append(total_sequence)
-            print(total_sequence)
+            # Remove the batch dimension when returning multiple sequences
+            if len(output_sequences.shape) > 2:
+                output_sequences.squeeze_()
+
+            generated_sequences = []
+
+            for generated_sequence_idx, generated_sequence in enumerate(output_sequences):
+                print("=== GENERATED SEQUENCE {} ===".format(generated_sequence_idx + 1))
+                generated_sequence = generated_sequence.tolist()
+
+                # Decode text
+                text = tokenizer.decode(generated_sequence, clean_up_tokenization_spaces=True)
+
+                # Remove all text after the stop token
+                text = text[: text.find(args.stop_token) if args.stop_token else None]
+
+                # Add the prompt at the beginning of the sequence. Remove the excess text that was used for pre-processing
+                total_sequence = (
+                    ppt + text[len(tokenizer.decode(encoded_prompt[0], clean_up_tokenization_spaces=True)) :]
+                )
+
+                generated_sequences.append(total_sequence)
+                print(total_sequence)
     print_latency(latencies)
     return generated_sequences
-
 
 if __name__ == "__main__":
     main()
