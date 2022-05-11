@@ -263,7 +263,7 @@ def main():
                                          dtype=(torch.half if args.fp16 else torch.float),
                                          injection_policy=injection_policy,
                                          replace_with_kernel_inject=True)
-        model = model.module
+#        model = model.module
 
     args.length = adjust_length_to_model(args.length, max_sequence_length=model.config.max_position_embeddings)
     logger.info(args)

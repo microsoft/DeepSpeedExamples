@@ -21,8 +21,15 @@ generator = pipeline('text-generation',
                      device=local_rank)
 generator.model = deepspeed.init_inference(generator.model,
                                            mp_size=world_size,
-                                           dtype=torch.float,
+                                           dtype=torch.int8,
                                            replace_method='auto',
                                            replace_with_kernel_inject=True)
-string = generator("DeepSpeed is", do_sample=True, min_length=50)
+
+import time
+torch.cuda.synchronize()
+t0 = time.time()
+for _ in range(1):
+    string = generator("Wikipedia is", do_sample=True, min_length=50, max_length=50)
+torch.cuda.synchronize()
+print(time.time()-t0)
 print(string)
