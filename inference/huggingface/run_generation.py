@@ -29,11 +29,13 @@ from pathlib import Path
 from typing import Callable, Dict
 from transformers.models.gpt2.modeling_gpt2 import GPT2Block as gpt2_transformer
 from transformers import (
+    AutoModelForCausalLM,
     CTRLLMHeadModel,
     CTRLTokenizer,
     GPT2LMHeadModel,
     GPT2Tokenizer,
     GPTNeoModel,
+    GPTNeoForCausalLM,
     OpenAIGPTLMHeadModel,
     OpenAIGPTTokenizer,
     TransfoXLLMHeadModel,
@@ -62,7 +64,7 @@ from itertools import chain
 from torch.onnx import export
 from transformers.models.gpt2 import GPT2OnnxConfig
 from transformers.onnx.features import FeaturesManager
-
+import os
 
 logging.basicConfig(
     format="%(asctime)s - %(levelname)s - %(name)s -   %(message)s",
@@ -75,7 +77,8 @@ MAX_LENGTH = int(10000)  # Hardcoded max length to avoid infinite loop
 
 MODEL_CLASSES = {
     "gpt2": (GPT2LMHeadModel, GPT2Tokenizer),
-    "gptneo": (GPTNeoModel, GPT2Tokenizer),
+    "gptneo": (GPTNeoForCausalLM, GPT2Tokenizer),
+    "gptj":(AutoModelForCausalLM, AutoTokenizer),
     "ctrl": (CTRLLMHeadModel, CTRLTokenizer),
     "openai-gpt": (OpenAIGPTLMHeadModel, OpenAIGPTTokenizer),
     "xlnet": (XLNetLMHeadModel, XLNetTokenizer),
@@ -263,6 +266,11 @@ def main():
         action="store_true",
         help="Whether to use 16-bit (mixed) precision (through NVIDIA apex) instead of 32-bit",
     )
+    parser.add_argument(
+        "--int8",
+        action="store_true",
+        help="Whether to use int8-bit (mixed) precision (through NVIDIA apex) instead of 32-bit",
+    )
     parser.add_argument('--ds-inference', action="store_true", help="Use deepspeed")
     parser.add_argument('--ort', action="store_true", help="Use ORT")
     # parser.add_argument('--ort-cache', action="store_true", help="Use ORT")
@@ -293,7 +301,7 @@ def main():
     model = model_class.from_pretrained(args.model_name_or_path)
     model.eval()
 
-    # intialize deepspeed engine
+    # initialize deepspeed engine
     if args.ds_inference:
         model.cuda(torch.cuda.current_device())
 
@@ -302,18 +310,24 @@ def main():
 
         import deepspeed.module_inject as module_inject
         import deepspeed
-        injection_policy={gpt2_transformer:
-                          module_inject.replace_policy.HFGPT2LayerPolicy}
+
+
+        dtype = (torch.half if args.fp16 else torch.float)
+        if args.int8:
+            dtype = torch.int8
         model = deepspeed.init_inference(model,
                                          mp_size=1,
-                                         dtype=(torch.half if args.fp16 else torch.float),
-                                         injection_policy=injection_policy,
+                                         dtype=dtype,
+                                         replace_method='auto',
                                          replace_with_kernel_inject=True)
         model = model.module
 
     elif args.ort:
-        ort_model_name = "test-gpt2.onnx"
-        if not Path(ort_model_name).exists():
+        model_name_or_path = "tmp-"+ (args.model_name_or_path).replace("/", "-")
+        if not Path(model_name_or_path).exists():
+            os.makedirs(model_name_or_path)
+        ort_model_path = os.path.join(model_name_or_path, (args.model_name_or_path).replace("/", "-") + ".onnx")
+        if not Path(ort_model_path).exists():
             input_ids: BatchEncoding = tokenizer(
             "Here is some text to encode Hello World", add_special_tokens=True, return_attention_mask=False, return_tensors="pt"
             )
@@ -321,9 +335,9 @@ def main():
             for k, v in input_ids.items():  # type: str, torch.Tensor
                 input_ids[k] = v.type(dtype=torch.int32)
 
-                convert_to_onnx(
+            convert_to_onnx(
                 model_pytorch=model,
-                output_path=ort_model_name,
+                output_path=ort_model_path,
                 inputs_pytorch=dict(input_ids),
                 quantization=False,
                 var_output_seq=True,  # we inform ONNX export tool that the output shape will vary with the input shape
@@ -331,12 +345,12 @@ def main():
             # model may switch to train mode for some unknown reasons, we force the eval mode.
         _ = model.eval()
 
-        ort_opt_model_name = "test-gpt2-opt.onnx"
-        if not Path(ort_opt_model_name).exists():
+        ort_opt_model_path = os.path.join(model_name_or_path, (args.model_name_or_path).replace("/", "-") + "-opt.onnx")
+        if not Path(ort_opt_model_path).exists():
             num_attention_heads, hidden_size = get_model_size(path=args.model_name_or_path)
             optimize_onnx(
-                onnx_path=ort_model_name,
-                onnx_optim_model_path= ort_opt_model_name,
+                onnx_path=ort_model_path,
+                onnx_optim_model_path= ort_opt_model_path,
                 fp16=True if args.fp16 else False,
                 use_cuda=True,
                 num_attention_heads=num_attention_heads,
@@ -344,7 +358,7 @@ def main():
                 architecture="gpt2",
             )
 
-        model_onnx = create_model_for_provider(path=ort_opt_model_name, provider_to_use="CUDAExecutionProvider")
+        model_onnx = create_model_for_provider(path=ort_opt_model_path, provider_to_use="CUDAExecutionProvider")
 
         def inference_onnx_optimized(input_ids: torch.Tensor) -> torch.Tensor:
             data = {"input_ids": input_ids}
@@ -352,8 +366,11 @@ def main():
 
         model = GPTModelWrapper(config=model.config, device=torch.device("cuda"), inference=inference_onnx_optimized)
     elif args.trt:
-        ort_model_name = "test-gpt2.onnx"
-        if not Path(ort_model_name).exists():
+        model_name_or_path = (args.model_name_or_path).replace("/", "-")
+        if not Path(model_name_or_path).exists():
+            os.makedirs(model_name_or_path)
+        ort_model_path = os.path.join(model_name_or_path, (args.model_name_or_path).replace("/", "-") + ".onnx")
+        if not Path(ort_model_path).exists():
             input_ids: BatchEncoding = tokenizer(
             "Here is some text to encode Hello World", add_special_tokens=True, return_attention_mask=False, return_tensors="pt"
             )
@@ -361,24 +378,23 @@ def main():
             for k, v in input_ids.items():  # type: str, torch.Tensor
                 input_ids[k] = v.type(dtype=torch.int32)
 
-                convert_to_onnx(
+            convert_to_onnx(
                 model_pytorch=model,
-                output_path=ort_model_name,
+                output_path=ort_model_path,
                 inputs_pytorch=dict(input_ids),
                 quantization=False,
                 var_output_seq=True,  # we inform ONNX export tool that the output shape will vary with the input shape
             )
-            # model may switch to train mode for some unknown reasons, we force the eval mode.
-        _ = model.eval()
+            print("Converted to ONNX")
 
         trt_logger: Logger = trt.Logger(trt.Logger.ERROR)
         runtime: Runtime = trt.Runtime(trt_logger)
-        trt_model_name = "test-gpt2.plan"
+        trt_model_path = os.path.join(model_name_or_path, (args.model_name_or_path).replace("/", "-") +".plan")
 
-        if not Path(trt_model_name).exists():
+        if not Path(trt_model_path).exists():
             engine: ICudaEngine = build_engine(
                 runtime=runtime,
-                onnx_file_path="test-gpt2.onnx",
+                onnx_file_path=ort_model_path,
                 logger=trt_logger,
                 min_shape=(1, 1),
                 optimal_shape=(1, 128),  # num beam, batch size
@@ -387,10 +403,10 @@ def main():
                 fp16=True,
                 int8=False,
             )
-            save_engine(engine, trt_model_name)
+            save_engine(engine, trt_model_path)
 
         tensorrt_model: Callable[[Dict[str, torch.Tensor]], torch.Tensor] = load_engine(
-            engine_file_path="test-gpt2.plan", runtime=runtime
+            engine_file_path=trt_model_path, runtime=runtime
         )
 
         def inference_tensorrt(input_ids: torch.Tensor) -> torch.Tensor:
@@ -454,7 +470,7 @@ def main():
             repetition_penalty=args.repetition_penalty,
             do_sample=True,
             num_return_sequences=args.num_return_sequences,
-            use_cache=False,
+            use_cache=True,
         )
         torch.cuda.synchronize()
         latencies.append((time.time()-t0) / output_sequences.numel())

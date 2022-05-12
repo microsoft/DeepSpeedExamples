@@ -110,10 +110,10 @@ def build_engine(
                 config.set_flag(trt.BuilderFlag.DISABLE_TIMING_CACHE)
                 # https://github.com/NVIDIA/TensorRT/issues/1196 (sometimes big diff in output when using FP16)
                 config.set_flag(trt.BuilderFlag.OBEY_PRECISION_CONSTRAINTS)
-                logger.log(msg="parsing trt model", severity=trt.ILogger.WARNING)
                 with open(onnx_file_path, "rb") as f:
                     # File path needed for models with external dataformat
                     parser.parse(model=f.read(), path=onnx_file_path)
+
                 profile: IOptimizationProfile = builder.create_optimization_profile()
                 for num_input in range(network_definition.num_inputs):
                     profile.set_shape(
@@ -125,7 +125,7 @@ def build_engine(
                 config.add_optimization_profile(profile)
                 if fp16:
                     network_definition = fix_fp16_network(network_definition)
-                
+
                 logger.log(msg="building engine. depending on model size this may take a while", severity=trt.ILogger.WARNING)
                 t0 = time()
                 trt_engine = builder.build_serialized_network(network_definition, config)

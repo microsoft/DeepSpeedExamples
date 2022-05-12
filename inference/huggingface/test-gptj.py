@@ -2,7 +2,7 @@ import os
 import torch
 import deepspeed
 import transformers
-
+import time
 from deepspeed import module_inject
 from transformers import pipeline
 from transformers.models.gptj.modeling_gptj import GPTJBlock
@@ -21,16 +21,28 @@ tokenizer = AutoTokenizer.from_pretrained("EleutherAI/gpt-j-6B")
 model = AutoModelForCausalLM.from_pretrained("EleutherAI/gpt-j-6B")
 
 inp_tokens = tokenizer("DeepSpeed is", return_tensors="pt",)
-model = deepspeed.init_inference(model,
-                                 mp_size=world_size,
-                                 dtype=torch.float,
-                                 injection_policy={GPTJBlock: ('attn.out_proj','mlp.fc_out')},
-                                 replace_with_kernel_inject=False)
-                                 
-for token in inp_tokens:
-    if torch.is_tensor(inp_tokens[token]):
-        inp_tokens[token] = inp_tokens[token].to(f'cuda:{local_rank}')
-        
-model.cuda().to(f'cuda:{local_rank}')
-string = tokenizer.batch_decode(model.generate(**inp_tokens,min_length=50,))[0]
+
+torch.cuda.synchronize()
+t0 = time.time()
+for _ in range(10):
+    # model = deepspeed.init_inference(model,
+    #                                         mp_size=world_size,
+    #                                         dtype=torch.float,
+    #                                         replace_method='auto',
+    #                                         replace_with_kernel_inject=True)
+    model = deepspeed.init_inference(model,
+                                    mp_size=world_size,
+                                    dtype=torch.float,
+                                    injection_policy={GPTJBlock: ('attn.out_proj','mlp.fc_out')},
+                                    replace_with_kernel_inject=False)
+
+    for token in inp_tokens:
+        if torch.is_tensor(inp_tokens[token]):
+            inp_tokens[token] = inp_tokens[token].to(f'cuda:{local_rank}')
+
+    model.cuda().to(f'cuda:{local_rank}')
+    string = tokenizer.batch_decode(model.generate(**inp_tokens,min_length=50,max_length=50))[0]
+    print(time.time()-t0)
+    torch.cuda.synchronize()
+
 print(string)
