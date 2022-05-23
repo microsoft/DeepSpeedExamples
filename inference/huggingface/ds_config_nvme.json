@@ -1,0 +1,18 @@
+{
+    "fp16": {
+        "enabled": true
+    },
+    "bf16": {
+        "enabled": false
+    },
+    "zero_optimization": {
+        "stage": 3,
+        "offload_param": {
+            "device": "nvme",
+            "pin_memory": true,
+            "nvme_path": "/mnt/nvme0/ds_offload",
+            "buffer_size": 2e8
+        }
+    },
+    "train_micro_batch_size_per_gpu": 1
+}

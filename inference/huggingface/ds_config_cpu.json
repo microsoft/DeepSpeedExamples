@@ -1,0 +1,16 @@
+{
+    "fp16": {
+        "enabled": true
+    },
+    "bf16": {
+        "enabled": false
+    },
+    "zero_optimization": {
+        "stage": 3,
+        "offload_param": {
+            "device": "cpu",
+            "pin_memory": true
+        }
+    },
+    "train_micro_batch_size_per_gpu": 1
+}

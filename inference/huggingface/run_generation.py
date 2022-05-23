@@ -28,7 +28,12 @@ import torch
 import os
 from transformers.models.gpt2.modeling_gpt2 import GPT2Block as gpt2_transformer
 from transformers import (
+    AutoModelForCausalLM,
+    AutoTokenizer,
+    AutoConfig,
     AutoModelForSeq2SeqLM,
+    T5ForConditionalGeneration,
+    T5Tokenizer,
     CTRLLMHeadModel,
     CTRLTokenizer,
     GPT2LMHeadModel,
@@ -59,6 +64,8 @@ logger = logging.getLogger(__name__)
 MAX_LENGTH = int(10000)  # Hardcoded max length to avoid infinite loop
 
 MODEL_CLASSES = {
+    "t5": (AutoModelForSeq2SeqLM, AutoTokenizer),
+    "opt": (AutoModelForCausalLM, AutoTokenizer),
     "gpt2": (GPT2LMHeadModel, GPT2Tokenizer),
     "gptneo": (GPTNeoModel, GPT2Tokenizer),
     "ctrl": (CTRLLMHeadModel, CTRLTokenizer),
@@ -149,9 +156,9 @@ def adjust_length_to_model(length, max_sequence_length):
         length = MAX_LENGTH  # avoid infinite loop
     return length
 
-def print_latency(latency_set, title=""):
+def print_latency(latency_set, title="", warmup=1):
     # 10 warmup queries
-    latency_set = latency_set[10:]
+    latency_set = latency_set[warmup:]
     count = len(latency_set)
     if count > 0:
         latency_set.sort()
@@ -255,13 +262,12 @@ def main():
 
     tokenizer = tokenizer_class.from_pretrained(args.model_name_or_path)
     model = model_class.from_pretrained(args.model_name_or_path)
+    if args.fp16:
+        model.half()
 
-    # intialize deepspeed engine
+    # initialize deepspeed engine
     if args.ds_inference:
         model.cuda(torch.cuda.current_device())
-        if args.fp16:
-            model.half()
-
         injection_policy={gpt2_transformer:
                           module_inject.replace_policy.HFGPT2LayerPolicy}
         model = deepspeed.init_inference(model,
@@ -275,8 +281,10 @@ def main():
         assert os.path.exists(ds_config_path), '{ds_config_path} does not exist'
         import json
         ds_config = json.load(open(ds_config_path, "r"))
-        dschf = HfDeepSpeedConfig(ds_config)  # keep this object alive
-        model = GPT2LMHeadModel.from_pretrained(args.model_name_or_path)
+        _ = HfDeepSpeedConfig(ds_config)  # keep this object alive
+
+        # config = AutoConfig.from_pretrained(args.model_name_or_path)
+        # model_hidden_size = config.n_embd
 
         def check_zero_ds_config(config):
             config_zero = config.get(ZERO_OPTIMIZATION, {})
@@ -290,13 +298,13 @@ def main():
                                          config_params=ds_config)[0]
         ds_engine.module.eval()  # inference
         model = ds_engine.module
+        model.eval()
 
     else:
         model.cuda(torch.cuda.current_device())
-        if args.fp16:
-            model.half()
 
-    args.length = adjust_length_to_model(args.length, max_sequence_length=model.config.max_position_embeddings)
+    print(model.config)
+    args.length = 20 #adjust_length_to_model(args.length, max_sequence_length=model.config.max_position_embeddings)
     logger.info(args)
     if args.sample_input:
         fname = open(args.sample_input, "r", encoding="utf8")
@@ -371,9 +379,8 @@ def main():
                 total_sequence = (
                     ppt + text[len(tokenizer.decode(encoded_prompt[0], clean_up_tokenization_spaces=True)) :]
                 )
-
-                generated_sequences.append(total_sequence)
                 print(total_sequence)
+                generated_sequences.append(total_sequence)
     print_latency(latencies)
     return generated_sequences
 
