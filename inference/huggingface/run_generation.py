@@ -261,12 +261,12 @@ def main():
         raise KeyError("the model {} you specified is not supported. You are welcome to add it and open a PR :)")
 
     tokenizer = tokenizer_class.from_pretrained(args.model_name_or_path)
-    model = model_class.from_pretrained(args.model_name_or_path)
-    if args.fp16:
-        model.half()
 
     # initialize deepspeed engine
     if args.ds_inference:
+        model = model_class.from_pretrained(args.model_name_or_path)
+        if args.fp16:
+            model.half()
         model.cuda(torch.cuda.current_device())
         injection_policy={gpt2_transformer:
                           module_inject.replace_policy.HFGPT2LayerPolicy}
@@ -281,7 +281,8 @@ def main():
         assert os.path.exists(ds_config_path), '{ds_config_path} does not exist'
         import json
         ds_config = json.load(open(ds_config_path, "r"))
-        _ = HfDeepSpeedConfig(ds_config)  # keep this object alive
+        dschf = HfDeepSpeedConfig(ds_config)  # keep this object alive
+        model = model_class.from_pretrained(args.model_name_or_path)
 
         # config = AutoConfig.from_pretrained(args.model_name_or_path)
         # model_hidden_size = config.n_embd
