@@ -261,18 +261,11 @@ def main():
     except KeyError:
         raise KeyError("the model {} you specified is not supported. You are welcome to add it and open a PR :)")
 
-    model = model_class.from_pretrained(args.model_name_or_path)
-    if args.fp16:
-        model.half()
-
-    tokenizer = tokenizer_class.from_pretrained(args.model_name_or_path)
-    tokenizer.padding_side = "left"
-    # Define PAD Token = EOS Token = 50256
-    tokenizer.pad_token = tokenizer.eos_token
-    model.config.pad_token_id = model.config.eos_token_id
-
     # initialize deepspeed engine
     if args.ds_inference:
+        model = model_class.from_pretrained(args.model_name_or_path)
+        if args.fp16:
+            model.half()
         model.cuda(torch.cuda.current_device())
         injection_policy={gpt2_transformer:
                           module_inject.replace_policy.HFGPT2LayerPolicy}
@@ -287,7 +280,8 @@ def main():
         assert os.path.exists(ds_config_path), '{ds_config_path} does not exist'
         import json
         ds_config = json.load(open(ds_config_path, "r"))
-        _ = HfDeepSpeedConfig(ds_config)  # keep this object alive
+        dschf = HfDeepSpeedConfig(ds_config)  # keep this object alive
+        model = model_class.from_pretrained(args.model_name_or_path)
 
         # config = AutoConfig.from_pretrained(args.model_name_or_path)
         # model_hidden_size = config.n_embd
@@ -308,6 +302,12 @@ def main():
 
     else:
         model.cuda(torch.cuda.current_device())
+
+    tokenizer = tokenizer_class.from_pretrained(args.model_name_or_path)
+    tokenizer.padding_side = "left"
+    # Define PAD Token = EOS Token = 50256
+    tokenizer.pad_token = tokenizer.eos_token
+    model.config.pad_token_id = model.config.eos_token_id
 
     logger.info(args)
     if args.sample_input:
