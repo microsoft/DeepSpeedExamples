@@ -5,8 +5,8 @@ name="bigscience/T0"
 type="t5"
 name=gpt2-xl
 type=gpt2
-name="facebook/opt-30b"
-type=opt
+#name="facebook/opt-30b"
+#type=opt
 if [ $test == "hf" ]; then
     deepspeed --num_nodes 1 --num_gpus 1 run_generation.py \
         --model_type=$type \

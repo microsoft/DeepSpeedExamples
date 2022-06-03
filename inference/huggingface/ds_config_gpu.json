@@ -6,7 +6,11 @@
         "enabled": false
     },
     "zero_optimization": {
-        "stage": 3
+        "stage": 3,
+        "stage3_prefetch_bucket_size": 1e9,
+        "stage3_max_reuse_distance": -1,
+        "_stage3_param_persistence_threshold": 1e9
     },
-    "train_micro_batch_size_per_gpu": 1
+    "train_micro_batch_size_per_gpu": 1,
+    "wall_clock_breakdown": true
 }

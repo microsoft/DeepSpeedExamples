@@ -53,6 +53,7 @@ import deepspeed.module_inject as module_inject
 import deepspeed
 from deepspeed.runtime.zero.constants import *
 from transformers.deepspeed import HfDeepSpeedConfig
+from deepspeed.runtime.utils import see_memory_usage 
 
 logging.basicConfig(
     format="%(asctime)s - %(levelname)s - %(name)s -   %(message)s",
@@ -174,8 +175,10 @@ def print_latency(latency_set, title="", warmup=1):
         p95 = latency_set[int(n95) - 1]
         p99 = latency_set[int(n99) - 1]
         p999 = latency_set[int(n999) - 1]
+        p0 = latency_set[0]
 
-        print("====== latency stats {0} ======", title)
+        print("====== {1} latency stats {0} ======".format(title, count))
+        print("\tMin Latency: {0:8.2f} ms".format(p0 * 1000))
         print("\tAvg Latency: {0:8.2f} ms".format(avg * 1000))
         print("\tP50 Latency: {0:8.2f} ms".format(p50 * 1000))
         print("\tP90 Latency: {0:8.2f} ms".format(p90 * 1000))
@@ -302,9 +305,13 @@ def main():
         model.eval()
 
     else:
+        model = model_class.from_pretrained(args.model_name_or_path)
+        if args.fp16:
+            model.half()
         model.cuda(torch.cuda.current_device())
 
     print(model.config)
+    see_memory_usage(f'After model loading', force=True)
     args.length = 20 #adjust_length_to_model(args.length, max_sequence_length=model.config.max_position_embeddings)
     logger.info(args)
     if args.sample_input:
