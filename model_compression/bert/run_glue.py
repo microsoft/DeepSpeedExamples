@@ -798,7 +798,6 @@ def main():
                             teacher_layers[0] - 1,
                         ] + [x + 1 for x in teacher_layers]
                     else:
-
                         layers_per_block = int(
                             teacher_layer_num /
                             student_layer_num)  #2###[1, 3, 5, 7, 9, 11]

@@ -11,8 +11,8 @@ SAVE_PATH=./output/${TASK_NAME}_${STAGE}
 mkdir -p ${SAVE_PATH}
 
 
-# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% if user provide *NO* models, use the following script %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%the following command will first download huggingface models and then compress %%%%%%%
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% if users provide *NO* models, use the following script %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% the following command will first download huggingface models and then compress %%%%%%%
 MODEL=yoshitomo-matsubara/bert-base-uncased-${TASK_NAME} ## for both student and teacher
 python -m torch.distributed.launch --nproc_per_node=1 \
   --master_port 66667 \
