@@ -349,7 +349,8 @@ def main():
 
             output_sequences = model.generate(
                 input_ids=input_ids,
-                max_length=args.length + len(encoded_prompt[0]),
+                # max_length=args.length + len(encoded_prompt[0]),
+                max_new_tokens=args.length,
                 temperature=args.temperature,
                 top_k=args.k,
                 top_p=args.p,
