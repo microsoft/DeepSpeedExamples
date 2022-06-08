@@ -358,7 +358,7 @@ def main():
                 num_return_sequences=args.num_return_sequences,
             )
             torch.cuda.synchronize()
-            latencies.append((time.time()-t0) / (output_sequences.numel()-len(encoded_prompt[0]))
+            latencies.append((time.time()-t0) / args.length
 
             # Remove the batch dimension when returning multiple sequences
             if len(output_sequences.shape) > 2:
