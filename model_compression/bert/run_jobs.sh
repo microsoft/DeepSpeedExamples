@@ -3,10 +3,11 @@
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%. run_jobs mnli
 
 export CUDA_VISIBLE_DEVICES=0
-TASK_NAME=$1  #mnli sst2 stsb mnli qqp rte cola mrpc qnli
+TASK_NAME=mnli  #mnli sst2 stsb mnli qqp rte cola mrpc qnli
 STAGE=one_stage
-#CONFIG=./config/ds_config_W1A8_64Qgoup_fp16.json # <=====================it's less stable
-CONFIG=./config/ds_config_W1A8_64Qgoup_fp32.json
+#CONFIG=./config/ds_config_W1A8_64Qgroup_fp16.json # <=====================it's less stable
+#CONFIG=./config/ds_config_W1or2A8_64Qgroup_fp16.json 
+CONFIG=./config/ds_config_W1A8_Qgroup64_fp32.json
 SAVE_PATH=./output/${TASK_NAME}_${STAGE}
 mkdir -p ${SAVE_PATH}
 

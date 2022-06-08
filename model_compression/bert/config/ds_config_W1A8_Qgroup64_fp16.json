@@ -32,7 +32,7 @@
           "params": {
             "start_bits": 1,
             "target_bits": 1,
-            "quantization_period": 50
+            "quantization_period": 0
           },
           "modules": [
             "attention.self",
