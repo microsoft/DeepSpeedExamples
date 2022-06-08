@@ -28,7 +28,7 @@
               "bert.embeddings",
               "classifier"
             ]
-      },        
+      },
       "weight_quantization": {
         "shared_parameters": {
           "enabled": false,

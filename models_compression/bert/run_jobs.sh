@@ -1,4 +1,4 @@
-#!/bin/bash 
+#!/bin/bash
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%. run_jobs mnli
 
@@ -30,11 +30,11 @@ python -m torch.distributed.launch --nproc_per_node=1 \
   --deepspeed \
   --save_best_checkpoint --save_last_model --clean_last_model \
   --gradient_accumulation_steps 1 \
-  --output_dir ${SAVE_PATH} &>> ${SAVE_PATH}/train.log 
+  --output_dir ${SAVE_PATH} &>> ${SAVE_PATH}/train.log
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% users provide models  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# MODEL_BASE=/blob/users/xwu/compression/huggingface_models/bert_base_uncased ## or you could use bert-base-uncased 
-# TEACHER=/blob/users/xwu/compression/huggingface_models/bert-base-uncased-${TASK_NAME}/pytorch_model.bin 
+# MODEL_BASE=/blob/users/xwu/compression/huggingface_models/bert_base_uncased ## or you could use bert-base-uncased
+# TEACHER=/blob/users/xwu/compression/huggingface_models/bert-base-uncased-${TASK_NAME}/pytorch_model.bin
 # STUDENT=${TEACHER}
 # python -m torch.distributed.launch --nproc_per_node=1 \
 #   --master_port 66667 \
@@ -54,4 +54,4 @@ python -m torch.distributed.launch --nproc_per_node=1 \
 #   --deepspeed \
 #   --save_best_checkpoint --save_last_model --clean_last_model \
 #   --gradient_accumulation_steps 1 \
-#   --output_dir ${SAVE_PATH} &>> ${SAVE_PATH}/train.log 
+#   --output_dir ${SAVE_PATH} &>> ${SAVE_PATH}/train.log

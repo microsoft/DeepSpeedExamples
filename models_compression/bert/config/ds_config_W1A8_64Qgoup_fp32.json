@@ -11,12 +11,12 @@
     "gradient_clipping": 1.0,
     "prescale_gradients": true,
     "wall_clock_breakdown": false,
-    "compression_training": {      
+    "compression_training": {
       "weight_quantization": {
         "shared_parameters": {
           "enabled": true,
           "quantizer_kernel": false,
-          "schedule_offset": 1,
+          "schedule_offset": 0,
           "quantize_groups": 64,
           "quantize_verbose": false,
           "quantization_type": "symmetric",
@@ -152,6 +152,6 @@
           "bert.embeddings",
           "classifier"
         ]
-      } 
+      }
     }
   }

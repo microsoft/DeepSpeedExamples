@@ -4,12 +4,10 @@
 # This script assume exclusive usage of the GPUs.
 # If you have limited usage of GPUs, you can limit the range of gpu indices you are using.
 
-
 import threading
 import time
 import os
 import numpy as np
-
 
 import gpustat
 import logging
@@ -23,12 +21,13 @@ logger = logging.getLogger('runner')
 logging.basicConfig(format=FORMAT)
 logger.setLevel(logging.DEBUG)
 
-
 exitFlag = 0
-GPU_MEMORY_THRESHOLD = 20 # MB?
+GPU_MEMORY_THRESHOLD = 20  # MB?
 NUM_GPUS = 1
-GPU_LIST = set([0,1,2,3,4,5,6,7])
+GPU_LIST = set([0, 1, 2, 3, 4, 5, 6, 7])
 CURRENT_USED = set([])
+
+
 def get_free_gpu_indices():
     '''
         Return an available GPU index.
@@ -64,7 +63,8 @@ class DispatchThread(threading.Thread):
         for i, bash_command in enumerate(self.bash_command_list):
 
             cuda_device = get_free_gpu_indices()
-            thread1 = ChildThread(1, f"{i}th + {bash_command}", 1, cuda_device, bash_command)
+            thread1 = ChildThread(1, f"{i}th + {bash_command}", 1, cuda_device,
+                                  bash_command)
             thread1.start()
             import time
             time.sleep(1)
@@ -74,7 +74,6 @@ class DispatchThread(threading.Thread):
         for t in threads:
             t.join()
         logger.info("Exiting " + self.name)
-
 
 
 class ChildThread(threading.Thread):
@@ -94,7 +93,7 @@ class ChildThread(threading.Thread):
             string += f'{i}'
             # add the gpu to using list
             CURRENT_USED.add(i)
-        
+
         os.environ['CUDA_VISIBLE_DEVICES'] = string
         bash_command = self.bash_command
 
@@ -109,74 +108,99 @@ class ChildThread(threading.Thread):
             CURRENT_USED.remove(i)
         logger.info("Finishing " + self.name)
 
-BASH_COMMAND_LIST = []
 
+BASH_COMMAND_LIST = []
 
 stage = 'one_stage'
 index = 0
 port_numebr = np.random.randint(10000, 100000000)
-lr=2e-5
-bz=32
-budget ='C'
-init_method='CorrectsimpleQ'
+lr = 2e-5
+bz = 32
+budget = 'C'
+init_method = 'CorrectsimpleQ'
 
-
-layer_reduction =  False
+layer_reduction = False
 
 quantization = True
-Group = 1#768
+Group = 1  #768
 task_name = 'mnli'
-prune=False
-for weight_bit in [1]: #[1,2,8]: 
-    for task_name in [ 'mnli']: #mnli sst2 stsb mnli qqp rte cola mrpc qnli
+prune = False
+for weight_bit in [1]:  #[1,2,8]:
+    for task_name in ['mnli']:  #mnli sst2 stsb mnli qqp rte cola mrpc qnli
         json_file = './config/ds_config.json'
         with open(f'{json_file}') as f:
-            data_json = json.load(f)    
+            data_json = json.load(f)
         student_init_method = init_method
         if layer_reduction:
-            data_json["compression_training"]["layer_reduction"]["enable"]=layer_reduction
+            data_json["compression_training"]["layer_reduction"][
+                "enable"] = layer_reduction
             if student_init_method == 'skipBERT5-2-10':
                 data_json["keep_number_layer"] = 5
-                data_json["teacher_layer"] = [2,4,6,8,10]
+                data_json["teacher_layer"] = [2, 4, 6, 8, 10]
             elif student_init_method == 'skipBERT4-1-[10':
                 data_json["keep_number_layer"] = 4
-                data_json["teacher_layer"] = [1,4,7,10]
+                data_json["teacher_layer"] = [1, 4, 7, 10]
             elif student_init_method == 'skipBERT5-2-11':
-                data_json["keep_number_layer"] =  4
-                data_json["teacher_layer"] = [2,5,8,11]         
+                data_json["keep_number_layer"] = 4
+                data_json["teacher_layer"] = [2, 5, 8, 11]
             if task_name == 'cola':
                 data_json["train_micro_batch_size_per_gpu"] = 16
                 data_json["train_batch_size"] = 16
                 bz = 16
-        else:        
-            data_json["compression_training"]["layer_reduction"]["enable"]=layer_reduction
+        else:
+            data_json["compression_training"]["layer_reduction"][
+                "enable"] = layer_reduction
 
         if quantization:
-            data_json["compression_training"]["layer_reduction"]["keep_number_layer"]=12 
-            data_json["compression_training"]["weight_quantization"]["shared_parameters"]["enabled"]=True 
-            data_json["compression_training"]["weight_quantization"]["shared_parameters"]["schedule_offset"]=0
-            data_json["compression_training"]["weight_quantization"]["shared_parameters"]["quantize_groups"]=Group
-            data_json["compression_training"]["weight_quantization"]["shared_parameters"]["quantization_type"]="symmetric" 
-            data_json["compression_training"]["weight_quantization"]["different_groups"]["wq1"]["params"]["target_bits"]=weight_bit
-            data_json["compression_training"]["weight_quantization"]["different_groups"]["wq1"]["params"]["start_bits"]=weight_bit
-            data_json["compression_training"]["weight_quantization"]["different_groups"]["wq2"]["params"]["target_bits"]=weight_bit
-            data_json["compression_training"]["weight_quantization"]["different_groups"]["wq2"]["params"]["start_bits"]=weight_bit  
-            data_json["compression_training"]["activation_quantization"]["shared_parameters"]["enabled"]=True 
-            data_json["compression_training"]["activation_quantization"]["shared_parameters"]["quantization_type"]="symmetric"
-            data_json["compression_training"]["activation_quantization"]["shared_parameters"]["schedule_offset"]=0
+            data_json["compression_training"]["layer_reduction"][
+                "keep_number_layer"] = 12
+            data_json["compression_training"]["weight_quantization"][
+                "shared_parameters"]["enabled"] = True
+            data_json["compression_training"]["weight_quantization"][
+                "shared_parameters"]["schedule_offset"] = 0
+            data_json["compression_training"]["weight_quantization"][
+                "shared_parameters"]["quantize_groups"] = Group
+            data_json["compression_training"]["weight_quantization"][
+                "shared_parameters"]["quantization_type"] = "symmetric"
+            data_json["compression_training"]["weight_quantization"][
+                "different_groups"]["wq1"]["params"][
+                    "target_bits"] = weight_bit
+            data_json["compression_training"]["weight_quantization"][
+                "different_groups"]["wq1"]["params"]["start_bits"] = weight_bit
+            data_json["compression_training"]["weight_quantization"][
+                "different_groups"]["wq2"]["params"][
+                    "target_bits"] = weight_bit
+            data_json["compression_training"]["weight_quantization"][
+                "different_groups"]["wq2"]["params"]["start_bits"] = weight_bit
+            data_json["compression_training"]["activation_quantization"][
+                "shared_parameters"]["enabled"] = True
+            data_json["compression_training"]["activation_quantization"][
+                "shared_parameters"]["quantization_type"] = "symmetric"
+            data_json["compression_training"]["activation_quantization"][
+                "shared_parameters"]["schedule_offset"] = 0
 
         if prune:
-            data_json["compression_training"]["head_pruning"]["shared_parameters"]["enabled"]=True  
-            data_json["compression_training"]["row_pruning"]["shared_parameters"]["enabled"]=True
-            #data_json["compression_training"]["sparse_pruning"]["shared_parameters"]["enabled"]=True     
-            print ('check ',data_json["compression_training"]["head_pruning"]["shared_parameters"]["enabled"], data_json["compression_training"]["row_pruning"]["shared_parameters"]["enabled"],data_json["compression_training"]["sparse_pruning"]["shared_parameters"]["enabled"])
-        data_json["fp16"]["enabled"]=False 
+            data_json["compression_training"]["head_pruning"][
+                "shared_parameters"]["enabled"] = True
+            data_json["compression_training"]["row_pruning"][
+                "shared_parameters"]["enabled"] = True
+            #data_json["compression_training"]["sparse_pruning"]["shared_parameters"]["enabled"]=True
+            print(
+                'check ', data_json["compression_training"]["head_pruning"]
+                ["shared_parameters"]["enabled"],
+                data_json["compression_training"]["row_pruning"]
+                ["shared_parameters"]["enabled"],
+                data_json["compression_training"]["sparse_pruning"]
+                ["shared_parameters"]["enabled"])
+        data_json["fp16"]["enabled"] = False
         if not data_json["fp16"]["enabled"]:
-            data_json["compression_training"]["weight_quantization"]["shared_parameters"]["quantize_weight_in_forward"]=True
+            data_json["compression_training"]["weight_quantization"][
+                "shared_parameters"]["quantize_weight_in_forward"] = True
         else:
-            data_json["compression_training"]["weight_quantization"]["shared_parameters"]["quantize_weight_in_forward"]=False
+            data_json["compression_training"]["weight_quantization"][
+                "shared_parameters"]["quantize_weight_in_forward"] = False
 
-        data_json["steps_per_print"]=200
+        data_json["steps_per_print"] = 200
         new_json_path = f"config/my_{task_name}_{init_method}_{weight_bit}.json"
         if os.path.exists(new_json_path):
             os.remove(new_json_path)
@@ -185,35 +209,35 @@ for weight_bit in [1]: #[1,2,8]:
 
         if task_name not in ['mnli', 'qqp']:
             if task_name in ['cola', 'mrpc']:
-                epoch = int(2*6)
-            elif task_name=='qnli':
-                epoch = int(2*1.5)
+                epoch = int(2 * 6)
+            elif task_name == 'qnli':
+                epoch = int(2 * 1.5)
             else:
-                epoch = int(2*2)
+                epoch = int(2 * 2)
         else:
-            epoch = int(6*2)
-            if budget=='B':
+            epoch = int(6 * 2)
+            if budget == 'B':
                 epoch = 9
-            if budget=='C':
-                epoch=18
-            if budget=='D':
-                epoch=36
+            if budget == 'C':
+                epoch = 18
+            if budget == 'D':
+                epoch = 36
         if task_name in ['mrpc']:
             epoch = 4
-        
+
         if prune:
-            output_path = f'/data/users/xwu/June7fp32QuantG{Group}_BertBase_{lr}_{init_method}_budget{budget}_prune' 
+            output_path = f'/data/users/xwu/June7fp32QuantG{Group}_BertBase_{lr}_{init_method}_budget{budget}_prune'
             output_path = 'output/test_prune'
         else:
-            output_path = f'/data/users/xwu/June7fp32QuantG{Group}_BertBase_{lr}_{init_method}_budget{budget}' 
+            output_path = f'/data/users/xwu/June7fp32QuantG{Group}_BertBase_{lr}_{init_method}_budget{budget}'
             output_path = 'output/test'
         teacher_model = f'/blob/users/xwu/compression/huggingface_models/bert-base-uncased-{task_name}/pytorch_model.bin'
         student_model = teacher_model
-            
+
         OUTPUT_PATH = f"{output_path}/{task_name}/w_{weight_bit}_{stage}"
         if not os.path.exists(OUTPUT_PATH):
             os.makedirs(OUTPUT_PATH)
-        print (OUTPUT_PATH)
+        print(OUTPUT_PATH)
         time.sleep(10)
 
         comm = f'''python -m torch.distributed.launch --nproc_per_node=1 \
@@ -232,7 +256,6 @@ for weight_bit in [1]: #[1,2,8]:
                 --gradient_accumulation_steps 1 \
                 --deepspeed_config  {new_json_path}  --deepspeed \
                 --output_dir {OUTPUT_PATH}  | tee -a {OUTPUT_PATH}/train_log.txt'''
-
 
         BASH_COMMAND_LIST.append(comm)
         index += 1
