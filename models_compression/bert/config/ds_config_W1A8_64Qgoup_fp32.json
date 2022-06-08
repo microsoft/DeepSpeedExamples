@@ -32,21 +32,12 @@
             "params": {
               "start_bits": 1,
               "target_bits": 1,
-              "quantization_period": 50
+              "quantization_period": 0
             },
             "modules": [
               "attention.self",
               "intermediate",
-              "word_embeddings"
-            ]
-          },
-          "wq2": {
-            "params": {
-              "start_bits": 1,
-              "target_bits": 1,
-              "quantization_period": 50
-            },
-            "modules": [
+              "word_embeddings",
               "output.dense"
             ]
           }
