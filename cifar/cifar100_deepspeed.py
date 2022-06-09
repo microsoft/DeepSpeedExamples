@@ -60,6 +60,9 @@ def add_argument():
     return args
 
 
+deepspeed.init_distributed()
+
+
 def master_process(args):
     return dist.get_rank() == 0
 
