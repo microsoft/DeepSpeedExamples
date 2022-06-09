@@ -43,10 +43,9 @@ from transformers import (
 import json
 from transformers.file_utils import get_full_repo_name
 from transformers.utils.versions import require_version
-from huggingface_models.modeling_bert import BertForSequenceClassification
+import huggingface_transformer
+from huggingface_transformer.modeling_bert import BertForSequenceClassification
 import deepspeed
-from deepspeed.compression.helper import module_replacement, fix_compression, compression_preparation
-from deepspeed.compression.basic_layer import LinearLayer_Compress
 from deepspeed.compression.compress import student_initialization, compress, redundant_clean
 
 logger = logging.getLogger(__name__)
