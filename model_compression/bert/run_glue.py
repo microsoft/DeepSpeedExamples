@@ -230,10 +230,10 @@ def parse_args():
         ],
     )
     parser.add_argument(
-        "--num_warmup_steps",
+        "--num_warmup_epochs",
         type=int,
         default=0,
-        help="Number of steps for the warmup in the lr scheduler.")
+        help="Number of epochs for the warmup in the lr scheduler.")
     parser.add_argument("--distill_method",
                         type=str,
                         default="three_stage",
@@ -259,9 +259,6 @@ def parse_args():
                         default=-1,
                         help="local_rank for distributed training on gpus")
 
-    # parser.add_argument("--layer_reductio_enabled", action="store_true", help="reduce layer")
-    # parser.add_argument("--prune_enabled", action="store_true", help="prune model")
-    # parser.add_argument("--quantization_enabled", action="store_true", help="quantize model")
     parser.add_argument("--weight_bit",
                         type=int,
                         default=None,
@@ -431,9 +428,7 @@ def main():
                                         num_labels=num_labels,
                                         finetuning_task=args.task_name)
     if layer_reduction_enabled:
-        config.num_hidden_layers = ds_config["compression_training"][
-            "layer_reduction"][
-                'keep_number_layer']  #<==========================================here we assume there is an "num_hidden_layers" argument
+        config.num_hidden_layers = ds_config["compression_training"][ "layer_reduction"]['keep_number_layer']  #<==========================================here we assume there is an "num_hidden_layers" argument
     origin_num_attention_heads = config.num_hidden_layers
     model = BertForSequenceClassification.from_pretrained(
         args.model_name_or_path,
@@ -461,10 +456,8 @@ def main():
     model.to(device)
     if layer_reduction_enabled:
         student_initialization(model, teacher_model, args.deepspeed_config)
-    else:
-        if args.pretrained_dir_student is not None:
-            model.load_state_dict(torch.load(
-                args.pretrained_dir_student))  # pre-trained checkpoint
+    if args.pretrained_dir_student is not None:
+            model.load_state_dict(torch.load(args.pretrained_dir_student))  # pre-trained checkpoint
 
     # add more parameters to the model, which does not exist in the pre-trained model
     if quantization_enabled or prune_enabled:
@@ -596,11 +589,13 @@ def main():
     num_update_steps_per_epoch = math.ceil(
         len(train_dataloader) / args.gradient_accumulation_steps)
     if args.max_train_steps is None:
+        
+        num_warmup_steps = int(args.num_warmup_epochs * num_update_steps_per_epoch)
         args.max_train_steps = args.num_train_epochs * num_update_steps_per_epoch
     else:
+        num_warmup_steps = int(args.num_warmup_epochs * num_update_steps_per_epoch)
         args.num_train_epochs = math.ceil(args.max_train_steps /
                                           num_update_steps_per_epoch)
-
     no_decay = ["bias", "LayerNorm.weight"]
     optimizer_grouped_parameters = [
         {
@@ -621,10 +616,11 @@ def main():
         },
     ]
     optimizer = AdamW(optimizer_grouped_parameters, lr=args.learning_rate)
+
     lr_scheduler = get_scheduler(
         name=args.lr_scheduler_type,
         optimizer=optimizer,
-        num_warmup_steps=args.num_warmup_steps,
+        num_warmup_steps=num_warmup_steps,
         num_training_steps=args.max_train_steps,
     )
     # Prepare the model first
@@ -957,12 +953,12 @@ def main():
     if args.save_last_model:
         output_dir = os.path.join(args.output_dir, 'final')
         if args.clean_last_model:
-            # try:
-            model_engine = redundant_clean(model_engine, args.deepspeed_config)
-            output_dir = os.path.join(args.output_dir, 'final_clean')
-            # except:
-            #     print_rank_0 ("not implemented")
-            #     pass
+            try:
+                model_engine = redundant_clean(model_engine, args.deepspeed_config)
+                output_dir = os.path.join(args.output_dir, 'final_clean')
+            except:
+                print_rank_0 ("redundant_clean is not applicable")
+                pass
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
         if prune_enabled:

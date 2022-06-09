@@ -114,56 +114,59 @@ BASH_COMMAND_LIST = []
 stage = 'one_stage'
 index = 0
 port_numebr = np.random.randint(10000, 100000000)
-lr = 2e-5
+lr = 5e-5
 bz = 32
 budget = 'C'
-init_method = 'Q8'
+init_method = 'skipBERT6-1-11'# 'skipBERT5-2-10' #
 
-layer_reduction = False
-
+layer_reduction = True
 quantization = True
 Group = 1  #768
 task_name = 'mnli'
 prune = False
-for weight_bit in [1]:  #[1,2,8]:
-    for task_name in ['mnli']:  #mnli sst2 stsb mnli qqp rte cola mrpc qnli
-        json_file = './config/ds_config.json'
+quantize_smaller_model=False
+for weight_bit in [1,2]:  #[1,2,8]:
+    for task_name in ['mnli','qqp']:  #mnli sst2 stsb mnli qqp rte cola mrpc qnli
+        json_file = './config/XTC/ds_config_W1A8_Qgroup1_fp32.json'
         with open(f'{json_file}') as f:
             data_json = json.load(f)
         student_init_method = init_method
         if layer_reduction:
-            data_json["compression_training"]["layer_reduction"][
-                "enable"] = layer_reduction
-            if student_init_method == 'skipBERT5-2-10':
-                data_json["keep_number_layer"] = 5
-                data_json["teacher_layer"] = [2, 4, 6, 8, 10]
+            data_json["compression_training"]["layer_reduction"]["enabled"] = True
+            if student_init_method == 'skipBERT6-1-11':
+                data_json["compression_training"]["layer_reduction"]["keep_number_layer"] = 6
+                data_json["compression_training"]["layer_reduction"]["teacher_layer"] = [1, 3, 5, 7, 9,11]   
+
+            elif student_init_method == 'skipBERT5-2-10':
+                data_json["compression_training"]["layer_reduction"]["keep_number_layer"] = 5
+                data_json["compression_training"]["layer_reduction"]["teacher_layer"] = [2, 4, 6, 8, 10]
             elif student_init_method == 'skipBERT4-1-[10':
-                data_json["keep_number_layer"] = 4
-                data_json["teacher_layer"] = [1, 4, 7, 10]
+                data_json["compression_training"]["layer_reduction"]["keep_number_layer"] = 4
+                data_json["compression_training"]["layer_reduction"]["teacher_layer"] = [1, 4, 7, 10]
             elif student_init_method == 'skipBERT5-2-11':
-                data_json["keep_number_layer"] = 4
-                data_json["teacher_layer"] = [2, 5, 8, 11]
+                data_json["compression_training"]["layer_reduction"]["keep_number_layer"] = 4
+                data_json["compression_training"]["layer_reduction"]["teacher_layer"] = [2, 5, 8, 11]
+
             if task_name == 'cola':
                 data_json["train_micro_batch_size_per_gpu"] = 16
                 data_json["train_batch_size"] = 16
                 bz = 16
         else:
-            data_json["compression_training"]["layer_reduction"]["enable"] = layer_reduction
+            data_json["compression_training"]["layer_reduction"]["enabled"] = layer_reduction
 
         if quantization:
-            data_json["compression_training"]["layer_reduction"]["keep_number_layer"]=12 
             data_json["compression_training"]["weight_quantization"]["shared_parameters"]["enabled"]=True 
             data_json["compression_training"]["weight_quantization"]["shared_parameters"]["schedule_offset"]=0
             data_json["compression_training"]["weight_quantization"]["shared_parameters"]["quantize_groups"]=Group
             data_json["compression_training"]["weight_quantization"]["shared_parameters"]["quantization_type"]="symmetric" 
             data_json["compression_training"]["weight_quantization"]["different_groups"]["wq1"]["params"]["target_bits"]=weight_bit
             data_json["compression_training"]["weight_quantization"]["different_groups"]["wq1"]["params"]["start_bits"]=weight_bit
-            data_json["compression_training"]["weight_quantization"]["different_groups"]["wq2"]["params"]["target_bits"]=weight_bit
-            data_json["compression_training"]["weight_quantization"]["different_groups"]["wq2"]["params"]["start_bits"]=weight_bit  
+            # data_json["compression_training"]["weight_quantization"]["different_groups"]["wq2"]["params"]["target_bits"]=weight_bit
+            # data_json["compression_training"]["weight_quantization"]["different_groups"]["wq2"]["params"]["start_bits"]=weight_bit  
             data_json["compression_training"]["activation_quantization"]["shared_parameters"]["enabled"]=True 
             data_json["compression_training"]["activation_quantization"]["shared_parameters"]["quantization_type"]="symmetric"
             data_json["compression_training"]["activation_quantization"]["shared_parameters"]["schedule_offset"]=0
-
+            
         if prune:
             data_json["compression_training"]["head_pruning"]["shared_parameters"]["enabled"]=True  
             data_json["compression_training"]["row_pruning"]["shared_parameters"]["enabled"]=True
@@ -176,7 +179,8 @@ for weight_bit in [1]:  #[1,2,8]:
             data_json["compression_training"]["weight_quantization"]["shared_parameters"]["quantize_weight_in_forward"]=False
 
         data_json["steps_per_print"] = 200
-        new_json_path = f"config/my_{task_name}_{init_method}_{weight_bit}.json"
+        new_json_path = f"config/trash/my_{task_name}_{init_method}_{weight_bit}.json"
+        print (data_json)
         if os.path.exists(new_json_path):
             os.remove(new_json_path)
         with open(new_json_path, 'w') as f:
@@ -200,18 +204,28 @@ for weight_bit in [1]:  #[1,2,8]:
         if task_name in ['mrpc']:
             epoch = 4
 
+
+        teacher_model = f'/blob/users/xwu/compression/huggingface_models/bert-base-uncased-{task_name}/pytorch_model.bin'
+        if quantize_smaller_model:
+            student_model = f'/data/users/xwu/aSoftWare_NeurIPS_June7fp32after_LR_BertBase_5e-05_{init_method}_longer/{task_name}_{stage}/pytorch_model.bin'
+        else:
+            student_model = teacher_model
+
+        if layer_reduction and not quantize_smaller_model:
+            add = f'  --pretrained_dir_teacher {teacher_model} '
+        else:
+            add = f' --pretrained_dir_student  {student_model}  --pretrained_dir_teacher {teacher_model} '
+
         if prune:
-            output_path = f'/data/users/xwu/June8fp32QuantG{Group}_BertBase_{lr}_{init_method}_budget{budget}_prune'
+            output_path = f'/data/users/xwu/June9fp32QuantG{Group}_BertBase_{lr}_{init_method}_budget{budget}_prune_warmup'
             #output_path = 'output/test_prune'
         else:
-            output_path = f'/data/users/xwu/June8fp32QuantG{Group}_BertBase_{lr}_{init_method}_budget{budget}'
+            output_path = f'/data/users/xwu/June9fp32QuantG{Group}_BertBase_{lr}_{init_method}_budget{budget}_warmup'
             #output_path = 'output/test'
-        teacher_model = f'/blob/users/xwu/compression/huggingface_models/bert-base-uncased-{task_name}/pytorch_model.bin'
-        student_model = teacher_model
-
         OUTPUT_PATH = f"{output_path}/{task_name}/w_{weight_bit}_{stage}"
         if not os.path.exists(OUTPUT_PATH):
             os.makedirs(OUTPUT_PATH)
+        print (add)
         print(OUTPUT_PATH)
         time.sleep(10)
 
@@ -220,17 +234,16 @@ for weight_bit in [1]:  #[1,2,8]:
                 run_glue.py \
                 --seed 42  --distill_method {stage} \
                 --model_name_or_path /blob/users/xwu/compression/huggingface_models/bert_base_uncased \
-                --pretrained_dir_student  {student_model} \
-                --pretrained_dir_teacher {teacher_model}\
                 --task_name {task_name} --weight_bit {weight_bit} \
                 --learning_rate {lr} \
                 --pad_to_max_length \
                 --per_device_train_batch_size 32 \
                 --save_best_checkpoint --save_last_model --clean_last_model \
                 --num_train_epochs {epoch} \
+                --num_warmup_epochs 1 \
                 --gradient_accumulation_steps 1 \
                 --deepspeed_config  {new_json_path}  --deepspeed \
-                --output_dir {OUTPUT_PATH}  | tee -a {OUTPUT_PATH}/train_log.txt'''
+                --output_dir {OUTPUT_PATH}  {add} | tee -a {OUTPUT_PATH}/train_log.txt'''
 
         BASH_COMMAND_LIST.append(comm)
         index += 1

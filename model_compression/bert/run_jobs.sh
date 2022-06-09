@@ -6,7 +6,7 @@ export CUDA_VISIBLE_DEVICES=0
 TASK_NAME=mnli  #mnli sst2 stsb mnli qqp rte cola mrpc qnli
 STAGE=one_stage
 #CONFIG=./config/ds_config_W1A8_64Qgroup_fp16.json # <=====================it's less stable
-#CONFIG=./config/ds_config_W1or2A8_64Qgroup_fp16.json 
+#CONFIG=./config/ds_config_W1or2A8_64Qgroup_fp16.json
 CONFIG=./config/ds_config_W1A8_Qgroup64_fp32.json
 SAVE_PATH=./output/${TASK_NAME}_${STAGE}
 mkdir -p ${SAVE_PATH}
@@ -27,11 +27,12 @@ python -m torch.distributed.launch --nproc_per_node=1 \
   --per_device_train_batch_size 32 \
   --learning_rate 2e-5 \
   --num_train_epochs 18 \
+  --num_warmup_epochs 1 \
   --deepspeed_config ${CONFIG} --weight_bit 1 \
   --deepspeed \
   --save_best_checkpoint --save_last_model --clean_last_model \
   --gradient_accumulation_steps 1 \
-  --output_dir ${SAVE_PATH} &>> ${SAVE_PATH}/train.log
+  --output_dir ${SAVE_PATH} #&>> ${SAVE_PATH}/train.log
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% users provide models  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # MODEL_BASE=/blob/users/xwu/compression/huggingface_models/bert_base_uncased ## or you could use bert-base-uncased
