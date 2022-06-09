@@ -117,7 +117,7 @@ port_numebr = np.random.randint(10000, 100000000)
 lr = 2e-5
 bz = 32
 budget = 'C'
-init_method = 'CorrectsimpleQ'
+init_method = 'Q8'
 
 layer_reduction = False
 
@@ -148,57 +148,32 @@ for weight_bit in [1]:  #[1,2,8]:
                 data_json["train_batch_size"] = 16
                 bz = 16
         else:
-            data_json["compression_training"]["layer_reduction"][
-                "enable"] = layer_reduction
+            data_json["compression_training"]["layer_reduction"]["enable"] = layer_reduction
 
         if quantization:
-            data_json["compression_training"]["layer_reduction"][
-                "keep_number_layer"] = 12
-            data_json["compression_training"]["weight_quantization"][
-                "shared_parameters"]["enabled"] = True
-            data_json["compression_training"]["weight_quantization"][
-                "shared_parameters"]["schedule_offset"] = 0
-            data_json["compression_training"]["weight_quantization"][
-                "shared_parameters"]["quantize_groups"] = Group
-            data_json["compression_training"]["weight_quantization"][
-                "shared_parameters"]["quantization_type"] = "symmetric"
-            data_json["compression_training"]["weight_quantization"][
-                "different_groups"]["wq1"]["params"][
-                    "target_bits"] = weight_bit
-            data_json["compression_training"]["weight_quantization"][
-                "different_groups"]["wq1"]["params"]["start_bits"] = weight_bit
-            data_json["compression_training"]["weight_quantization"][
-                "different_groups"]["wq2"]["params"][
-                    "target_bits"] = weight_bit
-            data_json["compression_training"]["weight_quantization"][
-                "different_groups"]["wq2"]["params"]["start_bits"] = weight_bit
-            data_json["compression_training"]["activation_quantization"][
-                "shared_parameters"]["enabled"] = True
-            data_json["compression_training"]["activation_quantization"][
-                "shared_parameters"]["quantization_type"] = "symmetric"
-            data_json["compression_training"]["activation_quantization"][
-                "shared_parameters"]["schedule_offset"] = 0
+            data_json["compression_training"]["layer_reduction"]["keep_number_layer"]=12 
+            data_json["compression_training"]["weight_quantization"]["shared_parameters"]["enabled"]=True 
+            data_json["compression_training"]["weight_quantization"]["shared_parameters"]["schedule_offset"]=0
+            data_json["compression_training"]["weight_quantization"]["shared_parameters"]["quantize_groups"]=Group
+            data_json["compression_training"]["weight_quantization"]["shared_parameters"]["quantization_type"]="symmetric" 
+            data_json["compression_training"]["weight_quantization"]["different_groups"]["wq1"]["params"]["target_bits"]=weight_bit
+            data_json["compression_training"]["weight_quantization"]["different_groups"]["wq1"]["params"]["start_bits"]=weight_bit
+            data_json["compression_training"]["weight_quantization"]["different_groups"]["wq2"]["params"]["target_bits"]=weight_bit
+            data_json["compression_training"]["weight_quantization"]["different_groups"]["wq2"]["params"]["start_bits"]=weight_bit  
+            data_json["compression_training"]["activation_quantization"]["shared_parameters"]["enabled"]=True 
+            data_json["compression_training"]["activation_quantization"]["shared_parameters"]["quantization_type"]="symmetric"
+            data_json["compression_training"]["activation_quantization"]["shared_parameters"]["schedule_offset"]=0
 
         if prune:
-            data_json["compression_training"]["head_pruning"][
-                "shared_parameters"]["enabled"] = True
-            data_json["compression_training"]["row_pruning"][
-                "shared_parameters"]["enabled"] = True
-            #data_json["compression_training"]["sparse_pruning"]["shared_parameters"]["enabled"]=True
-            print(
-                'check ', data_json["compression_training"]["head_pruning"]
-                ["shared_parameters"]["enabled"],
-                data_json["compression_training"]["row_pruning"]
-                ["shared_parameters"]["enabled"],
-                data_json["compression_training"]["sparse_pruning"]
-                ["shared_parameters"]["enabled"])
-        data_json["fp16"]["enabled"] = False
+            data_json["compression_training"]["head_pruning"]["shared_parameters"]["enabled"]=True  
+            data_json["compression_training"]["row_pruning"]["shared_parameters"]["enabled"]=True
+            #data_json["compression_training"]["sparse_pruning"]["shared_parameters"]["enabled"]=True     
+            print ('check ',data_json["compression_training"]["head_pruning"]["shared_parameters"]["enabled"], data_json["compression_training"]["row_pruning"]["shared_parameters"]["enabled"],data_json["compression_training"]["sparse_pruning"]["shared_parameters"]["enabled"])
+        data_json["fp16"]["enabled"]=False 
         if not data_json["fp16"]["enabled"]:
-            data_json["compression_training"]["weight_quantization"][
-                "shared_parameters"]["quantize_weight_in_forward"] = True
+            data_json["compression_training"]["weight_quantization"]["shared_parameters"]["quantize_weight_in_forward"]=True
         else:
-            data_json["compression_training"]["weight_quantization"][
-                "shared_parameters"]["quantize_weight_in_forward"] = False
+            data_json["compression_training"]["weight_quantization"]["shared_parameters"]["quantize_weight_in_forward"]=False
 
         data_json["steps_per_print"] = 200
         new_json_path = f"config/my_{task_name}_{init_method}_{weight_bit}.json"
@@ -226,11 +201,11 @@ for weight_bit in [1]:  #[1,2,8]:
             epoch = 4
 
         if prune:
-            output_path = f'/data/users/xwu/June7fp32QuantG{Group}_BertBase_{lr}_{init_method}_budget{budget}_prune'
-            output_path = 'output/test_prune'
+            output_path = f'/data/users/xwu/June8fp32QuantG{Group}_BertBase_{lr}_{init_method}_budget{budget}_prune'
+            #output_path = 'output/test_prune'
         else:
-            output_path = f'/data/users/xwu/June7fp32QuantG{Group}_BertBase_{lr}_{init_method}_budget{budget}'
-            output_path = 'output/test'
+            output_path = f'/data/users/xwu/June8fp32QuantG{Group}_BertBase_{lr}_{init_method}_budget{budget}'
+            #output_path = 'output/test'
         teacher_model = f'/blob/users/xwu/compression/huggingface_models/bert-base-uncased-{task_name}/pytorch_model.bin'
         student_model = teacher_model
 
