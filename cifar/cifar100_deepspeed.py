@@ -90,16 +90,9 @@ transform_test = transforms.Compose([
     transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
 ])
 
-if master_process(args):
-    trainset = torchvision.datasets.CIFAR100(root='./data',
-                                             train=True,
-                                             download=True,
-                                             transform=transform_train)
-    testset = torchvision.datasets.CIFAR100(root='./data',
-                                            train=False,
-                                            download=True,
-                                            transform=transform_test)
-dist.barrier()
+if torch.distributed.get_rank() != 0:
+    # might be downloading cifar data, let rank 0 download first
+    torch.distributed.barrier()
 trainset = torchvision.datasets.CIFAR100(root='./data',
                                          train=True,
                                          download=True,
@@ -117,6 +110,9 @@ testloader = torch.utils.data.DataLoader(testset,
                                          batch_size=1024,
                                          shuffle=False,
                                          num_workers=16)
+if torch.distributed.get_rank() == 0:
+    # cifar data is downloaded, indicate other ranks can proceed
+    torch.distributed.barrier()
 
 classes = ['label {}'.format(x) for x in range(100)]
 
