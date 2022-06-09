@@ -243,5 +243,5 @@ with torch.no_grad():
         correct += (predicted == labels.to(
             model_engine.local_rank)).sum().item()
 if master_process(args):
-    print('Accuracy of the network on the 10000 test images: %d %%' %
+    print('Accuracy of the network on the test images: %d %%' %
           (100 * correct / total))
