@@ -322,13 +322,10 @@ def main():
     if args.deepspeed:
         with open(args.deepspeed_config) as f:
             ds_config = json.load(f)
-        assert args.per_device_train_batch_size == ds_config[
-            "train_micro_batch_size_per_gpu"]
-        assert args.gradient_accumulation_steps == ds_config[
-            "train_batch_size"] / ds_config["train_micro_batch_size_per_gpu"]
+        assert args.per_device_train_batch_size == ds_config["train_micro_batch_size_per_gpu"]
+        assert args.gradient_accumulation_steps == ds_config["train_batch_size"] / ds_config["train_micro_batch_size_per_gpu"]
         try:
-            layer_reduction_enabled = ds_config["compression_training"][
-                "layer_reduction"]["enabled"]
+            layer_reduction_enabled = ds_config["compression_training"]["layer_reduction"]["enabled"]
         except:
             layer_reduction_enabled = False
         if ds_config["compression_training"]["sparse_pruning"]["shared_parameters"]["enabled"] or \
@@ -337,12 +334,9 @@ def main():
             prune_enabled = True
         else:
             prune_enabled = False
-        quantization_enabled = ds_config["compression_training"][
-            "weight_quantization"]["shared_parameters"]["enabled"]
+        quantization_enabled = ds_config["compression_training"]["weight_quantization"]["shared_parameters"]["enabled"]
         if quantization_enabled:
-            assert args.weight_bit == ds_config["compression_training"][
-                "weight_quantization"]["different_groups"]["wq1"]["params"][
-                    "target_bits"]
+            assert args.weight_bit == ds_config["compression_training"]["weight_quantization"]["different_groups"]["wq1"]["params"]["target_bits"]
 
     logging.basicConfig(
         format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
@@ -898,10 +892,7 @@ def main():
                         if not ds_config["fp16"]["enabled"]:
                             for name, module in quant_model.named_modules():
                                 if hasattr(module, 'weight_quantizer'):
-                                    module.weight.data = module.weight_quantizer(
-                                        module.weight, args.weight_bit, None,
-                                        None,
-                                        module.weight_quantize_num_groups)
+                                    module.weight.data = module.weight_quantizer(module.weight, args.weight_bit, None, None, module.weight_quantize_num_groups)
                                 else:
                                     pass
                         WEIGHTS_NAME = "pytorch_model.bin"
@@ -909,27 +900,17 @@ def main():
                         output_dir = os.path.join(args.output_dir, 'best')
                         if not os.path.exists(output_dir):
                             os.makedirs(output_dir)
-                        output_model_file = os.path.join(
-                            output_dir, WEIGHTS_NAME)
-                        output_config_file = os.path.join(
-                            output_dir, CONFIG_NAME)
+                        output_model_file = os.path.join(output_dir, WEIGHTS_NAME)
+                        output_config_file = os.path.join(output_dir, CONFIG_NAME)
                         torch.save(quant_model.state_dict(), output_model_file)
                         if args.local_rank in [-1, 0]:
                             if prune_enabled:
-                                if ds_config["compression_training"][
-                                        "head_pruning"]["shared_parameters"][
-                                            "enabled"]:
-                                    config.num_attention_heads = int(
-                                        origin_num_attention_heads *
-                                        ds_config["compression_training"]
-                                        ['head_pruning']["different_groups"]
-                                        ["rp1"]["params"]["dense_ratio"])
-                            model_to_save.config.to_json_file(
-                                output_config_file)
+                                if ds_config["compression_training"]["head_pruning"]["shared_parameters"]["enabled"]:
+                                    config.num_attention_heads = int(origin_num_attention_heads * ds_config["compression_training"]['head_pruning']["different_groups"]["rp1"]["params"]["dense_ratio"])
+                            model_to_save.config.to_json_file(output_config_file)
                             tokenizer.save_vocabulary(output_dir)
                         if args.deepspeed:
-                            new_json_path = os.path.join(
-                                output_dir, "ds_config.json")
+                            new_json_path = os.path.join(output_dir, "ds_config.json")
                             with open(new_json_path, 'w') as f:
                                 json.dump(ds_config, f)
                     tr_loss, tr_rep_loss, tr_cls_loss, tr_att_loss = 0., 0., 0., 0.,
@@ -988,12 +969,9 @@ def main():
         if prune_enabled:
             for module in model_engine.modules():
                 if hasattr(module, 'num_attention_heads'):
-                    ratio = ds_config["compression_training"]['head_pruning'][
-                        "different_groups"]["rp1"]["params"]["dense_ratio"]
-                    config.num_attention_heads = int(
-                        origin_num_attention_heads * ratio)
-                    module.num_attention_heads = int(
-                        module.num_attention_heads * ratio)
+                    ratio = ds_config["compression_training"]['head_pruning']["different_groups"]["rp1"]["params"]["dense_ratio"]
+                    config.num_attention_heads = int(origin_num_attention_heads * ratio)
+                    module.num_attention_heads = int(module.num_attention_heads * ratio)
                     module.all_head_size = int(module.num_attention_heads * 64)
         model_engine.eval()
         result = eval(model_engine)
