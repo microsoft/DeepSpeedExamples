@@ -504,18 +504,18 @@ def main():
             model.backward(all_loss[0]) #<=======================when using deepspedd engine fp16, we should not use loss.backward()
             model.step()
             stat_history = record_stat(stat_history, all_loss,)
-            if step % args.gradient_accumulation_steps == 0 or step == len(train_dataloader) - 1:
-                updated_steps += 1
-                optimizer.zero_grad()
+
             if forward_step % args.eval_step ==0 or updated_steps == args.max_train_steps or step == len(train_dataloader) - 1:
                 results = do_eval(args, model, eval_dataloader, mm_eval_dataloader, device, is_regression=is_regression)
                 current_result, previous_best, best_dev_acc, save_model = arrange_output(args.task_name, results, previous_best, best_dev_acc)
                 stat_history = update_stat_and_print(args, print_rank_0, forward_step, stat_history, optimizer, all_loss, current_result,  previous_best, save_model)
                 if save_model and args.save_best_model:
                    save_checkpoint_and_config(args, model, config, tokenizer, ds_config=ds_config)
-
-            if updated_steps > 32: #args.max_train_steps:
+            if updated_steps > args.max_train_steps:
                 break
+            if step % args.gradient_accumulation_steps == 0 or step == len(train_dataloader) - 1:
+                updated_steps += 1
+                optimizer.zero_grad()
             forward_step += 1
 
         end_time = time.time()
