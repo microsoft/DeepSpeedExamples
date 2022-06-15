@@ -13,7 +13,7 @@
     "wall_clock_breakdown": false,
     "compression_training": {
       "layer_reduction": {
-        "enabled": false,
+        "enabled": true,
         "keep_number_layer": 5,
         "module_name_prefix": "bert.encoder.layer",
         "teacher_layer": [
@@ -31,7 +31,7 @@
       },
       "weight_quantization": {
         "shared_parameters": {
-          "enabled": true,
+          "enabled": false,
           "quantizer_kernel": false,
           "schedule_offset": 0,
           "quantize_groups": 1,
@@ -62,7 +62,7 @@
       },
       "activation_quantization": {
         "shared_parameters": {
-          "enabled": true,
+          "enabled": false,
           "quantization_type": "symmetric",
           "range_calibration": "dynamic",
           "schedule_offset": 0

@@ -13,7 +13,7 @@
     "wall_clock_breakdown": false,
     "compression_training": {
       "layer_reduction": {
-        "enabled": false,
+        "enabled": true,
         "keep_number_layer": 5,
         "module_name_prefix": "bert.encoder.layer",
         "teacher_layer": [
