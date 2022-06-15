@@ -227,7 +227,7 @@ def record_stat(stat_history, all_loss):
     return stat_history
 
 
-def update_stat_and_print(args, print_rank_0, forward_step, stat_history, optimizer, past_loss, eval_result, previous_best, save_model):
+def update_stat_and_print(args, print_rank_0, forward_step, stat_history, optimizer, eval_result, previous_best, save_model):
     print_rank_0( f"***** Running evaluation Stage {args.distill_method}*****")
     print_rank_0("  {} step of {}".format(forward_step, args.max_train_steps))
     
