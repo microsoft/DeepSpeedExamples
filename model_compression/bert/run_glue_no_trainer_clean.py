@@ -301,6 +301,7 @@ def main():
         config=config,
     )
     model.to(device)
+    teacher_model  = None
     #### load teacher models
     if args.distill_method != 'zero_stage':
         if not args.model_name_or_path_teacher:
