@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%. run_jobs mnli
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%. run_jobs.sh (for mnli)
 
 export CUDA_VISIBLE_DEVICES=0
 TASK_NAME=mnli  #mnli sst2 stsb mnli qqp rte cola mrpc qnli
@@ -17,7 +17,7 @@ mkdir -p ${SAVE_PATH}
 MODEL=yoshitomo-matsubara/bert-base-uncased-${TASK_NAME} ## for both student and teacher
 python -m torch.distributed.launch --nproc_per_node=1 \
   --master_port 66667 \
-  run_glue.py \
+  run_glue_no_trainer_clean.py \
   --seed 42 \
   --distill_method ${STAGE} \
   --model_name_or_path ${MODEL} \
@@ -25,12 +25,14 @@ python -m torch.distributed.launch --nproc_per_node=1 \
   --max_length 128 \
   --pad_to_max_length \
   --per_device_train_batch_size 32 \
+  --per_device_eval_batch_size 128 \
   --learning_rate 2e-5 \
   --num_train_epochs 18 \
   --num_warmup_epochs 1 \
+  --eval_step 1000 \
   --deepspeed_config ${CONFIG} --weight_bit 1 \
   --deepspeed \
-  --save_best_checkpoint --save_last_model --clean_last_model \
+  --save_best_model --clean_best_model \
   --gradient_accumulation_steps 1 \
   --output_dir ${SAVE_PATH} #&>> ${SAVE_PATH}/train.log
 
@@ -40,7 +42,7 @@ python -m torch.distributed.launch --nproc_per_node=1 \
 # STUDENT=${TEACHER}
 # python -m torch.distributed.launch --nproc_per_node=1 \
 #   --master_port 66667 \
-#   run_glue.py \
+#   run_glue_no_trainer_clean.py \
 #   --seed 42 \
 #   --distill_method ${STAGE} \
 #   --model_name_or_path ${MODEL_BASE} \
@@ -52,8 +54,9 @@ python -m torch.distributed.launch --nproc_per_node=1 \
 #   --per_device_train_batch_size 32 \
 #   --learning_rate 2e-5 \
 #   --num_train_epochs 18 \
+#   --num_warmup_epochs 1 \
 #   --deepspeed_config ${CONFIG} --weight_bit 1 \
 #   --deepspeed \
-#   --save_best_checkpoint --save_last_model --clean_last_model \
+#   --save_best_model --clean_best_model \
 #   --gradient_accumulation_steps 1 \
 #   --output_dir ${SAVE_PATH} &>> ${SAVE_PATH}/train.log
