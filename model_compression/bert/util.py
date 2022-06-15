@@ -113,6 +113,7 @@ def replace_config(args, config, model_tmp, label_list, num_labels=2,label_to_id
 
 
 def do_eval(args, model, eval_dataloader, mm_eval_dataloader, device, is_regression=False):
+    model.eval()
     if args.task_name is not None:
         metric = load_metric("glue", args.task_name)
     else:
@@ -134,7 +135,7 @@ def do_eval(args, model, eval_dataloader, mm_eval_dataloader, device, is_regress
             predictions = outputs.logits.argmax(dim=-1) if not is_regression else outputs.logits.squeeze()
             metric1.add_batch(predictions=predictions, references=batch["labels"])
         eval_metric1 = metric1.compute()
-
+    model.train()
     return eval_metric, eval_metric1    
 
 def arrange_output(task_name, results, previous_best, best_dev_acc):
