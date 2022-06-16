@@ -232,8 +232,8 @@ def main():
         torch.cuda.set_device(args.local_rank)
         device = torch.device("cuda", args.local_rank)
         # Initializes the distributed backend which will take care of sychronizing nodes/GPUs
-        torch.distributed.init_process_group(backend='nccl')
-    
+        #torch.distributed.init_process_group(backend='nccl')
+        deepspeed.init_distributed()
     if args.seed is not None:
         set_seed(args.seed)
         random.seed(args.seed)
