@@ -18,6 +18,7 @@ import logging
 import math
 import os
 import random
+import numpy as np
 from pathlib import Path
 import copy
 import datasets
@@ -266,7 +267,7 @@ def parse_args():
     parser.add_argument("--save_best_checkpoint",
                         action="store_true",
                         help="save best checkpoint model")
-    parser.add_argument("--save_last_model",
+    parser.add_argument("--clean_best_model",
                         action="store_true",
                         help="save the last model")
     parser.add_argument("--clean_last_model",
@@ -350,7 +351,6 @@ def main():
     else:
         torch.cuda.set_device(args.local_rank)
         device = torch.device("cuda", args.local_rank)
-        n_gpu = 1
         # Initializes the distributed backend which will take care of sychronizing nodes/GPUs
         torch.distributed.init_process_group(backend='nccl')
 
@@ -358,15 +358,13 @@ def main():
         if args.local_rank <= 0:
             print(msg)
 
-    # If passed along, set the training seed now.
     if args.seed is not None:
         set_seed(args.seed)
-
-    torch.distributed.barrier()
-
-    # If passed along, set the training seed now.
-    if args.seed is not None:
-        set_seed(args.seed)
+        random.seed(args.seed)
+        np.random.seed(args.seed)
+        torch.manual_seed(args.seed)
+        torch.cuda.manual_seed_all(args.seed)
+        torch.distributed.barrier()
 
     # Get the datasets: you can either provide your own CSV/JSON training and evaluation files (see below)
     # or specify a GLUE benchmark task (the dataset will be downloaded automatically from the datasets Hub).
@@ -589,7 +587,6 @@ def main():
     num_update_steps_per_epoch = math.ceil(
         len(train_dataloader) / args.gradient_accumulation_steps)
     if args.max_train_steps is None:
-        
         num_warmup_steps = int(args.num_warmup_epochs * num_update_steps_per_epoch)
         args.max_train_steps = args.num_train_epochs * num_update_steps_per_epoch
     else:
@@ -712,6 +709,7 @@ def main():
     args.eval_step = default_params[args.task_name]["eval_step"]
     #<===========================================================================eval
     if args.distill_method != 'zero_stage':
+        teacher_model.eval()
         teacher_out = eval(teacher_model)
         teacher_result, _, best_dev_acc, _ = arrange_output(
             args.task_name, teacher_out, previous_best, 0)
@@ -737,12 +735,14 @@ def main():
               intermediate_distill=False):
         loss_mse = MSELoss()
         print_rank_0("***** Running training *****")
+        model.eval()
         out = eval(model)
         current_result, _, _, _ = arrange_output(args.task_name, out,
                                                  previous_best, best_dev_acc)
         print_rank_0(
             f"at step 0 the (student) model's performance for {args.task_name}: {current_result}"
         )
+        # If passed along, set the training seed now.
         tr_loss, tr_rep_loss, tr_cls_loss, tr_att_loss = 0., 0., 0., 0.,
         for epoch in range(args.num_train_epochs):
             model.train()
@@ -819,7 +819,6 @@ def main():
                     tr_rep_loss += rep_loss.item()
                     loss += rep_loss + att_loss
                     tr_loss += loss.item()
-
                 model.backward(
                     loss
                 )  #<=======================when using deepspedd engine fp16, we should not use loss.backward()
@@ -830,10 +829,10 @@ def main():
                     optimizer.zero_grad()
 
                 if completed_steps % args.eval_step == 0 and completed_steps >= 10:
-                    loss = tr_loss / (step + 1)
-                    cls_loss = tr_cls_loss / (step + 1)
-                    att_loss = tr_att_loss / (step + 1)
-                    rep_loss = tr_rep_loss / (step + 1)
+                    loss = tr_loss / (args.eval_step + 1)
+                    cls_loss = tr_cls_loss / (args.eval_step + 1)
+                    att_loss = tr_att_loss / (args.eval_step + 1)
+                    rep_loss = tr_rep_loss / (args.eval_step + 1)
                     print_rank_0(
                         f"***** Running evaluation Stage {text_note}*****")
                     print_rank_0("  {} step of {}".format(
@@ -842,7 +841,7 @@ def main():
                     result = eval(model)
                     model.train()
                     stat_history['lr1'].append(optimizer.param_groups[0]["lr"])
-                    stat_history['lr2'].append(optimizer.param_groups[0]["lr"])
+                    stat_history['lr2'].append(optimizer.param_groups[1]["lr"])
                     try:
                         stat_history['train_ffn_loss'].append(rep_loss.item())
                     except:
@@ -884,12 +883,6 @@ def main():
                         model_to_save = model.module if hasattr(
                             model, 'module') else model
                         quant_model = copy.deepcopy(model_to_save)
-                        if not ds_config["fp16"]["enabled"]:
-                            for name, module in quant_model.named_modules():
-                                if hasattr(module, 'weight_quantizer'):
-                                    module.weight.data = module.weight_quantizer(module.weight, args.weight_bit, None, None, module.weight_quantize_num_groups)
-                                else:
-                                    pass
                         WEIGHTS_NAME = "pytorch_model.bin"
                         CONFIG_NAME = 'config.json'
                         output_dir = os.path.join(args.output_dir, 'best')
@@ -899,9 +892,6 @@ def main():
                         output_config_file = os.path.join(output_dir, CONFIG_NAME)
                         torch.save(quant_model.state_dict(), output_model_file)
                         if args.local_rank in [-1, 0]:
-                            if prune_enabled:
-                                if ds_config["compression_training"]["head_pruning"]["shared_parameters"]["enabled"]:
-                                    config.num_attention_heads = int(origin_num_attention_heads * ds_config["compression_training"]['head_pruning']["different_groups"]["rp1"]["params"]["dense_ratio"])
                             model_to_save.config.to_json_file(output_config_file)
                             tokenizer.save_vocabulary(output_dir)
                         if args.deepspeed:
@@ -909,7 +899,7 @@ def main():
                             with open(new_json_path, 'w') as f:
                                 json.dump(ds_config, f)
                     tr_loss, tr_rep_loss, tr_cls_loss, tr_att_loss = 0., 0., 0., 0.,
-                if completed_steps >= args.max_train_steps:
+                if completed_steps > args.max_train_steps:
                     break
             end_time = time.time()
             epoch_mins, epoch_secs = epoch_time(start_time, end_time)
@@ -923,7 +913,7 @@ def main():
         current_result, previous_best, best_dev_acc, _ = arrange_output(
             args.task_name, result, previous_best, best_dev_acc)
         print_rank_0(
-            f"Teacher perforamnce = {teacher_result} \n Previous best = {previous_best}"
+            f"Teacher result = {teacher_result} \n Previous best = {previous_best}"
         )
         print_rank_0(f"Finish training. Final accuracy is {current_result}")
         return previous_best, best_dev_acc, completed_steps, model
@@ -950,15 +940,26 @@ def main():
             pred_distill=True,
             intermediate_distill=True)
 
-    if args.save_last_model:
+    if args.clean_best_model:
+
+        WEIGHTS_NAME = "pytorch_model.bin"
+        CONFIG_NAME = 'config.json'
+        output_dir_best = os.path.join(args.output_dir, 'best')   
+        best_model_path = os.path.join(output_dir_best, WEIGHTS_NAME) 
+
+        best_model = torch.load(best_model_path)
+        new_sd = {}
+        for k, v in best_model.items():
+            new_sd["module."+k] = v
+        model_engine.load_state_dict(new_sd, strict=False)  
+
         output_dir = os.path.join(args.output_dir, 'final')
-        if args.clean_last_model:
-            try:
-                model_engine = redundant_clean(model_engine, args.deepspeed_config)
-                output_dir = os.path.join(args.output_dir, 'final_clean')
-            except:
-                print_rank_0 ("redundant_clean is not applicable")
-                pass
+        try:
+            model_engine = redundant_clean(model_engine, args.deepspeed_config)
+            output_dir = os.path.join(args.output_dir, 'final_clean')
+        except:
+            print_rank_0 ("redundant_clean is not applicable")
+            pass
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
         if prune_enabled:
@@ -968,19 +969,16 @@ def main():
                     config.num_attention_heads = int(origin_num_attention_heads * ratio)
                     module.num_attention_heads = int(module.num_attention_heads * ratio)
                     module.all_head_size = int(module.num_attention_heads * 64)
+        
         model_engine.eval()
         result = eval(model_engine)
         current_result, previous_best, best_dev_acc, _ = arrange_output(
             args.task_name, result, previous_best, best_dev_acc)
-        print_rank_0(
-            f"Clean last_iter models, and the accuracy of the clean last_iter model is {current_result}"
-        )
+        print_rank_0( f"Clean the last_iter model, and the accuracy of the clean last_iter model is {current_result}")
 
-        model_to_save = model_engine.module if hasattr(
-            model_engine, 'module') else model_engine
+        model_to_save = model_engine.module if hasattr(model_engine, 'module') else model_engine
         model_to_save = copy.deepcopy(model_to_save)
-        WEIGHTS_NAME = "pytorch_model.bin"
-        CONFIG_NAME = 'config.json'
+
         output_model_file = os.path.join(output_dir, WEIGHTS_NAME)
         output_config_file = os.path.join(output_dir, CONFIG_NAME)
         torch.save(model_to_save.state_dict(), output_model_file)

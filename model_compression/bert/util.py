@@ -59,8 +59,6 @@ def check_and_identify_compresssion(args, ds_config):
     else:
         prune_enabled = False
     quantization_enabled = ds_config["compression_training"]["weight_quantization"]["shared_parameters"]["enabled"]
-    if quantization_enabled:
-        assert args.weight_bit == ds_config["compression_training"]["weight_quantization"]["different_groups"]["wq1"]["params"]["target_bits"]
     return layer_reduction_enabled, prune_enabled, quantization_enabled
 
 def soft_cross_entropy(predicts, targets):
@@ -200,7 +198,7 @@ def forward_loss(args, ds_config, output_mode):
                 att_list = [x for x in teacher_layers]
                 rep_list = [teacher_layers[0] - 1,] + [x + 1 for x in teacher_layers]
             else:
-                ## ATTENTION: The knowledge distillation is main for skip KD
+                ## ATTENTION: The knowledge distillation is designed for skip-layer KD
                 layers_per_block = int(teacher_layer_num / student_layer_num)  ###[1, 3, 5, 7, 9, 11]
                 att_list = [ i * layers_per_block + layers_per_block - 1 for i in range(student_layer_num)]
                 rep_list = [ i * layers_per_block for i in range(student_layer_num + 1)]  ###[0, 2, 4, 6, 8, 10, 12]
@@ -215,7 +213,7 @@ def forward_loss(args, ds_config, output_mode):
             for student_rep, teacher_rep in zip(student_reps, new_teacher_reps):
                 tmp_loss = loss_mse(student_rep, teacher_rep)
                 rep_loss += tmp_loss
-            loss += rep_loss + rep_loss
+            loss += att_loss + rep_loss
             return [loss, rep_loss.item(), cls_loss.item(), att_loss.item(), ]
 
         return _kd_function    
@@ -231,7 +229,6 @@ def record_stat(stat_history, all_loss):
 def update_stat_and_print(args, print_rank_0, forward_step, stat_history, optimizer, eval_result, previous_best, save_model):
     print_rank_0( f"***** Running evaluation Stage {args.distill_method}*****")
     print_rank_0("  {} step of {}".format(forward_step, args.max_train_steps))
-    
     
     past_loss = stat_history['tmp_loss']
     tr_loss, tr_rep_loss, tr_cls_loss, tr_att_loss = past_loss[0], past_loss[1], past_loss[2], past_loss[3], 
@@ -260,8 +257,6 @@ def update_stat_and_print(args, print_rank_0, forward_step, stat_history, optimi
 
     if save_model:
         print_rank_0(f'new best checkpoint, saving model to {args.output_dir}')
-        print_rank_0(f"task {args.task_name}, teacher_result: {teacher_result}\nPrevious best: {previous_best}")
-
 
     tr_loss, tr_rep_loss, tr_cls_loss, tr_att_loss = 0., 0., 0., 0.,
     stat_history['tmp_loss'] = [ 0, 0., 0., 0.,]
@@ -284,13 +279,6 @@ def save_checkpoint_and_config(args, model, config, tokenizer, ds_config=None):
             torch.save(model_will_save.state_dict(), output_model_file)
             model_to_save.config.to_json_file(output_config_file)
     else:
-        if not ds_config["fp16"]["enabled"]:
-            for name, module in model_will_save.named_modules():
-                if hasattr(module, 'weight_quantizer'):
-                    module.weight.data = module.weight_quantizer(module.weight, args.weight_bit, None, None, module.weight_quantize_num_groups)
-                else:
-                    pass
-       
         if args.local_rank in [-1, 0]:
             torch.save(model_will_save.state_dict(), output_model_file)
             model_to_save.config.to_json_file(output_config_file)
@@ -315,21 +303,20 @@ def save_clean_best_model(args, print_rank_0,  model, tokenizer, config, redunda
             new_sd["module."+k] = v
         model.load_state_dict(new_sd, strict=False)  
         try:
-            model_engine = redundant_clean(model, args.deepspeed_config)           
+            model = redundant_clean(model, args.deepspeed_config)           
         except:
             print_rank_0 ("redundant_clean is not applicable")
             pass    
-        model_engine.eval()
         result = do_eval(args, model, eval_dataloader, mm_eval_dataloader, device, is_regression=is_regression)
         current_result, previous_best, best_dev_acc, _ = arrange_output(args.task_name, result, previous_best, best_dev_acc)
         print_rank_0( f"Clean the best model, and the accuracy of the clean model is {current_result}")
 
-        model_to_save = model_engine.module if hasattr(model_engine, 'module') else model_engine
+        model_to_save = model.module if hasattr(model, 'module') else model
         model_to_save = copy.deepcopy(model_to_save)
         WEIGHTS_NAME = "pytorch_model.bin"
         CONFIG_NAME = 'config.json'
         if prune_enabled:
-            for module in model_engine.modules():
+            for module in model.modules():
                 if hasattr(module, 'num_attention_heads'):
                     ratio = ds_config["compression_training"]['head_pruning']["different_groups"]["rp1"]["params"]["dense_ratio"]
                     config.num_attention_heads = int(config.num_attention_heads * ratio)

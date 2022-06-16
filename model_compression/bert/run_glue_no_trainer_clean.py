@@ -20,6 +20,7 @@ import time
 import os
 import random
 import json
+import numpy as np
 from pathlib import Path
 
 import datasets
@@ -158,8 +159,7 @@ def parse_args():
     parser.add_argument("--deepspeed_config", type=str, default=None, help="deepspeed config")   
     parser.add_argument("--save_best_model", action="store_true",  help="save best checkpoint model")
     parser.add_argument("--clean_best_model", action="store_true", help="clean the  model")
-    parser.add_argument("--distill_method", type=str, default=None, help="knowledage distillation")  
-    parser.add_argument("--weight_bit", type=int, default=None, help="weight bit.")    
+    parser.add_argument("--distill_method", type=str, default=None, help="knowledage distillation")   
     parser.add_argument(
         "--local_rank",
         type=int,
@@ -234,11 +234,13 @@ def main():
         # Initializes the distributed backend which will take care of sychronizing nodes/GPUs
         torch.distributed.init_process_group(backend='nccl')
     
-    # If passed along, set the training seed now.
     if args.seed is not None:
         set_seed(args.seed)
-
-    torch.distributed.barrier()
+        random.seed(args.seed)
+        np.random.seed(args.seed)
+        torch.manual_seed(args.seed)
+        torch.cuda.manual_seed_all(args.seed)
+        torch.distributed.barrier()
     # Get the datasets: you can either provide your own CSV/JSON training and evaluation files (see below)
     # or specify a GLUE benchmark task (the dataset will be downloaded automatically from the datasets Hub).
 
@@ -452,7 +454,7 @@ def main():
     # Scheduler and math around the number of training steps.
     num_update_steps_per_epoch = math.ceil(len(train_dataloader) / args.gradient_accumulation_steps)
     if args.max_train_steps is None:
-        args.max_train_steps = args.num_train_epochs * num_update_steps_per_epoch
+        args.max_train_steps =  math.ceil(args.num_train_epochs * num_update_steps_per_epoch)
     else:
         args.num_train_epochs = math.ceil(args.max_train_steps / num_update_steps_per_epoch)
     num_warmup_steps = int(args.num_warmup_epochs * num_update_steps_per_epoch)
@@ -480,7 +482,7 @@ def main():
     print_rank_0(f"  Gradient Accumulation steps = {args.gradient_accumulation_steps}")
     print_rank_0(f"  Total optimization steps = {args.max_train_steps}")
     # Only show the progress bar once on each machine.
-
+    # If passed along, set the training seed now.
     updated_steps = 0
     forward_step = 0
     best_dev_acc = 0.0
@@ -490,9 +492,9 @@ def main():
         teacher_out = do_eval(args, teacher_model, eval_dataloader, mm_eval_dataloader, device, is_regression=is_regression)
         teacher_result, _, _, _ = arrange_output(args.task_name, teacher_out, previous_best, 0)
         print_rank_0(f"teacher model: {teacher_result}")
-       
+        teacher_model.eval()
     stat_history = {"lr1": [], "lr2": [], 'train_att_loss': [], 'train_ffn_loss': [], 'train_loss': [], 'eval': [], 'tmp_loss':[0,0,0,0], 'forward_step':[], 'teacher_result':teacher_result}
-    out = do_eval(args, teacher_model, eval_dataloader, mm_eval_dataloader, device, is_regression=is_regression)
+    out = do_eval(args, model, eval_dataloader, mm_eval_dataloader, device, is_regression=is_regression)
     current_result, _, _, _ = arrange_output(args.task_name, out, previous_best, best_dev_acc)
     print_rank_0(f"at step 0 the (student) model's performance for {args.task_name}: {current_result}")
     forward_fun = forward_loss(args, ds_config, output_mode)
@@ -505,7 +507,10 @@ def main():
             model.backward(all_loss[0]) #<=======================when using deepspedd engine fp16, we should not use loss.backward()
             model.step()
             stat_history = record_stat(stat_history, all_loss,)
-
+            if step % args.gradient_accumulation_steps == 0 or step == len(train_dataloader) - 1:
+                updated_steps += 1
+                optimizer.zero_grad()
+            forward_step += 1
             if forward_step % args.eval_step ==0 or updated_steps == args.max_train_steps or step == len(train_dataloader) - 1:
                 results = do_eval(args, model, eval_dataloader, mm_eval_dataloader, device, is_regression=is_regression)
                 current_result, previous_best, best_dev_acc, save_model = arrange_output(args.task_name, results, previous_best, best_dev_acc)
@@ -514,11 +519,6 @@ def main():
                    save_checkpoint_and_config(args, model, config, tokenizer, ds_config=ds_config)
             if updated_steps > args.max_train_steps:
                 break
-            if step % args.gradient_accumulation_steps == 0 or step == len(train_dataloader) - 1:
-                updated_steps += 1
-                optimizer.zero_grad()
-            forward_step += 1
-
         end_time = time.time()
         epoch_mins, epoch_secs = epoch_time(start_time, end_time)
         print_rank_0 (f'Epoch: {epoch+1:02} | Time: {epoch_mins}m {epoch_secs}s')
