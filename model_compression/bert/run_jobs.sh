@@ -2,15 +2,15 @@
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%. run_jobs.sh (for mnli)
 
-export CUDA_VISIBLE_DEVICES=2
+export CUDA_VISIBLE_DEVICES=0
 TASK_NAME=mnli  #mnli sst2 stsb mnli qqp rte cola mrpc qnli
 STAGE=one_stage
 LRATE=5e-5
 QGROUP=64
 EPOCH=18
 WARMUP_EPOCH=1
-#CONFIG=./config/ds_config_W1A8_64Qgroup_fp16.json # <=====================it's less stable
-#CONFIG=./config/ds_config_W1or2A8_64Qgroup_fp16.json
+#CONFIG=./config/ds_config_W1A8_Qgroup64_fp16.json # <=====================it's less stable
+#CONFIG=./config/ds_config_W1or2A8_Qgroup64_fp16.json
 CONFIG=./config/ds_config_W1A8_Qgroup${QGROUP}_fp32.json
 SAVE_PATH=./final_result/output_g${QGROUP}_lr${LRATE}_${TASK_NAME}_${STAGE}_ep${EPOCH}
 mkdir -p ${SAVE_PATH}
