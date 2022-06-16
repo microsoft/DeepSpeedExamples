@@ -19,7 +19,7 @@ mkdir -p ${SAVE_PATH}
 MODEL=yoshitomo-matsubara/bert-base-uncased-${TASK_NAME} ## for both student and teacher
 python -m torch.distributed.launch --nproc_per_node=1 \
   --master_port 66664 \
-  run_glue_no_trainer_clean.py \
+  run_glue_no_trainer.py \
   --seed 42 \
   --distill_method ${STAGE} \
   --model_name_or_path ${MODEL} \

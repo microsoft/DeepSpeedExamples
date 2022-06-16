@@ -521,7 +521,7 @@ def main():
                 break
         end_time = time.time()
         epoch_mins, epoch_secs = epoch_time(start_time, end_time)
-        print_rank_0 (f'Epoch: {epoch+1:02} | Time: {epoch_mins}m {epoch_secs}s')
+        print_rank_0(f'Epoch: {epoch+1:02} | Time: {epoch_mins}m {epoch_secs}s')
 
     if (prune_enabled or quantization_enabled) and args.clean_best_model and args.save_best_model:
         save_clean_best_model(args, print_rank_0,  model, tokenizer, config, redundant_clean, eval_dataloader, mm_eval_dataloader, device, is_regression, previous_best, best_dev_acc, ds_config=ds_config)
