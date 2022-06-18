@@ -53,6 +53,7 @@ import deepspeed.module_inject as module_inject
 import deepspeed
 from deepspeed.runtime.zero.constants import *
 from transformers.deepspeed import HfDeepSpeedConfig
+from deepspeed.runtime.utils import see_memory_usage
 
 logging.basicConfig(
     format="%(asctime)s - %(levelname)s - %(name)s -   %(message)s",
@@ -261,9 +262,12 @@ def main():
     except KeyError:
         raise KeyError("the model {} you specified is not supported. You are welcome to add it and open a PR :)")
 
+    def _load_model(model_name_or_path):
+        return model_class.from_pretrained(model_name_or_path, ignore_mismatched_sizes=True)
+
     # initialize deepspeed engine
     if args.ds_inference:
-        model = model_class.from_pretrained(args.model_name_or_path)
+        model = _load_model(args.model_name_or_path) # model_class.from_pretrained(args.model_name_or_path)
         if args.fp16:
             model.half()
         model.cuda(torch.cuda.current_device())
@@ -281,7 +285,7 @@ def main():
         import json
         ds_config = json.load(open(ds_config_path, "r"))
         dschf = HfDeepSpeedConfig(ds_config)  # keep this object alive
-        model = model_class.from_pretrained(args.model_name_or_path)
+        model = _load_model(args.model_name_or_path) # model_class.from_pretrained(args.model_name_or_path)
 
         # config = AutoConfig.from_pretrained(args.model_name_or_path)
         # model_hidden_size = config.n_embd
@@ -301,8 +305,12 @@ def main():
         model.eval()
 
     else:
+        model = _load_model(args.model_name_or_path) # model_class.from_pretrained(args.model_name_or_path)
+        if args.fp16:
+            model.half()
         model.cuda(torch.cuda.current_device())
 
+    see_memory_usage(f'after model loaded', force=True)
     tokenizer = tokenizer_class.from_pretrained(args.model_name_or_path)
     tokenizer.padding_side = "left"
     # Define PAD Token = EOS Token = 50256
@@ -315,6 +323,8 @@ def main():
         prompt_text = fname.readlines()
     else:
         prompt_text = (args.prompt if args.prompt else input("Model prompt >>> "),)
+    
+    prompt_count = len(prompt_text)
 
     # Different models need different input formatting and/or extra arguments
     requires_preprocessing = args.model_type in PREPROCESSING_FUNCTIONS.keys()
@@ -343,19 +353,21 @@ def main():
     input_ids = tokenizer([prompt_text]*args.batch_size, return_tensors="pt", padding=True).input_ids.cuda()
     latencies = []
     with torch.no_grad():
-        for _ in range(3):
+        for i in range(prompt_count):
+            see_memory_usage(f'before generate {i}', force=True)
             torch.cuda.synchronize()
             t0 = time.time()
 
             output_sequences = model.generate(
                 input_ids=input_ids,
-                # max_length=args.length + len(input_ids[0]),
-                max_new_tokens=args.length,
+                max_length=args.length + len(input_ids[0]),
+                #max_new_tokens=args.length,
                 min_length=args.length + len(input_ids[0]),
                 do_sample=True
             )
             torch.cuda.synchronize()
-            latencies.append((time.time()-t0) / args.length)
+            see_memory_usage(f'after generate {i}', force=True)
+            latencies.append((time.time()-t0) / args.length / args.batch_size)
             generated_sequences = tokenizer.batch_decode(output_sequences, skip_special_tokens=True)
 
             if 0:
