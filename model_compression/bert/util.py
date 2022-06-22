@@ -10,10 +10,12 @@ from transformers import AutoConfig, PretrainedConfig
 import huggingface_transformer
 from huggingface_transformer.modeling_bert import BertForSequenceClassification
 import logging
+import numpy as np
+import math
 
 logger = logging.getLogger(__name__)
-acc_tasks = ["mnli", "mrpc", "sst-2", "qqp", "qnli", "rte"]
-corr_tasks = ["sts-b"]
+acc_tasks = ["mnli", "mrpc", "sst2", "qqp", "qnli", "rte"]
+corr_tasks = ["stsb"]
 mcc_tasks = ["cola"]
 output_modes = {
     "cola": "classification",
@@ -48,17 +50,19 @@ def to_device(batch, device):
 def check_and_identify_compresssion(args, ds_config):
     assert args.per_device_train_batch_size == ds_config["train_micro_batch_size_per_gpu"]
     assert args.gradient_accumulation_steps == ds_config["train_batch_size"] / ds_config["train_micro_batch_size_per_gpu"]
-    try:
-        layer_reduction_enabled = ds_config["compression_training"]["layer_reduction"]["enabled"]
-    except:
-        layer_reduction_enabled = False
+    quantization_enabled, prune_enabled, layer_reduction_enabled = False, False, False
+    if ds_config["compression_training"]["layer_reduction"]["enabled"]:
+        layer_reduction_enabled = True
+
     if ds_config["compression_training"]["sparse_pruning"]["shared_parameters"]["enabled"] or \
         ds_config["compression_training"]["row_pruning"]["shared_parameters"]["enabled"] or \
             ds_config["compression_training"]["head_pruning"]["shared_parameters"]["enabled"]:
         prune_enabled = True
-    else:
-        prune_enabled = False
-    quantization_enabled = ds_config["compression_training"]["weight_quantization"]["shared_parameters"]["enabled"]
+
+    if ds_config["compression_training"]["weight_quantization"]["shared_parameters"]["enabled"] or \
+        ds_config["compression_training"]["activation_quantization"]["shared_parameters"]["enabled"]:
+        quantization_enabled = True
+
     return layer_reduction_enabled, prune_enabled, quantization_enabled
 
 def soft_cross_entropy(predicts, targets):
@@ -154,8 +158,8 @@ def arrange_output(task_name, results, previous_best, best_dev_acc):
 
     elif task_name in corr_tasks:
         current_result = f"pearson/spearmanr:{result['pearson']}/{result['spearmanr']}"
-        if result['corr'] > best_dev_acc:
-            best_dev_acc = result['corr']
+        if result['pearson'] > best_dev_acc:
+            best_dev_acc = result['pearson']
             save_model = True
             previous_best = current_result
     elif task_name in mcc_tasks:
@@ -200,8 +204,8 @@ def forward_loss(args, ds_config, output_mode):
             else:
                 ## ATTENTION: The knowledge distillation is designed for skip-layer KD
                 layers_per_block = int(teacher_layer_num / student_layer_num)  ###[1, 3, 5, 7, 9, 11]
-                att_list = [ i * layers_per_block + layers_per_block - 1 for i in range(student_layer_num)]
-                rep_list = [ i * layers_per_block for i in range(student_layer_num + 1)]  ###[0, 2, 4, 6, 8, 10, 12]
+                att_list = [i * layers_per_block + layers_per_block - 1 for i in range(student_layer_num)]
+                rep_list = [i * layers_per_block for i in range(student_layer_num + 1)]  ###[0, 2, 4, 6, 8, 10, 12]
             
             new_teacher_reps = [teacher_reps[i] for i in rep_list]
             new_teacher_atts = [teacher_atts[i] for i in att_list]
@@ -226,7 +230,7 @@ def record_stat(stat_history, all_loss):
     return stat_history
 
 
-def update_stat_and_print(args, print_rank_0, forward_step, stat_history, optimizer, eval_result, previous_best, save_model):
+def update_stat_and_print(args, print_rank_0, forward_step, stat_history, optimizer, eval_result, previous_best, best_dev_acc, save_model, ds_config):
     print_rank_0( f"***** Running evaluation Stage {args.distill_method}*****")
     print_rank_0("  {} step of {}".format(forward_step, args.max_train_steps))
     
@@ -255,12 +259,27 @@ def update_stat_and_print(args, print_rank_0, forward_step, stat_history, optimi
     if previous_best is not None:
         print_rank_0(f"task {args.task_name}, teacher_result: {teacher_result}\nPrevious best: {previous_best}")
 
-    if save_model:
-        print_rank_0(f'new best checkpoint, saving model to {args.output_dir}')
-
     tr_loss, tr_rep_loss, tr_cls_loss, tr_att_loss = 0., 0., 0., 0.,
     stat_history['tmp_loss'] = [ 0, 0., 0., 0.,]
-    return stat_history
+
+    ##############for pruning
+    sparse_prune, row_prune, head_prune = False, False, False
+    sparse_iter, row_iter, head_iter = 0, 0, 0
+    if ds_config["compression_training"]["sparse_pruning"]["shared_parameters"]["enabled"]:
+        sparse_prune = True
+        sparse_iter = ds_config["compression_training"]["sparse_pruning"]["shared_parameters"]["schedule_offset"]
+    if ds_config["compression_training"]["row_pruning"]["shared_parameters"]["enabled"]:
+        row_prune = True
+        row_iter = ds_config["compression_training"]["row_pruning"]["shared_parameters"]["schedule_offset"]
+    if ds_config["compression_training"]["head_pruning"]["shared_parameters"]["enabled"]:
+        head_prune = True
+        head_iter = ds_config["compression_training"]["head_pruning"]["shared_parameters"]["schedule_offset"]
+    if sparse_prune or row_prune or head_prune:
+        save_iter = np.max([sparse_iter, row_iter, head_iter]) 
+        if forward_step<save_iter:
+            save_model = False
+            best_dev_acc = 0
+    return stat_history, best_dev_acc, save_model
 
 def save_checkpoint_and_config(args, model, config, tokenizer, ds_config=None):
     WEIGHTS_NAME = "pytorch_model.bin"
@@ -296,17 +315,29 @@ def save_clean_best_model(args, print_rank_0,  model, tokenizer, config, redunda
         layer_reduction_enabled, prune_enabled, quantization_enabled = check_and_identify_compresssion(args, ds_config)
         output_dir_best = os.path.join(args.output_dir, 'best')   
         best_model_path = os.path.join(output_dir_best, WEIGHTS_NAME) 
+        if os.path.exists(output_dir_best):
+            best_model = torch.load(best_model_path)
+            new_sd = {}
+            for k, v in best_model.items():
+                new_sd["module."+k] = v
+            model.load_state_dict(new_sd, strict=False)  
+        else:
+            print_rank_0 ("WARNING: no best model yet")
+            
+        # try:
+        model = redundant_clean(model, args.deepspeed_config)           
+        # except:
+        #     print_rank_0 ("WARNING: redundant_clean is not applicable")
+        #     pass  
 
-        best_model = torch.load(best_model_path)
-        new_sd = {}
-        for k, v in best_model.items():
-            new_sd["module."+k] = v
-        model.load_state_dict(new_sd, strict=False)  
-        try:
-            model = redundant_clean(model, args.deepspeed_config)           
-        except:
-            print_rank_0 ("redundant_clean is not applicable")
-            pass    
+        if  ds_config["compression_training"]["head_pruning"]["shared_parameters"]["enabled"]:
+            for module in model.modules():
+                if hasattr(module, 'num_attention_heads'):
+                    ratio = ds_config["compression_training"]['head_pruning']["different_groups"]["rp1"]["params"]["dense_ratio"]
+                    config.num_attention_heads = math.ceil(config.num_attention_heads * ratio)
+                    module.num_attention_heads = math.ceil(module.num_attention_heads * ratio)
+                    module.all_head_size = int(module.num_attention_heads * 64)
+
         result = do_eval(args, model, eval_dataloader, mm_eval_dataloader, device, is_regression=is_regression)
         current_result, previous_best, best_dev_acc, _ = arrange_output(args.task_name, result, previous_best, best_dev_acc)
         print_rank_0( f"Clean the best model, and the accuracy of the clean model is {current_result}")
@@ -315,13 +346,7 @@ def save_clean_best_model(args, print_rank_0,  model, tokenizer, config, redunda
         model_to_save = copy.deepcopy(model_to_save)
         WEIGHTS_NAME = "pytorch_model.bin"
         CONFIG_NAME = 'config.json'
-        if prune_enabled:
-            for module in model.modules():
-                if hasattr(module, 'num_attention_heads'):
-                    ratio = ds_config["compression_training"]['head_pruning']["different_groups"]["rp1"]["params"]["dense_ratio"]
-                    config.num_attention_heads = int(config.num_attention_heads * ratio)
-                    module.num_attention_heads = int(module.num_attention_heads * ratio)
-                    module.all_head_size = int(module.num_attention_heads * 64)
+
         if args.local_rank in [-1, 0]:
             output_dir_best_clean = os.path.join(args.output_dir, 'clean') 
             if not os.path.exists(output_dir_best_clean):

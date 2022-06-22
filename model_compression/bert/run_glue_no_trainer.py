@@ -275,11 +275,13 @@ def main():
             label_list = raw_datasets["train"].features["label"].names
             num_labels = len(label_list)
         else:
+            label_list=None
             num_labels = 1
     else:
         # Trying to have good defaults here, don't hesitate to tweak to your needs.
         is_regression = raw_datasets["train"].features["label"].dtype in ["float32", "float64"]
         if is_regression:
+            label_list=None
             num_labels = 1
         else:
             # A useful fast method:
@@ -427,6 +429,7 @@ def main():
                                  collate_fn=default_data_collator,
                                  sampler=eval_sampler,
                                  batch_size=args.per_device_eval_batch_size)
+    mm_eval_dataloader = None
     if args.task_name == "mnli":
         # Final evaluation on mismatched validation set
         mm_eval_dataset = processed_datasets["validation_mismatched"]
@@ -514,9 +517,10 @@ def main():
             if forward_step % args.eval_step ==0 or updated_steps == args.max_train_steps or step == len(train_dataloader) - 1:
                 results = do_eval(args, model, eval_dataloader, mm_eval_dataloader, device, is_regression=is_regression)
                 current_result, previous_best, best_dev_acc, save_model = arrange_output(args.task_name, results, previous_best, best_dev_acc)
-                stat_history = update_stat_and_print(args, print_rank_0, forward_step, stat_history, optimizer, current_result,  previous_best, save_model)
+                stat_history, best_dev_acc, save_model = update_stat_and_print(args, print_rank_0, forward_step, stat_history, optimizer, current_result,  previous_best, save_model, best_dev_acc, ds_config)
                 if save_model and args.save_best_model:
-                   save_checkpoint_and_config(args, model, config, tokenizer, ds_config=ds_config)
+                    print_rank_0(f'new best checkpoint, saving model to {args.output_dir}')
+                    save_checkpoint_and_config(args, model, config, tokenizer, ds_config=ds_config)
             if updated_steps > args.max_train_steps:
                 break
         end_time = time.time()

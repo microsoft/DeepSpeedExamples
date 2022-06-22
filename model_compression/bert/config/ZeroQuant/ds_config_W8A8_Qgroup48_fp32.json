@@ -13,16 +13,15 @@
     "wall_clock_breakdown": false,
     "compression_training": {
       "layer_reduction": {
-        "enabled": true,
-        "keep_number_layer": 6,
+        "enabled": false,
+        "keep_number_layer": 5,
         "module_name_prefix": "bert.encoder.layer",
         "teacher_layer": [
-          1,
-          3,
-          5,
-          7,
-          9,
-          11
+          2,
+          4,
+          6,
+          8,
+          10
         ],
         "other_module_name": [
           "bert.pooler",
@@ -35,7 +34,7 @@
           "enabled": true,
           "quantizer_kernel": false,
           "schedule_offset": 0,
-          "quantize_groups": 1,
+          "quantize_groups": 48,
           "quantize_verbose": false,
           "quantization_type": "symmetric",
           "quantize_weight_in_forward": true,
