@@ -324,11 +324,11 @@ def save_clean_best_model(args, print_rank_0,  model, tokenizer, config, redunda
         else:
             print_rank_0 ("WARNING: no best model yet")
             
-        # try:
-        model = redundant_clean(model, args.deepspeed_config)           
-        # except:
-        #     print_rank_0 ("WARNING: redundant_clean is not applicable")
-        #     pass  
+        try:
+             model = redundant_clean(model, args.deepspeed_config)           
+        except:
+            print_rank_0 ("WARNING: redundant_clean is not applicable")
+            pass  
 
         if  ds_config["compression_training"]["head_pruning"]["shared_parameters"]["enabled"]:
             for module in model.modules():
