@@ -516,8 +516,8 @@ def main():
             forward_step += 1
             if forward_step % args.eval_step ==0 or updated_steps == args.max_train_steps or step == len(train_dataloader) - 1:
                 results = do_eval(args, model, eval_dataloader, mm_eval_dataloader, device, is_regression=is_regression)
-                current_result, previous_best, best_dev_acc, save_model = arrange_output(args.task_name, results, previous_best, best_dev_acc)
-                stat_history, best_dev_acc, save_model = update_stat_and_print(args, print_rank_0, forward_step, stat_history, optimizer, current_result,  previous_best, save_model, best_dev_acc, ds_config)
+                arrange_out = arrange_output(args.task_name, results, previous_best, best_dev_acc)
+                stat_history, best_dev_acc, save_model = update_stat_and_print(args, print_rank_0, forward_step, stat_history, optimizer, arrange_out, ds_config)
                 if save_model and args.save_best_model:
                     print_rank_0(f'new best checkpoint, saving model to {args.output_dir}')
                     save_checkpoint_and_config(args, model, config, tokenizer, ds_config=ds_config)

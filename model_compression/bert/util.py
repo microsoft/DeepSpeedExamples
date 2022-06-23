@@ -151,6 +151,7 @@ def arrange_output(task_name, results, previous_best, best_dev_acc):
             current_result = f"acc/mm-acc:{result['accuracy']}/{result1['accuracy']}"
         elif task_name in ['mrpc', 'qqp']:
             current_result = f"f1/acc:{result['f1']}/{result['accuracy']}"
+        
         if result['accuracy'] > best_dev_acc:
             save_model = True
             best_dev_acc = result['accuracy']
@@ -230,7 +231,8 @@ def record_stat(stat_history, all_loss):
     return stat_history
 
 
-def update_stat_and_print(args, print_rank_0, forward_step, stat_history, optimizer, eval_result, previous_best, best_dev_acc, save_model, ds_config):
+def update_stat_and_print(args, print_rank_0, forward_step, stat_history, optimizer, arrange_out, ds_config):
+    eval_result, previous_best, best_dev_acc, save_model = arrange_out[0], arrange_out[1], arrange_out[2], arrange_out[3]
     print_rank_0( f"***** Running evaluation Stage {args.distill_method}*****")
     print_rank_0("  {} step of {}".format(forward_step, args.max_train_steps))
     
@@ -323,7 +325,10 @@ def save_clean_best_model(args, print_rank_0,  model, tokenizer, config, redunda
             model.load_state_dict(new_sd, strict=False)  
         else:
             print_rank_0 ("WARNING: no best model yet")
-            
+
+        result = do_eval(args, model, eval_dataloader, mm_eval_dataloader, device, is_regression=is_regression)
+        current_result, previous_best, best_dev_acc, _ = arrange_output(args.task_name, result, previous_best, best_dev_acc)
+        print_rank_0( f"Before clean, double check the perforamnce of best model is {current_result}")           
         try:
              model = redundant_clean(model, args.deepspeed_config)           
         except:

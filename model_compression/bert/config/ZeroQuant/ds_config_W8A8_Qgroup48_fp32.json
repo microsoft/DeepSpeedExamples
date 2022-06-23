@@ -47,8 +47,8 @@
         "different_groups": {
           "wq1": {
             "params": {
-              "start_bits": 1,
-              "target_bits": 1,
+              "start_bits": 8,
+              "target_bits": 8,
               "quantization_period": 0
             },
             "modules": [
