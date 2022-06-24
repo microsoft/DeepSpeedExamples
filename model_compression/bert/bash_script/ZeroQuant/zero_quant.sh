@@ -17,6 +17,7 @@ python -m torch.distributed.launch --nproc_per_node=1 \
   --master_port 66664 \
   run_glue_no_trainer.py \
   --seed 42 \
+  --distill_method one_stage \
   --model_name_or_path ${MODEL} \
   --task_name $TASK_NAME \
   --max_length 128 \

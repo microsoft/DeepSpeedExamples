@@ -7,7 +7,7 @@ LRATE=5e-5
 EPOCH=2
 WARMUP_EPOCH=1
 BATCH_SIZE_PER_GPU=32
-NAME="pruning_sparse1"
+NAME="pruning_sparse"
 SAVE_PATH=./out/${NAME}/
 mkdir -p ${SAVE_PATH}
 

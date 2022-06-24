@@ -63,7 +63,6 @@ sed "s/LAYER_REDUCTION_ENABLE/${LAYER_REDUCTION_ENABLE}/" ${template_json} \
       > ${config_json}
       
 CONFIG=${config_json}
-GRAD_ACC=
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% if users provide *NO* models, use the following script %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% the following command will first download huggingface models and then compress %%%%%%%
 MODEL=yoshitomo-matsubara/bert-base-uncased-${TASK_NAME} ## for both student and teacher
@@ -85,7 +84,7 @@ run_cmd="python -m torch.distributed.launch --nproc_per_node=1 \
   --deepspeed_config ${CONFIG} \
   --deepspeed \
   --save_best_model --clean_best_model \
-  --gradient_accumulation_steps ${GRAD_ACC} \
+  --gradient_accumulation_steps 1 \
   --output_dir ${SAVE_PATH} | tee -a  ${SAVE_PATH}/train.log"
 
 echo ${run_cmd}
