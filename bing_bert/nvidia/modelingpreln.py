@@ -574,7 +574,6 @@ class BertEncoder(nn.Module):
             ds_config = get_deepspeed_config(args)
             cuda_config = DeepSpeedTransformerConfig(
                 batch_size=ds_config.train_micro_batch_size_per_gpu,
-                max_seq_length=args.max_seq_length,
                 hidden_size=config.hidden_size,
                 intermediate_size=config.intermediate_size,
                 heads=config.num_attention_heads,
@@ -593,8 +592,8 @@ class BertEncoder(nn.Module):
                 stochastic_mode=args.stochastic_mode)
 
             self.layer = nn.ModuleList([
-                copy.deepcopy(DeepSpeedTransformerLayer(i, cuda_config))
-                for i in range(config.num_hidden_layers)
+                copy.deepcopy(DeepSpeedTransformerLayer(cuda_config))
+                for _ in range(config.num_hidden_layers)
             ])
         else:
             layer = BertLayer(config)

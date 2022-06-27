@@ -37,6 +37,8 @@ run_cmd="python3.6 -m torch.distributed.launch \
        --task_name $TASK \
        --do_train \
        --do_eval \
+       --deepspeed \
+       --deepspeed_config ${base_dir}/glue_bert_base.json \
        --do_lower_case \
        --data_dir $GLUE_DIR/$TASK/ \
        --bert_model bert-large-uncased \

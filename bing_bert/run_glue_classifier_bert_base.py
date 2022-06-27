@@ -24,6 +24,7 @@ import os
 import random
 import sys
 
+import deepspeed
 import numpy as np
 import torch
 from torch.utils.data import (DataLoader, RandomSampler, SequentialSampler,
@@ -690,7 +691,15 @@ def main():
                         default=False,
                         action='store_true',
                         help="Whether to enable progressive layer dropping or not")
+    parser.add_argument(
+        '--preln',
+        action='store_true',
+        default=False,
+        help=
+        "Switching to the variant of Transformer blocks that use pre-LayerNorm."
+    )
 
+    parser = deepspeed.add_config_arguments(parser)
     args = parser.parse_args()
 
     if args.server_ip and args.server_port:
@@ -810,8 +819,10 @@ def main():
     if args.progressive_layer_drop:
         print("BertBaseConfigPreLnLayerDrop")
         from nvidia.modelingpreln_layerdrop import BertForSequenceClassification, BertConfig
+    elif args.preln:
+        from nvidia.modelingpreln import BertForSequenceClassification, BertConfig, BertLayer
     else:
-        from nvidia.modelingpreln import BertForSequenceClassification, BertConfig
+        from nvidia.modeling import BertForSequenceClassification, BertConfig, BertLayer
 
     bert_config = BertConfig(**bert_base_model_config)
     bert_config.vocab_size = len(tokenizer.vocab)
@@ -860,38 +871,37 @@ def main():
     elif n_gpu > 1:
         model = torch.nn.DataParallel(model)
 
+    # Patch model with deepspeed transformer kernel
+    if not args.deepspeed_transformer_kernel:
+        from deepspeed import replace_transformer_layer
+        model = deepspeed.module_inject.replace_transformer_layer(
+               orig_layer_impl=BertLayer,
+               model=model,
+               micro_batch_size=args.train_batch_size,
+               bert_config=bert_config,
+               seed=args.seed,
+               preln=True,
+               fp16=args.fp16,
+               huggingface=False)
+
     # Prepare optimizer
     param_optimizer = list(model.named_parameters())
     no_decay = ['bias', 'LayerNorm.bias', 'LayerNorm.weight']
+    if args.deepspeed_transformer_kernel:
+        no_decay = no_decay + ['attn_nw', 'attn_nb', 'norm_w', 'norm_b',
+                               'attn_qkvb', 'attn_ob', 'inter_b', 'output_b']
     optimizer_grouped_parameters = [
         {'params': [p for n, p in param_optimizer if not any(
             nd in n for nd in no_decay)], 'weight_decay': 0.01},
         {'params': [p for n, p in param_optimizer if any(
             nd in n for nd in no_decay)], 'weight_decay': 0.0}
     ]
-    if args.fp16:
-        try:
-            from apex.optimizers import FP16_Optimizer
-            from apex.optimizers import FusedAdam
-        except ImportError:
-            raise ImportError(
-                "Please install apex from https://www.github.com/nvidia/apex to use distributed and fp16 training.")
-
-        optimizer = FusedAdam(optimizer_grouped_parameters,
-                              lr=args.learning_rate,
-                              bias_correction=False,
-                              max_grad_norm=1.0)
-        if args.loss_scale == 0:
-            optimizer = FP16_Optimizer(optimizer, dynamic_loss_scale=True)
-        else:
-            optimizer = FP16_Optimizer(
-                optimizer, static_loss_scale=args.loss_scale)
-
-    else:
-        optimizer = BertAdam(optimizer_grouped_parameters,
-                             lr=args.learning_rate,
-                             warmup=args.warmup_proportion,
-                             t_total=num_train_optimization_steps)
+    
+    model, optimizer, _, _ = deepspeed.initialize(
+        args=args,
+        model=model,
+        model_parameters=optimizer_grouped_parameters,
+        dist_init_required=True)
 
     global_step = 0
     nb_tr_steps = 0

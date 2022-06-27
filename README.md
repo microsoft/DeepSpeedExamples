@@ -2,6 +2,10 @@
 # DeepSpeed
 This repo contains example models that use [DeepSpeed](https://github.com/microsoft/DeepSpeed).
 
+# Note on Megatron examples
+
+Please use the latest [Megatron-DeepSpeed fork](https://github.com/microsoft/Megatron-DeepSpeed) instead of the deprecated/old megatron forks in the megatron folder. 
+
 # Contributing
 
 This project welcomes contributions and suggestions.  Most contributions require you to agree to a
