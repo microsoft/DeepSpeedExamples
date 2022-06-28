@@ -48,7 +48,7 @@ from transformers.file_utils import get_full_repo_name
 from transformers.utils.versions import require_version
 from huggingface_transformer.modeling_bert import BertForSequenceClassification
 import deepspeed
-from deepspeed.compression.compress import student_initialization, compress, redundant_clean
+from deepspeed.compression.compress import init_compression, redundancy_clean
 
 from util import *
 logger = logging.getLogger(__name__)
@@ -324,16 +324,12 @@ def main():
             teacher_model.load_state_dict(
                 torch.load(args.pretrained_dir_teacher))
     # model inititalization, config,
-
-    if layer_reduction_enabled:
-        student_initialization(model, teacher_model, args.deepspeed_config) #<==========================================layer_reduction
+    if args.deepspeed:
+        if quantization_enabled or prune_enabled or layer_reduction_enabled:
+            model = init_compression(model, args.deepspeed_config, teacher_model=teacher_model)  #<==========================================compression argument
 
     if args.pretrained_dir_student is not None:
             model.load_state_dict(torch.load(args.pretrained_dir_student))  #<==========================================add weight to students if users provides difference models
-
-    if args.deepspeed:
-        if quantization_enabled or prune_enabled:
-            model = compress(model, args.deepspeed_config)  #<==========================================compression argument
 
     # Preprocessing the datasets
     if args.task_name is not None:
@@ -528,7 +524,7 @@ def main():
         print_rank_0(f'Epoch: {epoch+1:02} | Time: {epoch_mins}m {epoch_secs}s')
 
     if (prune_enabled or quantization_enabled) and args.clean_best_model and args.save_best_model:
-        save_clean_best_model(args, print_rank_0,  model, tokenizer, config, redundant_clean, eval_dataloader, mm_eval_dataloader, device, is_regression, previous_best, best_dev_acc, ds_config=ds_config)
+        save_clean_best_model(args, print_rank_0,  model, tokenizer, config, redundancy_clean, eval_dataloader, mm_eval_dataloader, device, is_regression, previous_best, best_dev_acc, ds_config=ds_config)
 
 if __name__ == "__main__":
     main()
