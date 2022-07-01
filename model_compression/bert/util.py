@@ -310,7 +310,7 @@ def save_checkpoint_and_config(args, model, config, tokenizer, ds_config=None):
                     json.dump(ds_config, f)
 
 
-def save_clean_best_model(args, print_rank_0,  model, tokenizer, config, redundant_clean, eval_dataloader, mm_eval_dataloader, device, is_regression, previous_best, best_dev_acc, ds_config=None):
+def save_clean_best_model(args, print_rank_0,  model, tokenizer, config, redundancy_clean, eval_dataloader, mm_eval_dataloader, device, is_regression, previous_best, best_dev_acc, ds_config=None):
     if ds_config is not None:
         WEIGHTS_NAME = "pytorch_model.bin"
         CONFIG_NAME = 'config.json'        
@@ -330,7 +330,7 @@ def save_clean_best_model(args, print_rank_0,  model, tokenizer, config, redunda
         current_result, previous_best, best_dev_acc, _ = arrange_output(args.task_name, result, previous_best, best_dev_acc)
         print_rank_0( f"Before clean, double check the perforamnce of best model is {current_result}")           
         try:
-             model = redundant_clean(model, args.deepspeed_config)           
+             model = redundancy_clean(model, args.deepspeed_config)           
         except:
             print_rank_0 ("WARNING: redundant_clean is not applicable")
             pass  
