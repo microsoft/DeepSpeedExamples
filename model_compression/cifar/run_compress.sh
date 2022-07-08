@@ -1,3 +1,4 @@
+#!/bin/bash
 export CUDA_VISIBLE_DEVICES=0
 
 ############Note that The following script is *without* batch-norm############
