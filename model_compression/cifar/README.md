@@ -1,8 +1,7 @@
 #### Install
 
 ``pip install -r requirement.txt``
-
-You will also need to install DeepSpeed *staging_compression_library_v1* https://github.com/microsoft/DeepSpeed-internal/tree/staging_compression_library_v1
+You will also need to install updated DeepSpeed verion, which contains the compression libarary
 
 #### Key File: train.py
 
