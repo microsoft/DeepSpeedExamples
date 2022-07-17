@@ -1,7 +1,7 @@
 #### Install
 
 ``pip install torch torchvision``
-You will also need to install updated DeepSpeed verion, which contains the compression libarary
+You will also need to install updated DeepSpeed version, which contains the compression library
 
 #### Key File: train.py
 

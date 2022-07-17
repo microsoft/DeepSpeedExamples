@@ -1,12 +1,12 @@
 #### Install
 
-``pip install -r requirement.txt``
+``pip install -r requirements.txt``
 
-You will also need to install updated DeepSpeed verion, which contains the compression libarary
+You will also need to install updated DeepSpeed version, which contains the compression library
 
 #### Key File: run_glue_no_trainer.py
 
-The python code is modified based on [HuggingFace&#39;s PyTorch text_classiciation](https://github.com/huggingface/transformers/tree/main/examples/pytorch/text-classification). The key added feature is the implementation of knowledge distillation (KD)（--distill_method one_stage). If no KD, run (--distill_method zero_stage)
+The python code is modified based on [HuggingFace&#39;s PyTorch text_classification](https://github.com/huggingface/transformers/tree/main/examples/pytorch/text-classification). The key added feature is the implementation of knowledge distillation (KD)（--distill_method one_stage). If no KD, run (--distill_method zero_stage)
 
 #### Folders (config, huggingface_transformer, bash_script)
 
