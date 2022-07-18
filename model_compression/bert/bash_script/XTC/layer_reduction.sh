@@ -34,7 +34,7 @@ python -m torch.distributed.launch --nproc_per_node=1 \
   --eval_step 1000 \
   --deepspeed_config ${CONFIG} \
   --deepspeed \
-  --save_best_model \
+  --save_best_model --clean_best_model \
   --gradient_accumulation_steps 1 \
   --output_dir ${SAVE_PATH} &>> ${SAVE_PATH}/train.log
 
