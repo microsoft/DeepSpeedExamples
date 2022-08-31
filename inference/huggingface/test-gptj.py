@@ -23,7 +23,7 @@ model = AutoModelForCausalLM.from_pretrained("EleutherAI/gpt-j-6B")
 inp_tokens = tokenizer("DeepSpeed is", return_tensors="pt",)
 model = deepspeed.init_inference(model,
                                  mp_size=world_size,
-                                 dtype=torch.float,
+                                 dtype=torch.half,
                                  replace_with_kernel_inject=True)
                                  
 for token in inp_tokens:
