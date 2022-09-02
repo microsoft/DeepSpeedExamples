@@ -49,16 +49,24 @@ from transformers import (
 from transformers.generation_utils import GenerationMixin
 from transformers.modeling_outputs import CausalLMOutputWithCrossAttentions
 
-import tensorrt as trt
 import torch
-from tensorrt import ICudaEngine
-from tensorrt.tensorrt import Logger, Runtime
 from torch.nn import Module
 from transformers import AutoConfig, AutoTokenizer, BatchEncoding, PretrainedConfig, PreTrainedTokenizer, TensorType
 
-from ort_utils import create_model_for_provider, inference_onnx_binding, optimize_onnx
-from pytorch_utils import convert_to_onnx, get_model_size
-from trt_utils import build_engine, load_engine, save_engine
+
+# refer to https://github.com/ELS-RD/transformer-deploy/blob/main/src/transformer_deploy/convert.py
+from transformer_deploy.backends.ort_utils import (
+    cpu_quantization,
+    create_model_for_provider,
+    inference_onnx_binding,
+    optimize_onnx,
+)
+from transformer_deploy.backends.pytorch_utils import (
+    convert_to_onnx,
+    get_model_size,
+    infer_classification_pytorch,
+    infer_feature_extraction_pytorch,
+)
 
 from itertools import chain
 from torch.onnx import export
@@ -71,6 +79,7 @@ logging.basicConfig(
     datefmt="%m/%d/%Y %H:%M:%S",
     level=logging.INFO,
 )
+
 logger = logging.getLogger(__name__)
 
 MAX_LENGTH = int(10000)  # Hardcoded max length to avoid infinite loop
@@ -85,6 +94,7 @@ MODEL_CLASSES = {
     "transfo-xl": (TransfoXLLMHeadModel, TransfoXLTokenizer),
     "xlm": (XLMWithLMHeadModel, XLMTokenizer),
 }
+
 
 # Padding text to help Transformer-XL and XLNet with short prompts as proposed by Aman Rusia
 # in https://github.com/rusiaaman/XLNet-gen#methodology
@@ -193,7 +203,7 @@ def print_latency(latency_set, title=""):
         print("\tP95 Latency: {0:8.2f} ms".format(p95 * 1000))
         print("\tP99 Latency: {0:8.2f} ms".format(p99 * 1000))
         print("\t999 Latency: {0:8.2f} ms".format(p999 * 1000))
-
+        print(f"{avg * 1000}, {p50 * 1000}, {p90 * 1000}, {p95 * 1000}, {p99 * 1000}, {p999 * 1000}")
 class GPTModelWrapper(Module, GenerationMixin):
     def __init__(
         self, config: PretrainedConfig, device: torch.device, inference: Callable[[torch.Tensor], torch.Tensor]
@@ -238,7 +248,7 @@ def main():
     )
 
     parser.add_argument("--prompt", type=str, default="")
-    parser.add_argument("--length", type=int, default=20)
+    parser.add_argument("--length", type=int, default=50)
     parser.add_argument("--stop_token", type=str, default=None, help="Token at which text generation is stopped")
 
     parser.add_argument(
@@ -282,7 +292,7 @@ def main():
     args.n_gpu = 0 if args.no_cuda else torch.cuda.device_count()
 
     logger.warning(
-        "device: %s, n_gpu: %s, 16-bits training: %s",
+        "device: %s, n_gpu: %s, 16-bits: %s",
         args.device,
         args.n_gpu,
         args.fp16,
@@ -297,20 +307,32 @@ def main():
     except KeyError:
         raise KeyError("the model {} you specified is not supported. You are welcome to add it and open a PR :)")
 
-    tokenizer = tokenizer_class.from_pretrained(args.model_name_or_path)
-    model = model_class.from_pretrained(args.model_name_or_path)
+    auth_token = None
+    tokenizer: PreTrainedTokenizer = AutoTokenizer.from_pretrained(args.model_name_or_path, use_auth_token=auth_token)
+    model_config: PretrainedConfig = AutoConfig.from_pretrained(
+        pretrained_model_name_or_path=args.model_name_or_path, use_auth_token=auth_token
+    )
+
+    model = AutoModelForCausalLM.from_pretrained(args.model_name_or_path, use_auth_token=auth_token)
     model.eval()
+
+    task= "text-generation"
+    model_name_or_path = "tmp-"+ (args.model_name_or_path).replace("/", "-")
+    if not Path(model_name_or_path).exists():
+        os.makedirs(model_name_or_path)
+    prefix = os.path.join(model_name_or_path, (args.model_name_or_path).replace("/", "-") + f"_fp16={args.fp16}_")
+    ort_model_path = prefix  + ".onnx"
+    ort_opt_model_path = prefix + "-opt.onnx"
+    trt_model_path = prefix +".engine"
 
     # initialize deepspeed engine
     if args.ds_inference:
         model.cuda(torch.cuda.current_device())
-
         if args.fp16:
             model.half()
 
         import deepspeed.module_inject as module_inject
         import deepspeed
-
 
         dtype = (torch.half if args.fp16 else torch.float)
         if args.int8:
@@ -323,34 +345,36 @@ def main():
         model = model.module
 
     elif args.ort:
-        model_name_or_path = "tmp-"+ (args.model_name_or_path).replace("/", "-")
-        if not Path(model_name_or_path).exists():
-            os.makedirs(model_name_or_path)
-        ort_model_path = os.path.join(model_name_or_path, (args.model_name_or_path).replace("/", "-") + ".onnx")
+
         if not Path(ort_model_path).exists():
             input_ids: BatchEncoding = tokenizer(
             "Here is some text to encode Hello World", add_special_tokens=True, return_attention_mask=False, return_tensors="pt"
             )
             # some inference engines don't support int64 tensor as inputs, we convert all input tensors to int32 type
-            for k, v in input_ids.items():  # type: str, torch.Tensor
-                input_ids[k] = v.type(dtype=torch.int32)
+            for k, v in input_ids.items():
+                if not isinstance(v, torch.Tensor):
+                    continue
+                if v.dtype in [torch.long, torch.int64]:
+                    input_ids[k] = v.type(torch.int32)
 
+            # create onnx model and compare results
             convert_to_onnx(
                 model_pytorch=model,
                 output_path=ort_model_path,
                 inputs_pytorch=dict(input_ids),
                 quantization=False,
-                var_output_seq=True,  # we inform ONNX export tool that the output shape will vary with the input shape
+                var_output_seq=(task in ["text-generation", "token-classification", "question-answering"]),
+                output_names=["output"] if task != "question-answering" else ["start_logits", "end_logits"],
             )
+
             # model may switch to train mode for some unknown reasons, we force the eval mode.
         _ = model.eval()
 
-        ort_opt_model_path = os.path.join(model_name_or_path, (args.model_name_or_path).replace("/", "-") + "-opt.onnx")
         if not Path(ort_opt_model_path).exists():
             num_attention_heads, hidden_size = get_model_size(path=args.model_name_or_path)
             optimize_onnx(
                 onnx_path=ort_model_path,
-                onnx_optim_model_path= ort_opt_model_path,
+                ort_opt_model_path=ort_opt_model_path,
                 fp16=True if args.fp16 else False,
                 use_cuda=True,
                 num_attention_heads=num_attention_heads,
@@ -361,15 +385,13 @@ def main():
         model_onnx = create_model_for_provider(path=ort_opt_model_path, provider_to_use="CUDAExecutionProvider")
 
         def inference_onnx_optimized(input_ids: torch.Tensor) -> torch.Tensor:
+            input_ids = input_ids.type(dtype=torch.int32)
+
             data = {"input_ids": input_ids}
             return inference_onnx_binding(model_onnx=model_onnx, inputs=data, device="cuda")["output"]
 
         model = GPTModelWrapper(config=model.config, device=torch.device("cuda"), inference=inference_onnx_optimized)
     elif args.trt:
-        model_name_or_path = (args.model_name_or_path).replace("/", "-")
-        if not Path(model_name_or_path).exists():
-            os.makedirs(model_name_or_path)
-        ort_model_path = os.path.join(model_name_or_path, (args.model_name_or_path).replace("/", "-") + ".onnx")
         if not Path(ort_model_path).exists():
             input_ids: BatchEncoding = tokenizer(
             "Here is some text to encode Hello World", add_special_tokens=True, return_attention_mask=False, return_tensors="pt"
@@ -378,29 +400,43 @@ def main():
             for k, v in input_ids.items():  # type: str, torch.Tensor
                 input_ids[k] = v.type(dtype=torch.int32)
 
+            # create onnx model and compare results
             convert_to_onnx(
                 model_pytorch=model,
                 output_path=ort_model_path,
                 inputs_pytorch=dict(input_ids),
                 quantization=False,
-                var_output_seq=True,  # we inform ONNX export tool that the output shape will vary with the input shape
+                var_output_seq=(task in ["text-generation", "token-classification", "question-answering"]),
+                output_names=["output"] if task != "question-answering" else ["start_logits", "end_logits"],
             )
             print("Converted to ONNX")
 
+        try:
+            import tensorrt as trt
+            from tensorrt.tensorrt import ICudaEngine, Logger, Runtime
+            from transformer_deploy.backends.trt_utils import build_engine, load_engine, save_engine
+        except ImportError:
+            raise ImportError(
+                "It seems that TensorRT is not yet installed. "
+                "It is required when you declare TensorRT backend."
+                "Please find installation instruction on "
+                "https://docs.nvidia.com/deeplearning/tensorrt/install-guide/index.html"
+            )
         trt_logger: Logger = trt.Logger(trt.Logger.ERROR)
         runtime: Runtime = trt.Runtime(trt_logger)
-        trt_model_path = os.path.join(model_name_or_path, (args.model_name_or_path).replace("/", "-") +".plan")
 
+        max_seq_len = 128
         if not Path(trt_model_path).exists():
+            print("Building TensorRT engine")
             engine: ICudaEngine = build_engine(
                 runtime=runtime,
                 onnx_file_path=ort_model_path,
                 logger=trt_logger,
                 min_shape=(1, 1),
-                optimal_shape=(1, 128),  # num beam, batch size
-                max_shape=(1, 384),  # num beam, batch size
+                optimal_shape=(1, max_seq_len),  # num beam, batch size
+                max_shape=(1, max_seq_len),  # num beam, batch size
                 workspace_size=10000 * 1024**2,
-                fp16=True,
+                fp16=True if args.fp16 else False,
                 int8=False,
             )
             save_engine(engine, trt_model_path)
@@ -410,8 +446,9 @@ def main():
         )
 
         def inference_tensorrt(input_ids: torch.Tensor) -> torch.Tensor:
+            input_ids = input_ids.type(dtype=torch.int32)
             data = {"input_ids": input_ids}
-            return tensorrt_model(data)[0]
+            return tensorrt_model(data)["output"]
 
         model = GPTModelWrapper(config=model.config, device=torch.device("cuda"), inference=inference_tensorrt)
     else:
@@ -447,7 +484,7 @@ def main():
     else:
         prefix = args.prefix if args.prefix else args.padding_text
         for ppt in prompt_text:
-            eprompt.append(tokenizer.encode(prefix + ppt, add_special_tokens=False, return_tensors="pt"))
+            eprompt.append(tokenizer.encode(prefix + ppt, add_special_tokens=False, return_tensors="pt").to(torch.int32))
 
     latencies = []
     for encoded_prompt, ppt in zip(eprompt, prompt_text):
@@ -457,6 +494,8 @@ def main():
             input_ids = None
         else:
             input_ids = encoded_prompt
+
+        input_ids = input_ids.type(dtype=torch.int32)
 
         torch.cuda.synchronize()
         t0 = time.time()

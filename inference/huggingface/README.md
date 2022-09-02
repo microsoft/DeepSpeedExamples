@@ -1,1 +1,11 @@
-Please install HuggingFace Transformers commit d9c62047a8d75e18d2849d345ab3394875a712ef.
+install [transformer-deploy](https://github.com/ELS-RD/transformer-deploy)
+
+install tensorrt, onnx, onnxruntime
+
+<!-- `python3 -m pip install --upgrade nvidia-tensorrt` -->
+`pip install onnxruntime`
+`python3 -m pip install onnx==1.9.0`
+
+for large models, where external format is needed
+
+https://github.com/onnx/onnx-tensorrt
