@@ -385,7 +385,8 @@ def main():
         model_onnx = create_model_for_provider(path=ort_opt_model_path, provider_to_use="CUDAExecutionProvider")
 
         def inference_onnx_optimized(input_ids: torch.Tensor) -> torch.Tensor:
-            input_ids = input_ids.type(dtype=torch.int32)
+            if input_ids.dtype in [torch.long, torch.int64]:
+                input_ids = input_ids.type(dtype=torch.int32)
 
             data = {"input_ids": input_ids}
             return inference_onnx_binding(model_onnx=model_onnx, inputs=data, device="cuda")["output"]
@@ -446,7 +447,9 @@ def main():
         )
 
         def inference_tensorrt(input_ids: torch.Tensor) -> torch.Tensor:
-            input_ids = input_ids.type(dtype=torch.int32)
+            if input_ids.dtype in [torch.long, torch.int64]:
+                input_ids = input_ids.type(dtype=torch.int32)
+
             data = {"input_ids": input_ids}
             return tensorrt_model(data)["output"]
 
@@ -495,25 +498,26 @@ def main():
         else:
             input_ids = encoded_prompt
 
-        input_ids = input_ids.type(dtype=torch.int32)
+        # input_ids = input_ids.type(dtype=torch.int32)
 
         torch.cuda.synchronize()
         t0 = time.time()
-
-        output_sequences = model.generate(
-            input_ids=input_ids,
-            max_length=args.length + len(encoded_prompt[0]),
-            temperature=args.temperature,
-            top_k=args.k,
-            top_p=args.p,
-            repetition_penalty=args.repetition_penalty,
-            do_sample=True,
-            num_return_sequences=args.num_return_sequences,
-            use_cache=True,
-        )
-        torch.cuda.synchronize()
-        latencies.append((time.time()-t0) / output_sequences.numel())
-
+        try:
+            output_sequences = model.generate(
+                input_ids=input_ids,
+                max_length=args.length + len(encoded_prompt[0]),
+                temperature=args.temperature,
+                top_k=args.k,
+                top_p=args.p,
+                repetition_penalty=args.repetition_penalty,
+                do_sample=True,
+                num_return_sequences=args.num_return_sequences,
+                use_cache=True,
+            )
+            torch.cuda.synchronize()
+            latencies.append((time.time()-t0) / output_sequences.numel())
+        except RuntimeError as e:
+            pass
         # Remove the batch dimension when returning multiple sequences
         if len(output_sequences.shape) > 2:
             output_sequences.squeeze_()
@@ -537,6 +541,8 @@ def main():
 
             generated_sequences.append(total_sequence)
             print(total_sequence)
+
+    print(f"total number of samplers = {len(eprompt)}, total runable samples = {len(latencies)}")
     print_latency(latencies)
     return generated_sequences
 
