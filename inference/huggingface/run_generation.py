@@ -54,24 +54,6 @@ from torch.nn import Module
 from transformers import AutoConfig, AutoTokenizer, BatchEncoding, PretrainedConfig, PreTrainedTokenizer, TensorType
 
 
-# refer to https://github.com/ELS-RD/transformer-deploy/blob/main/src/transformer_deploy/convert.py
-from transformer_deploy.backends.ort_utils import (
-    cpu_quantization,
-    create_model_for_provider,
-    inference_onnx_binding,
-    optimize_onnx,
-)
-from transformer_deploy.backends.pytorch_utils import (
-    convert_to_onnx,
-    get_model_size,
-    infer_classification_pytorch,
-    infer_feature_extraction_pytorch,
-)
-
-from itertools import chain
-from torch.onnx import export
-from transformers.models.gpt2 import GPT2OnnxConfig
-from transformers.onnx.features import FeaturesManager
 import os
 
 logging.basicConfig(
@@ -343,117 +325,135 @@ def main():
                                          replace_method='auto',
                                          replace_with_kernel_inject=True)
         model = model.module
-
-    elif args.ort:
-
-        if not Path(ort_model_path).exists():
-            input_ids: BatchEncoding = tokenizer(
-            "Here is some text to encode Hello World", add_special_tokens=True, return_attention_mask=False, return_tensors="pt"
-            )
-            # some inference engines don't support int64 tensor as inputs, we convert all input tensors to int32 type
-            for k, v in input_ids.items():
-                if not isinstance(v, torch.Tensor):
-                    continue
-                if v.dtype in [torch.long, torch.int64]:
-                    input_ids[k] = v.type(torch.int32)
-
-            # create onnx model and compare results
-            convert_to_onnx(
-                model_pytorch=model,
-                output_path=ort_model_path,
-                inputs_pytorch=dict(input_ids),
-                quantization=False,
-                var_output_seq=(task in ["text-generation", "token-classification", "question-answering"]),
-                output_names=["output"] if task != "question-answering" else ["start_logits", "end_logits"],
-            )
-
-            # model may switch to train mode for some unknown reasons, we force the eval mode.
-        _ = model.eval()
-
-        if not Path(ort_opt_model_path).exists():
-            num_attention_heads, hidden_size = get_model_size(path=args.model_name_or_path)
-            optimize_onnx(
-                onnx_path=ort_model_path,
-                ort_opt_model_path=ort_opt_model_path,
-                fp16=True if args.fp16 else False,
-                use_cuda=True,
-                num_attention_heads=num_attention_heads,
-                hidden_size=hidden_size,
-                architecture="gpt2",
-            )
-
-        model_onnx = create_model_for_provider(path=ort_opt_model_path, provider_to_use="CUDAExecutionProvider")
-
-        def inference_onnx_optimized(input_ids: torch.Tensor) -> torch.Tensor:
-            if input_ids.dtype in [torch.long, torch.int64]:
-                input_ids = input_ids.type(dtype=torch.int32)
-
-            data = {"input_ids": input_ids}
-            return inference_onnx_binding(model_onnx=model_onnx, inputs=data, device="cuda")["output"]
-
-        model = GPTModelWrapper(config=model.config, device=torch.device("cuda"), inference=inference_onnx_optimized)
-    elif args.trt:
-        if not Path(ort_model_path).exists():
-            input_ids: BatchEncoding = tokenizer(
-            "Here is some text to encode Hello World", add_special_tokens=True, return_attention_mask=False, return_tensors="pt"
-            )
-            # some inference engines don't support int64 tensor as inputs, we convert all input tensors to int32 type
-            for k, v in input_ids.items():  # type: str, torch.Tensor
-                input_ids[k] = v.type(dtype=torch.int32)
-
-            # create onnx model and compare results
-            convert_to_onnx(
-                model_pytorch=model,
-                output_path=ort_model_path,
-                inputs_pytorch=dict(input_ids),
-                quantization=False,
-                var_output_seq=(task in ["text-generation", "token-classification", "question-answering"]),
-                output_names=["output"] if task != "question-answering" else ["start_logits", "end_logits"],
-            )
-            print("Converted to ONNX")
-
-        try:
-            import tensorrt as trt
-            from tensorrt.tensorrt import ICudaEngine, Logger, Runtime
-            from transformer_deploy.backends.trt_utils import build_engine, load_engine, save_engine
-        except ImportError:
-            raise ImportError(
-                "It seems that TensorRT is not yet installed. "
-                "It is required when you declare TensorRT backend."
-                "Please find installation instruction on "
-                "https://docs.nvidia.com/deeplearning/tensorrt/install-guide/index.html"
-            )
-        trt_logger: Logger = trt.Logger(trt.Logger.ERROR)
-        runtime: Runtime = trt.Runtime(trt_logger)
-
-        max_seq_len = 128
-        if not Path(trt_model_path).exists():
-            print("Building TensorRT engine")
-            engine: ICudaEngine = build_engine(
-                runtime=runtime,
-                onnx_file_path=ort_model_path,
-                logger=trt_logger,
-                min_shape=(1, 1),
-                optimal_shape=(1, max_seq_len),  # num beam, batch size
-                max_shape=(1, max_seq_len),  # num beam, batch size
-                workspace_size=10000 * 1024**2,
-                fp16=True if args.fp16 else False,
-                int8=False,
-            )
-            save_engine(engine, trt_model_path)
-
-        tensorrt_model: Callable[[Dict[str, torch.Tensor]], torch.Tensor] = load_engine(
-            engine_file_path=trt_model_path, runtime=runtime
+    elif args.trt or args.ort:
+        # refer to https://github.com/ELS-RD/transformer-deploy/blob/main/src/transformer_deploy/convert.py
+        from transformer_deploy.backends.ort_utils import (
+            cpu_quantization,
+            create_model_for_provider,
+            inference_onnx_binding,
+            optimize_onnx,
+        )
+        from transformer_deploy.backends.pytorch_utils import (
+            convert_to_onnx,
+            get_model_size,
+            infer_classification_pytorch,
+            infer_feature_extraction_pytorch,
         )
 
-        def inference_tensorrt(input_ids: torch.Tensor) -> torch.Tensor:
-            if input_ids.dtype in [torch.long, torch.int64]:
-                input_ids = input_ids.type(dtype=torch.int32)
+        from itertools import chain
+        from torch.onnx import export
+        from transformers.models.gpt2 import GPT2OnnxConfig
+        from transformers.onnx.features import FeaturesManager
+        if args.ort:
 
-            data = {"input_ids": input_ids}
-            return tensorrt_model(data)["output"]
+            if not Path(ort_model_path).exists():
+                input_ids: BatchEncoding = tokenizer(
+                "Here is some text to encode Hello World", add_special_tokens=True, return_attention_mask=False, return_tensors="pt"
+                )
+                # some inference engines don't support int64 tensor as inputs, we convert all input tensors to int32 type
+                for k, v in input_ids.items():
+                    if not isinstance(v, torch.Tensor):
+                        continue
+                    if v.dtype in [torch.long, torch.int64]:
+                        input_ids[k] = v.type(torch.int32)
 
-        model = GPTModelWrapper(config=model.config, device=torch.device("cuda"), inference=inference_tensorrt)
+                # create onnx model and compare results
+                convert_to_onnx(
+                    model_pytorch=model,
+                    output_path=ort_model_path,
+                    inputs_pytorch=dict(input_ids),
+                    quantization=False,
+                    var_output_seq=(task in ["text-generation", "token-classification", "question-answering"]),
+                    output_names=["output"] if task != "question-answering" else ["start_logits", "end_logits"],
+                )
+
+                # model may switch to train mode for some unknown reasons, we force the eval mode.
+            _ = model.eval()
+
+            if not Path(ort_opt_model_path).exists():
+                num_attention_heads, hidden_size = get_model_size(path=args.model_name_or_path)
+                optimize_onnx(
+                    onnx_path=ort_model_path,
+                    ort_opt_model_path=ort_opt_model_path,
+                    fp16=True if args.fp16 else False,
+                    use_cuda=True,
+                    num_attention_heads=num_attention_heads,
+                    hidden_size=hidden_size,
+                    architecture="gpt2",
+                )
+
+            model_onnx = create_model_for_provider(path=ort_opt_model_path, provider_to_use="CUDAExecutionProvider")
+
+            def inference_onnx_optimized(input_ids: torch.Tensor) -> torch.Tensor:
+                if input_ids.dtype in [torch.long, torch.int64]:
+                    input_ids = input_ids.type(dtype=torch.int32)
+
+                data = {"input_ids": input_ids}
+                return inference_onnx_binding(model_onnx=model_onnx, inputs=data, device="cuda")["output"]
+
+            model = GPTModelWrapper(config=model.config, device=torch.device("cuda"), inference=inference_onnx_optimized)
+        elif args.trt:
+            if not Path(ort_model_path).exists():
+                input_ids: BatchEncoding = tokenizer(
+                "Here is some text to encode Hello World", add_special_tokens=True, return_attention_mask=False, return_tensors="pt"
+                )
+                # some inference engines don't support int64 tensor as inputs, we convert all input tensors to int32 type
+                for k, v in input_ids.items():  # type: str, torch.Tensor
+                    input_ids[k] = v.type(dtype=torch.int32)
+
+                # create onnx model and compare results
+                convert_to_onnx(
+                    model_pytorch=model,
+                    output_path=ort_model_path,
+                    inputs_pytorch=dict(input_ids),
+                    quantization=False,
+                    var_output_seq=(task in ["text-generation", "token-classification", "question-answering"]),
+                    output_names=["output"] if task != "question-answering" else ["start_logits", "end_logits"],
+                )
+                print("Converted to ONNX")
+
+            try:
+                import tensorrt as trt
+                from tensorrt.tensorrt import ICudaEngine, Logger, Runtime
+                from transformer_deploy.backends.trt_utils import build_engine, load_engine, save_engine
+            except ImportError:
+                raise ImportError(
+                    "It seems that TensorRT is not yet installed. "
+                    "It is required when you declare TensorRT backend."
+                    "Please find installation instruction on "
+                    "https://docs.nvidia.com/deeplearning/tensorrt/install-guide/index.html"
+                )
+            trt_logger: Logger = trt.Logger(trt.Logger.ERROR)
+            runtime: Runtime = trt.Runtime(trt_logger)
+
+            max_seq_len = 128
+            if not Path(trt_model_path).exists():
+                print("Building TensorRT engine")
+                engine: ICudaEngine = build_engine(
+                    runtime=runtime,
+                    onnx_file_path=ort_model_path,
+                    logger=trt_logger,
+                    min_shape=(1, 1),
+                    optimal_shape=(1, max_seq_len),  # num beam, batch size
+                    max_shape=(1, max_seq_len),  # num beam, batch size
+                    workspace_size=10000 * 1024**2,
+                    fp16=True if args.fp16 else False,
+                    int8=False,
+                )
+                save_engine(engine, trt_model_path)
+
+            tensorrt_model: Callable[[Dict[str, torch.Tensor]], torch.Tensor] = load_engine(
+                engine_file_path=trt_model_path, runtime=runtime
+            )
+
+            def inference_tensorrt(input_ids: torch.Tensor) -> torch.Tensor:
+                if input_ids.dtype in [torch.long, torch.int64]:
+                    input_ids = input_ids.type(dtype=torch.int32)
+
+                data = {"input_ids": input_ids}
+                return tensorrt_model(data)["output"]
+
+            model = GPTModelWrapper(config=model.config, device=torch.device("cuda"), inference=inference_tensorrt)
     else:
         model.cuda(torch.cuda.current_device())
 
