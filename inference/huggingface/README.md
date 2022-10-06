@@ -6,8 +6,6 @@ DeepSpeed Huggingface Inference Examples
    * [Setup](#setup)
    * [Usage](#usage)
    * [Additional Resources](#additional-resources)
-      * [DeepSpeed Inference Getting Started](#ds-inference)
-      * [DeepSpeed Inference Benchmarking](#ds-inference)
 
 # Setup
 Python dependencies:
@@ -26,12 +24,10 @@ The DeepSpeed huggingface inference inference examples are organized into the co
 # Additional Resources
 Information about DeepSpeed can be found at the [deepspeed.ai](https://www.deepspeed.ai) website.
 
-## DeepSpeed Inference Getting Started
 Additional information on DeepSpeed inference can be found here:
 
 [Getting Started with DeepSpeed for Inferencing Transformer based Models](https://www.deepspeed.ai/tutorials/inference-tutorial/)
 
-## DeepSpeed Inference Benchmarking
 DeepSpeed inference benchmarking can be found in the DeepSpeed repository:
 
 [DeepSpeed Inference Benchmarking](https://github.com/microsoft/DeepSpeed/tree/master/benchmarks/inference)
