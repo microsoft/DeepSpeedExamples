@@ -1,6 +1,6 @@
 torch
 deepspeed
-transformers
+transformers==4.21.2
 sentencepiece
 numpy
 soundfile
