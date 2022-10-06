@@ -19,7 +19,7 @@ sudo apt-get install libsndfile1-dev
 </pre>
 
 # Usage
-The DeepSpeed huggingface inference inference examples are organized into the corresponding model type directories (e.g. ['./text-generation`](./text-generation))
+The DeepSpeed huggingface inference inference examples are organized into the corresponding model type directories (e.g. [./text-generation](./text-generation))
 
 # Additional Resources
 Information about DeepSpeed can be found at the [deepspeed.ai](https://www.deepspeed.ai) website.
