@@ -13,13 +13,13 @@ Python dependencies:
 pip install -r requirements.txt
 </pre>
 
-For the `test-wav2vec.py` speech model example, you may also need to install the following generic library:
+For the `test-wav2vec.py` speech model example, you may also need to install the `libsndfile1-dev` generic library:
 <pre>
 sudo apt-get install libsndfile1-dev
 </pre>
 
 # Usage
-The DeepSpeed huggingface inference inference examples are organized into the corresponding model type directories (e.g. [`'text-generation`'](./text-generation))
+The DeepSpeed huggingface inference inference examples are organized into the corresponding model type directories (e.g. ['./text-generation`](./text-generation))
 
 # Additional Resources
 Information about DeepSpeed can be found at the [deepspeed.ai](https://www.deepspeed.ai) website.
