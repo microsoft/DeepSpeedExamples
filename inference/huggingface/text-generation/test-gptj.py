@@ -4,7 +4,7 @@ import deepspeed
 import transformers
 
 from deepspeed import module_inject
-from transformers import pipeline
+from transformers import pipeline, AutoTokenizer, AutoModelForCausalLM
 
 # Get local gpu rank from torch.distributed/deepspeed launcher
 local_rank = int(os.getenv('LOCAL_RANK', '0'))
@@ -15,9 +15,12 @@ print(
     .format(local_rank,
             world_size))
 
+tokenizer = AutoTokenizer.from_pretrained("EleutherAI/gpt-j-6B")
+model = AutoModelForCausalLM.from_pretrained("EleutherAI/gpt-j-6B")
+
 generator = pipeline('text-generation',
-                     model="EleutherAI/gpt-j-6B",
-                     tokenizer="EleutherAI/gpt-j-6B",
+                     model=model,
+                     tokenizer=tokenizer,
                      device=local_rank)
 
 generator.model = deepspeed.init_inference(generator.model,
