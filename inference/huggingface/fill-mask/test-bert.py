@@ -4,10 +4,6 @@ import deepspeed
 import torch
 import os
 
-# from transformers import pipeline
-# unmasker = pipeline('fill-mask', model='bert-base-cased')
-# unmasker("Hello I'm a [MASK] model.")
-
 local_rank = int(os.getenv('LOCAL_RANK', '0'))
 world_size = int(os.getenv('WORLD_SIZE', '4'))
 
