@@ -28,7 +28,7 @@ Most examples can be run as follows:
 
 The exception is the `test-run-generation.py` example, located in [./text-generation/run-generation-script/](./text-generation/run-generation-script). There, a shell script file exists, [test-gpt.sh](./text-generation/run-generation-script/test-gpt.sh), as an example of how to run the script.
 <pre>
-deepspeed --num_nodes 1 --num_gpus 1 run_generation.py \
+deepspeed --num_nodes 1 --num_gpus 1 test-run-generation.py \
     --model_type=gpt2 \
     --model_name_or_path=gpt2-xl \
     --sample_input single_query.txt \
