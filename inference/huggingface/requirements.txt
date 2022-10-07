@@ -6,6 +6,5 @@ numpy
 soundfile
 jiwer
 datasets
-mpi4py
 google
 protobuf
