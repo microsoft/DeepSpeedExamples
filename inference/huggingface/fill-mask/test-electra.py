@@ -11,7 +11,7 @@ world_size = int(os.getenv('WORLD_SIZE', '4'))
 pipe = pipeline('fill-mask', model="google/electra-base-generator",
     tokenizer="google/electra-base-generator")
 
-# The inpjection_policy shows two things:
+# The injection_policy shows two things:
 #   1. which layer module we need to add Tensor-Parallelism
 #   2. the name of one or several linear layers: a) attention_output (both encoder and decoder), 
 #       and b) transformer output
