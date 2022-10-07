@@ -1,7 +1,7 @@
 import deepspeed
 import torch
 import os
-from transformers import pipeline, T5Tokenizer, T5Model
+from transformers import pipeline
 
 local_rank = int(os.getenv('LOCAL_RANK', '0'))
 world_size = int(os.getenv('WORLD_SIZE', '4'))
