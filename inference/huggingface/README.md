@@ -2,7 +2,6 @@
 # DeepSpeed Huggingface Inference Examples
 
 # Contents
-   * [Contents](#contents)
    * [Setup](#setup)
    * [Usage](#usage)
    * [Additional Resources](#additional-resources)
