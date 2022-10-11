@@ -23,7 +23,7 @@ pipe.model = deepspeed.init_inference(
 )
 
 pipe.device = torch.device(f'cuda:{local_rank}')
-output = pipe("Hello I'm a <mask> model.")
+output = pipe("The invention of the <mask> revolutionized the way we communicate with each other.")
 
 if not torch.distributed.is_initialized() or torch.distributed.get_rank() == 0:
     print(output)
