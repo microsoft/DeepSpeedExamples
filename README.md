@@ -7,7 +7,7 @@ This repo contains example models that use [DeepSpeed](https://github.com/micros
 Please use the latest [Megatron-DeepSpeed fork](https://github.com/microsoft/Megatron-DeepSpeed) instead of the deprecated/old megatron forks in the megatron folder.
 
 # DeepSpeed Huggingface Inference Examples
-The DeepSpeed Huggingface inference [README](./inference/huggingface/README.md) explains how to get started.
+The DeepSpeed Huggingface inference [README](./inference/huggingface/README.md) explains how to get started with running DeepSpeed Huggingface inference examples.
 
 # Contributing
 
