@@ -9,23 +9,34 @@
        * [Benchmarking](#benchmarking)
 
 # Setup
-Python dependencies:
+The Python dependencies for each example are captured in `requirements.txt` in the corresponding ML task directory (e.g. [./text-generation](./text-generation)).
+
+Python dependencies can be installed using:
 <pre>
 pip install -r requirements.txt
 </pre>
 
-For the `test-wav2vec.py` speech model example, you may also need to install the `libsndfile1-dev` generic library:
+For the [`./automatic-speech-recognition/test-wav2vec.py`](./automatic-speech-recognition/test-wav2vec.py) speech model example, you may also need to install the `libsndfile1-dev` generic library:
 <pre>
 sudo apt-get install libsndfile1-dev
 </pre>
 
 # Usage
-The DeepSpeed huggingface inference examples are organized into their corresponding model type directories (e.g. [./text-generation](./text-generation)).
+The DeepSpeed huggingface inference examples are organized into their corresponding ML task directories (e.g. [./text-generation](./text-generation)). Each ML task directory contains a `README.md` and a `requirements.txt`.
+
+| Task | README | requirements |
+|:---|:---|:---|
+| [`automatic-speech-recognition`](./automatic-speech-recognition/) | [`README`](./automatic-speech-recognition/README.md) | [`requirements`](./automatic-speech-recognition/requirements.txt) |
+| [`fill-mask`](./fill-mask/) | [`README`](./fill-mask/README.md) | [`requirements`](./fill-mask/requirements.txt) |
+| [`text-generation`](./text-generation/) | [`README`](./text-generation/README.md) | [`requirements`](./text-generation/requirements.txt) |
+| [`text-generation/run-generation-script`](./text-generation/run-generation-script/) | [`README`](./text-generation/run-generation-script/README.md) | [`requirements`](./text-generation/run-generation-script/requirements.txt) |
+| [`text2text-generation`](./text2text-generation/) | [`README`](./text2text-generation/README.md) | [`requirements`](./text2text-generation/requirements.txt) |
+| [`translation`](./translation/) | [`README`](./translation/README.md) | [`requirements`](./translation/requirements.txt) |
 
 Most examples can be run as follows:
 <pre>deepspeed --num_gpus [number of GPUs] test-[model].py</pre>
 
-The exception is the `test-run-generation.py` example, located in [./text-generation/run-generation-script/](./text-generation/run-generation-script). There, a shell script file exists, [test-gpt.sh](./text-generation/run-generation-script/test-gpt.sh), as an example of how to run the script.
+The exception is the [`test-run-generation.py`](./text-generation/run-generation-script/test-run-generation.py) example, located in [./text-generation/run-generation-script/](./text-generation/run-generation-script). There, a shell script file exists, [test-gpt.sh](./text-generation/run-generation-script/test-gpt.sh), as an example of how to run the script.
 <pre>
 deepspeed --num_nodes 1 --num_gpus 1 test-run-generation.py \
     --model_type=gpt2 \

@@ -1,10 +1,6 @@
-torch
 deepspeed
+torch
 transformers==4.21.2
-sentencepiece
-numpy
 soundfile
 jiwer
 datasets
-google
-protobuf
