@@ -26,12 +26,12 @@ The DeepSpeed huggingface inference examples are organized into their correspond
 
 | Task | README | requirements |
 |:---|:---|:---|
-| [`automatic-speech-recognition`](./automatic-speech-recognition/) | [`README`](./automatic-speech-recognition/README.md) | [`requirements`](./automatic-speech-recognition/requirements.txt) |
-| [`fill-mask`](./fill-mask/) | [`README`](./fill-mask/README.md) | [`requirements`](./fill-mask/requirements.txt) |
-| [`text-generation`](./text-generation/) | [`README`](./text-generation/README.md) | [`requirements`](./text-generation/requirements.txt) |
-| [`text-generation/run-generation-script`](./text-generation/run-generation-script/) | [`README`](./text-generation/run-generation-script/README.md) | [`requirements`](./text-generation/run-generation-script/requirements.txt) |
-| [`text2text-generation`](./text2text-generation/) | [`README`](./text2text-generation/README.md) | [`requirements`](./text2text-generation/requirements.txt) |
-| [`translation`](./translation/) | [`README`](./translation/README.md) | [`requirements`](./translation/requirements.txt) |
+| [`automatic-speech-recognition`](./automatic-speech-recognition/) | [README](./automatic-speech-recognition/README.md) | [requirements](./automatic-speech-recognition/requirements.txt) |
+| [`fill-mask`](./fill-mask/) | [README](./fill-mask/README.md) | [requirements](./fill-mask/requirements.txt) |
+| [`text-generation`](./text-generation/) | [README](./text-generation/README.md) | [requirements](./text-generation/requirements.txt) |
+| [`text-generation/run-generation-script`](./text-generation/run-generation-script/) | [README](./text-generation/run-generation-script/README.md) | [requirements](./text-generation/run-generation-script/requirements.txt) |
+| [`text2text-generation`](./text2text-generation/) | [README](./text2text-generation/README.md) | [requirements](./text2text-generation/requirements.txt) |
+| [`translation`](./translation/) | [README](./translation/README.md) | [requirements](./translation/requirements.txt) |
 
 Most examples can be run as follows:
 <pre>deepspeed --num_gpus [number of GPUs] test-[model].py</pre>
