@@ -36,16 +36,6 @@ The DeepSpeed huggingface inference examples are organized into their correspond
 Most examples can be run as follows:
 <pre>deepspeed --num_gpus [number of GPUs] test-[model].py</pre>
 
-The exception is the [`test-run-generation.py`](./text-generation/run-generation-script/test-run-generation.py) example, located in [./text-generation/run-generation-script/](./text-generation/run-generation-script). There, a shell script file exists, [test-gpt.sh](./text-generation/run-generation-script/test-gpt.sh), as an example of how to run the script.
-<pre>
-deepspeed --num_nodes 1 --num_gpus 1 test-run-generation.py \
-    --model_type=gpt2 \
-    --model_name_or_path=gpt2-xl \
-    --sample_input single_query.txt \
-    --fp16 \
-    --ds-inference
-</pre>
-
 # Additional Resources
 Information about DeepSpeed can be found at the [deepspeed.ai](https://www.deepspeed.ai) website.
 
