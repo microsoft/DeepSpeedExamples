@@ -24,4 +24,5 @@ deepspeed --num_gpus=1 test-wav2vec2.py
 
 Output:
 <pre>
+WER: 0.03383673158855752
 </pre>
