@@ -14,7 +14,7 @@ Examples can be run as follows:
 # Example Output
 Command:
 <pre>
-deepspeed --num_gpus=1 test-roberta.py
+deepspeed --num_gpus 1 test-roberta.py
 </pre>
 
 Output:

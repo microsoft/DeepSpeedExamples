@@ -19,7 +19,7 @@ Examples can be run as follows:
 # Example Output
 Command:
 <pre>
-deepspeed --num_gpus=1 test-wav2vec2.py
+deepspeed --num_gpus 1 test-wav2vec2.py
 </pre>
 
 Output:
