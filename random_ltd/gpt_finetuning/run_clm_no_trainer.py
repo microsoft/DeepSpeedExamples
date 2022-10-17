@@ -51,11 +51,12 @@ from transformers import (
 )
 # from transformers.file_utils import get_full_repo_name
 from transformers.utils.versions import require_version
+from transformers.models.gpt2.modeling_gpt2 import GPT2Block
+
 import deepspeed
-from deepspeed.compression.compress import init_compression, redundancy_clean
+from deepspeed.runtime.data_pipeline.random_ltd import convert_to_randomltd
 import numpy as np
-from transformers.modeling_utils import Conv1D
-from deepspeed.compression.helper import convert_conv1d_to_linear
+
 
 logger = logging.getLogger(__name__)
 
@@ -319,6 +320,8 @@ def main():
         model = AutoModelForCausalLM.from_config(config)
 
     model.resize_token_embeddings(len(tokenizer))
+    model = convert_to_randomltd(model, GPT2Block)
+
     model.to(device)
     # Preprocessing the datasets.
     # First we tokenize all the texts.
@@ -519,15 +522,8 @@ def main():
                 #model_to_save.config.to_json_file(output_config_file)
                 tokenizer.save_vocabulary(args.output_dir)
 
-    perplexity = evaluation(model, eval_dataloader)
-    print_rank_0(f"Before converting the module COVN1D to linear, and before applying init_compression: {perplexity}")
-    model = convert_conv1d_to_linear(model, Conv1D)
-    model = init_compression(model, args.deepspeed_config)
-    print_rank_0('WARNING: saving the quantized model with Linear Module instead of COV1D')
 
     training(model, train_dataloader, eval_dataloader, args.num_train_epochs, args)
-
-    model = redundancy_clean(model, args.deepspeed_config)
     perplexity = evaluation(model, eval_dataloader)
     print_rank_0(f"After cleaning with Perplexity: {perplexity}")
     
