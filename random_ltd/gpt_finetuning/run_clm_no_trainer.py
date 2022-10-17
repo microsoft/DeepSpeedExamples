@@ -54,7 +54,7 @@ from transformers.utils.versions import require_version
 from transformers.models.gpt2.modeling_gpt2 import GPT2Block
 
 import deepspeed
-from deepspeed.runtime.data_pipeline.random_ltd import convert_to_randomltd
+from deepspeed.runtime.data_pipeline.random_ltd import convert_to_randomltd, save_without_randmltd
 import numpy as np
 
 
@@ -320,7 +320,7 @@ def main():
         model = AutoModelForCausalLM.from_config(config)
 
     model.resize_token_embeddings(len(tokenizer))
-    model = convert_to_randomltd(model, GPT2Block)
+
 
     model.to(device)
     # Preprocessing the datasets.
@@ -497,7 +497,7 @@ def main():
                 # loss = loss / args.gradient_accumulation_steps
                 model.backward(loss)
                 model.step()
-                
+                break
             # Evaluate perplexity on the validation set.
             if epoch != args.num_train_epochs-1:
                 print_rank_0(f"***** Evaluating perplexity, Epoch {epoch+1}/{num_train_epochs} *****")
@@ -523,18 +523,19 @@ def main():
                 tokenizer.save_vocabulary(args.output_dir)
 
 
+    model = convert_to_randomltd(model, GPT2Block)
     training(model, train_dataloader, eval_dataloader, args.num_train_epochs, args)
     perplexity = evaluation(model, eval_dataloader)
-    print_rank_0(f"After cleaning with Perplexity: {perplexity}")
-    
-    quant_output_dir = args.output_dir+'/quant'
-    print_rank_0(f'saving model to {quant_output_dir}')
-    if not os.path.isdir(quant_output_dir):
-        os.makedirs(quant_output_dir)
-    model_to_save = model.module if hasattr(model, 'module') else model
-    output_model_file = os.path.join(quant_output_dir, "pytorch_model.bin")
-    torch.save(model_to_save.state_dict(), output_model_file)
-    
 
+    print_rank_0(f"After cleaning randomLTD: {perplexity}")
+    
+    model_stat_dic = save_without_randmltd(model)
+    output_dir = args.output_dir
+    print_rank_0(f'saving model to {output_dir}')
+    if not os.path.isdir(output_dir):
+        os.makedirs(output_dir)
+    output_model_file = os.path.join(output_dir, "pytorch_model.bin")
+    torch.save(model_stat_dic, output_model_file)
+    
 if __name__ == "__main__":
     main()
