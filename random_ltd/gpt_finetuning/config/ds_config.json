@@ -29,13 +29,12 @@
       "hidden_state_order": "batch_seq_dim",
       "lr_schedule":"layer_tokens",
       "randomltd_schedule": {
-          "curriculum_type": "seqlen",
-          "min_difficulty": 128,
-          "max_difficulty": 2048,
+          "min_seq": 128,
+          "max_seq": 2048,
           "schedule_type":"fixed_linear",
           "schedule_config": {
-              "total_curriculum_step": 100,
-              "difficulty_step": 8
+              "require_steps": 100,
+              "increase_step": 8
             }
       }
     }
