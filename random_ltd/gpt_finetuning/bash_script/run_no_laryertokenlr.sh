@@ -21,7 +21,7 @@ export CUDA_VISIBLE_DEVICES=0
 # ######### fp16
 python -m torch.distributed.launch --nproc_per_node=1 \
     --master_port 12345 \
-    run_clm_no_trainer_DT.py \
+    run_clm_no_trainer.py \
     --dataset_name ptb_text_only \
     --dataset_config_name penn_treebank \
     --model_name_or_path gpt2 \
