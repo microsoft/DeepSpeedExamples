@@ -1,7 +1,7 @@
 {
     "train_batch_size" : 8,
     "train_micro_batch_size_per_gpu": 4,
-    "steps_per_print": 50,
+    "steps_per_print": 2,
     "optimizer": {
       "type": "Adam",
       "params": {
@@ -21,21 +21,24 @@
     "gradient_clipping": 1.0,
     "prescale_gradients": true,
     "wall_clock_breakdown" : false,
-    "random_ltd": {
-      "enabled": true,
-      "randomltd_layers": [1,2,3,4,5,6,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22],
-      "model_mask_name": "attention_mask",
-      "model_type": "decoder",
-      "hidden_state_order": "batch_seq_dim",
-      "lr_schedule":"layer_tokens",
-      "randomltd_schedule": {
-          "min_seq": 128,
-          "max_seq": 2048,
-          "schedule_type":"fixed_linear",
-          "schedule_config": {
-              "require_steps": 100,
-              "increase_step": 8
-            }
+    "dynamic_train":{
+    "enabled": true,
+    "random_ltd":{
+        "enabled": true,
+        "randomltd_layers": [1,2,3,4,5,6,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22],
+        "model_mask_name": "attention_mask",
+        "model_type": "decoder",
+        "hidden_state_order": "batch_seq_dim",
+        "lr_schedule":"layer_tokens",
+        "randomltd_schedule": {
+            "min_value": 128,
+            "max_value": 2048,
+            "schedule_type":"fixed_linear",
+            "schedule_config": {
+                "require_steps": 500,
+                "increase_step": 8
+              }
+           }
       }
     }
   }

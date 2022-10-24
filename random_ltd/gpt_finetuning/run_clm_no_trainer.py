@@ -54,7 +54,7 @@ from transformers.utils.versions import require_version
 from transformers.models.gpt2.modeling_gpt2 import GPT2Block
 
 import deepspeed
-from deepspeed.runtime.data_pipeline.random_ltd import convert_to_randomltd, save_without_randmltd
+from deepspeed.runtime.dynamic_train.helper import convert_to_randomltd, save_without_randmltd
 import numpy as np
 
 
@@ -177,6 +177,8 @@ def parse_args():
         default=None,
         help="Optional input sequence length after tokenization. The training dataset will be truncated in block of this size for training. Default to the model max input length for single sentence inputs (take into account special tokens).",
     )
+    
+
     parser.add_argument(
         "--preprocessing_num_workers",
         type=int,
@@ -247,7 +249,10 @@ def main():
     # If passed along, set the training seed now.
     if args.seed is not None:
         set_seed(args.seed)
-
+        random.seed(args.seed)
+        np.random.seed(args.seed)
+        torch.manual_seed(args.seed)
+        torch.cuda.manual_seed_all(args.seed)
     torch.distributed.barrier()
 
     if args.dataset_name is not None:
@@ -477,6 +482,7 @@ def main():
                 num_warmup_steps=args.num_warmup_steps,
                 num_training_steps=args.max_train_steps,
             )
+        
         model, optimizer, _, lr_scheduler = deepspeed.initialize(
             model=model,
             optimizer=optimizer,
@@ -497,12 +503,14 @@ def main():
                 # loss = loss / args.gradient_accumulation_steps
                 model.backward(loss)
                 model.step()
-                break
+                perplexity = evaluation(model, eval_dataloader)
+                print_rank_0(f"Epoch at {step+1} with Perplexity: {perplexity}")
+                model.train()
             # Evaluate perplexity on the validation set.
             if epoch != args.num_train_epochs-1:
                 print_rank_0(f"***** Evaluating perplexity, Epoch {epoch+1}/{num_train_epochs} *****")
                 perplexity = evaluation(model, eval_dataloader)
-                print_rank_0(f"Epoch at {epoch+1} with Perplexity: {perplexity}")
+                print_rank_0(f"Epoch at {step+1} with Perplexity: {perplexity}")
             
         print_rank_0(f"***** Evaluating perplexity, Epoch {args.num_train_epochs}/{num_train_epochs} *****")
         perplexity = evaluation(model, eval_dataloader)

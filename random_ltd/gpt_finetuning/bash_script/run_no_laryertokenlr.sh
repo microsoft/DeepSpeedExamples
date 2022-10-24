@@ -4,14 +4,29 @@
 export CUDA_VISIBLE_DEVICES=0
 
 ######### fp16
+# python -m torch.distributed.launch --nproc_per_node=1 \
+#     --master_port 12345 \
+#     run_clm_no_trainer.py \
+#     --dataset_name ptb_text_only \
+#     --dataset_config_name penn_treebank \
+#     --model_name_or_path gpt2 \
+#     --per_device_train_batch_size 4 \
+#     --num_train_epochs 2 \
+#     --deepspeed_config config/ds_config_old.json \
+#     --deepspeed --seed 1234\
+#     --output_dir ./output/check | tee -a ./output/check/train_before2.log
+
+# export CUDA_VISIBLE_DEVICES=0
+# mkdir output1/check
+# ######### fp16
 python -m torch.distributed.launch --nproc_per_node=1 \
     --master_port 12345 \
-    run_clm_no_trainer.py \
+    run_clm_no_trainer_DT.py \
     --dataset_name ptb_text_only \
     --dataset_config_name penn_treebank \
     --model_name_or_path gpt2 \
     --per_device_train_batch_size 4 \
-    --num_train_epochs 10 \
+    --num_train_epochs 2 \
     --deepspeed_config config/ds_config.json \
-    --deepspeed \
-    --output_dir ./output/check &> ./output/check/train.log
+    --deepspeed --seed 1234\
+    --output_dir ./output1/check | tee -a ./output1/check/train_before1.log
