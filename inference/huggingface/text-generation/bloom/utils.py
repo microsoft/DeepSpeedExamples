@@ -29,9 +29,13 @@ class BloomPipeline():
         self.model.eval()
 
     def __call__(self,
-                inputs="test",
+                inputs=["test"],
                 num_tokens=100):
-        outputs = self.generate_outputs(inputs, num_tokens=num_tokens)
+        if isinstance(inputs, str):
+            input_list = [inputs]
+        else:
+            input_list = inputs
+        outputs = self.generate_outputs(input_list, num_tokens=num_tokens)
         return outputs
 
     def generate_json(self):
@@ -48,7 +52,7 @@ class BloomPipeline():
 
 
     def generate_outputs(self,
-                         inputs="test",
+                         inputs=["test"],
                          num_tokens=100):
         generate_kwargs = dict(max_new_tokens=num_tokens, do_sample=False)
 
