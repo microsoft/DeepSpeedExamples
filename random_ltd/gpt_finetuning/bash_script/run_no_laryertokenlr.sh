@@ -29,4 +29,4 @@ python -m torch.distributed.launch --nproc_per_node=1 \
     --num_train_epochs 2 \
     --deepspeed_config config/ds_config.json \
     --deepspeed --seed 1234\
-    --output_dir ./output1/check | tee -a ./output1/check/train_before1.log
+    --output_dir ./output1/check &> ./output1/check/train_with_kernel_fp16.log

@@ -475,13 +475,18 @@ def main():
             },
         ]
         optimizer = AdamW(optimizer_grouped_parameters, lr=args.learning_rate)    
-
+        
         lr_scheduler = get_scheduler(
                 name=args.lr_scheduler_type,
                 optimizer=optimizer,
                 num_warmup_steps=args.num_warmup_steps,
                 num_training_steps=args.max_train_steps,
             )
+        print ("what is this lr_scheduler")
+        # print (lr_scheduler)
+        # import time
+        # time.sleep(10)
+        
         
         model, optimizer, _, lr_scheduler = deepspeed.initialize(
             model=model,
@@ -504,8 +509,9 @@ def main():
                 model.backward(loss)
                 model.step()
                 perplexity = evaluation(model, eval_dataloader)
-                print_rank_0(f"Epoch at {step+1} with Perplexity: {perplexity}")
+                print_rank_0(f"Step at {step+1} with Perplexity: {perplexity}")
                 model.train()
+                print ("check", model.randomltd_scheduler.state["consumed_layer_tokens"])
             # Evaluate perplexity on the validation set.
             if epoch != args.num_train_epochs-1:
                 print_rank_0(f"***** Evaluating perplexity, Epoch {epoch+1}/{num_train_epochs} *****")

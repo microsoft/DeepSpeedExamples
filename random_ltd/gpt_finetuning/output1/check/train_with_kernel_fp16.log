@@ -1,0 +1,416 @@
+/opt/conda/lib/python3.8/site-packages/torch/distributed/launch.py:178: FutureWarning: The module torch.distributed.launch is deprecated
+and will be removed in future. Use torchrun.
+Note that --use_env is set by default in torchrun.
+If your script expects `--local_rank` argument to be set, please
+change it to read from `os.environ['LOCAL_RANK']` instead. See 
+https://pytorch.org/docs/stable/distributed.html#launch-utility for 
+further instructions
+
+  warnings.warn(
+2022-10-27 09:58:51.126629: I tensorflow/stream_executor/platform/default/dso_loader.cc:53] Successfully opened dynamic library libcudart.so.11.0
+Using /home/xiaoxiawu/.cache/torch_extensions/py38_cu113 as PyTorch extensions root...
+Detected CUDA files, patching ldflags
+Emitting ninja build file /home/xiaoxiawu/.cache/torch_extensions/py38_cu113/token_dropping/build.ninja...
+Building extension module token_dropping...
+Allowing ninja to set a default number of workers... (overridable by setting the environment variable MAX_JOBS=N)
+ninja: no work to do.
+Loading extension module token_dropping...
+Time to load token_dropping op: 0.2687535285949707 seconds
+[2022-10-27 09:58:56,846] [INFO] [comm.py:633:init_distributed] Initializing TorchBackend in DeepSpeed with backend nccl
+10/27/2022 09:58:56 - INFO - torch.distributed.distributed_c10d - Added key: store_based_barrier_key:1 to store for rank: 0
+10/27/2022 09:58:56 - INFO - torch.distributed.distributed_c10d - Rank 0: Completed store-based barrier for key:store_based_barrier_key:1 with 1 nodes.
+azwus2f200000C6:50328:50328 [0] NCCL INFO Bootstrap : Using eth0:192.168.0.137<0>
+azwus2f200000C6:50328:50328 [0] NCCL INFO Plugin Path : /opt/nccl-rdma-sharp-plugins.install/lib/libnccl-net.so
+azwus2f200000C6:50328:50328 [0] NCCL INFO P2P plugin IBext
+azwus2f200000C6:50328:50328 [0] NCCL INFO NCCL_IB_PCI_RELAXED_ORDERING set by environment to 1.
+azwus2f200000C6:50328:50328 [0] NCCL INFO NET/IB : Using [0]mlx5_ib0:1/IB/SHARP [1]mlx5_ib1:1/IB/SHARP [2]mlx5_ib2:1/IB/SHARP [3]mlx5_ib3:1/IB/SHARP [4]mlx5_ib4:1/IB/SHARP [5]mlx5_ib5:1/IB/SHARP [6]mlx5_ib6:1/IB/SHARP [7]mlx5_ib7:1/IB/SHARP ; OOB eth0:192.168.0.137<0>
+azwus2f200000C6:50328:50328 [0] NCCL INFO Using network IBext
+NCCL version 2.10.3+cuda11.3
+azwus2f200000C6:50328:50512 [0] NCCL INFO NCCL_IB_TIMEOUT set by environment to 20.
+azwus2f200000C6:50328:50512 [0] NCCL INFO NCCL_NET_GDR_LEVEL set by environment to SYS
+azwus2f200000C6:50328:50512 [0] NCCL INFO Channel 00/32 :    0
+azwus2f200000C6:50328:50512 [0] NCCL INFO Channel 01/32 :    0
+azwus2f200000C6:50328:50512 [0] NCCL INFO Channel 02/32 :    0
+azwus2f200000C6:50328:50512 [0] NCCL INFO Channel 03/32 :    0
+azwus2f200000C6:50328:50512 [0] NCCL INFO Channel 04/32 :    0
+azwus2f200000C6:50328:50512 [0] NCCL INFO Channel 05/32 :    0
+azwus2f200000C6:50328:50512 [0] NCCL INFO Channel 06/32 :    0
+azwus2f200000C6:50328:50512 [0] NCCL INFO Channel 07/32 :    0
+azwus2f200000C6:50328:50512 [0] NCCL INFO Channel 08/32 :    0
+azwus2f200000C6:50328:50512 [0] NCCL INFO Channel 09/32 :    0
+azwus2f200000C6:50328:50512 [0] NCCL INFO Channel 10/32 :    0
+azwus2f200000C6:50328:50512 [0] NCCL INFO Channel 11/32 :    0
+azwus2f200000C6:50328:50512 [0] NCCL INFO Channel 12/32 :    0
+azwus2f200000C6:50328:50512 [0] NCCL INFO Channel 13/32 :    0
+azwus2f200000C6:50328:50512 [0] NCCL INFO Channel 14/32 :    0
+azwus2f200000C6:50328:50512 [0] NCCL INFO Channel 15/32 :    0
+azwus2f200000C6:50328:50512 [0] NCCL INFO Channel 16/32 :    0
+azwus2f200000C6:50328:50512 [0] NCCL INFO Channel 17/32 :    0
+azwus2f200000C6:50328:50512 [0] NCCL INFO Channel 18/32 :    0
+azwus2f200000C6:50328:50512 [0] NCCL INFO Channel 19/32 :    0
+azwus2f200000C6:50328:50512 [0] NCCL INFO Channel 20/32 :    0
+azwus2f200000C6:50328:50512 [0] NCCL INFO Channel 21/32 :    0
+azwus2f200000C6:50328:50512 [0] NCCL INFO Channel 22/32 :    0
+azwus2f200000C6:50328:50512 [0] NCCL INFO Channel 23/32 :    0
+azwus2f200000C6:50328:50512 [0] NCCL INFO Channel 24/32 :    0
+azwus2f200000C6:50328:50512 [0] NCCL INFO Channel 25/32 :    0
+azwus2f200000C6:50328:50512 [0] NCCL INFO Channel 26/32 :    0
+azwus2f200000C6:50328:50512 [0] NCCL INFO Channel 27/32 :    0
+azwus2f200000C6:50328:50512 [0] NCCL INFO Channel 28/32 :    0
+azwus2f200000C6:50328:50512 [0] NCCL INFO Channel 29/32 :    0
+azwus2f200000C6:50328:50512 [0] NCCL INFO Channel 30/32 :    0
+azwus2f200000C6:50328:50512 [0] NCCL INFO Channel 31/32 :    0
+azwus2f200000C6:50328:50512 [0] NCCL INFO Trees [0] -1/-1/-1->0->-1 [1] -1/-1/-1->0->-1 [2] -1/-1/-1->0->-1 [3] -1/-1/-1->0->-1 [4] -1/-1/-1->0->-1 [5] -1/-1/-1->0->-1 [6] -1/-1/-1->0->-1 [7] -1/-1/-1->0->-1 [8] -1/-1/-1->0->-1 [9] -1/-1/-1->0->-1 [10] -1/-1/-1->0->-1 [11] -1/-1/-1->0->-1 [12] -1/-1/-1->0->-1 [13] -1/-1/-1->0->-1 [14] -1/-1/-1->0->-1 [15] -1/-1/-1->0->-1 [16] -1/-1/-1->0->-1 [17] -1/-1/-1->0->-1 [18] -1/-1/-1->0->-1 [19] -1/-1/-1->0->-1 [20] -1/-1/-1->0->-1 [21] -1/-1/-1->0->-1 [22] -1/-1/-1->0->-1 [23] -1/-1/-1->0->-1 [24] -1/-1/-1->0->-1 [25] -1/-1/-1->0->-1 [26] -1/-1/-1->0->-1 [27] -1/-1/-1->0->-1 [28] -1/-1/-1->0->-1 [29] -1/-1/-1->0->-1 [30] -1/-1/-1->0->-1 [31] -1/-1/-1->0->-1
+azwus2f200000C6:50328:50512 [0] NCCL INFO Setting affinity for GPU 0 to ffff,0000ffff
+azwus2f200000C6:50328:50512 [0] NCCL INFO Connected all rings
+azwus2f200000C6:50328:50512 [0] NCCL INFO Connected all trees
+azwus2f200000C6:50328:50512 [0] NCCL INFO 32 coll channels, 32 p2p channels, 32 p2p channels per peer
+azwus2f200000C6:50328:50512 [0] NCCL INFO comm 0x7f1984002fb0 rank 0 nranks 1 cudaDev 0 busId 100000 - Init COMPLETE
+10/27/2022 09:59:02 - WARNING - datasets.builder - Found cached dataset ptb_text_only (/home/xiaoxiawu/.cache/huggingface/datasets/ptb_text_only/penn_treebank/1.1.0/8d1b97746fb9765d140e569ec5ddd35e20af4d37761f5e1bf357ea0b081f2c1f)
+  0%|          | 0/3 [00:00<?, ?it/s]100%|██████████| 3/3 [00:00<00:00, 599.04it/s]
+10/27/2022 09:59:11 - WARNING - datasets.arrow_dataset - Loading cached processed dataset at /home/xiaoxiawu/.cache/huggingface/datasets/ptb_text_only/penn_treebank/1.1.0/8d1b97746fb9765d140e569ec5ddd35e20af4d37761f5e1bf357ea0b081f2c1f/cache-60db26f5bccfec28.arrow
+10/27/2022 09:59:11 - WARNING - datasets.arrow_dataset - Loading cached processed dataset at /home/xiaoxiawu/.cache/huggingface/datasets/ptb_text_only/penn_treebank/1.1.0/8d1b97746fb9765d140e569ec5ddd35e20af4d37761f5e1bf357ea0b081f2c1f/cache-e4c10050685e3fac.arrow
+10/27/2022 09:59:11 - WARNING - datasets.arrow_dataset - Loading cached processed dataset at /home/xiaoxiawu/.cache/huggingface/datasets/ptb_text_only/penn_treebank/1.1.0/8d1b97746fb9765d140e569ec5ddd35e20af4d37761f5e1bf357ea0b081f2c1f/cache-010c590f868c86c9.arrow
+10/27/2022 09:59:11 - WARNING - datasets.arrow_dataset - Loading cached processed dataset at /home/xiaoxiawu/.cache/huggingface/datasets/ptb_text_only/penn_treebank/1.1.0/8d1b97746fb9765d140e569ec5ddd35e20af4d37761f5e1bf357ea0b081f2c1f/cache-844f3dc89f146dc8.arrow
+10/27/2022 09:59:11 - WARNING - datasets.arrow_dataset - Loading cached processed dataset at /home/xiaoxiawu/.cache/huggingface/datasets/ptb_text_only/penn_treebank/1.1.0/8d1b97746fb9765d140e569ec5ddd35e20af4d37761f5e1bf357ea0b081f2c1f/cache-0a083679cf54d228.arrow
+10/27/2022 09:59:11 - WARNING - datasets.arrow_dataset - Loading cached processed dataset at /home/xiaoxiawu/.cache/huggingface/datasets/ptb_text_only/penn_treebank/1.1.0/8d1b97746fb9765d140e569ec5ddd35e20af4d37761f5e1bf357ea0b081f2c1f/cache-4dece644aa067e8e.arrow
+***** Running training *****
+  Num examples = 1048
+  Num Epochs = 2
+  Instantaneous batch size per device = 4
+  Gradient Accumulation steps = 1
+  Total optimization steps = 524
+Number of parameters: 124439808
+what is this lr_scheduler
+[2022-10-27 09:59:11,158] [INFO] [logging.py:68:log_dist] [Rank 0] DeepSpeed info: version=0.7.3+7287051a, git-hash=7287051a, git-branch=xiaoxia/token-drop-dynamic-train
+[2022-10-27 09:59:11,163] [INFO] [comm.py:629:init_distributed] Distributed backend already initialized
+{'random_ltd': {'enabled': True, 'total_layer_num': 12, 'randomltd_layer_num': 10, 'randomltd_layer_id': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 'model_mask_name': 'attention_mask', 'model_type': 'decoder', 'hidden_state_order': 'batch_seq_dim', 'micro_batch_size': 4, 'randomltd_schedule': {'min_value': 128, 'max_value': 2048, 'schedule_type': 'fixed_linear', 'schedule_config': {'require_steps': 500, 'seq_per_step': 8, 'saving_layer_tokens': -1}}, 'layer_token_lr_schedule': {'enabled': False, 'warmup_type': 'linear', 'total_layer_tokens': 'by_iteration', 'warmup_layer_tokens': 'by_iteration', 'total_iterations': -1, 'warmup_iterations': -1}}}
+10/27/2022 09:59:21 - INFO - torch.distributed.distributed_c10d - Added key: store_based_barrier_key:2 to store for rank: 0
+10/27/2022 09:59:21 - INFO - torch.distributed.distributed_c10d - Rank 0: Completed store-based barrier for key:store_based_barrier_key:2 with 1 nodes.
+azwus2f200000C6:50328:50672 [0] NCCL INFO Channel 00/32 :    0
+azwus2f200000C6:50328:50672 [0] NCCL INFO Channel 01/32 :    0
+azwus2f200000C6:50328:50672 [0] NCCL INFO Channel 02/32 :    0
+azwus2f200000C6:50328:50672 [0] NCCL INFO Channel 03/32 :    0
+azwus2f200000C6:50328:50672 [0] NCCL INFO Channel 04/32 :    0
+azwus2f200000C6:50328:50672 [0] NCCL INFO Channel 05/32 :    0
+azwus2f200000C6:50328:50672 [0] NCCL INFO Channel 06/32 :    0
+azwus2f200000C6:50328:50672 [0] NCCL INFO Channel 07/32 :    0
+azwus2f200000C6:50328:50672 [0] NCCL INFO Channel 08/32 :    0
+azwus2f200000C6:50328:50672 [0] NCCL INFO Channel 09/32 :    0
+azwus2f200000C6:50328:50672 [0] NCCL INFO Channel 10/32 :    0
+azwus2f200000C6:50328:50672 [0] NCCL INFO Channel 11/32 :    0
+azwus2f200000C6:50328:50672 [0] NCCL INFO Channel 12/32 :    0
+azwus2f200000C6:50328:50672 [0] NCCL INFO Channel 13/32 :    0
+azwus2f200000C6:50328:50672 [0] NCCL INFO Channel 14/32 :    0
+azwus2f200000C6:50328:50672 [0] NCCL INFO Channel 15/32 :    0
+azwus2f200000C6:50328:50672 [0] NCCL INFO Channel 16/32 :    0
+azwus2f200000C6:50328:50672 [0] NCCL INFO Channel 17/32 :    0
+azwus2f200000C6:50328:50672 [0] NCCL INFO Channel 18/32 :    0
+azwus2f200000C6:50328:50672 [0] NCCL INFO Channel 19/32 :    0
+azwus2f200000C6:50328:50672 [0] NCCL INFO Channel 20/32 :    0
+azwus2f200000C6:50328:50672 [0] NCCL INFO Channel 21/32 :    0
+azwus2f200000C6:50328:50672 [0] NCCL INFO Channel 22/32 :    0
+azwus2f200000C6:50328:50672 [0] NCCL INFO Channel 23/32 :    0
+azwus2f200000C6:50328:50672 [0] NCCL INFO Channel 24/32 :    0
+azwus2f200000C6:50328:50672 [0] NCCL INFO Channel 25/32 :    0
+azwus2f200000C6:50328:50672 [0] NCCL INFO Channel 26/32 :    0
+azwus2f200000C6:50328:50672 [0] NCCL INFO Channel 27/32 :    0
+azwus2f200000C6:50328:50672 [0] NCCL INFO Channel 28/32 :    0
+azwus2f200000C6:50328:50672 [0] NCCL INFO Channel 29/32 :    0
+azwus2f200000C6:50328:50672 [0] NCCL INFO Channel 30/32 :    0
+azwus2f200000C6:50328:50672 [0] NCCL INFO Channel 31/32 :    0
+azwus2f200000C6:50328:50672 [0] NCCL INFO Trees [0] -1/-1/-1->0->-1 [1] -1/-1/-1->0->-1 [2] -1/-1/-1->0->-1 [3] -1/-1/-1->0->-1 [4] -1/-1/-1->0->-1 [5] -1/-1/-1->0->-1 [6] -1/-1/-1->0->-1 [7] -1/-1/-1->0->-1 [8] -1/-1/-1->0->-1 [9] -1/-1/-1->0->-1 [10] -1/-1/-1->0->-1 [11] -1/-1/-1->0->-1 [12] -1/-1/-1->0->-1 [13] -1/-1/-1->0->-1 [14] -1/-1/-1->0->-1 [15] -1/-1/-1->0->-1 [16] -1/-1/-1->0->-1 [17] -1/-1/-1->0->-1 [18] -1/-1/-1->0->-1 [19] -1/-1/-1->0->-1 [20] -1/-1/-1->0->-1 [21] -1/-1/-1->0->-1 [22] -1/-1/-1->0->-1 [23] -1/-1/-1->0->-1 [24] -1/-1/-1->0->-1 [25] -1/-1/-1->0->-1 [26] -1/-1/-1->0->-1 [27] -1/-1/-1->0->-1 [28] -1/-1/-1->0->-1 [29] -1/-1/-1->0->-1 [30] -1/-1/-1->0->-1 [31] -1/-1/-1->0->-1
+azwus2f200000C6:50328:50672 [0] NCCL INFO Setting affinity for GPU 0 to ffff,0000ffff
+azwus2f200000C6:50328:50672 [0] NCCL INFO Connected all rings
+azwus2f200000C6:50328:50672 [0] NCCL INFO Connected all trees
+azwus2f200000C6:50328:50672 [0] NCCL INFO 32 coll channels, 32 p2p channels, 32 p2p channels per peer
+azwus2f200000C6:50328:50672 [0] NCCL INFO comm 0x7f1324002fb0 rank 0 nranks 1 cudaDev 0 busId 100000 - Init COMPLETE
+[2022-10-27 09:59:21,285] [INFO] [logging.py:68:log_dist] [Rank 0] DeepSpeed Flops Profiler Enabled: False
+[2022-10-27 09:59:21,288] [INFO] [logging.py:68:log_dist] [Rank 0] Removing param_group that has no 'params' in the client Optimizer
+[2022-10-27 09:59:21,293] [INFO] [logging.py:68:log_dist] [Rank 0] Using client Optimizer as basic optimizer
+[2022-10-27 09:59:21,296] [INFO] [logging.py:68:log_dist] [Rank 0] DeepSpeed Basic Optimizer = {basic_optimizer.__class__.__name__}
+[2022-10-27 09:59:21,298] [INFO] [logging.py:68:log_dist] [Rank 0] Creating fp16 unfused optimizer with dynamic loss scale
+[2022-10-27 09:59:21,298] [INFO] [unfused_optimizer.py:41:__init__] Fused Lamb Legacy : False 
+[2022-10-27 09:59:21,347] [INFO] [logging.py:68:log_dist] [Rank 0] DeepSpeed Final Optimizer = AdamW
+[2022-10-27 09:59:21,347] [INFO] [logging.py:68:log_dist] [Rank 0] DeepSpeed using client LR scheduler
+[2022-10-27 09:59:21,352] [INFO] [logging.py:68:log_dist] [Rank 0] DeepSpeed LR Scheduler = <torch.optim.lr_scheduler.LambdaLR object at 0x7f1b790afc70>
+[2022-10-27 09:59:21,352] [INFO] [logging.py:68:log_dist] [Rank 0] step=0, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-10-27 09:59:21,353] [INFO] [config.py:978:print] DeepSpeedEngine configuration:
+[2022-10-27 09:59:21,357] [INFO] [config.py:982:print]   activation_checkpointing_config  {
+    "partition_activations": false, 
+    "contiguous_memory_optimization": false, 
+    "cpu_checkpointing": false, 
+    "number_checkpoints": null, 
+    "synchronize_checkpoint_boundary": false, 
+    "profile": false
+}
+[2022-10-27 09:59:21,361] [INFO] [config.py:982:print]   aio_config ................... {'block_size': 1048576, 'queue_depth': 8, 'thread_count': 1, 'single_submit': False, 'overlap_events': True}
+[2022-10-27 09:59:21,361] [INFO] [config.py:982:print]   amp_enabled .................. False
+[2022-10-27 09:59:21,361] [INFO] [config.py:982:print]   amp_params ................... False
+[2022-10-27 09:59:21,362] [INFO] [config.py:982:print]   autotuning_config ............ {
+    "enabled": false, 
+    "start_step": null, 
+    "end_step": null, 
+    "metric_path": null, 
+    "arg_mappings": null, 
+    "metric": "throughput", 
+    "model_info": null, 
+    "results_dir": null, 
+    "exps_dir": null, 
+    "overwrite": true, 
+    "fast": true, 
+    "start_profile_step": 3, 
+    "end_profile_step": 5, 
+    "tuner_type": "gridsearch", 
+    "tuner_early_stopping": 5, 
+    "tuner_num_trials": 50, 
+    "model_info_path": null, 
+    "mp_size": 1, 
+    "max_train_batch_size": null, 
+    "min_train_batch_size": 1, 
+    "max_train_micro_batch_size_per_gpu": 1.024000e+03, 
+    "min_train_micro_batch_size_per_gpu": 1, 
+    "num_tuning_micro_batch_sizes": 3
+}
+[2022-10-27 09:59:21,367] [INFO] [config.py:982:print]   bfloat16_enabled ............. False
+[2022-10-27 09:59:21,367] [INFO] [config.py:982:print]   checkpoint_tag_validation_enabled  True
+[2022-10-27 09:59:21,368] [INFO] [config.py:982:print]   checkpoint_tag_validation_fail  False
+[2022-10-27 09:59:21,368] [INFO] [config.py:982:print]   comms_config ................. <deepspeed.comm.config.DeepSpeedCommsConfig object at 0x7f1b790afcd0>
+[2022-10-27 09:59:21,368] [INFO] [config.py:982:print]   communication_data_type ...... None
+[2022-10-27 09:59:21,368] [INFO] [config.py:982:print]   compression_config ........... {'weight_quantization': {'shared_parameters': {'enabled': False, 'quantizer_kernel': False, 'schedule_offset': 0, 'quantize_groups': 1, 'quantize_verbose': False, 'quantization_type': 'symmetric', 'quantize_weight_in_forward': False, 'rounding': 'nearest', 'fp16_mixed_quantize': False, 'quantize_change_ratio': 0.001}, 'different_groups': {}}, 'activation_quantization': {'shared_parameters': {'enabled': False, 'quantization_type': 'symmetric', 'range_calibration': 'dynamic', 'schedule_offset': 1000}, 'different_groups': {}}, 'sparse_pruning': {'shared_parameters': {'enabled': False, 'method': 'l1', 'schedule_offset': 1000}, 'different_groups': {}}, 'row_pruning': {'shared_parameters': {'enabled': False, 'method': 'l1', 'schedule_offset': 1000}, 'different_groups': {}}, 'head_pruning': {'shared_parameters': {'enabled': False, 'method': 'topk', 'schedule_offset': 1000}, 'different_groups': {}}, 'channel_pruning': {'shared_parameters': {'enabled': False, 'method': 'l1', 'schedule_offset': 1000}, 'different_groups': {}}, 'layer_reduction': {'enabled': False}}
+[2022-10-27 09:59:21,368] [INFO] [config.py:982:print]   curriculum_enabled_legacy .... False
+[2022-10-27 09:59:21,368] [INFO] [config.py:982:print]   curriculum_params_legacy ..... False
+[2022-10-27 09:59:21,368] [INFO] [config.py:982:print]   data_efficiency_config ....... {'enabled': False, 'seed': 1234, 'data_sampling': {'enabled': False, 'num_epochs': 1000, 'num_workers': 0, 'curriculum_learning': {'enabled': False}}}
+[2022-10-27 09:59:21,368] [INFO] [config.py:982:print]   data_efficiency_enabled ...... False
+[2022-10-27 09:59:21,368] [INFO] [config.py:982:print]   dataloader_drop_last ......... False
+[2022-10-27 09:59:21,372] [INFO] [config.py:982:print]   disable_allgather ............ False
+[2022-10-27 09:59:21,372] [INFO] [config.py:982:print]   dump_state ................... False
+[2022-10-27 09:59:21,372] [INFO] [config.py:982:print]   dynamic_loss_scale_args ...... None
+[2022-10-27 09:59:21,372] [INFO] [config.py:982:print]   dynamic_train_config ......... {'random_ltd': {'enabled': True, 'total_layer_num': 12, 'randomltd_layer_num': 10, 'randomltd_layer_id': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 'model_mask_name': 'attention_mask', 'model_type': 'decoder', 'hidden_state_order': 'batch_seq_dim', 'micro_batch_size': 4, 'randomltd_schedule': {'min_value': 128, 'max_value': 2048, 'schedule_type': 'fixed_linear', 'schedule_config': {'require_steps': 500, 'seq_per_step': 8, 'saving_layer_tokens': -1}}, 'layer_token_lr_schedule': {'enabled': False, 'warmup_type': 'linear', 'total_layer_tokens': 'by_iteration', 'warmup_layer_tokens': 'by_iteration', 'total_iterations': -1, 'warmup_iterations': -1}}}
+[2022-10-27 09:59:21,372] [INFO] [config.py:982:print]   eigenvalue_enabled ........... False
+[2022-10-27 09:59:21,372] [INFO] [config.py:982:print]   eigenvalue_gas_boundary_resolution  1
+[2022-10-27 09:59:21,372] [INFO] [config.py:982:print]   eigenvalue_layer_name ........ bert.encoder.layer
+[2022-10-27 09:59:21,372] [INFO] [config.py:982:print]   eigenvalue_layer_num ......... 0
+[2022-10-27 09:59:21,372] [INFO] [config.py:982:print]   eigenvalue_max_iter .......... 100
+[2022-10-27 09:59:21,372] [INFO] [config.py:982:print]   eigenvalue_stability ......... 1e-06
+[2022-10-27 09:59:21,376] [INFO] [config.py:982:print]   eigenvalue_tol ............... 0.01
+[2022-10-27 09:59:21,376] [INFO] [config.py:982:print]   eigenvalue_verbose ........... False
+[2022-10-27 09:59:21,376] [INFO] [config.py:982:print]   elasticity_enabled ........... False
+[2022-10-27 09:59:21,376] [INFO] [config.py:982:print]   flops_profiler_config ........ {
+    "enabled": false, 
+    "profile_step": 1, 
+    "module_depth": -1, 
+    "top_modules": 1, 
+    "detailed": true, 
+    "output_file": null
+}
+[2022-10-27 09:59:21,376] [INFO] [config.py:982:print]   fp16_auto_cast ............... False
+[2022-10-27 09:59:21,376] [INFO] [config.py:982:print]   fp16_enabled ................. True
+[2022-10-27 09:59:21,376] [INFO] [config.py:982:print]   fp16_master_weights_and_gradients  False
+[2022-10-27 09:59:21,376] [INFO] [config.py:982:print]   global_rank .................. 0
+[2022-10-27 09:59:21,376] [INFO] [config.py:982:print]   gradient_accumulation_steps .. 2
+[2022-10-27 09:59:21,376] [INFO] [config.py:982:print]   gradient_clipping ............ 1.0
+[2022-10-27 09:59:21,382] [INFO] [config.py:982:print]   gradient_predivide_factor .... 1.0
+[2022-10-27 09:59:21,382] [INFO] [config.py:982:print]   initial_dynamic_scale ........ 4294967296
+[2022-10-27 09:59:21,382] [INFO] [config.py:982:print]   load_universal_checkpoint .... False
+[2022-10-27 09:59:21,382] [INFO] [config.py:982:print]   loss_scale ................... 0
+[2022-10-27 09:59:21,382] [INFO] [config.py:982:print]   memory_breakdown ............. False
+[2022-10-27 09:59:21,382] [INFO] [config.py:982:print]   monitor_config ............... <deepspeed.monitor.config.DeepSpeedMonitorConfig object at 0x7f1b790affd0>
+[2022-10-27 09:59:21,382] [INFO] [config.py:982:print]   nebula_config ................ {
+    "enabled": false, 
+    "persistent_storage_path": null, 
+    "persistent_time_interval": 100, 
+    "num_of_version_in_retention": 2, 
+    "enable_nebula_load": true, 
+    "load_path": null
+}
+[2022-10-27 09:59:21,382] [INFO] [config.py:982:print]   optimizer_legacy_fusion ...... False
+[2022-10-27 09:59:21,382] [INFO] [config.py:982:print]   optimizer_name ............... adam
+[2022-10-27 09:59:21,382] [INFO] [config.py:982:print]   optimizer_params ............. {'lr': 0.0001, 'betas': [0.8, 0.999], 'eps': 1e-08, 'weight_decay': 3e-07}
+[2022-10-27 09:59:21,382] [INFO] [config.py:982:print]   pipeline ..................... {'stages': 'auto', 'partition': 'best', 'seed_layers': False, 'activation_checkpoint_interval': 0}
+[2022-10-27 09:59:21,386] [INFO] [config.py:982:print]   pld_enabled .................. False
+[2022-10-27 09:59:21,386] [INFO] [config.py:982:print]   pld_params ................... False
+[2022-10-27 09:59:21,386] [INFO] [config.py:982:print]   prescale_gradients ........... True
+[2022-10-27 09:59:21,386] [INFO] [config.py:982:print]   scheduler_name ............... None
+[2022-10-27 09:59:21,386] [INFO] [config.py:982:print]   scheduler_params ............. None
+[2022-10-27 09:59:21,386] [INFO] [config.py:982:print]   sparse_attention ............. None
+[2022-10-27 09:59:21,386] [INFO] [config.py:982:print]   sparse_gradients_enabled ..... False
+[2022-10-27 09:59:21,386] [INFO] [config.py:982:print]   steps_per_print .............. 2
+[2022-10-27 09:59:21,386] [INFO] [config.py:982:print]   train_batch_size ............. 8
+[2022-10-27 09:59:21,386] [INFO] [config.py:982:print]   train_micro_batch_size_per_gpu  4
+[2022-10-27 09:59:21,386] [INFO] [config.py:982:print]   wall_clock_breakdown ......... False
+[2022-10-27 09:59:21,387] [INFO] [config.py:982:print]   world_size ................... 1
+[2022-10-27 09:59:21,387] [INFO] [config.py:982:print]   zero_allow_untested_optimizer  False
+[2022-10-27 09:59:21,387] [INFO] [config.py:982:print]   zero_config .................. stage=0 contiguous_gradients=True reduce_scatter=True reduce_bucket_size=500000000 allgather_partitions=True allgather_bucket_size=500000000 overlap_comm=False load_from_fp32_weights=True elastic_checkpoint=False offload_param=None offload_optimizer=None sub_group_size=1000000000 cpu_offload_param=None cpu_offload_use_pin_memory=None cpu_offload=None prefetch_bucket_size=50000000 param_persistence_threshold=100000 model_persistence_threshold=9223372036854775807 max_live_parameters=1000000000 max_reuse_distance=1000000000 gather_16bit_weights_on_model_save=False stage3_gather_fp16_weights_on_model_save=False ignore_unused_parameters=True legacy_stage1=False round_robin_gradients=False
+[2022-10-27 09:59:21,392] [INFO] [config.py:982:print]   zero_enabled ................. False
+[2022-10-27 09:59:21,392] [INFO] [config.py:982:print]   zero_optimization_stage ...... 0
+[2022-10-27 09:59:21,392] [INFO] [config.py:967:print_user_config]   json = {
+    "train_batch_size": 8, 
+    "train_micro_batch_size_per_gpu": 4, 
+    "steps_per_print": 2, 
+    "optimizer": {
+        "type": "Adam", 
+        "params": {
+            "lr": 0.0001, 
+            "betas": [0.8, 0.999], 
+            "eps": 1e-08, 
+            "weight_decay": 3e-07
+        }
+    }, 
+    "zero_optimization": {
+        "stage": 0
+    }, 
+    "fp16": {
+        "enabled": true
+    }, 
+    "gradient_clipping": 1.0, 
+    "prescale_gradients": true, 
+    "wall_clock_breakdown": false, 
+    "dynamic_train": {
+        "random_ltd": {
+            "enabled": true, 
+            "total_layer_num": 12, 
+            "randomltd_layer_num": 10, 
+            "randomltd_layer_id": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 
+            "model_mask_name": "attention_mask", 
+            "model_type": "decoder", 
+            "hidden_state_order": "batch_seq_dim", 
+            "micro_batch_size": 4, 
+            "randomltd_schedule": {
+                "min_value": 128, 
+                "max_value": 2.048000e+03, 
+                "schedule_type": "fixed_linear", 
+                "schedule_config": {
+                    "require_steps": 500, 
+                    "seq_per_step": 8, 
+                    "saving_layer_tokens": -1
+                }
+            }, 
+            "layer_token_lr_schedule": {
+                "enabled": false, 
+                "warmup_type": "linear", 
+                "total_layer_tokens": "by_iteration", 
+                "warmup_layer_tokens": "by_iteration", 
+                "total_iterations": -1, 
+                "warmup_iterations": -1
+            }
+        }
+    }
+}
+Using /home/xiaoxiawu/.cache/torch_extensions/py38_cu113 as PyTorch extensions root...
+Emitting ninja build file /home/xiaoxiawu/.cache/torch_extensions/py38_cu113/utils/build.ninja...
+Building extension module utils...
+Allowing ninja to set a default number of workers... (overridable by setting the environment variable MAX_JOBS=N)
+ninja: no work to do.
+Loading extension module utils...
+Time to load utils op: 0.5441141128540039 seconds
+*************************initialization with 61.57192267554583***********************************
+seq_length=128
+pass 0 tensor(3376., device='cuda:0', dtype=torch.float16, grad_fn=<CopyBackwards>)
+pass 1 tensor(3482., device='cuda:0', dtype=torch.float16, grad_fn=<CopyBackwards>)
+pass 2 tensor(3546., device='cuda:0', dtype=torch.float16, grad_fn=<CopyBackwards>)
+pass 3 tensor(3838., device='cuda:0', dtype=torch.float16, grad_fn=<CopyBackwards>)
+pass 4 tensor(3984., device='cuda:0', dtype=torch.float16, grad_fn=<CopyBackwards>)
+pass 5 tensor(4136., device='cuda:0', dtype=torch.float16, grad_fn=<CopyBackwards>)
+pass 6 tensor(4280., device='cuda:0', dtype=torch.float16, grad_fn=<CopyBackwards>)
+pass 7 tensor(4456., device='cuda:0', dtype=torch.float16, grad_fn=<CopyBackwards>)
+pass 8 tensor(4868., device='cuda:0', dtype=torch.float16, grad_fn=<CopyBackwards>)
+pass 9 tensor(5860., device='cuda:0', dtype=torch.float16, grad_fn=<CopyBackwards>)
+Epoch at 1 with Perplexity: 61.57192267554583
+check 5376
+seq_length=128
+pass 0 Traceback (most recent call last):
+  File "run_clm_no_trainer.py", line 555, in <module>
+    main()
+  File "run_clm_no_trainer.py", line 541, in main
+    training(model, train_dataloader, eval_dataloader, args.num_train_epochs, args)
+  File "run_clm_no_trainer.py", line 506, in training
+    outputs = model(**batch)
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1110, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/TokenDropping/deepspeed-token-drop/DeepSpeed-internal-connor/deepspeed/utils/nvtx.py", line 11, in wrapped_fn
+    return func(*args, **kwargs)
+  File "/home/xiaoxiawu/TokenDropping/deepspeed-token-drop/DeepSpeed-internal-connor/deepspeed/runtime/engine.py", line 1736, in forward
+    loss = self.module(*inputs, **kwargs)
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1110, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/gpt2/modeling_gpt2.py", line 1044, in forward
+    transformer_outputs = self.transformer(
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1110, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/gpt2/modeling_gpt2.py", line 887, in forward
+    outputs = block(
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1110, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/TokenDropping/deepspeed-token-drop/DeepSpeed-internal-connor/deepspeed/runtime/dynamic_train/basic_layer.py", line 72, in forward
+    print ('pass', self.randomltd_layer_id, torch.norm(hidden_states))
+  File "/opt/conda/lib/python3.8/site-packages/torch/_tensor.py", line 305, in __repr__
+    return torch._tensor_str._str(self)
+  File "/opt/conda/lib/python3.8/site-packages/torch/_tensor_str.py", line 434, in _str
+    return _str_intern(self)
+  File "/opt/conda/lib/python3.8/site-packages/torch/_tensor_str.py", line 409, in _str_intern
+    tensor_str = _tensor_str(self, indent)
+  File "/opt/conda/lib/python3.8/site-packages/torch/_tensor_str.py", line 264, in _tensor_str
+    formatter = _Formatter(get_summarized_data(self) if summarize else self)
+  File "/opt/conda/lib/python3.8/site-packages/torch/_tensor_str.py", line 100, in __init__
+    nonzero_finite_vals = torch.masked_select(tensor_view, torch.isfinite(tensor_view) & tensor_view.ne(0))
+RuntimeError: CUDA error: an illegal memory access was encountered
+CUDA kernel errors might be asynchronously reported at some other API call,so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1.
+terminate called after throwing an instance of 'c10::CUDAError'
+  what():  CUDA error: an illegal memory access was encountered
+CUDA kernel errors might be asynchronously reported at some other API call,so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1.
+Exception raised from create_event_internal at ../c10/cuda/CUDACachingAllocator.cpp:1230 (most recent call first):
+frame #0: c10::Error::Error(c10::SourceLocation, std::string) + 0x42 (0x7f1ba53077d2 in /opt/conda/lib/python3.8/site-packages/torch/lib/libc10.so)
+frame #1: <unknown function> + 0x239de (0x7f1ba55749de in /opt/conda/lib/python3.8/site-packages/torch/lib/libc10_cuda.so)
+frame #2: c10::cuda::CUDACachingAllocator::raw_delete(void*) + 0x22d (0x7f1ba557657d in /opt/conda/lib/python3.8/site-packages/torch/lib/libc10_cuda.so)
+frame #3: <unknown function> + 0x300568 (0x7f1ba6157568 in /opt/conda/lib/python3.8/site-packages/torch/lib/libtorch_python.so)
+frame #4: c10::TensorImpl::release_resources() + 0x175 (0x7f1ba52f0005 in /opt/conda/lib/python3.8/site-packages/torch/lib/libc10.so)
+frame #5: <unknown function> + 0x1ee569 (0x7f1ba6045569 in /opt/conda/lib/python3.8/site-packages/torch/lib/libtorch_python.so)
+frame #6: <unknown function> + 0x4d9c78 (0x7f1ba6330c78 in /opt/conda/lib/python3.8/site-packages/torch/lib/libtorch_python.so)
+frame #7: THPVariable_subclass_dealloc(_object*) + 0x292 (0x7f1ba6330f72 in /opt/conda/lib/python3.8/site-packages/torch/lib/libtorch_python.so)
+frame #8: <unknown function> + 0x12b4b6 (0x559e6c2b44b6 in /opt/conda/bin/python)
+frame #9: <unknown function> + 0x154ec8 (0x559e6c2ddec8 in /opt/conda/bin/python)
+frame #10: _PyModule_ClearDict + 0x18c (0x559e6c2ff96c in /opt/conda/bin/python)
+frame #11: PyImport_Cleanup + 0x315 (0x559e6c3df825 in /opt/conda/bin/python)
+frame #12: Py_FinalizeEx + 0x7d (0x559e6c3df94d in /opt/conda/bin/python)
+frame #13: Py_RunMain + 0x110 (0x559e6c3e07f0 in /opt/conda/bin/python)
+frame #14: Py_BytesMain + 0x39 (0x559e6c3e0979 in /opt/conda/bin/python)
+frame #15: __libc_start_main + 0xf3 (0x7f1bc21d80b3 in /usr/lib/x86_64-linux-gnu/libc.so.6)
+frame #16: <unknown function> + 0x1e7185 (0x559e6c370185 in /opt/conda/bin/python)
+
+ERROR:torch.distributed.elastic.multiprocessing.api:failed (exitcode: -6) local_rank: 0 (pid: 50328) of binary: /opt/conda/bin/python
+Traceback (most recent call last):
+  File "/opt/conda/lib/python3.8/runpy.py", line 194, in _run_module_as_main
+    return _run_code(code, main_globals, None,
+  File "/opt/conda/lib/python3.8/runpy.py", line 87, in _run_code
+    exec(code, run_globals)
+  File "/opt/conda/lib/python3.8/site-packages/torch/distributed/launch.py", line 193, in <module>
+    main()
+  File "/opt/conda/lib/python3.8/site-packages/torch/distributed/launch.py", line 189, in main
+    launch(args)
+  File "/opt/conda/lib/python3.8/site-packages/torch/distributed/launch.py", line 174, in launch
+    run(args)
+  File "/opt/conda/lib/python3.8/site-packages/torch/distributed/run.py", line 715, in run
+    elastic_launch(
+  File "/opt/conda/lib/python3.8/site-packages/torch/distributed/launcher/api.py", line 131, in __call__
+    return launch_agent(self._config, self._entrypoint, list(args))
+  File "/opt/conda/lib/python3.8/site-packages/torch/distributed/launcher/api.py", line 245, in launch_agent
+    raise ChildFailedError(
+torch.distributed.elastic.multiprocessing.errors.ChildFailedError: 
+======================================================
+run_clm_no_trainer.py FAILED
+------------------------------------------------------
+Failures:
+  <NO_OTHER_FAILURES>
+------------------------------------------------------
+Root Cause (first observed failure):
+[0]:
+  time      : 2022-10-27_09:59:29
+  host      : azwus2f200000C6
+  rank      : 0 (local_rank: 0)
+  exitcode  : -6 (pid: 50328)
+  error_file: <N/A>
+  traceback : Signal 6 (SIGABRT) received by PID 50328
+======================================================
