@@ -50,7 +50,6 @@ class BloomPipeline():
 
         return repo_root, checkpoints_json
 
-
     def generate_outputs(self,
                          inputs=["test"],
                          num_tokens=100):
