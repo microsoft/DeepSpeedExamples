@@ -15,7 +15,7 @@
     "stage": 0
   },
   "fp16":{
-    "enabled": true
+    "enabled": false
   },
   "gradient_clipping": 1.0,
   "prescale_gradients": true,
@@ -32,7 +32,7 @@
           "micro_batch_size": 4,
           "randomltd_schedule": {
               "min_value": 128,
-              "max_value": 2048,
+              "max_value": 1024,
               "schedule_type":"fixed_linear",
               "schedule_config": {
                   "require_steps": 500,
