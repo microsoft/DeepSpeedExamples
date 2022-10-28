@@ -2,7 +2,6 @@ import os
 import torch
 import deepspeed
 import transformers
-from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer
 
 # Pipeline class to mimic HF pipeline
 from utils import Pipeline
