@@ -22,7 +22,7 @@ class Pipeline():
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
 
         if (is_meta):
-            ''' When meta tensors enabled, checkpoints'''
+            '''When meta tensors enabled, use checkpoints'''
             self.config = AutoConfig.from_pretrained(self.model_name)
             self.repo_root, self.checkpoints_json = self.generate_json()
 
