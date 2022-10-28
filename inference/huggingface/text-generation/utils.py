@@ -1,5 +1,5 @@
 '''
-Helper classes and functions for the BLOOM examples
+Helper classes and functions for examples
 '''
 
 import io
@@ -10,33 +10,42 @@ import torch
 from huggingface_hub import snapshot_download
 from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer
 
-class BloomPipeline():
-    '''Bloom example helper class, meant to mimic HF pipelines'''
+class Pipeline():
+    '''Example helper class, meant to mimic HF pipelines'''
     def __init__(self,
                  model_name='bigscience/bloom-3b',
-                 dtype=torch.float16
+                 dtype=torch.float16,
+                 is_meta=True
                  ):
         self.model_name = model_name
         self.dtype = dtype
-        self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
-        self.config = AutoConfig.from_pretrained(self.model_name)
-        self.repo_root, self.checkpoints_json = self.generate_json()
+        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
 
-        # Construct model with fake meta tensors, later will be replaced during ds-inference ckpt load
-        with deepspeed.OnDevice(dtype=self.dtype, device="meta"):
-            self.model = AutoModelForCausalLM.from_config(self.config, torch_dtype=self.dtype)
+        if (is_meta):
+            ''' When meta tensors enabled, checkpoints'''
+            self.config = AutoConfig.from_pretrained(self.model_name)
+            self.repo_root, self.checkpoints_json = self.generate_json()
+
+            with deepspeed.OnDevice(dtype=self.dtype, device="meta"):
+                self.model = AutoModelForCausalLM.from_config(self.config, torch_dtype=self.dtype)
+        else:
+            self.model = AutoModelForCausalLM.from_pretrained(self.model_name)
 
         self.model.eval()
 
+
     def __call__(self,
                 inputs=["test"],
-                num_tokens=100):
+                num_tokens=100,
+                do_sample=False):
         if isinstance(inputs, str):
             input_list = [inputs]
         else:
             input_list = inputs
-        outputs = self.generate_outputs(input_list, num_tokens=num_tokens)
+
+        outputs = self.generate_outputs(input_list, num_tokens=num_tokens, do_sample=do_sample)
         return outputs
+
 
     def generate_json(self):
         repo_root = snapshot_download(self.model_name, allow_patterns=["*"], local_files_only=False, revision=None)
@@ -50,10 +59,12 @@ class BloomPipeline():
 
         return repo_root, checkpoints_json
 
+
     def generate_outputs(self,
                          inputs=["test"],
-                         num_tokens=100):
-        generate_kwargs = dict(max_new_tokens=num_tokens, do_sample=False)
+                         num_tokens=100,
+                         do_sample=False):
+        generate_kwargs = dict(max_new_tokens=num_tokens, do_sample=do_sample)
 
         input_tokens = self.tokenizer.batch_encode_plus(inputs, return_tensors="pt", padding=True)
         for t in input_tokens:
