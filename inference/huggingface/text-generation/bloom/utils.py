@@ -24,7 +24,7 @@ class BloomPipeline():
 
         # Construct model with fake meta tensors, later will be replaced during ds-inference ckpt load
         with deepspeed.OnDevice(dtype=self.dtype, device="meta"):
-            self.model = AutoModelForCausalLM.from_config(self.config, torch_dtype=torch.bfloat16)
+            self.model = AutoModelForCausalLM.from_config(self.config, torch_dtype=self.dtype)
 
         self.model.eval()
 
