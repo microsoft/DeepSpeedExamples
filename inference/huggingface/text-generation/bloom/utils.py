@@ -18,9 +18,9 @@ class BloomPipeline():
                  ):
         self.model_name = model_name
         self.dtype = dtype
-        self.repo_root, self.checkpoints_json = self.generate_json()
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
         self.config = AutoConfig.from_pretrained(self.model_name)
+        self.repo_root, self.checkpoints_json = self.generate_json()
 
         # Construct model with fake meta tensors, later will be replaced during ds-inference ckpt load
         with deepspeed.OnDevice(dtype=self.dtype, device="meta"):
@@ -45,7 +45,7 @@ class BloomPipeline():
 
         with io.open(checkpoints_json, "w", encoding="utf-8") as f:
             file_list = [str(entry) for entry in Path(repo_root).rglob("*.[bp][it][n]") if entry.is_file()]
-            data = {"type": "BLOOM", "checkpoints": file_list, "version": 1.0}
+            data = {"type": self.config.model_type, "checkpoints": file_list, "version": 1.0}
             json.dump(data, f)
 
         return repo_root, checkpoints_json
