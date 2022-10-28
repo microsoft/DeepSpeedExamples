@@ -15,7 +15,7 @@ local_rank = int(os.getenv('LOCAL_RANK', '0'))
 world_size = int(os.getenv('WORLD_SIZE', '1'))
 
 pipe = BloomPipeline(model_name=model_name,
-                    dtype=dtype)
+                     dtype=dtype)
 
 pipe.model = deepspeed.init_inference(
     pipe.model,
