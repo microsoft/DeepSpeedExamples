@@ -2,6 +2,7 @@
 Helper classes and functions for the BLOOM examples
 '''
 
+from cgitb import enable
 import io
 from pathlib import Path
 import json
@@ -10,21 +11,25 @@ import torch
 from huggingface_hub import snapshot_download
 from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer
 
-class BloomPipeline():
-    '''Bloom example helper class, meant to mimic HF pipelines'''
+class Pipeline():
+    '''Pipeline helper class as an alternative to HF pipelines for models that are loaded with meta tensors and checkpoints'''
     def __init__(self,
-                 model_name='bigscience/bloom-3b',
-                 dtype=torch.float16
-                 ):
+                 model_name='gpt2',
+                 dtype=torch.float16,
+                 enable_meta_tensor=True):
         self.model_name = model_name
         self.dtype = dtype
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
         self.config = AutoConfig.from_pretrained(self.model_name)
         self.repo_root, self.checkpoints_json = self.generate_json()
-
+        self.enable_meta_tensor = enable_meta_tensor
+        
         # Construct model with fake meta tensors, later will be replaced during ds-inference ckpt load
-        with deepspeed.OnDevice(dtype=self.dtype, device="meta"):
-            self.model = AutoModelForCausalLM.from_config(self.config, torch_dtype=self.dtype)
+        if self.enable_meta_tensor:
+            with deepspeed.OnDevice(dtype=self.dtype, device="meta"):
+                self.model = AutoModelForCausalLM.from_config(self.config, torch_dtype=self.dtype)
+        else:
+            self.model = AutoModelForCausalLM.from_pretrained(self.model_name)
 
         self.model.eval()
 
@@ -54,7 +59,7 @@ class BloomPipeline():
                          inputs=["test"],
                          num_tokens=100):
         generate_kwargs = dict(max_new_tokens=num_tokens, do_sample=False)
-
+        self.tokenizer.pad_token = self.tokenizer.eos_token
         input_tokens = self.tokenizer.batch_encode_plus(inputs, return_tensors="pt", padding=True)
         for t in input_tokens:
             if torch.is_tensor(input_tokens[t]):
