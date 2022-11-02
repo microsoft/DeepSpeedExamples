@@ -31,8 +31,8 @@ class Pipeline():
             self.config = AutoConfig.from_pretrained(self.model_name)
             self.repo_root, self.checkpoints_json = self._generate_json()
 
-            with deepspeed.OnDevice(dtype=self.dtype, device="meta"):
-                self.model = AutoModelForCausalLM.from_config(self.config, torch_dtype=self.dtype)
+            with deepspeed.OnDevice(dtype=torch.float16, device="meta"):
+                self.model = AutoModelForCausalLM.from_config(self.config)
         else:
             self.model = AutoModelForCausalLM.from_pretrained(self.model_name)
 
