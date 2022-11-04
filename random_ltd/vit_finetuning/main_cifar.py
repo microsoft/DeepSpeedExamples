@@ -69,6 +69,7 @@ parser.add_argument('--seed', default=None, type=int,
 parser.add_argument('--half', default=False, action='store_true',
                     help='training with half precision')
 # curriculum params
+parser.add_argument('--random_ltd', action='store_true', help="use fake data to benchmark")
 parser.add_argument("--data_outdir", default=".", type=str, help="output directory")
 parser.add_argument('--seq_len', default=197, type=int, help='image sequence length')
 parser = deepspeed.add_config_arguments(parser)
@@ -89,13 +90,7 @@ def main():
     #initial training
 
     total_iteration = args.epochs*len(train_loader)+1
-    total_batch_size = args.batchsize
-    num_update_steps_per_epoch = len(train_loader)
-    TRAIN_TOKENS = total_batch_size * args.epochs * num_update_steps_per_epoch * args.seq_len 
-    if args.warmup:  
-        lr_warmup_tokens = math.ceil(num_update_steps_per_epoch*total_batch_size*args.seq_len)
-    else:
-        lr_warmup_tokens = 0
+
     optimizer = get_optimizer(args.optimizer, model.parameters(), args.lr, args.momentum, args.wd)
     scheduler = get_scheduler(args.scheduler, optimizer, num_epochs=total_iteration)
 
@@ -104,8 +99,8 @@ def main():
     history = {"train_loss": [], "train_acc": [], "val_loss": [], "val_acc": [], "iter": [0,] }
     reserved_length = 0
     criterion = nn.CrossEntropyLoss().cuda()
-    
-    model = convert_to_randomltd(model, Block)
+    if args.random_ltd:
+      model = convert_to_randomltd(model, Block)
     model, optimizer, _, lr_scheduler = deepspeed.initialize(
         model=model,
         optimizer=optimizer,

@@ -3,7 +3,7 @@
 export CUDA_VISIBLE_DEVICES=0
 python main_cifar.py      \
     --deepspeed_config config/ds_config.json  \
-    --deepspeed              \
+    --deepspeed   --random_ltd           \
     --dataset cifar10vit224      \
     --seed 1234                   \
     --printfreq 400                \

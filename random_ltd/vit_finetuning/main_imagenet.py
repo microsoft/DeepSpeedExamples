@@ -5,6 +5,8 @@ import shutil
 import time
 import warnings
 from enum import Enum
+import deepspeed
+from deepspeed.runtime.dynamic_train.helper import convert_to_randomltd, save_without_randmltd
 
 import torch
 import torch.nn as nn
@@ -20,9 +22,10 @@ import torchvision.transforms as transforms
 import torchvision.datasets as datasets
 import torchvision.models as models
 from torch.utils.data import Subset
-from third_party import models
+import models
+from models.vit import Block
 import math
-from utils import get_seq_function, LayerTokenAnnealingLR, TokenAnnealingLR
+
 from timm.data.transforms_factory import  transforms_imagenet_eval, transforms_imagenet_train
 model_names = sorted(name for name in models.__dict__
     if name.islower() and not name.startswith("__")
@@ -66,6 +69,8 @@ parser.add_argument('--world-size', default=-1, type=int,
                     help='number of nodes for distributed training')
 parser.add_argument('--rank', default=-1, type=int,
                     help='node rank for distributed training')
+parser.add_argument('--local_rank', default=-1, type=int,
+                    help='local rank for distributed training')
 parser.add_argument('--dist-url', default='tcp://224.66.41.62:23456', type=str,
                     help='url used to set up distributed training')
 parser.add_argument('--dist-backend', default='nccl', type=str,
@@ -80,66 +85,28 @@ parser.add_argument('--out_dir', default=None, type=str,
                     help='output_dir.')
 parser.add_argument('--scheduler', default="cosine", type=str,
                     help='lr scheduler')
-parser.add_argument("--layer_config", default=None, type=str, help="use token scheduler or not.")
-parser.add_argument("--token_scheduler", action="store_true", help="use token scheduler or not.")
 parser.add_argument("--warmup", action="store_true", help="use token scheduler or not.")
-parser.add_argument('--seq_len', default=197, type=int, help='image sequence length')
-parser.add_argument("--drop_token_type", default="linear", type=str, help="drop token type")
-parser.add_argument("--seq_func_reach_steps", default=None, type=float, help="token or iteratioin")
-parser.add_argument('--seq_func_init_length', default=None, type=float, help='seq_function_initial_length')
 parser.add_argument('--multiprocessing-distributed', action='store_true',
                     help='Use multi-processing distributed training to launch '
                          'N processes per node, which has N GPUs. This is the '
                          'fastest way to use PyTorch for either single node or '
                          'multi node data parallel training')
 parser.add_argument('--dummy', action='store_true', help="use fake data to benchmark")
-
+parser.add_argument('--random_ltd', action='store_true', help="use fake data to benchmark")
+parser = deepspeed.add_config_arguments(parser)
 best_acc1 = 0
 history = {"train_loss": [], "train_acc1": [],"train_acc5":[], "val_loss": [], "val_acc1": [], "val_acc5": [], "epoch": [0,] }
-def main():
-    args = parser.parse_args()
 
-    if args.seed is not None:
-        random.seed(args.seed)
-        torch.manual_seed(args.seed)
-        #torch.cuda.manual_seed_all(args.seed)
-        cudnn.deterministic = True
-        warnings.warn('You have chosen to seed training. '
-                      'This will turn on the CUDNN deterministic setting, '
-                      'which can slow down your training considerably! '
-                      'You may see unexpected behavior when restarting '
-                      'from checkpoints.')
-
-    if args.gpu is not None:
-        warnings.warn('You have chosen a specific GPU. This will completely '
-                      'disable data parallelism.')
-
-    if args.dist_url == "env://" and args.world_size == -1:
-        args.world_size = int(os.environ["WORLD_SIZE"])
-
-    args.distributed = args.world_size > 1 or args.multiprocessing_distributed
-
-    ngpus_per_node = torch.cuda.device_count()
-    if args.multiprocessing_distributed:
-        # Since we have ngpus_per_node processes per node, the total world_size
-        # needs to be adjusted accordingly
-        args.world_size = ngpus_per_node * args.world_size
-        # Use torch.multiprocessing.spawn to launch distributed processes: the
-        # main_worker process function
-        mp.spawn(main_worker, nprocs=ngpus_per_node, args=(ngpus_per_node, args))
-    else:
-        # Simply call main_worker function
-        main_worker(args.gpu, ngpus_per_node, args)
-
-
-def main_worker(gpu, ngpus_per_node, args):
-    global best_acc1
-    global history
-    args.gpu = gpu
-    ngpus = torch.cuda.device_count()
-    if args.gpu is not None:
-        print ("Use GPU: {} for training".format(args.gpu))
-
+def _get_model(args):
+    # create model
+    print ("=> creating model '{}'".format(args.arch))
+    nclasses = 1000
+    nchannels = 3
+    model = models.__dict__[args.arch](num_classes=nclasses, nchannels=nchannels)
+    return model
+    
+def _get_dist_model(gpu, args):
+    ngpus_per_node = torch.cuida.device_count()
     if args.distributed:
         if args.dist_url == "env://" and args.rank == -1:
             args.rank = int(os.environ["RANK"])
@@ -149,11 +116,7 @@ def main_worker(gpu, ngpus_per_node, args):
             args.rank = args.rank * ngpus_per_node + gpu
         dist.init_process_group(backend=args.dist_backend, init_method=args.dist_url,
                                 world_size=args.world_size, rank=args.rank)
-    # create model
-    print ("=> creating model '{}'".format(args.arch))
-    nclasses = 1000
-    nchannels = 3
-    model = models.__dict__[args.arch](num_classes=nclasses, nchannels=nchannels)
+    model = _get_model(args)
     if not torch.cuda.is_available():
         print ('using CPU, this will be slow')
     elif args.distributed:
@@ -184,17 +147,68 @@ def main_worker(gpu, ngpus_per_node, args):
             model.cuda()
         else:
             model = torch.nn.DataParallel(model).cuda()
+    return model
+    
+def main():
+   
+    args = parser.parse_args()
 
+    if args.seed is not None:
+        random.seed(args.seed)
+        torch.manual_seed(args.seed)
+        #torch.cuda.manual_seed_all(args.seed)
+        cudnn.deterministic = True
+        warnings.warn('You have chosen to seed training. '
+                      'This will turn on the CUDNN deterministic setting, '
+                      'which can slow down your training considerably! '
+                      'You may see unexpected behavior when restarting '
+                      'from checkpoints.')
+
+    if args.gpu is not None:
+        warnings.warn('You have chosen a specific GPU. This will completely '
+                      'disable data parallelism.')
+
+    if args.dist_url == "env://" and args.world_size == -1:
+        args.world_size = int(os.environ["WORLD_SIZE"])
+
+    args.distributed = args.world_size > 1 or args.multiprocessing_distributed or args.deepspeed
+
+    ngpus_per_node = torch.cuda.device_count()
+    if args.multiprocessing_distributed:
+        # Since we have ngpus_per_node processes per node, the total world_size
+        # needs to be adjusted accordingly
+        args.world_size = ngpus_per_node * args.world_size
+        # Use torch.multiprocessing.spawn to launch distributed processes: the
+        # main_worker process function
+        mp.spawn(main_worker, nprocs=ngpus_per_node, args=(ngpus_per_node, args))
+    else:
+        # Simply call main_worker function
+        main_worker(args.gpu, ngpus_per_node, args)
+
+
+def main_worker(gpu, ngpus_per_node, args):
+    global best_acc1
+    global history
+    
+    if args.deepspeed:
+        gpu = args.local_rank
+    args.gpu = gpu
+    ngpus = torch.cuda.device_count()
+    if args.gpu is not None:
+        print ("Use GPU: {} for training".format(args.gpu))
+
+    if not args.deepspeed:
+        model = _get_dist_model(gpu, args)
+    else:
+        model = _get_model(args)
+        deepspeed.init_distributed()
+    print(f'created model on gpu {gpu}')
+    # exit ()
+    
     # define loss function (criterion), optimizer, and learning rate scheduler
     criterion = nn.CrossEntropyLoss().cuda(args.gpu)
 
-    optimizer = torch.optim.SGD(model.parameters(), args.lr,
-                                momentum=args.momentum,
-                                weight_decay=args.weight_decay)
-    
-    """Sets the learning rate to the initial LR decayed by 10 every 30 epochs"""
-    scheduler = None #StepLR(optimizer, step_size=30, gamma=0.1)
-    
+
     # optionally resume from a checkpoint
     if args.resume:
         if os.path.isfile(args.resume):
@@ -269,6 +283,22 @@ def main_worker(gpu, ngpus_per_node, args):
         validate(val_loader, model, criterion, args)
         # return
     args.completed_step = 0
+    
+    optimizer = torch.optim.SGD(model.parameters(), args.lr,
+                                momentum=args.momentum,
+                                weight_decay=args.weight_decay)
+    
+    """Sets the learning rate to the initial LR decayed by 10 every 30 epochs"""
+    scheduler = StepLR(optimizer, step_size=int(len(train_loader)*args.epochs//3), gamma=0.1)# None #
+    
+    if args.random_ltd:
+        model = convert_to_randomltd(model, Block)
+    model, optimizer, _, scheduler  = deepspeed.initialize(
+        model=model,
+        optimizer=optimizer,
+        lr_scheduler=scheduler,
+        args=args,
+        dist_init_required=False)
 
     for epoch in range(args.start_epoch, args.epochs):
         if args.distributed:
@@ -290,24 +320,24 @@ def main_worker(gpu, ngpus_per_node, args):
             history["train_acc5"].append(top5_train)
             torch.save(history,f"{args.out_dir}/stat.pt") 
             try:
-                print (f'{epoch} epoch at time {time_epoch}s and learning rate {scheduler.get_lr()}') 
+                print (f'{epoch} epoch at time {time_epoch}s and learning rate {scheduler.get_last_lr()}') 
             except:
                 print (f'{epoch} epoch at time {time_epoch}s and learning rate {args.lr}')
-            print (f"finish epoch {epoch} or iteration {args.completed_step}, comsumed token {args.consumed_train_tokens}: train_accuracy is {top1_train}, val_accuracy {top1_val}")
-        # scheduler.step()
+            print (f"finish epoch {epoch} or iteration {args.completed_step}, train_accuracy is {top1_train}, val_accuracy {top1_val}")
+
         # remember best acc@1 and save checkpoint
         is_best = top1_val > best_acc1
         best_acc1 = max(top1_val, best_acc1)
-        # if is_best:
-        #     if not args.multiprocessing_distributed or (args.multiprocessing_distributed
-        #             and args.rank % ngpus_per_node == 0):
-        #         save_checkpoint({
-        #             'epoch': epoch + 1,
-        #             'arch': args.arch,
-        #             'state_dict': model.state_dict(),
-        #             'best_acc1': best_acc1,
-        #             'optimizer' : optimizer.state_dict()
-        #         }, is_best, filename=f"{args.out_dir}/checkpoint.pth.tar")
+        if is_best:
+            if not args.multiprocessing_distributed or (args.multiprocessing_distributed
+                    and args.rank % ngpus_per_node == 0) or args.local_rank==0:
+                save_checkpoint({
+                    'epoch': epoch + 1,
+                    'arch': args.arch,
+                    'state_dict': save_without_randmltd(model),
+                    'best_acc1': best_acc1,
+                    'optimizer' : optimizer.state_dict()
+                }, is_best, filename=f"{args.out_dir}/checkpoint.pth.tar")
 
 
 def train(scheduler, train_loader, model, criterion, optimizer, epoch, args):
@@ -316,7 +346,7 @@ def train(scheduler, train_loader, model, criterion, optimizer, epoch, args):
     losses = AverageMeter('Loss', ':.4e')
     top1 = AverageMeter('Acc@1', ':6.2f')
     top5 = AverageMeter('Acc@5', ':6.2f')
-    length = AverageMeter('Reserve_length', ':0f')
+    length = AverageMeter('Reserve_length', ':6.0f')
     lr_progress = AverageMeter('lr', ':0f')
     progress = ProgressMeter(
         len(train_loader),
@@ -330,8 +360,10 @@ def train(scheduler, train_loader, model, criterion, optimizer, epoch, args):
     for i, (images, target) in enumerate(train_loader):
         args.completed_step += 1
         # measure data loading time
-        reserved_length = args.reserved_length 
-        new_reserved_length = None
+        try:
+            reserved_length =  model.randomltd_scheduler.get_current_seq()
+        except:
+            reserved_length =  -1
         data_time.update(time.time() - end)
 
         if args.gpu is not None:
@@ -348,17 +380,17 @@ def train(scheduler, train_loader, model, criterion, optimizer, epoch, args):
         losses.update(loss.clone().detach(), images.size(0))
         top1.update(acc1[0], images.size(0))
         top5.update(acc5[0], images.size(0))
-        try:
-            lr_progress.update(scheduler.get_lr(), 1)
-        except:
-            pass
-        if new_reserved_length is not None:
-            length.update(new_reserved_length, 1)
+
+        length.update(reserved_length, 1)
+        lr_progress.update(scheduler.get_last_lr()[0], 1)
         # compute gradient and do SGD step
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
-        if scheduler is not None:
+        if args.deepspeed:
+            model.backward(loss)
+            model.step()
+        else:
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
             scheduler.step()
             
         # measure elapsed time
