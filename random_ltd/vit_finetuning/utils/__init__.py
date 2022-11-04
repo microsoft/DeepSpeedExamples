@@ -14,6 +14,6 @@
 
 from .utils import get_model, get_optimizer, get_scheduler, LossTracker, AverageMeter, ProgressMeter, accuracy,run_cmd
 from .get_data import get_dataset
-from .cifar_label import CIFAR100N
-__all__ = [ "get_dataset", "ImageMemFolder", "AverageMeter", "ProgressMeter", "accuracy", "get_optimizer", "get_scheduler", "get_model", "LossTracker","cifar_label","run_cmd"]
+
+__all__ = [ "get_dataset", "ImageMemFolder", "AverageMeter", "ProgressMeter", "accuracy", "get_optimizer", "get_scheduler", "get_model", "LossTracker","run_cmd"]
  

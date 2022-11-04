@@ -27,9 +27,14 @@ import torch.nn.parallel
 import torch.optim
 import torch.utils.data
 from torch.utils.data import Subset
-
-from utils import get_dataset, get_model, get_optimizer, get_scheduler, get_seq_function
+import models
+from models.vit import Block
+from utils import get_dataset, get_model, get_optimizer, get_scheduler
 from utils import  LossTracker, run_cmd
+
+import deepspeed
+from deepspeed.runtime.dynamic_train.helper import convert_to_randomltd, save_without_randmltd
+
 parser = argparse.ArgumentParser(description='PyTorch Training')
 parser.add_argument('--data-dir', default='dataset',
                     help='path to dataset')
@@ -66,11 +71,12 @@ parser.add_argument('--half', default=False, action='store_true',
 # curriculum params
 parser.add_argument("--data_outdir", default=".", type=str, help="output directory")
 parser.add_argument('--seq_len', default=197, type=int, help='image sequence length')
+parser = deepspeed.add_config_arguments(parser)
 args = parser.parse_args()
 def main():
     set_seed(args.seed) 
     # create training and validation datasets and intiate the dataloaders
-    tr_set = get_dataset(args.dataset, args.data_dir, 'train',rand_fraction=args.rand_fraction)
+    tr_set = get_dataset(args.dataset, args.data_dir, 'train')
     val_set = get_dataset(args.dataset, args.data_dir, 'val')    
         
     train_loader = torch.utils.data.DataLoader(tr_set, batch_size=args.batchsize,\
@@ -80,7 +86,6 @@ def main():
 
 
     model = get_model(args.arch, tr_set.nchannels, tr_set.imsize, len(tr_set.classes), args.half)
-    print (model)
     #initial training
 
     total_iteration = args.epochs*len(train_loader)+1
@@ -99,33 +104,32 @@ def main():
     history = {"train_loss": [], "train_acc": [], "val_loss": [], "val_acc": [], "iter": [0,] }
     reserved_length = 0
     criterion = nn.CrossEntropyLoss().cuda()
-    seq_function = None
-    if args.seq_func_reach_steps!=0:
-        seq_function = get_seq_function(total_iteration, args.seq_len, args)
-        print ('using seq function')
-    else:
-        print ("no using seq function", args.seq_func_reach_steps )
-
-    val_loss, val_acc1 = validate(val_loader, model, criterion)
-    print (f'{-1} epoch at time {args.drop_token_type} {reserved_length}')
-    print (" %s  and val accurarcy %s, and used_token %s"%(iterations,  val_acc1.item()))     
-    history["val_loss"].append(val_loss)
-    history["val_acc"].append(val_acc1.item())  
+    
+    model = convert_to_randomltd(model, Block)
+    model, optimizer, _, lr_scheduler = deepspeed.initialize(
+        model=model,
+        optimizer=optimizer,
+        args=args,
+        lr_scheduler=scheduler,
+        dist_init_required=True)
+    
     for epoch in range(args.epochs): 
         start_time = time.time()
-        tr_loss, tr_acc1, iterations = train(seq_function, train_loader, model, criterion, optimizer, scheduler, epoch, iterations, reserved_length, consumed_train_tokens)
+        tr_loss, tr_acc1, iterations = train(train_loader, model, criterion, optimizer, scheduler, epoch, iterations)
         val_loss, val_acc1 = validate(val_loader, model, criterion)
         time_epoch = time.time() - start_time
-        print (f'{epoch} epoch at time {time_epoch}s')
-        print ("%s epoch %s iter w/ LR %s  and val accurarcy %s, and used_token %s"%(epoch, iterations,scheduler.get_lr(), val_acc1.item(), consumed_train_tokens))           
+        layer_tokens = model.randomltd_scheduler.state['consumed_layer_tokens']
+        reserve_length = model.randomltd_scheduler.get_current_seq()
+        print (f'{epoch} epoch at time {time_epoch}s | researved_length {reserve_length}')
+        print (f"iter {iterations} | LR { lr_scheduler.get_lr()}| val_acc {val_acc1.item()} | layer_token {layer_tokens}")
         history["val_loss"].append(val_loss)
         history["val_acc"].append(val_acc1.item())  
         history["train_loss"].append(tr_loss)
         history["train_acc"].append(tr_acc1.item())
         history["iter"].append(iterations)
         torch.save(history,f"{args.data_outdir}/stat.pt")  
-        
-def train(seq_function, train_loader, model, criterion, optimizer,scheduler, epoch, iterations):
+    torch.save(save_without_randmltd(model), f"{args.data_outdir}/last_checkpoint.pt")
+def train(train_loader, model, criterion, optimizer, scheduler, epoch, iterations):
   # switch to train mode
   model.train()
   tracker = LossTracker(len(train_loader), f'Epoch: [{epoch}]', args.printfreq)
@@ -134,10 +138,8 @@ def train(seq_function, train_loader, model, criterion, optimizer,scheduler, epo
     images, target = cuda_transfer(images, target)
     output = model(images)
     loss = criterion(output, target)
-    optimizer.zero_grad()
-    loss.backward()
-    optimizer.step()
-    scheduler.step()
+    model.backward(loss)
+    model.step()
     tracker.update(loss, output, target)
     tracker.display(i)
 

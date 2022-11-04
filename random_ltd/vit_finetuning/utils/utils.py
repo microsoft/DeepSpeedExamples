@@ -26,7 +26,7 @@ import torch.optim as optim
 from torch.optim import lr_scheduler
 import sys
 sys.path.append("..")
-from third_party import models
+import models
 import numpy as np
 import torch.nn as nn
 import math

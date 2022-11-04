@@ -15,7 +15,6 @@ import torch
 import os
 import torchvision.transforms as transforms
 import torchvision.datasets as datasets
-from .cifar_label import *
 
 def get_dataset(dataset_name, data_dir, split, rand_fraction=None,clean=False, transform=None, imsize=None, bucket='pytorch-data', **kwargs):
 
@@ -26,15 +25,11 @@ def get_dataset(dataset_name, data_dir, split, rand_fraction=None,clean=False, t
     dataset_name = dataset_name.split('vit')[0]
     #print ('here')
     dataset = globals()['get_cifar_vit'](dataset_name, data_dir, split, imsize=imsize, bucket=bucket, **kwargs)   
-  elif 'imagenet' in dataset_name:
-    dataset_name = dataset_name.split('vit')[0]
-    dataset = globals()['get_imagenet_vit'](dataset_name, data_dir, split, imsize=224, bucket=bucket, **kwargs)   
-  elif dataset_name in ['cifar100N']:
-    dataset = globals()[f'get_{dataset_name}'](dataset_name, data_dir, split, rand_fraction=rand_fraction, imsize=imsize, bucket=bucket,**kwargs)
-  
+  else:
+    assert 'cifar' in dataset_name
   print (dataset_name)
   item = dataset.__getitem__(0)[0]
-  print (item.size(0))
+
   dataset.nchannels = item.size(0)
   dataset.imsize = item.size(1)
   return dataset
@@ -97,7 +92,7 @@ def get_cifar100N(dataset_name, data_dir, split, rand_fraction=None,transform=No
 
 def get_cifar_vit(dataset_name, data_dir, split, transform=None, imsize=None, bucket='pytorch-data', **kwargs):
     if imsize==224:
-      print ('here!!!', dataset_name, imsize)
+
       if split=='train':
         transform_data = transforms.Compose([# transforms.ColorJitter(brightness= 0.4, contrast= 0.4, saturation= 0.4, hue= 0.1),
           transforms.Resize(256),
@@ -116,12 +111,12 @@ def get_cifar_vit(dataset_name, data_dir, split, transform=None, imsize=None, bu
       if dataset_name =='cifar10':
           return datasets.CIFAR10(data_dir, train=(split=='train'), transform=transform_data, download=True, **kwargs)
       elif dataset_name =='cifar100':
-          print ('here!!!!!!!!!!!!!')
+      
           return datasets.CIFAR100(data_dir, train=(split=='train'), transform=transform_data, download=True, **kwargs)
       else:
           assert dataset_name in ['cifar10', 'cifar100']
     else:
-      print ('here!!!', dataset_name, imsize)
+      
       if split=='train':
         transform_data = transforms.Compose([# transforms.ColorJitter(brightness= 0.4, contrast= 0.4, saturation= 0.4, hue= 0.1),
           transforms.Resize(imsize),
@@ -139,13 +134,13 @@ def get_cifar_vit(dataset_name, data_dir, split, transform=None, imsize=None, bu
       if dataset_name =='cifar10':
           return datasets.CIFAR10(data_dir, train=(split=='train'), transform=transform_data, download=True, **kwargs)
       elif dataset_name =='cifar100':
-          print ('here!!!!!!!!!!!!!')
+
           return datasets.CIFAR100(data_dir, train=(split=='train'), transform=transform_data, download=True, **kwargs)
       else:
           assert dataset_name in ['cifar10', 'cifar100']
 
 def get_imagenet_vit(dataset_name, data_dir, split, transform=None, imsize=None, bucket='pytorch-data', **kwargs):
-    print ('here!!!', dataset_name)
+
     ngpus = torch.cuda.device_count()
     if split=='train':
       transform_data = transforms.Compose([# transforms.ColorJitter(brightness= 0.4, contrast= 0.4, saturation= 0.4, hue= 0.1),

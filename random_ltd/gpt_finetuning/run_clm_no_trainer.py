@@ -511,12 +511,15 @@ def main():
                 perplexity = evaluation(model, eval_dataloader)
                 print_rank_0(f"Step at {step+1} with Perplexity: {perplexity}")
                 model.train()
-                print ("check", model.randomltd_scheduler.state["consumed_layer_tokens"])
+                #print ("check", model.randomltd_scheduler.state["consumed_layer_tokens"])
             # Evaluate perplexity on the validation set.
             if epoch != args.num_train_epochs-1:
                 print_rank_0(f"***** Evaluating perplexity, Epoch {epoch+1}/{num_train_epochs} *****")
                 perplexity = evaluation(model, eval_dataloader)
-                print_rank_0(f"Epoch at {step+1} with Perplexity: {perplexity}")
+                try:
+                    print_rank_0(f"Epoch at {step+1} with Perplexity: {perplexity} and consumer layer tokens {model.randomltd_scheduler.state["consumed_layer_tokens"]}")
+                except:
+                    print_rank_0(f"Epoch at {step+1} with Perplexity: {perplexity}")
             
         print_rank_0(f"***** Evaluating perplexity, Epoch {args.num_train_epochs}/{num_train_epochs} *****")
         perplexity = evaluation(model, eval_dataloader)

@@ -29,7 +29,6 @@
           "model_mask_name": "attention_mask",
           "model_type": "decoder",
           "hidden_state_order": "batch_seq_dim",
-          "micro_batch_size": 4,
           "randomltd_schedule": {
               "min_value": 128,
               "max_value": 1024,

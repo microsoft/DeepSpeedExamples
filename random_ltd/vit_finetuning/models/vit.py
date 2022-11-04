@@ -30,11 +30,13 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.utils.checkpoint
 
+import timm
 from timm.data import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD, IMAGENET_INCEPTION_MEAN, IMAGENET_INCEPTION_STD
-from timm.models.helpers import build_model_with_cfg, resolve_pretrained_cfg, named_apply, adapt_input_conv, checkpoint_seq
+from timm.models.helpers import named_apply, adapt_input_conv, checkpoint_seq
 from timm.models.layers import PatchEmbed, Mlp, DropPath, trunc_normal_, lecun_normal_
 from timm.models.registry import register_model
 from timm import create_model
+from timm.models.helpers import build_model_with_cfg, resolve_pretrained_cfg
 _logger = logging.getLogger(__name__)
 
 
@@ -1092,13 +1094,28 @@ def vit_base_patch16_18x2_224(pretrained=False, **kwargs):
 
 
 
-__all__ = [ 'vits16r224', 'vits16r32']
+
+__all__ = [ 'vits16r224', 'vits16r384', 'lvits16r224','lvits16r384', 'Block']
+
+
 def vits16r224(num_classes=10, nchannels=3) -> VisionTransformer:
     return create_model("vit_base_patch16_224", num_classes=num_classes,
                         pretrained=True, img_size=224)
-def vits16r32(num_classes=10, nchannels=3) -> VisionTransformer:
-    return create_model("vit_base_patch16_224", num_classes=num_classes,
-                        pretrained=True, img_size=32)
+
+
+def lvits16r224(num_classes=10, nchannels=3) -> VisionTransformer:
+    return create_model("vit_large_patch16_224", num_classes=num_classes,
+                        pretrained=True, img_size=224)
+
+
+def vits16r384(num_classes=10, nchannels=3) -> VisionTransformer:
+    return create_model("vit_base_patch16_384", num_classes=num_classes,
+                        pretrained=True, img_size=384)
+    
+def lvits16r384(num_classes=10, nchannels=3) -> VisionTransformer:
+    return create_model("vit_base_patch16_384", num_classes=num_classes,
+                        pretrained=True, img_size=384)
+
 
 
 
