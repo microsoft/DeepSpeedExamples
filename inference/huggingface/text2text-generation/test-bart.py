@@ -22,7 +22,7 @@ pipe.model = deepspeed.init_inference(
     injection_policy={
         BartEncoderLayer: ('.fc2', 'self_attn.out_proj'),
         BartDecoderLayer: ('encoder_attn.out_proj', '.fc2', 'self_attn.out_proj')
-        }
+    }
 )
 
 pipe.device = torch.device(f'cuda:{local_rank}')

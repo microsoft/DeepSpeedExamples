@@ -19,7 +19,10 @@ pipe.model = deepspeed.init_inference(
     pipe.model,
     mp_size=world_size,
     dtype=torch.float,
-    injection_policy={MvpDecoderLayer: ('self_attn.out_proj', 'encoder_attn.out_proj', '.fc2'), MvpEncoderLayer: ('self_attn.out_proj', '.fc2')}
+    injection_policy={
+        MvpDecoderLayer: ('self_attn.out_proj', 'encoder_attn.out_proj', '.fc2'), 
+        MvpEncoderLayer: ('self_attn.out_proj', '.fc2')
+    }
 )
 
 pipe.device = torch.device(f'cuda:{local_rank}')

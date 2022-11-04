@@ -21,7 +21,8 @@ pipe.model = deepspeed.init_inference(
     dtype=torch.float,
     injection_policy={
         BlenderbotEncoderLayer: ('.fc2', 'self_attn.out_proj'),
-        BlenderbotDecoderLayer: ('.fc2', 'encoder_attn.out_proj', 'self_attn.out_proj')}
+        BlenderbotDecoderLayer: ('.fc2', 'encoder_attn.out_proj', 'self_attn.out_proj')
+    }
 )
 
 pipe.device = torch.device(f'cuda:{local_rank}')
