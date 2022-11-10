@@ -14,6 +14,7 @@ pipe = pipeline("text2text-generation", model="google/t5-v1_1-small", device=loc
 #   1. which layer module we need to add Tensor-Parallelism
 #   2. the name of several linear layers: a) attention_output (both encoder and decoder), 
 #       and b) transformer output
+#config = deepspeed.default_inference_config()
 
 pipe.model = deepspeed.init_inference(
     pipe.model,

@@ -14,11 +14,14 @@ pipe.model = deepspeed.init_inference(
     pipe.model,
     mp_size=world_size,
     dtype=torch.float,
-    injection_policy={BertLayer : ('output.dense')}
+    replace_with_kernel_inject=True,
+    enable_cuda_graph=True
+    #injection_policy={BertLayer : ('output.dense')}
 )
 
 pipe.device = torch.device(f'cuda:{local_rank}')
 output = pipe("In Autumn the [MASK] fall from the trees.")
 
 if not torch.distributed.is_initialized() or torch.distributed.get_rank() == 0:
-    print(output)
+    for i in output:
+        print(i)

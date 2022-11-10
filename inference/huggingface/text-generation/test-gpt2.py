@@ -23,10 +23,36 @@ generator = pipeline('text-generation',
                      tokenizer=tokenizer,
                      device=local_rank)
 
+#config = deepspeed.default_inference_config()
+from rich.pretty import pprint
+#pprint(config["mp_size"])
+#pprint(config)
+#config["mp_size"] = world_size
+#pprint(config["mp_size"])
+
+#myconf = { "replace_with_kernel_inject" : True, "dtype": torch.half, "mp_size" : world_size }
+
+#generator.model = deepspeed.init_inference(generator.model, config=config)
+#string = generator("DeepSpeed is", min_length=50, max_length=50, do_sample=False, use_cache=True)
+#print(string)
+
+
+#generator.model = deepspeed.init_inference(generator.model, config=myconf, replace_with_kernel_inject=True)
+#string = generator("DeepSpeed is", min_length=50, max_length=50, do_sample=False, use_cache=True)
+#print(string)
+#
+#
+## New API usage - no config and no kwargs
+#generator.model = deepspeed.init_inference(generator.model)
+#string = generator("DeepSpeed is", min_length=50, max_length=50, do_sample=False, use_cache=True)
+#print(string)
+
+# Existing usage
 generator.model = deepspeed.init_inference(generator.model,
                                  mp_size=world_size,
                                  dtype=torch.half,
                                  replace_with_kernel_inject=True)
-
-string = generator("DeepSpeed is", min_length=50, max_length=50, do_sample=True, use_cache=True)
+string = generator("DeepSpeed is", min_length=50, max_length=50, do_sample=False)
 print(string)
+
+

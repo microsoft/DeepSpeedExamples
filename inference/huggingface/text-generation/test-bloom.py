@@ -15,7 +15,7 @@ local_rank = int(os.getenv('LOCAL_RANK', '0'))
 world_size = int(os.getenv('WORLD_SIZE', '1'))
 
 pipe = Pipeline(model_name=model_name,
-                dtype=dtype
+                dtype=dtype, is_meta=True,
 )
 
 pipe.model = deepspeed.init_inference(
