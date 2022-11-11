@@ -18,6 +18,7 @@ parser.add_argument("--max_new_tokens", default=50, type=int, help="maximum new 
 parser.add_argument("--greedy", default=False, type=bool, help="greedy generation mode")
 parser.add_argument("--use_meta_tensor", default=False, type=bool, help="use the meta tensors to initialize model")
 parser.add_argument("--use_cache", default=True, type=bool, help="use cache for generation")
+parser.add_argument("--local_rank", default=0, type=int, help=())
 args = parser.parse_args()
 
 local_rank = int(os.getenv('LOCAL_RANK', '0'))
@@ -57,8 +58,8 @@ inputs = input_sentences[:args.batch_size]
 
 outputs = pipe(inputs, 
               num_tokens=args.max_new_tokens, 
-              do_sample=(not args.greedy),
-              use_cache=args.use_cache)
+              do_sample=(not args.greedy)
+              )
 
 for i, o in zip(inputs, outputs):
     print(f"\nin={i}\nout={o}\n{'-'*60}")
