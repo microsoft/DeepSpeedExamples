@@ -14,7 +14,7 @@ Examples can be run as follows:
 # Single-batch Example
 Command:
 <pre>
-deepspeed --num_gpus 1 inference_test.py --name facebook/opt-125m
+deepspeed --num_gpus 1 inference-test.py --name facebook/opt-125m
 </pre>
 
 Output:
@@ -27,7 +27,7 @@ out=DeepSpeed is a machine learning framework based on TensorFlow. It was first 
 # Multi-batch Example
 Command:
 <pre>
-deepspeed --num_gpus 1 inference_test.py --name bigscience/bloom-3b --batch_size 2
+deepspeed --num_gpus 1 inference-test.py --name bigscience/bloom-3b --batch_size 2
 </pre>
 
 Output:
