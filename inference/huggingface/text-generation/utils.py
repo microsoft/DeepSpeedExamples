@@ -17,7 +17,7 @@ class DSPipeline():
     The DSPipeline can run with and without meta tensors.
     '''
     def __init__(self,
-                 model_name='bigscience/bloom-3b',
+                 model='bigscience/bloom-3b',
                  dtype=torch.float16,
                  is_meta=True,
                  device=-1
