@@ -5,7 +5,7 @@
    * [Setup](#setup)
    * [Usage](#usage)
    * [Single-batch Example](#single-batch-example)
-   * [Multi-batch Example](#single-batch-example)
+   * [Multi-batch Example](#multi-batch-example)
    * [`DSPipeline` utility class](#dspipeline-utility-class)
 
 # Setup
