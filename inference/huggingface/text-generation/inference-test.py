@@ -24,7 +24,7 @@ args = parser.parse_args()
 world_size = int(os.getenv('WORLD_SIZE', '1'))
 
 data_type = getattr(torch, args.dtype)
-pipe = DSPipeline(model=args.name,
+pipe = DSPipeline(model_name=args.name,
                   dtype=data_type,
                   is_meta=args.use_meta_tensor,
                   device=args.local_rank)
