@@ -49,7 +49,7 @@ class DSPipeline():
             with deepspeed.OnDevice(dtype=torch.float16, device="meta"):
                 self.model = AutoModelForCausalLM.from_config(self.config)
         else:
-            self.model = AutoModelForCausalLM.from_pretrained(self.model_name, low_cpu_mem_usage = False)
+            self.model = AutoModelForCausalLM.from_pretrained(self.model_name, low_cpu_mem_usage = is_hf_low_cpu_mem_usage)
 
         self.model.eval()
 
