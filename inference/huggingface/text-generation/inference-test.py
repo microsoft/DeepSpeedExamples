@@ -39,7 +39,7 @@ if args.ds_inference:
                                     dtype=data_type,
                                     mp_size=world_size,
                                     replace_with_kernel_inject=True,
-                                    max_tokens=args.max_tokens,
+                                    max_out_tokens=args.max_tokens,
                                     **ds_kwargs
                                     )
 
