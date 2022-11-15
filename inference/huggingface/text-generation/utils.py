@@ -20,6 +20,7 @@ class DSPipeline():
                  model_name='bigscience/bloom-3b',
                  dtype=torch.float16,
                  is_meta=True,
+                 is_hf_low_cpu_mem_usage=False,
                  device=-1
                  ):
         self.model_name = model_name
@@ -48,7 +49,7 @@ class DSPipeline():
             with deepspeed.OnDevice(dtype=torch.float16, device="meta"):
                 self.model = AutoModelForCausalLM.from_config(self.config)
         else:
-            self.model = AutoModelForCausalLM.from_pretrained(self.model_name)
+            self.model = AutoModelForCausalLM.from_pretrained(self.model_name, low_cpu_mem_usage = False)
 
         self.model.eval()
 
