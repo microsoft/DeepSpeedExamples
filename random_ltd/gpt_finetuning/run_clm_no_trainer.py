@@ -54,7 +54,9 @@ from transformers.utils.versions import require_version
 from transformers.models.gpt2.modeling_gpt2 import GPT2Block
 
 import deepspeed
-from deepspeed.runtime.dynamic_train.helper import convert_to_randomltd, save_without_randmltd
+
+from deepspeed.runtime.data_pipeline.data_routing.helper import convert_to_random_ltd, save_without_random_ltd
+
 import numpy as np
 
 
@@ -192,6 +194,10 @@ def parse_args():
         "--no_keep_linebreaks", action="store_true", help="Do not keep line breaks when using TXT files."
     )
     parser.add_argument("--not_tie_wre", action="store_true", help="tie the last layer and embedding or not."
+    )
+    parser.add_argument("--random_ltd", action="store_true", help="enable random-ltd or not."
+    )
+    parser.add_argument("--eval_step", type=int, default=10, help="eval step."
     )
     parser.add_argument("--push_to_hub", action="store_true", help="Whether or not to push the model to the Hub.")
     parser.add_argument(
@@ -483,10 +489,6 @@ def main():
                 num_training_steps=args.max_train_steps,
             )
         print ("what is this lr_scheduler")
-        # print (lr_scheduler)
-        # import time
-        # time.sleep(10)
-        
         
         model, optimizer, _, lr_scheduler = deepspeed.initialize(
             model=model,
@@ -494,14 +496,19 @@ def main():
             args=args,
             lr_scheduler=lr_scheduler,
             dist_init_required=True)
+        if args.random_ltd:
+            model = convert_to_random_ltd(model, GPT2Block) 
+           
+        
         # Only show the progress bar once on each machine.
-        # completed_steps = 0
+        global_step = 0
         for epoch in range(num_train_epochs):
             if epoch == 0:
                 perplexity = evaluation(model, eval_dataloader)
                 print_rank_0 (f"*************************initialization with {perplexity}***********************************")            
             model.train()
             for step, batch in enumerate(train_dataloader):
+                model.train()
                 batch = to_device(batch)                
                 outputs = model(**batch)
                 loss = outputs.loss
@@ -509,18 +516,18 @@ def main():
                 model.backward(loss)
                 model.step()
                 perplexity = evaluation(model, eval_dataloader)
-                print_rank_0(f"Step at {step+1} with Perplexity: {perplexity}")
-                model.train()
-                #print ("check", model.randomltd_scheduler.state["consumed_layer_tokens"])
-            # Evaluate perplexity on the validation set.
-            if epoch != args.num_train_epochs-1:
-                print_rank_0(f"***** Evaluating perplexity, Epoch {epoch+1}/{num_train_epochs} *****")
-                perplexity = evaluation(model, eval_dataloader)
-                try:
-                    print_rank_0(f"Epoch at {step+1} with Perplexity: {perplexity} and consumer layer tokens {model.randomltd_scheduler.state["consumed_layer_tokens"]}")
-                except:
-                    print_rank_0(f"Epoch at {step+1} with Perplexity: {perplexity}")
-            
+                
+                # Evaluate perplexity on the validation set.
+                if global_step%args.eval_step==0 or step == len(train_dataloader)-1:
+                    print_rank_0(f"***** Evaluating perplexity, Epoch {epoch+1}/{num_train_epochs} *****")
+                    perplexity = evaluation(model, eval_dataloader)
+                    if args.random_ltd:
+                        consumed_tokens = model.random_ltd_scheduler.state["consumed_layer_tokens"]
+                        reserved_length = model.random_ltd_scheduler.get_current_seq()
+                        print_rank_0(f"'step':{global_step}, 'ppl': {perplexity}, 'seq_len': {reserved_length}, 'consume layer-tokens': {consumed_tokens}")
+                    else:
+                        print_rank_0(f"'step': {global_step}, 'ppl': {perplexity}")
+            global_step += 1
         print_rank_0(f"***** Evaluating perplexity, Epoch {args.num_train_epochs}/{num_train_epochs} *****")
         perplexity = evaluation(model, eval_dataloader)
         print_rank_0(f"Before cleaning, Epoch at {args.num_train_epochs} with Perplexity: {perplexity}")
@@ -528,31 +535,21 @@ def main():
             print_rank_0('saving model ...')
             if not os.path.isdir(args.output_dir):
                 os.makedirs(args.output_dir)
+
             if torch.distributed.get_rank() == 0:
                 model_to_save = model.module if hasattr(model, 'module') else model
-                # CONFIG_NAME = "config.json"
+                CONFIG_NAME = "config.json"
                 WEIGHTS_NAME = "pytorch_model.bin"
                 output_model_file = os.path.join(args.output_dir, WEIGHTS_NAME)
-                #output_config_file = os.path.join(args.output_dir, CONFIG_NAME)
-                torch.save(model_to_save.state_dict(), output_model_file)
-                #output_config_file = os.path.join(args.output_dir, CONFIG_NAME)
-                #model_to_save.config.to_json_file(output_config_file)
+                output_config_file = os.path.join(args.output_dir, CONFIG_NAME)
+                torch.save(save_without_random_ltd(model_to_save), output_model_file)
+                output_config_file = os.path.join(args.output_dir, CONFIG_NAME)
+                model_to_save.config.to_json_file(output_config_file)
                 tokenizer.save_vocabulary(args.output_dir)
 
 
-    model = convert_to_randomltd(model, GPT2Block)
-    training(model, train_dataloader, eval_dataloader, args.num_train_epochs, args)
-    perplexity = evaluation(model, eval_dataloader)
-
-    print_rank_0(f"After cleaning randomLTD: {perplexity}")
     
-    model_stat_dic = save_without_randmltd(model)
-    output_dir = args.output_dir
-    print_rank_0(f'saving model to {output_dir}')
-    if not os.path.isdir(output_dir):
-        os.makedirs(output_dir)
-    output_model_file = os.path.join(output_dir, "pytorch_model.bin")
-    torch.save(model_stat_dic, output_model_file)
+    training(model, train_dataloader, eval_dataloader, args.num_train_epochs, args)
     
 if __name__ == "__main__":
     main()
