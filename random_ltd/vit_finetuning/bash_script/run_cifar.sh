@@ -1,7 +1,7 @@
 #!/bin/bash
 
 export CUDA_VISIBLE_DEVICES=0
-mkdir -p check/cifar/
+mkdir -p out/cifar/
 # deepspeed --include worker-0:0 --master_port 60000 main_cifar.py      \
 #     --deepspeed_config config/ds_config.json  \
 #     --deepspeed   --random_ltd  \
@@ -16,8 +16,6 @@ mkdir -p check/cifar/
 #     --batchsize 32 \
 #     --data_outdir check/cifar/ | tee -a check/cifar/training.log
 
-
-
 deepspeed --master_port 60000 main_cifar.py      \
     --deepspeed_config config/ds_config.json  \
     --deepspeed   --random_ltd  \
@@ -30,4 +28,4 @@ deepspeed --master_port 60000 main_cifar.py      \
     --scheduler constant    \
     --epochs 14  \
     --batchsize 128 \
-    --data_outdir check/cifar/ | tee -a check/cifar/training.log
+    --data_outdir out/cifar/ | tee -a out/cifar/training.log
