@@ -1,4 +1,4 @@
-#### Example of fine-tuning GPT using random-LTD (https://arxiv.org/abs/2211.11586)
+#### Example of fine-tuning ViT using random-LTD (https://arxiv.org/abs/2211.11586)
 
 #### Install
 
