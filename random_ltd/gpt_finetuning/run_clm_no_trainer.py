@@ -131,7 +131,7 @@ def parse_args():
     parser.add_argument(
         "--per_device_eval_batch_size",
         type=int,
-        default=8,
+        default=2,
         help="Batch size (per device) for the evaluation dataloader.",
     )
     parser.add_argument(
@@ -527,7 +527,7 @@ def main():
                         print_rank_0(f"'step':{global_step}, 'ppl': {perplexity}, 'seq_len': {reserved_length}, 'consume layer-tokens': {consumed_tokens}")
                     else:
                         print_rank_0(f"'step': {global_step}, 'ppl': {perplexity}")
-            global_step += 1
+                global_step += 1
         print_rank_0(f"***** Evaluating perplexity, Epoch {args.num_train_epochs}/{num_train_epochs} *****")
         perplexity = evaluation(model, eval_dataloader)
         print_rank_0(f"Before cleaning, Epoch at {args.num_train_epochs} with Perplexity: {perplexity}")

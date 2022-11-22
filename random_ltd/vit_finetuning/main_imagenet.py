@@ -6,7 +6,8 @@ import time
 import warnings
 from enum import Enum
 import deepspeed
-from deepspeed.runtime.dynamic_train.helper import convert_to_randomltd, save_without_randmltd
+
+from deepspeed.runtime.data_pipeline.data_routing.helper import convert_to_random_ltd, save_without_random_ltd
 
 import torch
 import torch.nn as nn
@@ -291,15 +292,15 @@ def main_worker(gpu, ngpus_per_node, args):
     """Sets the learning rate to the initial LR decayed by 10 every 30 epochs"""
     scheduler = StepLR(optimizer, step_size=int(len(train_loader)*args.epochs//3), gamma=0.1)# None #
     
-    if args.random_ltd:
-        model = convert_to_randomltd(model, Block)
+
     model, optimizer, _, scheduler  = deepspeed.initialize(
         model=model,
         optimizer=optimizer,
         lr_scheduler=scheduler,
         args=args,
         dist_init_required=False)
-
+    if args.random_ltd:
+        model = convert_to_random_ltd(model, Block)
     for epoch in range(args.start_epoch, args.epochs):
         if args.distributed:
             train_sampler.set_epoch(epoch)
@@ -334,7 +335,7 @@ def main_worker(gpu, ngpus_per_node, args):
                 save_checkpoint({
                     'epoch': epoch + 1,
                     'arch': args.arch,
-                    'state_dict': save_without_randmltd(model),
+                    'state_dict': save_without_random_ltd(model),
                     'best_acc1': best_acc1,
                     'optimizer' : optimizer.state_dict()
                 }, is_best, filename=f"{args.out_dir}/checkpoint.pth.tar")
@@ -361,7 +362,7 @@ def train(scheduler, train_loader, model, criterion, optimizer, epoch, args):
         args.completed_step += 1
         # measure data loading time
         try:
-            reserved_length =  model.randomltd_scheduler.get_current_seq()
+            reserved_length =  model.random_ltd_scheduler.get_current_seq()
         except:
             reserved_length =  -1
         data_time.update(time.time() - end)

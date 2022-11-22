@@ -33,7 +33,8 @@ from utils import get_dataset, get_model, get_optimizer, get_scheduler
 from utils import  LossTracker, run_cmd
 
 import deepspeed
-from deepspeed.runtime.dynamic_train.helper import convert_to_randomltd, save_without_randmltd
+from deepspeed.runtime.data_pipeline.data_routing.helper import convert_to_random_ltd, save_without_random_ltd
+
 
 parser = argparse.ArgumentParser(description='PyTorch Training')
 parser.add_argument('--data-dir', default='dataset',
@@ -68,7 +69,9 @@ parser.add_argument('--seed', default=None, type=int,
                     help='seed for initializing training. ')
 parser.add_argument('--half', default=False, action='store_true',
                     help='training with half precision')
-# curriculum params
+parser.add_argument('--local_rank', default=-1, type=int,
+                    help='training with half precision')
+# random-ltd params
 parser.add_argument('--random_ltd', action='store_true', help="use fake data to benchmark")
 parser.add_argument("--data_outdir", default=".", type=str, help="output directory")
 parser.add_argument('--seq_len', default=197, type=int, help='image sequence length')
@@ -99,22 +102,23 @@ def main():
     history = {"train_loss": [], "train_acc": [], "val_loss": [], "val_acc": [], "iter": [0,] }
     reserved_length = 0
     criterion = nn.CrossEntropyLoss().cuda()
-    if args.random_ltd:
-      model = convert_to_randomltd(model, Block)
+
     model, optimizer, _, lr_scheduler = deepspeed.initialize(
         model=model,
         optimizer=optimizer,
         args=args,
         lr_scheduler=scheduler,
         dist_init_required=True)
-    
+
+    if args.random_ltd:
+          model = convert_to_random_ltd(model, Block)    
     for epoch in range(args.epochs): 
         start_time = time.time()
         tr_loss, tr_acc1, iterations = train(train_loader, model, criterion, optimizer, scheduler, epoch, iterations)
         val_loss, val_acc1 = validate(val_loader, model, criterion)
         time_epoch = time.time() - start_time
-        layer_tokens = model.randomltd_scheduler.state['consumed_layer_tokens']
-        reserve_length = model.randomltd_scheduler.get_current_seq()
+        layer_tokens = model.random_ltd_scheduler.state['consumed_layer_tokens']
+        reserve_length = model.random_ltd_scheduler.get_current_seq()
         print (f'{epoch} epoch at time {time_epoch}s | researved_length {reserve_length}')
         print (f"iter {iterations} | LR { lr_scheduler.get_lr()}| val_acc {val_acc1.item()} | layer_token {layer_tokens}")
         history["val_loss"].append(val_loss)
@@ -123,7 +127,7 @@ def main():
         history["train_acc"].append(tr_acc1.item())
         history["iter"].append(iterations)
         torch.save(history,f"{args.data_outdir}/stat.pt")  
-    torch.save(save_without_randmltd(model), f"{args.data_outdir}/last_checkpoint.pt")
+    torch.save(save_without_random_ltd(model), f"{args.data_outdir}/last_checkpoint.pt")
 def train(train_loader, model, criterion, optimizer, scheduler, epoch, iterations):
   # switch to train mode
   model.train()

@@ -1,5 +1,6 @@
 #!/bin/bash
 ##################apply random-ltd to fine-tune ptb on GPT-medium (24-layer)##############################
+####see more on random-ltd: https://arxiv.org/abs/2211.11586
 export CUDA_VISIBLE_DEVICES=1
 mkdir -p ./output2/check-medium
 python -m torch.distributed.launch --nproc_per_node=1 \
@@ -10,6 +11,7 @@ python -m torch.distributed.launch --nproc_per_node=1 \
     --dataset_config_name penn_treebank \
     --model_name_or_path gpt2-medium \
     --per_device_train_batch_size 2 \
+    --per_device_eval_batch_size 4 \
     --num_train_epochs 2 \
     --deepspeed_config config/ds_config_gpt_medium.json \
     --deepspeed --seed 1234\
