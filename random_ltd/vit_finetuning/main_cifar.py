@@ -118,8 +118,8 @@ def main():
         val_loss, val_acc1 = validate(val_loader, model, criterion)
         time_epoch = time.time() - start_time
         layer_tokens = model.random_ltd_scheduler.state['consumed_layer_tokens']
-        reserve_length = model.random_ltd_scheduler.get_current_seq()
-        print (f'{epoch} epoch at time {time_epoch}s | researved_length {reserve_length}')
+        reserved_length = model.random_ltd_scheduler.get_current_seq()
+        print (f'{epoch} epoch at time {time_epoch}s | reserved_length {reserved_length}')
         print (f"iter {iterations} | LR { lr_scheduler.get_lr()}| val_acc {val_acc1.item()} | layer_token {layer_tokens}")
         history["val_loss"].append(val_loss)
         history["val_acc"].append(val_acc1.item())  
