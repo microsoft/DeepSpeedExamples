@@ -20,7 +20,7 @@ The key added feature for the above two files are our deepspeed and random-ltd.
 #### bash script
 
 * **run_base.sh/run_medium.sh**  This bash script contains jobs for training with random-ltd
-* Run the job under the gpt2 directory:
+* Run the job under the vit-finetuning directory:
 
  ``DeepSpeedExamples/random_ltd/vit_finetuning$ . ./bash_script/run_cifar.sh``
 

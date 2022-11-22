@@ -17,10 +17,10 @@ The python code is modified based on huggingface (https://github.com/huggingface
 #### bash script
 
 * **run_base.sh/run_medium.sh**  This bash script contains jobs for training with random-ltd
-* Run the job under the gpt2 directory:
+* Run the job under the gpt_finetuning directory:
 
  ``DeepSpeedExamples/random_ltd/gpt_finetuning$ . ./bash_script/run_base.sh``
 
- 
+
  ``DeepSpeedExamples/random_ltd/gpt_finetuning$ . ./bash_script/run_medium.sh``
  See more descriptions and results in our [tutorial page](https://www.deepspeed.ai/).
