@@ -6,10 +6,13 @@
 
 You will also need to install updated DeepSpeed version (>0.7.5), which contains the random-ltd library.
 
-#### Key File: run_clm_no_trainer.py
+#### Key File: main_cifar.py & main_imagenet.py
 
-The python code is modified based on huggingface (https://github.com/huggingface/transformers/blob/main/examples/pytorch/language-modeling/run_clm_no_trainer.py). The key added feature is our random-ltd.
+* main_cifar.py The python code is modified based on when do curricula work (https://github.com/google-research/understanding-curricula). 
 
+* main_imagenet.py The python code is modified based on  https://github.com/pytorch/examples/tree/main/imagenet
+
+The key added feature for the above two files are our deepspeed and random-ltd.
 #### Folders (config)
 
 * **config:** This folder provides DeepSpeed configuration, including the schedules of sequence-length and the layers applied by random-ltd.
