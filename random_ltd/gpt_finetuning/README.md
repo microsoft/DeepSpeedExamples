@@ -20,5 +20,7 @@ The python code is modified based on huggingface (https://github.com/huggingface
 * Run the job under the gpt2 directory:
 
  ``DeepSpeedExamples/random_ltd/gpt_finetuning$ . ./bash_script/run_base.sh``
+
+ 
  ``DeepSpeedExamples/random_ltd/gpt_finetuning$ . ./bash_script/run_medium.sh``
  See more descriptions and results in our [tutorial page](https://www.deepspeed.ai/).

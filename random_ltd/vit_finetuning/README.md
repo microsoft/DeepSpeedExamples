@@ -22,6 +22,7 @@ The key added feature for the above two files are our deepspeed and random-ltd.
 * **run_base.sh/run_medium.sh**  This bash script contains jobs for training with random-ltd
 * Run the job under the gpt2 directory:
 
- ``DeepSpeedExamples/random_ltd/gpt_finetuning$ . ./bash_script/run_base.sh``
- ``DeepSpeedExamples/random_ltd/gpt_finetuning$ . ./bash_script/run_medium.sh``
+ ``DeepSpeedExamples/random_ltd/vit_finetuning$ . ./bash_script/run_cifar.sh``
+
+ ``DeepSpeedExamples/random_ltd/vit_finetuning$ . ./bash_script/run_imagenet.sh``
  See more descriptions and results in our [tutorial page](https://www.deepspeed.ai/).
