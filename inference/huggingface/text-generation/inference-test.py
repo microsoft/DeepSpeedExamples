@@ -11,18 +11,20 @@ from transformers.models.opt.modeling_opt import OPTDecoderLayer
 parser = ArgumentParser()
 
 parser.add_argument("--name", required=True, type=str, help="model_name")
+parser.add_argument("--replace_method", required=False, default='', type=str, help="replace method['', 'auto', 'dict']")
 parser.add_argument("--batch_size", default=1, type=int, help="batch size")
 parser.add_argument("--dtype", default="float16", type=str, choices=["float32", "float16", "int8"], help="data-type")
-parser.add_argument("--ds_inference", default=True, type=bool, help="enable ds-inference")
+parser.add_argument("--ds_inference", action='store_true', help="enable ds-inference")
+parser.add_argument("--use_kernel", action='store_true', help="enable kernel-injection")
 parser.add_argument("--max_tokens", default=1024, type=int, help="maximum tokens used for the text-generation KV-cache")
 parser.add_argument("--max_new_tokens", default=50, type=int, help="maximum new tokens to generate")
 parser.add_argument("--greedy", default=False, type=bool, help="greedy generation mode")
-parser.add_argument("--use_meta_tensor", default=False, type=bool, help="use the meta tensors to initialize model")
+parser.add_argument("--use_meta_tensor", action='store_true', help="use the meta tensors to initialize model")
 parser.add_argument("--use_cache", default=True, type=bool, help="use cache for generation")
 parser.add_argument("--local_rank", type=int, default=0, help="local rank")
 args = parser.parse_args()
 
-def print_latency(latency_set, title, warmup=3):
+def print_latency(latency_set, title, config, warmup=3):
     # trim warmup queries
     latency_set = list(latency_set)
     latency_set = latency_set[warmup:]
@@ -50,9 +52,14 @@ def print_latency(latency_set, title, warmup=3):
         print("\tP95 Latency: {0:8.2f} ms".format(p95 * 1000))
         print("\tP99 Latency: {0:8.2f} ms".format(p99 * 1000))
         print("\t999 Latency: {0:8.2f} ms".format(p999 * 1000))
+        num_layers = config.num_layers if hasattr(config,'num_layers') else config.num_hidden_layers
+        print("Avg BW: {0:8.2f} GB/s".format(1/avg * num_layers * config.hidden_size * config.hidden_size * 12 * 2 / 1000000000))
+        print("Avg flops: {0:8.2f} TFlops/s".format(1/avg * num_layers * config.hidden_size * config.hidden_size * 12 * 2 / 1000000000000 * args.batch_size))
+
 
 world_size = int(os.getenv('WORLD_SIZE', '1'))
-
+local_rank = int(os.getenv('LOCAL_RANK', '0'))
+print(world_size)
 data_type = getattr(torch, args.dtype)
 pipe = DSPipeline(model_name=args.name,
                   dtype=data_type,
@@ -68,21 +75,20 @@ if args.ds_inference:
     pipe.model = deepspeed.init_inference(pipe.model,
                                     dtype=data_type,
                                     mp_size=world_size,
-                                    replace_with_kernel_inject=True,
-                                    #replace_method="dict",
-                                    #injection_policy={
-                                    #    OPTDecoderLayer: ('self_attn.out_proj', '.fc2')
-                                    #},
+                                    replace_with_kernel_inject=args.use_kernel,
+                                    replace_method=args.replace_method,
+#                                    injection_policy={
+#                                        OPTDecoderLayer: ()
+#                                    },
                                     max_tokens=args.max_tokens,
                                     **ds_kwargs
                                     )
 
-pipe.model.profile_model_time()
 responses = []
 times = []
 mtimes = []
 
-print(pipe.model)
+#print(pipe.model)
 
 input_sentences = [
          "DeepSpeed is a machine learning framework",
@@ -127,7 +133,7 @@ inputs = input_sentences[:args.batch_size]
 for i in range(30):
     torch.cuda.synchronize()
     start = time.time()
-    
+
     outputs = pipe(inputs,
               num_tokens=args.max_new_tokens,
               do_sample=(not args.greedy))
@@ -136,7 +142,6 @@ for i in range(30):
     end = time.time()
 
     times.append(end - start)  # / (args.max_tokens - 3))
-    mtimes.extend(pipe.model.model_times())
 
 
 #for i, o in zip(inputs, outputs):
@@ -146,9 +151,7 @@ if args.local_rank == 0:
     for i, o in zip(inputs, outputs):
         print(f"\nin={i}\nout={o}\n{'-'*60}")
 
-    print_latency(times, "(e2e) latency")
-    print_latency(mtimes, "(model-only) latency")
-    print_latency(map(lambda t: t / (args.max_tokens - 3),
+    print_latency(map(lambda t: t / (args.max_new_tokens),
                       times),
-                  "(e2e) per token latency")
+                  "(e2e) per token latency", pipe.model.config)
 
