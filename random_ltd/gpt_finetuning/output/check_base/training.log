@@ -1,0 +1,1221 @@
+/opt/conda/lib/python3.8/site-packages/torch/distributed/launch.py:178: FutureWarning: The module torch.distributed.launch is deprecated
+and will be removed in future. Use torchrun.
+Note that --use_env is set by default in torchrun.
+If your script expects `--local_rank` argument to be set, please
+change it to read from `os.environ['LOCAL_RANK']` instead. See 
+https://pytorch.org/docs/stable/distributed.html#launch-utility for 
+further instructions
+
+  warnings.warn(
+2022-11-24 00:51:06.675409: W tensorflow/stream_executor/platform/default/dso_loader.cc:59] Could not load dynamic library 'libcudart.so.10.1'; dlerror: libcudart.so.10.1: cannot open shared object file: No such file or directory; LD_LIBRARY_PATH: /usr/local/nvidia/lib64/:/usr/local/cuda/compat/lib.real:/usr/local/cuda/compat/lib:/usr/local/nvidia/lib:/usr/local/nvidia/lib64
+2022-11-24 00:51:06.675447: I tensorflow/stream_executor/cuda/cudart_stub.cc:29] Ignore above cudart dlerror if you do not have a GPU set up on your machine.
+Using /home/xiaoxiawu/.cache/torch_extensions/py38_cu113 as PyTorch extensions root...
+Detected CUDA files, patching ldflags
+Emitting ninja build file /home/xiaoxiawu/.cache/torch_extensions/py38_cu113/random_ltd/build.ninja...
+Building extension module random_ltd...
+Allowing ninja to set a default number of workers... (overridable by setting the environment variable MAX_JOBS=N)
+ninja: no work to do.
+Loading extension module random_ltd...
+Time to load random_ltd op: 0.3879106044769287 seconds
+[2022-11-24 00:51:19,037] [INFO] [comm.py:633:init_distributed] Initializing TorchBackend in DeepSpeed with backend nccl
+11/24/2022 00:51:19 - INFO - torch.distributed.distributed_c10d - Added key: store_based_barrier_key:1 to store for rank: 0
+11/24/2022 00:51:19 - INFO - torch.distributed.distributed_c10d - Rank 0: Completed store-based barrier for key:store_based_barrier_key:1 with 1 nodes.
+11/24/2022 00:51:37 - WARNING - datasets.builder - Found cached dataset ptb_text_only (/home/xiaoxiawu/.cache/huggingface/datasets/ptb_text_only/penn_treebank/1.1.0/8d1b97746fb9765d140e569ec5ddd35e20af4d37761f5e1bf357ea0b081f2c1f)
+  0%|          | 0/3 [00:00<?, ?it/s]100%|██████████| 3/3 [00:00<00:00, 792.28it/s]
+11/24/2022 00:51:45 - WARNING - datasets.arrow_dataset - Loading cached processed dataset at /home/xiaoxiawu/.cache/huggingface/datasets/ptb_text_only/penn_treebank/1.1.0/8d1b97746fb9765d140e569ec5ddd35e20af4d37761f5e1bf357ea0b081f2c1f/cache-c10cdd0141b3aa74.arrow
+11/24/2022 00:51:45 - WARNING - datasets.arrow_dataset - Loading cached processed dataset at /home/xiaoxiawu/.cache/huggingface/datasets/ptb_text_only/penn_treebank/1.1.0/8d1b97746fb9765d140e569ec5ddd35e20af4d37761f5e1bf357ea0b081f2c1f/cache-68c92cc1a4a9067e.arrow
+11/24/2022 00:51:45 - WARNING - datasets.arrow_dataset - Loading cached processed dataset at /home/xiaoxiawu/.cache/huggingface/datasets/ptb_text_only/penn_treebank/1.1.0/8d1b97746fb9765d140e569ec5ddd35e20af4d37761f5e1bf357ea0b081f2c1f/cache-71598ab6cd020a55.arrow
+11/24/2022 00:51:45 - WARNING - datasets.arrow_dataset - Loading cached processed dataset at /home/xiaoxiawu/.cache/huggingface/datasets/ptb_text_only/penn_treebank/1.1.0/8d1b97746fb9765d140e569ec5ddd35e20af4d37761f5e1bf357ea0b081f2c1f/cache-01c125ad941392f4.arrow
+11/24/2022 00:51:45 - WARNING - datasets.arrow_dataset - Loading cached processed dataset at /home/xiaoxiawu/.cache/huggingface/datasets/ptb_text_only/penn_treebank/1.1.0/8d1b97746fb9765d140e569ec5ddd35e20af4d37761f5e1bf357ea0b081f2c1f/cache-69c249a852d64f19.arrow
+11/24/2022 00:51:45 - WARNING - datasets.arrow_dataset - Loading cached processed dataset at /home/xiaoxiawu/.cache/huggingface/datasets/ptb_text_only/penn_treebank/1.1.0/8d1b97746fb9765d140e569ec5ddd35e20af4d37761f5e1bf357ea0b081f2c1f/cache-596e90a26a8cad4f.arrow
+***** Running training *****
+  Num examples = 1048
+  Num Epochs = 2
+  Instantaneous batch size per device = 2
+  Gradient Accumulation steps = 1
+  Total optimization steps = 1048
+Number of parameters: 124439808
+what is this lr_scheduler
+[2022-11-24 00:51:45,291] [INFO] [logging.py:68:log_dist] [Rank 0] DeepSpeed info: version=0.7.6+39dc1eb4, git-hash=39dc1eb4, git-branch=staging_data_efficiency_v1
+[2022-11-24 00:51:45,292] [INFO] [comm.py:629:init_distributed] Distributed backend already initialized
+11/24/2022 00:51:45 - INFO - torch.distributed.distributed_c10d - Added key: store_based_barrier_key:2 to store for rank: 0
+11/24/2022 00:51:45 - INFO - torch.distributed.distributed_c10d - Rank 0: Completed store-based barrier for key:store_based_barrier_key:2 with 1 nodes.
+[2022-11-24 00:51:45,959] [INFO] [logging.py:68:log_dist] [Rank 0] DeepSpeed Flops Profiler Enabled: False
+[2022-11-24 00:51:45,960] [INFO] [logging.py:68:log_dist] [Rank 0] Removing param_group that has no 'params' in the client Optimizer
+[2022-11-24 00:51:45,960] [INFO] [logging.py:68:log_dist] [Rank 0] Using client Optimizer as basic optimizer
+[2022-11-24 00:51:45,963] [INFO] [logging.py:68:log_dist] [Rank 0] DeepSpeed Basic Optimizer = AdamW
+[2022-11-24 00:51:45,963] [INFO] [logging.py:68:log_dist] [Rank 0] DeepSpeed Final Optimizer = AdamW
+[2022-11-24 00:51:45,963] [INFO] [logging.py:68:log_dist] [Rank 0] DeepSpeed using client LR scheduler
+[2022-11-24 00:51:45,963] [INFO] [logging.py:68:log_dist] [Rank 0] DeepSpeed LR Scheduler = <torch.optim.lr_scheduler.LambdaLR object at 0x7f417c50f0d0>
+[2022-11-24 00:51:45,963] [INFO] [logging.py:68:log_dist] [Rank 0] step=0, skipped=0, lr=[0.0, 0.0], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 00:51:45,964] [INFO] [config.py:995:print] DeepSpeedEngine configuration:
+[2022-11-24 00:51:45,965] [INFO] [config.py:999:print]   activation_checkpointing_config  {
+    "partition_activations": false, 
+    "contiguous_memory_optimization": false, 
+    "cpu_checkpointing": false, 
+    "number_checkpoints": null, 
+    "synchronize_checkpoint_boundary": false, 
+    "profile": false
+}
+[2022-11-24 00:51:45,965] [INFO] [config.py:999:print]   aio_config ................... {'block_size': 1048576, 'queue_depth': 8, 'thread_count': 1, 'single_submit': False, 'overlap_events': True}
+[2022-11-24 00:51:45,965] [INFO] [config.py:999:print]   amp_enabled .................. False
+[2022-11-24 00:51:45,965] [INFO] [config.py:999:print]   amp_params ................... False
+[2022-11-24 00:51:45,965] [INFO] [config.py:999:print]   autotuning_config ............ {
+    "enabled": false, 
+    "start_step": null, 
+    "end_step": null, 
+    "metric_path": null, 
+    "arg_mappings": null, 
+    "metric": "throughput", 
+    "model_info": null, 
+    "results_dir": "/vc_data/users/xwu/Token-Dropping/random-ltd-version1/DeepSpeedExamples-internal/random_ltd/gpt_finetuning/autotuning_results", 
+    "exps_dir": "/vc_data/users/xwu/Token-Dropping/random-ltd-version1/DeepSpeedExamples-internal/random_ltd/gpt_finetuning/autotuning_exps", 
+    "overwrite": true, 
+    "fast": true, 
+    "start_profile_step": 3, 
+    "end_profile_step": 5, 
+    "tuner_type": "gridsearch", 
+    "tuner_early_stopping": 5, 
+    "tuner_num_trials": 50, 
+    "model_info_path": null, 
+    "mp_size": 1, 
+    "max_train_batch_size": null, 
+    "min_train_batch_size": 1, 
+    "max_train_micro_batch_size_per_gpu": 1.024000e+03, 
+    "min_train_micro_batch_size_per_gpu": 1, 
+    "num_tuning_micro_batch_sizes": 3
+}
+[2022-11-24 00:51:45,965] [INFO] [config.py:999:print]   bfloat16_enabled ............. False
+[2022-11-24 00:51:45,965] [INFO] [config.py:999:print]   checkpoint_parallel_write_pipeline  False
+[2022-11-24 00:51:45,965] [INFO] [config.py:999:print]   checkpoint_tag_validation_enabled  True
+[2022-11-24 00:51:45,965] [INFO] [config.py:999:print]   checkpoint_tag_validation_fail  False
+[2022-11-24 00:51:45,965] [INFO] [config.py:999:print]   comms_config ................. <deepspeed.comm.config.DeepSpeedCommsConfig object at 0x7f417c50f400>
+[2022-11-24 00:51:45,965] [INFO] [config.py:999:print]   communication_data_type ...... None
+[2022-11-24 00:51:45,965] [INFO] [config.py:999:print]   compression_config ........... {'weight_quantization': {'shared_parameters': {'enabled': False, 'quantizer_kernel': False, 'schedule_offset': 0, 'quantize_groups': 1, 'quantize_verbose': False, 'quantization_type': 'symmetric', 'quantize_weight_in_forward': False, 'rounding': 'nearest', 'fp16_mixed_quantize': False, 'quantize_change_ratio': 0.001}, 'different_groups': {}}, 'activation_quantization': {'shared_parameters': {'enabled': False, 'quantization_type': 'symmetric', 'range_calibration': 'dynamic', 'schedule_offset': 1000}, 'different_groups': {}}, 'sparse_pruning': {'shared_parameters': {'enabled': False, 'method': 'l1', 'schedule_offset': 1000}, 'different_groups': {}}, 'row_pruning': {'shared_parameters': {'enabled': False, 'method': 'l1', 'schedule_offset': 1000}, 'different_groups': {}}, 'head_pruning': {'shared_parameters': {'enabled': False, 'method': 'topk', 'schedule_offset': 1000}, 'different_groups': {}}, 'channel_pruning': {'shared_parameters': {'enabled': False, 'method': 'l1', 'schedule_offset': 1000}, 'different_groups': {}}, 'layer_reduction': {'enabled': False}}
+[2022-11-24 00:51:45,965] [INFO] [config.py:999:print]   curriculum_enabled_legacy .... False
+[2022-11-24 00:51:45,965] [INFO] [config.py:999:print]   curriculum_params_legacy ..... False
+[2022-11-24 00:51:45,965] [INFO] [config.py:999:print]   data_efficiency_config ....... {'enabled': True, 'seed': 1234, 'data_sampling': {'enabled': False, 'num_epochs': 1000, 'num_workers': 0, 'curriculum_learning': {'enabled': False}}, 'data_routing': {'enabled': True, 'random_ltd': {'enabled': True, 'layer_token_lr_schedule': {'enabled': False}, 'total_layer_num': 12, 'random_ltd_layer_num': 10, 'random_ltd_layer_id': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 'model_mask_name': 'attention_mask', 'model_type': 'decoder', 'hidden_state_order': 'batch_seq_dim', 'random_ltd_schedule': {'min_value': 256, 'max_value': 1024, 'schedule_type': 'fixed_linear', 'schedule_config': {'require_steps': 400, 'seq_per_step': 8}}, 'global_batch_size': 4, 'micro_batch_size': 2}}}
+[2022-11-24 00:51:45,965] [INFO] [config.py:999:print]   data_efficiency_enabled ...... True
+[2022-11-24 00:51:45,965] [INFO] [config.py:999:print]   dataloader_drop_last ......... False
+[2022-11-24 00:51:45,965] [INFO] [config.py:999:print]   disable_allgather ............ False
+[2022-11-24 00:51:45,965] [INFO] [config.py:999:print]   dump_state ................... False
+[2022-11-24 00:51:45,965] [INFO] [config.py:999:print]   dynamic_loss_scale_args ...... None
+[2022-11-24 00:51:45,965] [INFO] [config.py:999:print]   eigenvalue_enabled ........... False
+[2022-11-24 00:51:45,965] [INFO] [config.py:999:print]   eigenvalue_gas_boundary_resolution  1
+[2022-11-24 00:51:45,965] [INFO] [config.py:999:print]   eigenvalue_layer_name ........ bert.encoder.layer
+[2022-11-24 00:51:45,965] [INFO] [config.py:999:print]   eigenvalue_layer_num ......... 0
+[2022-11-24 00:51:45,965] [INFO] [config.py:999:print]   eigenvalue_max_iter .......... 100
+[2022-11-24 00:51:45,966] [INFO] [config.py:999:print]   eigenvalue_stability ......... 1e-06
+[2022-11-24 00:51:45,966] [INFO] [config.py:999:print]   eigenvalue_tol ............... 0.01
+[2022-11-24 00:51:45,966] [INFO] [config.py:999:print]   eigenvalue_verbose ........... False
+[2022-11-24 00:51:45,966] [INFO] [config.py:999:print]   elasticity_enabled ........... False
+[2022-11-24 00:51:45,966] [INFO] [config.py:999:print]   flops_profiler_config ........ {
+    "enabled": false, 
+    "profile_step": 1, 
+    "module_depth": -1, 
+    "top_modules": 1, 
+    "detailed": true, 
+    "output_file": null
+}
+[2022-11-24 00:51:45,966] [INFO] [config.py:999:print]   fp16_auto_cast ............... None
+[2022-11-24 00:51:45,966] [INFO] [config.py:999:print]   fp16_enabled ................. False
+[2022-11-24 00:51:45,966] [INFO] [config.py:999:print]   fp16_master_weights_and_gradients  False
+[2022-11-24 00:51:45,966] [INFO] [config.py:999:print]   global_rank .................. 0
+[2022-11-24 00:51:45,966] [INFO] [config.py:999:print]   gradient_accumulation_steps .. 2
+[2022-11-24 00:51:45,966] [INFO] [config.py:999:print]   gradient_clipping ............ 1.0
+[2022-11-24 00:51:45,966] [INFO] [config.py:999:print]   gradient_predivide_factor .... 1.0
+[2022-11-24 00:51:45,966] [INFO] [config.py:999:print]   initial_dynamic_scale ........ 4294967296
+[2022-11-24 00:51:45,966] [INFO] [config.py:999:print]   load_universal_checkpoint .... False
+[2022-11-24 00:51:45,966] [INFO] [config.py:999:print]   loss_scale ................... 0
+[2022-11-24 00:51:45,966] [INFO] [config.py:999:print]   memory_breakdown ............. False
+[2022-11-24 00:51:45,966] [INFO] [config.py:999:print]   monitor_config ............... <deepspeed.monitor.config.DeepSpeedMonitorConfig object at 0x7f417c50f070>
+[2022-11-24 00:51:45,966] [INFO] [config.py:999:print]   nebula_config ................ {
+    "enabled": false, 
+    "persistent_storage_path": null, 
+    "persistent_time_interval": 100, 
+    "num_of_version_in_retention": 2, 
+    "enable_nebula_load": true, 
+    "load_path": null
+}
+[2022-11-24 00:51:45,966] [INFO] [config.py:999:print]   optimizer_legacy_fusion ...... False
+[2022-11-24 00:51:45,966] [INFO] [config.py:999:print]   optimizer_name ............... adam
+[2022-11-24 00:51:45,966] [INFO] [config.py:999:print]   optimizer_params ............. {'lr': 0.0001, 'betas': [0.8, 0.999], 'eps': 1e-08, 'weight_decay': 3e-07}
+[2022-11-24 00:51:45,966] [INFO] [config.py:999:print]   pipeline ..................... {'stages': 'auto', 'partition': 'best', 'seed_layers': False, 'activation_checkpoint_interval': 0}
+[2022-11-24 00:51:45,966] [INFO] [config.py:999:print]   pld_enabled .................. False
+[2022-11-24 00:51:45,966] [INFO] [config.py:999:print]   pld_params ................... False
+[2022-11-24 00:51:45,966] [INFO] [config.py:999:print]   prescale_gradients ........... True
+[2022-11-24 00:51:45,966] [INFO] [config.py:999:print]   scheduler_name ............... None
+[2022-11-24 00:51:45,966] [INFO] [config.py:999:print]   scheduler_params ............. None
+[2022-11-24 00:51:45,966] [INFO] [config.py:999:print]   sparse_attention ............. None
+[2022-11-24 00:51:45,966] [INFO] [config.py:999:print]   sparse_gradients_enabled ..... False
+[2022-11-24 00:51:45,966] [INFO] [config.py:999:print]   steps_per_print .............. 2
+[2022-11-24 00:51:45,966] [INFO] [config.py:999:print]   train_batch_size ............. 4
+[2022-11-24 00:51:45,966] [INFO] [config.py:999:print]   train_micro_batch_size_per_gpu  2
+[2022-11-24 00:51:45,966] [INFO] [config.py:999:print]   use_node_local_storage ....... False
+[2022-11-24 00:51:45,966] [INFO] [config.py:999:print]   wall_clock_breakdown ......... False
+[2022-11-24 00:51:45,966] [INFO] [config.py:999:print]   world_size ................... 1
+[2022-11-24 00:51:45,966] [INFO] [config.py:999:print]   zero_allow_untested_optimizer  False
+[2022-11-24 00:51:45,966] [INFO] [config.py:999:print]   zero_config .................. stage=0 contiguous_gradients=True reduce_scatter=True reduce_bucket_size=500,000,000 allgather_partitions=True allgather_bucket_size=500,000,000 overlap_comm=False load_from_fp32_weights=True elastic_checkpoint=False offload_param=None offload_optimizer=None sub_group_size=1,000,000,000 prefetch_bucket_size=50,000,000 param_persistence_threshold=100,000 model_persistence_threshold=sys.maxsize max_live_parameters=1,000,000,000 max_reuse_distance=1,000,000,000 gather_16bit_weights_on_model_save=False ignore_unused_parameters=True legacy_stage1=False round_robin_gradients=False
+[2022-11-24 00:51:45,966] [INFO] [config.py:999:print]   zero_enabled ................. False
+[2022-11-24 00:51:45,967] [INFO] [config.py:999:print]   zero_optimization_stage ...... 0
+[2022-11-24 00:51:45,967] [INFO] [config.py:984:print_user_config]   json = {
+    "train_batch_size": 4, 
+    "train_micro_batch_size_per_gpu": 2, 
+    "steps_per_print": 2, 
+    "optimizer": {
+        "type": "Adam", 
+        "params": {
+            "lr": 0.0001, 
+            "betas": [0.8, 0.999], 
+            "eps": 1e-08, 
+            "weight_decay": 3e-07
+        }
+    }, 
+    "zero_optimization": {
+        "stage": 0
+    }, 
+    "fp16": {
+        "enabled": false
+    }, 
+    "gradient_clipping": 1.0, 
+    "prescale_gradients": true, 
+    "wall_clock_breakdown": false, 
+    "data_efficiency": {
+        "enabled": true, 
+        "data_routing": {
+            "enabled": true, 
+            "random_ltd": {
+                "enabled": true, 
+                "total_layer_num": 12, 
+                "random_ltd_layer_num": 10, 
+                "random_ltd_layer_id": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 
+                "model_mask_name": "attention_mask", 
+                "model_type": "decoder", 
+                "hidden_state_order": "batch_seq_dim", 
+                "random_ltd_schedule": {
+                    "min_value": 256, 
+                    "max_value": 1.024000e+03, 
+                    "schedule_type": "fixed_linear", 
+                    "schedule_config": {
+                        "require_steps": 400, 
+                        "seq_per_step": 8
+                    }
+                }
+            }
+        }, 
+        "data_sampling": {
+            "curriculum_learning": {
+            }
+        }
+    }
+}
+Using /home/xiaoxiawu/.cache/torch_extensions/py38_cu113 as PyTorch extensions root...
+Emitting ninja build file /home/xiaoxiawu/.cache/torch_extensions/py38_cu113/utils/build.ninja...
+Building extension module utils...
+Allowing ninja to set a default number of workers... (overridable by setting the environment variable MAX_JOBS=N)
+ninja: no work to do.
+Loading extension module utils...
+Time to load utils op: 1.0208826065063477 seconds
+*************************initialization with 61.800734668415046***********************************
+***** Evaluating perplexity, Epoch 1/2 *****
+'step':0, 'ppl': 61.800734668415046, 'seq_len': 256, 'consume layer-tokens': 18432
+[2022-11-24 00:52:01,509] [INFO] [logging.py:68:log_dist] [Rank 0] step=2, skipped=0, lr=[1.0000000000000002e-06, 1.0000000000000002e-06], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 00:52:01,509] [INFO] [timer.py:198:stop] 0/4, RunningAvgSamplesPerSec=16.159440586382594, CurrSamplesPerSec=15.723372670155499, MemAllocated=1.87GB, MaxMemAllocated=6.26GB
+[2022-11-24 00:52:07,206] [INFO] [timer.py:198:stop] 0/6, RunningAvgSamplesPerSec=16.94983310029339, CurrSamplesPerSec=15.86966178201039, MemAllocated=1.87GB, MaxMemAllocated=6.27GB
+[2022-11-24 00:52:12,909] [INFO] [logging.py:68:log_dist] [Rank 0] step=4, skipped=0, lr=[2.0000000000000003e-06, 2.0000000000000003e-06], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 00:52:12,910] [INFO] [timer.py:198:stop] 0/8, RunningAvgSamplesPerSec=17.185233543193686, CurrSamplesPerSec=15.591512646276003, MemAllocated=1.87GB, MaxMemAllocated=6.27GB
+[2022-11-24 00:52:18,657] [INFO] [timer.py:198:stop] 0/10, RunningAvgSamplesPerSec=17.039288781097675, CurrSamplesPerSec=15.61089482577658, MemAllocated=1.87GB, MaxMemAllocated=6.27GB
+***** Evaluating perplexity, Epoch 1/2 *****
+'step':10, 'ppl': 61.772465037680455, 'seq_len': 264, 'consume layer-tokens': 110912
+[2022-11-24 00:52:27,098] [INFO] [logging.py:68:log_dist] [Rank 0] step=6, skipped=0, lr=[3e-06, 3e-06], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 00:52:27,098] [INFO] [timer.py:198:stop] 0/12, RunningAvgSamplesPerSec=17.126612598295303, CurrSamplesPerSec=15.530001573622386, MemAllocated=1.87GB, MaxMemAllocated=6.27GB
+[2022-11-24 00:52:32,796] [INFO] [timer.py:198:stop] 0/14, RunningAvgSamplesPerSec=17.20843941523309, CurrSamplesPerSec=15.706268383970581, MemAllocated=1.87GB, MaxMemAllocated=6.27GB
+[2022-11-24 00:52:38,494] [INFO] [logging.py:68:log_dist] [Rank 0] step=8, skipped=0, lr=[4.000000000000001e-06, 4.000000000000001e-06], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 00:52:38,494] [INFO] [timer.py:198:stop] 0/16, RunningAvgSamplesPerSec=17.278403237685588, CurrSamplesPerSec=15.68999358455205, MemAllocated=1.88GB, MaxMemAllocated=6.27GB
+[2022-11-24 00:52:44,195] [INFO] [timer.py:198:stop] 0/18, RunningAvgSamplesPerSec=17.324420825075634, CurrSamplesPerSec=15.73818127239639, MemAllocated=1.87GB, MaxMemAllocated=6.27GB
+[2022-11-24 00:52:49,894] [INFO] [logging.py:68:log_dist] [Rank 0] step=10, skipped=0, lr=[5e-06, 5e-06], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 00:52:49,895] [INFO] [timer.py:198:stop] 0/20, RunningAvgSamplesPerSec=17.35459169599806, CurrSamplesPerSec=15.607961195035138, MemAllocated=1.88GB, MaxMemAllocated=6.27GB
+***** Evaluating perplexity, Epoch 1/2 *****
+'step':20, 'ppl': 61.70596880481351, 'seq_len': 272, 'consume layer-tokens': 205312
+[2022-11-24 00:52:58,329] [INFO] [timer.py:198:stop] 0/22, RunningAvgSamplesPerSec=17.382610609254886, CurrSamplesPerSec=15.781230952148034, MemAllocated=1.88GB, MaxMemAllocated=6.27GB
+[2022-11-24 00:53:04,031] [INFO] [logging.py:68:log_dist] [Rank 0] step=12, skipped=0, lr=[6e-06, 6e-06], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 00:53:04,032] [INFO] [timer.py:198:stop] 0/24, RunningAvgSamplesPerSec=17.404716142313436, CurrSamplesPerSec=15.693515949615268, MemAllocated=1.88GB, MaxMemAllocated=6.27GB
+[2022-11-24 00:53:09,728] [INFO] [timer.py:198:stop] 0/26, RunningAvgSamplesPerSec=17.430590047538622, CurrSamplesPerSec=15.753757396949762, MemAllocated=1.88GB, MaxMemAllocated=6.27GB
+[2022-11-24 00:53:15,427] [INFO] [logging.py:68:log_dist] [Rank 0] step=14, skipped=0, lr=[7.000000000000001e-06, 7.000000000000001e-06], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 00:53:15,428] [INFO] [timer.py:198:stop] 0/28, RunningAvgSamplesPerSec=17.44020819774628, CurrSamplesPerSec=15.643937853981846, MemAllocated=1.88GB, MaxMemAllocated=6.27GB
+[2022-11-24 00:53:21,146] [INFO] [timer.py:198:stop] 0/30, RunningAvgSamplesPerSec=17.36329286671757, CurrSamplesPerSec=13.913301930604392, MemAllocated=1.88GB, MaxMemAllocated=6.27GB
+***** Evaluating perplexity, Epoch 1/2 *****
+'step':30, 'ppl': 61.767239028026864, 'seq_len': 280, 'consume layer-tokens': 301632
+[2022-11-24 00:53:29,584] [INFO] [logging.py:68:log_dist] [Rank 0] step=16, skipped=0, lr=[8.000000000000001e-06, 8.000000000000001e-06], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 00:53:29,585] [INFO] [timer.py:198:stop] 0/32, RunningAvgSamplesPerSec=17.36432225746876, CurrSamplesPerSec=15.392477902899367, MemAllocated=1.88GB, MaxMemAllocated=6.27GB
+[2022-11-24 00:53:35,287] [INFO] [timer.py:198:stop] 0/34, RunningAvgSamplesPerSec=17.367419530693894, CurrSamplesPerSec=15.481621059974938, MemAllocated=1.88GB, MaxMemAllocated=6.27GB
+[2022-11-24 00:53:40,995] [INFO] [logging.py:68:log_dist] [Rank 0] step=18, skipped=0, lr=[9e-06, 9e-06], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 00:53:40,996] [INFO] [timer.py:198:stop] 0/36, RunningAvgSamplesPerSec=17.363308344957566, CurrSamplesPerSec=15.443485688932418, MemAllocated=1.88GB, MaxMemAllocated=6.27GB
+[2022-11-24 00:53:46,696] [INFO] [timer.py:198:stop] 0/38, RunningAvgSamplesPerSec=17.369207815093876, CurrSamplesPerSec=15.533826399665198, MemAllocated=1.88GB, MaxMemAllocated=6.27GB
+[2022-11-24 00:53:52,399] [INFO] [logging.py:68:log_dist] [Rank 0] step=20, skipped=0, lr=[1e-05, 1e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 00:53:52,399] [INFO] [timer.py:198:stop] 0/40, RunningAvgSamplesPerSec=17.36729261841134, CurrSamplesPerSec=15.454781275792948, MemAllocated=1.88GB, MaxMemAllocated=6.27GB
+***** Evaluating perplexity, Epoch 1/2 *****
+'step':40, 'ppl': 62.250622530047316, 'seq_len': 288, 'consume layer-tokens': 399872
+[2022-11-24 00:54:00,840] [INFO] [timer.py:198:stop] 0/42, RunningAvgSamplesPerSec=17.370546085271126, CurrSamplesPerSec=15.550095744424485, MemAllocated=1.88GB, MaxMemAllocated=6.27GB
+[2022-11-24 00:54:06,544] [INFO] [logging.py:68:log_dist] [Rank 0] step=22, skipped=0, lr=[1.1000000000000001e-05, 1.1000000000000001e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 00:54:06,544] [INFO] [timer.py:198:stop] 0/44, RunningAvgSamplesPerSec=17.370734286017715, CurrSamplesPerSec=15.491742214523287, MemAllocated=1.88GB, MaxMemAllocated=6.27GB
+[2022-11-24 00:54:12,252] [INFO] [timer.py:198:stop] 0/46, RunningAvgSamplesPerSec=17.366964158294838, CurrSamplesPerSec=15.435557354727118, MemAllocated=1.88GB, MaxMemAllocated=6.27GB
+[2022-11-24 00:54:17,956] [INFO] [logging.py:68:log_dist] [Rank 0] step=24, skipped=0, lr=[1.2e-05, 1.2e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 00:54:17,957] [INFO] [timer.py:198:stop] 0/48, RunningAvgSamplesPerSec=17.36242405153708, CurrSamplesPerSec=15.333701354488456, MemAllocated=1.88GB, MaxMemAllocated=6.27GB
+[2022-11-24 00:54:23,662] [INFO] [timer.py:198:stop] 0/50, RunningAvgSamplesPerSec=17.360654054074097, CurrSamplesPerSec=15.396885238379296, MemAllocated=1.88GB, MaxMemAllocated=6.27GB
+***** Evaluating perplexity, Epoch 1/2 *****
+'step':50, 'ppl': 63.51309426691789, 'seq_len': 304, 'consume layer-tokens': 500352
+[2022-11-24 00:54:32,099] [INFO] [logging.py:68:log_dist] [Rank 0] step=26, skipped=0, lr=[1.3000000000000001e-05, 1.3000000000000001e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 00:54:32,100] [INFO] [timer.py:198:stop] 0/52, RunningAvgSamplesPerSec=17.35522051180452, CurrSamplesPerSec=15.406273358886157, MemAllocated=1.88GB, MaxMemAllocated=6.27GB
+[2022-11-24 00:54:37,806] [INFO] [timer.py:198:stop] 0/54, RunningAvgSamplesPerSec=17.35169456904625, CurrSamplesPerSec=15.388750589327351, MemAllocated=1.88GB, MaxMemAllocated=6.27GB
+[2022-11-24 00:54:43,518] [INFO] [logging.py:68:log_dist] [Rank 0] step=28, skipped=0, lr=[1.4000000000000001e-05, 1.4000000000000001e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 00:54:43,518] [INFO] [timer.py:198:stop] 0/56, RunningAvgSamplesPerSec=17.345852224703012, CurrSamplesPerSec=15.317909406647505, MemAllocated=1.88GB, MaxMemAllocated=6.28GB
+[2022-11-24 00:54:49,239] [INFO] [timer.py:198:stop] 0/58, RunningAvgSamplesPerSec=17.34542870412238, CurrSamplesPerSec=15.395726655728197, MemAllocated=1.88GB, MaxMemAllocated=6.28GB
+[2022-11-24 00:54:54,945] [INFO] [logging.py:68:log_dist] [Rank 0] step=30, skipped=0, lr=[1.5e-05, 1.5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 00:54:54,945] [INFO] [timer.py:198:stop] 0/60, RunningAvgSamplesPerSec=17.342276401957317, CurrSamplesPerSec=15.360993814297068, MemAllocated=1.88GB, MaxMemAllocated=6.28GB
+***** Evaluating perplexity, Epoch 1/2 *****
+'step':60, 'ppl': 65.75436465018007, 'seq_len': 312, 'consume layer-tokens': 602432
+[2022-11-24 00:55:03,411] [INFO] [timer.py:198:stop] 0/62, RunningAvgSamplesPerSec=17.33472323435713, CurrSamplesPerSec=15.243672099451027, MemAllocated=1.88GB, MaxMemAllocated=6.28GB
+[2022-11-24 00:55:09,124] [INFO] [logging.py:68:log_dist] [Rank 0] step=32, skipped=0, lr=[1.6000000000000003e-05, 1.6000000000000003e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 00:55:09,124] [INFO] [timer.py:198:stop] 0/64, RunningAvgSamplesPerSec=17.334113538986646, CurrSamplesPerSec=15.359053183366992, MemAllocated=1.88GB, MaxMemAllocated=6.28GB
+[2022-11-24 00:55:14,837] [INFO] [timer.py:198:stop] 0/66, RunningAvgSamplesPerSec=17.330582025660014, CurrSamplesPerSec=15.241345603532073, MemAllocated=1.88GB, MaxMemAllocated=6.28GB
+[2022-11-24 00:55:20,550] [INFO] [logging.py:68:log_dist] [Rank 0] step=34, skipped=0, lr=[1.7000000000000003e-05, 1.7000000000000003e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 00:55:20,550] [INFO] [timer.py:198:stop] 0/68, RunningAvgSamplesPerSec=17.32824147659839, CurrSamplesPerSec=15.25703549713633, MemAllocated=1.88GB, MaxMemAllocated=6.28GB
+[2022-11-24 00:55:26,250] [INFO] [timer.py:198:stop] 0/70, RunningAvgSamplesPerSec=17.32587025674499, CurrSamplesPerSec=15.352616051362016, MemAllocated=1.88GB, MaxMemAllocated=6.28GB
+***** Evaluating perplexity, Epoch 1/2 *****
+'step':70, 'ppl': 69.09052443602219, 'seq_len': 320, 'consume layer-tokens': 706432
+[2022-11-24 00:55:34,701] [INFO] [logging.py:68:log_dist] [Rank 0] step=36, skipped=0, lr=[1.8e-05, 1.8e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 00:55:34,701] [INFO] [timer.py:198:stop] 0/72, RunningAvgSamplesPerSec=17.324047582035806, CurrSamplesPerSec=15.434307751184903, MemAllocated=1.88GB, MaxMemAllocated=6.28GB
+[2022-11-24 00:55:40,407] [INFO] [timer.py:198:stop] 0/74, RunningAvgSamplesPerSec=17.324373616872073, CurrSamplesPerSec=15.445419277387947, MemAllocated=1.88GB, MaxMemAllocated=6.28GB
+[2022-11-24 00:55:46,119] [INFO] [logging.py:68:log_dist] [Rank 0] step=38, skipped=0, lr=[1.9e-05, 1.9e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 00:55:46,120] [INFO] [timer.py:198:stop] 0/76, RunningAvgSamplesPerSec=17.316593729502593, CurrSamplesPerSec=15.090654294714156, MemAllocated=1.88GB, MaxMemAllocated=6.28GB
+[2022-11-24 00:55:51,833] [INFO] [timer.py:198:stop] 0/78, RunningAvgSamplesPerSec=17.306692392668566, CurrSamplesPerSec=15.125401187153356, MemAllocated=1.89GB, MaxMemAllocated=6.28GB
+[2022-11-24 00:55:57,537] [INFO] [logging.py:68:log_dist] [Rank 0] step=40, skipped=0, lr=[2e-05, 2e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 00:55:57,537] [INFO] [timer.py:198:stop] 0/80, RunningAvgSamplesPerSec=17.297252576480318, CurrSamplesPerSec=15.122292768577909, MemAllocated=1.88GB, MaxMemAllocated=6.28GB
+***** Evaluating perplexity, Epoch 1/2 *****
+'step':80, 'ppl': 73.6706098694289, 'seq_len': 328, 'consume layer-tokens': 812352
+[2022-11-24 00:56:05,978] [INFO] [timer.py:198:stop] 0/82, RunningAvgSamplesPerSec=17.2898505596766, CurrSamplesPerSec=15.192955384342321, MemAllocated=1.88GB, MaxMemAllocated=6.28GB
+[2022-11-24 00:56:11,698] [INFO] [logging.py:68:log_dist] [Rank 0] step=42, skipped=0, lr=[2.1e-05, 2.1e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 00:56:11,698] [INFO] [timer.py:198:stop] 0/84, RunningAvgSamplesPerSec=17.282178927895465, CurrSamplesPerSec=15.16792906234348, MemAllocated=1.88GB, MaxMemAllocated=6.28GB
+[2022-11-24 00:56:17,406] [INFO] [timer.py:198:stop] 0/86, RunningAvgSamplesPerSec=17.273770691252526, CurrSamplesPerSec=15.107259531399139, MemAllocated=1.89GB, MaxMemAllocated=6.28GB
+[2022-11-24 00:56:23,128] [INFO] [logging.py:68:log_dist] [Rank 0] step=44, skipped=0, lr=[2.2000000000000003e-05, 2.2000000000000003e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 00:56:23,128] [INFO] [timer.py:198:stop] 0/88, RunningAvgSamplesPerSec=17.266133059074242, CurrSamplesPerSec=15.141673044432572, MemAllocated=1.89GB, MaxMemAllocated=6.28GB
+[2022-11-24 00:56:28,840] [INFO] [timer.py:198:stop] 0/90, RunningAvgSamplesPerSec=17.256240611247936, CurrSamplesPerSec=15.09339666774623, MemAllocated=1.89GB, MaxMemAllocated=6.28GB
+***** Evaluating perplexity, Epoch 1/2 *****
+'step':90, 'ppl': 78.93583552096192, 'seq_len': 336, 'consume layer-tokens': 920192
+[2022-11-24 00:56:37,286] [INFO] [logging.py:68:log_dist] [Rank 0] step=46, skipped=0, lr=[2.3000000000000003e-05, 2.3000000000000003e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 00:56:37,287] [INFO] [timer.py:198:stop] 0/92, RunningAvgSamplesPerSec=17.24872444838617, CurrSamplesPerSec=15.12785610462495, MemAllocated=1.89GB, MaxMemAllocated=6.28GB
+[2022-11-24 00:56:43,013] [INFO] [timer.py:198:stop] 0/94, RunningAvgSamplesPerSec=17.218818042607605, CurrSamplesPerSec=15.0555532622488, MemAllocated=1.89GB, MaxMemAllocated=6.28GB
+[2022-11-24 00:56:48,752] [INFO] [logging.py:68:log_dist] [Rank 0] step=48, skipped=0, lr=[2.4e-05, 2.4e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 00:56:48,753] [INFO] [timer.py:198:stop] 0/96, RunningAvgSamplesPerSec=17.202002993932293, CurrSamplesPerSec=14.629744992099674, MemAllocated=1.89GB, MaxMemAllocated=6.28GB
+[2022-11-24 00:56:54,494] [INFO] [timer.py:198:stop] 0/98, RunningAvgSamplesPerSec=17.193477615210707, CurrSamplesPerSec=15.040436621561776, MemAllocated=1.89GB, MaxMemAllocated=6.28GB
+[2022-11-24 00:57:00,223] [INFO] [logging.py:68:log_dist] [Rank 0] step=50, skipped=0, lr=[2.5e-05, 2.5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 00:57:00,223] [INFO] [timer.py:198:stop] 0/100, RunningAvgSamplesPerSec=17.185488852883864, CurrSamplesPerSec=15.033455436956537, MemAllocated=1.89GB, MaxMemAllocated=6.28GB
+***** Evaluating perplexity, Epoch 1/2 *****
+'step':100, 'ppl': 82.69237449173471, 'seq_len': 352, 'consume layer-tokens': 1030272
+[2022-11-24 00:57:08,669] [INFO] [timer.py:198:stop] 0/102, RunningAvgSamplesPerSec=17.17573777325779, CurrSamplesPerSec=14.993177776387636, MemAllocated=1.89GB, MaxMemAllocated=6.28GB
+[2022-11-24 00:57:14,386] [INFO] [logging.py:68:log_dist] [Rank 0] step=52, skipped=0, lr=[2.6000000000000002e-05, 2.6000000000000002e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 00:57:14,387] [INFO] [timer.py:198:stop] 0/104, RunningAvgSamplesPerSec=17.166695674471796, CurrSamplesPerSec=14.945096606953562, MemAllocated=1.89GB, MaxMemAllocated=6.28GB
+[2022-11-24 00:57:20,100] [INFO] [timer.py:198:stop] 0/106, RunningAvgSamplesPerSec=17.158349804655085, CurrSamplesPerSec=14.939108135061975, MemAllocated=1.89GB, MaxMemAllocated=6.28GB
+[2022-11-24 00:57:25,809] [INFO] [logging.py:68:log_dist] [Rank 0] step=54, skipped=0, lr=[2.7000000000000002e-05, 2.7000000000000002e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 00:57:25,809] [INFO] [timer.py:198:stop] 0/108, RunningAvgSamplesPerSec=17.15065037816811, CurrSamplesPerSec=14.963010793349541, MemAllocated=1.89GB, MaxMemAllocated=6.28GB
+[2022-11-24 00:57:31,527] [INFO] [timer.py:198:stop] 0/110, RunningAvgSamplesPerSec=17.141669154593952, CurrSamplesPerSec=15.018840224227851, MemAllocated=1.89GB, MaxMemAllocated=6.28GB
+***** Evaluating perplexity, Epoch 1/2 *****
+'step':110, 'ppl': 86.24193307166504, 'seq_len': 360, 'consume layer-tokens': 1141952
+[2022-11-24 00:57:39,982] [INFO] [logging.py:68:log_dist] [Rank 0] step=56, skipped=0, lr=[2.8000000000000003e-05, 2.8000000000000003e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 00:57:39,982] [INFO] [timer.py:198:stop] 0/112, RunningAvgSamplesPerSec=17.12991344291837, CurrSamplesPerSec=14.721324191377382, MemAllocated=1.89GB, MaxMemAllocated=6.28GB
+[2022-11-24 00:57:45,705] [INFO] [timer.py:198:stop] 0/114, RunningAvgSamplesPerSec=17.119386372381364, CurrSamplesPerSec=14.8385321036004, MemAllocated=1.89GB, MaxMemAllocated=6.28GB
+[2022-11-24 00:57:51,424] [INFO] [logging.py:68:log_dist] [Rank 0] step=58, skipped=0, lr=[2.9e-05, 2.9e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 00:57:51,425] [INFO] [timer.py:198:stop] 0/116, RunningAvgSamplesPerSec=17.110488695498702, CurrSamplesPerSec=14.889707357162001, MemAllocated=1.89GB, MaxMemAllocated=6.28GB
+[2022-11-24 00:57:57,132] [INFO] [timer.py:198:stop] 0/118, RunningAvgSamplesPerSec=17.10228232366215, CurrSamplesPerSec=14.910827697147987, MemAllocated=1.89GB, MaxMemAllocated=6.28GB
+[2022-11-24 00:58:02,850] [INFO] [logging.py:68:log_dist] [Rank 0] step=60, skipped=0, lr=[3e-05, 3e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 00:58:02,850] [INFO] [timer.py:198:stop] 0/120, RunningAvgSamplesPerSec=17.091913469575623, CurrSamplesPerSec=14.773279701597152, MemAllocated=1.89GB, MaxMemAllocated=6.28GB
+***** Evaluating perplexity, Epoch 1/2 *****
+'step':120, 'ppl': 90.78994621024108, 'seq_len': 368, 'consume layer-tokens': 1255552
+[2022-11-24 00:58:11,313] [INFO] [timer.py:198:stop] 0/122, RunningAvgSamplesPerSec=17.08614924057303, CurrSamplesPerSec=15.140552550406191, MemAllocated=1.89GB, MaxMemAllocated=6.28GB
+[2022-11-24 00:58:17,014] [INFO] [logging.py:68:log_dist] [Rank 0] step=62, skipped=0, lr=[3.1e-05, 3.1e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 00:58:17,018] [INFO] [timer.py:198:stop] 0/124, RunningAvgSamplesPerSec=17.08145234764486, CurrSamplesPerSec=15.172894795864474, MemAllocated=1.89GB, MaxMemAllocated=6.28GB
+[2022-11-24 00:58:22,732] [INFO] [timer.py:198:stop] 0/126, RunningAvgSamplesPerSec=17.076668043936394, CurrSamplesPerSec=15.168916463084955, MemAllocated=1.89GB, MaxMemAllocated=6.28GB
+[2022-11-24 00:58:28,435] [INFO] [logging.py:68:log_dist] [Rank 0] step=64, skipped=0, lr=[3.2000000000000005e-05, 3.2000000000000005e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 00:58:28,438] [INFO] [timer.py:198:stop] 0/128, RunningAvgSamplesPerSec=17.069803817297693, CurrSamplesPerSec=15.055201995728567, MemAllocated=1.89GB, MaxMemAllocated=6.28GB
+[2022-11-24 00:58:34,152] [INFO] [timer.py:198:stop] 0/130, RunningAvgSamplesPerSec=17.0627106068989, CurrSamplesPerSec=15.001650634233403, MemAllocated=1.89GB, MaxMemAllocated=6.28GB
+***** Evaluating perplexity, Epoch 1/2 *****
+'step':130, 'ppl': 95.40749590692273, 'seq_len': 376, 'consume layer-tokens': 1371072
+[2022-11-24 00:58:42,588] [INFO] [logging.py:68:log_dist] [Rank 0] step=66, skipped=0, lr=[3.3e-05, 3.3e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 00:58:42,592] [INFO] [timer.py:198:stop] 0/132, RunningAvgSamplesPerSec=17.056185927417395, CurrSamplesPerSec=15.041596287569886, MemAllocated=1.89GB, MaxMemAllocated=6.28GB
+[2022-11-24 00:58:48,306] [INFO] [timer.py:198:stop] 0/134, RunningAvgSamplesPerSec=17.04977867008967, CurrSamplesPerSec=15.048989989594919, MemAllocated=1.89GB, MaxMemAllocated=6.28GB
+[2022-11-24 00:58:54,017] [INFO] [logging.py:68:log_dist] [Rank 0] step=68, skipped=0, lr=[3.4000000000000007e-05, 3.4000000000000007e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 00:58:54,020] [INFO] [timer.py:198:stop] 0/136, RunningAvgSamplesPerSec=17.043032618520364, CurrSamplesPerSec=15.031462002974537, MemAllocated=1.89GB, MaxMemAllocated=6.28GB
+[2022-11-24 00:58:59,734] [INFO] [timer.py:198:stop] 0/138, RunningAvgSamplesPerSec=17.035730199471654, CurrSamplesPerSec=14.985785258614683, MemAllocated=1.89GB, MaxMemAllocated=6.28GB
+[2022-11-24 00:59:05,440] [INFO] [logging.py:68:log_dist] [Rank 0] step=70, skipped=0, lr=[3.5e-05, 3.5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 00:59:05,441] [INFO] [timer.py:198:stop] 0/140, RunningAvgSamplesPerSec=17.029507161378007, CurrSamplesPerSec=15.026857575849856, MemAllocated=1.89GB, MaxMemAllocated=6.28GB
+***** Evaluating perplexity, Epoch 1/2 *****
+'step':140, 'ppl': 97.63240041604419, 'seq_len': 384, 'consume layer-tokens': 1488512
+[2022-11-24 00:59:13,883] [INFO] [timer.py:198:stop] 0/142, RunningAvgSamplesPerSec=17.023090219520665, CurrSamplesPerSec=14.977918634444217, MemAllocated=1.89GB, MaxMemAllocated=6.28GB
+[2022-11-24 00:59:19,609] [INFO] [logging.py:68:log_dist] [Rank 0] step=72, skipped=0, lr=[3.6e-05, 3.6e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 00:59:19,613] [INFO] [timer.py:198:stop] 0/144, RunningAvgSamplesPerSec=17.009596070507992, CurrSamplesPerSec=14.320113623948432, MemAllocated=1.9GB, MaxMemAllocated=6.29GB
+[2022-11-24 00:59:25,328] [INFO] [timer.py:198:stop] 0/146, RunningAvgSamplesPerSec=17.00168810740934, CurrSamplesPerSec=14.870518161351509, MemAllocated=1.9GB, MaxMemAllocated=6.29GB
+[2022-11-24 00:59:31,039] [INFO] [logging.py:68:log_dist] [Rank 0] step=74, skipped=0, lr=[3.7e-05, 3.7e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 00:59:31,043] [INFO] [timer.py:198:stop] 0/148, RunningAvgSamplesPerSec=16.993982157423325, CurrSamplesPerSec=14.882654129335581, MemAllocated=1.9GB, MaxMemAllocated=6.29GB
+[2022-11-24 00:59:36,757] [INFO] [timer.py:198:stop] 0/150, RunningAvgSamplesPerSec=16.986923240249144, CurrSamplesPerSec=14.916475215693527, MemAllocated=1.9GB, MaxMemAllocated=6.29GB
+***** Evaluating perplexity, Epoch 1/2 *****
+'step':150, 'ppl': 95.8690649694742, 'seq_len': 400, 'consume layer-tokens': 1608192
+[2022-11-24 00:59:45,213] [INFO] [logging.py:68:log_dist] [Rank 0] step=76, skipped=0, lr=[3.8e-05, 3.8e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 00:59:45,216] [INFO] [timer.py:198:stop] 0/152, RunningAvgSamplesPerSec=16.97841497136689, CurrSamplesPerSec=14.819238881959926, MemAllocated=1.9GB, MaxMemAllocated=6.29GB
+[2022-11-24 00:59:50,931] [INFO] [timer.py:198:stop] 0/154, RunningAvgSamplesPerSec=16.970062675796257, CurrSamplesPerSec=14.85748089372216, MemAllocated=1.9GB, MaxMemAllocated=6.29GB
+[2022-11-24 00:59:56,644] [INFO] [logging.py:68:log_dist] [Rank 0] step=78, skipped=0, lr=[3.9000000000000006e-05, 3.9000000000000006e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 00:59:56,648] [INFO] [timer.py:198:stop] 0/156, RunningAvgSamplesPerSec=16.9622390015852, CurrSamplesPerSec=14.844019910921102, MemAllocated=1.9GB, MaxMemAllocated=6.29GB
+[2022-11-24 01:00:02,363] [INFO] [timer.py:198:stop] 0/158, RunningAvgSamplesPerSec=16.954606834507345, CurrSamplesPerSec=14.8440461781298, MemAllocated=1.9GB, MaxMemAllocated=6.29GB
+[2022-11-24 01:00:08,072] [INFO] [logging.py:68:log_dist] [Rank 0] step=80, skipped=0, lr=[4e-05, 4e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:00:08,076] [INFO] [timer.py:198:stop] 0/160, RunningAvgSamplesPerSec=16.94656842106986, CurrSamplesPerSec=14.791227470051169, MemAllocated=1.9GB, MaxMemAllocated=6.29GB
+***** Evaluating perplexity, Epoch 1/2 *****
+'step':160, 'ppl': 95.90277730178127, 'seq_len': 408, 'consume layer-tokens': 1729472
+[2022-11-24 01:00:16,522] [INFO] [timer.py:198:stop] 0/162, RunningAvgSamplesPerSec=16.93866455211208, CurrSamplesPerSec=14.784189043432898, MemAllocated=1.9GB, MaxMemAllocated=6.29GB
+[2022-11-24 01:00:22,264] [INFO] [logging.py:68:log_dist] [Rank 0] step=82, skipped=0, lr=[4.1e-05, 4.1e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:00:22,268] [INFO] [timer.py:198:stop] 0/164, RunningAvgSamplesPerSec=16.93045458958008, CurrSamplesPerSec=14.797802717320359, MemAllocated=1.9GB, MaxMemAllocated=6.29GB
+[2022-11-24 01:00:27,982] [INFO] [timer.py:198:stop] 0/166, RunningAvgSamplesPerSec=16.92237135496409, CurrSamplesPerSec=14.757218427242229, MemAllocated=1.9GB, MaxMemAllocated=6.29GB
+[2022-11-24 01:00:33,692] [INFO] [logging.py:68:log_dist] [Rank 0] step=84, skipped=0, lr=[4.2e-05, 4.2e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:00:33,695] [INFO] [timer.py:198:stop] 0/168, RunningAvgSamplesPerSec=16.914925092446, CurrSamplesPerSec=14.769274107930427, MemAllocated=1.9GB, MaxMemAllocated=6.29GB
+[2022-11-24 01:00:39,411] [INFO] [timer.py:198:stop] 0/170, RunningAvgSamplesPerSec=16.90693628006627, CurrSamplesPerSec=14.726570509669536, MemAllocated=1.9GB, MaxMemAllocated=6.3GB
+***** Evaluating perplexity, Epoch 1/2 *****
+'step':170, 'ppl': 100.55607661907429, 'seq_len': 416, 'consume layer-tokens': 1852672
+[2022-11-24 01:00:47,855] [INFO] [logging.py:68:log_dist] [Rank 0] step=86, skipped=0, lr=[4.3e-05, 4.3e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:00:47,858] [INFO] [timer.py:198:stop] 0/172, RunningAvgSamplesPerSec=16.898818105802732, CurrSamplesPerSec=14.71347462249904, MemAllocated=1.9GB, MaxMemAllocated=6.3GB
+[2022-11-24 01:00:53,575] [INFO] [timer.py:198:stop] 0/174, RunningAvgSamplesPerSec=16.891101897646948, CurrSamplesPerSec=14.72470931865416, MemAllocated=1.9GB, MaxMemAllocated=6.3GB
+[2022-11-24 01:00:59,287] [INFO] [logging.py:68:log_dist] [Rank 0] step=88, skipped=0, lr=[4.4000000000000006e-05, 4.4000000000000006e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:00:59,291] [INFO] [timer.py:198:stop] 0/176, RunningAvgSamplesPerSec=16.88350777272128, CurrSamplesPerSec=14.721401695962262, MemAllocated=1.9GB, MaxMemAllocated=6.3GB
+[2022-11-24 01:01:05,019] [INFO] [timer.py:198:stop] 0/178, RunningAvgSamplesPerSec=16.87008697905289, CurrSamplesPerSec=14.330094433739221, MemAllocated=1.9GB, MaxMemAllocated=6.3GB
+[2022-11-24 01:01:10,740] [INFO] [logging.py:68:log_dist] [Rank 0] step=90, skipped=0, lr=[4.5e-05, 4.5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:01:10,744] [INFO] [timer.py:198:stop] 0/180, RunningAvgSamplesPerSec=16.857058605763008, CurrSamplesPerSec=14.337834234653066, MemAllocated=1.9GB, MaxMemAllocated=6.3GB
+***** Evaluating perplexity, Epoch 1/2 *****
+'step':180, 'ppl': 111.06360275150924, 'seq_len': 424, 'consume layer-tokens': 1977792
+[2022-11-24 01:01:19,197] [INFO] [timer.py:198:stop] 0/182, RunningAvgSamplesPerSec=16.843887851201245, CurrSamplesPerSec=14.282176835538726, MemAllocated=1.9GB, MaxMemAllocated=6.3GB
+[2022-11-24 01:01:24,925] [INFO] [logging.py:68:log_dist] [Rank 0] step=92, skipped=0, lr=[4.600000000000001e-05, 4.600000000000001e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:01:24,929] [INFO] [timer.py:198:stop] 0/184, RunningAvgSamplesPerSec=16.831448220894508, CurrSamplesPerSec=14.351227156548427, MemAllocated=1.9GB, MaxMemAllocated=6.3GB
+[2022-11-24 01:01:30,663] [INFO] [timer.py:198:stop] 0/186, RunningAvgSamplesPerSec=16.817819517584645, CurrSamplesPerSec=14.222680377412873, MemAllocated=1.9GB, MaxMemAllocated=6.3GB
+[2022-11-24 01:01:36,389] [INFO] [logging.py:68:log_dist] [Rank 0] step=94, skipped=0, lr=[4.7e-05, 4.7e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:01:36,393] [INFO] [timer.py:198:stop] 0/188, RunningAvgSamplesPerSec=16.80483393142918, CurrSamplesPerSec=14.26886388068638, MemAllocated=1.9GB, MaxMemAllocated=6.3GB
+[2022-11-24 01:01:42,129] [INFO] [timer.py:198:stop] 0/190, RunningAvgSamplesPerSec=16.791530601204222, CurrSamplesPerSec=14.225695292361959, MemAllocated=1.9GB, MaxMemAllocated=6.3GB
+***** Evaluating perplexity, Epoch 1/2 *****
+'step':190, 'ppl': 126.61044055609734, 'seq_len': 432, 'consume layer-tokens': 2104832
+[2022-11-24 01:01:50,603] [INFO] [logging.py:68:log_dist] [Rank 0] step=96, skipped=0, lr=[4.8e-05, 4.8e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:01:50,606] [INFO] [timer.py:198:stop] 0/192, RunningAvgSamplesPerSec=16.776045914944923, CurrSamplesPerSec=13.856970353716976, MemAllocated=1.9GB, MaxMemAllocated=6.3GB
+[2022-11-24 01:01:56,346] [INFO] [timer.py:198:stop] 0/194, RunningAvgSamplesPerSec=16.762102694552787, CurrSamplesPerSec=14.138063657124558, MemAllocated=1.9GB, MaxMemAllocated=6.3GB
+[2022-11-24 01:02:02,077] [INFO] [logging.py:68:log_dist] [Rank 0] step=98, skipped=0, lr=[4.9e-05, 4.9e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:02:02,080] [INFO] [timer.py:198:stop] 0/196, RunningAvgSamplesPerSec=16.74913495288677, CurrSamplesPerSec=14.185161448513185, MemAllocated=1.9GB, MaxMemAllocated=6.3GB
+[2022-11-24 01:02:07,815] [INFO] [timer.py:198:stop] 0/198, RunningAvgSamplesPerSec=16.736146010022406, CurrSamplesPerSec=14.15751029501114, MemAllocated=1.9GB, MaxMemAllocated=6.3GB
+[2022-11-24 01:02:13,535] [INFO] [logging.py:68:log_dist] [Rank 0] step=100, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:02:13,539] [INFO] [timer.py:198:stop] 0/200, RunningAvgSamplesPerSec=16.723546928337353, CurrSamplesPerSec=14.163749305624735, MemAllocated=1.9GB, MaxMemAllocated=6.3GB
+***** Evaluating perplexity, Epoch 1/2 *****
+'step':200, 'ppl': 119.67412440293324, 'seq_len': 448, 'consume layer-tokens': 2234112
+[2022-11-24 01:02:22,012] [INFO] [timer.py:198:stop] 0/202, RunningAvgSamplesPerSec=16.710108871177706, CurrSamplesPerSec=14.085740816302543, MemAllocated=1.9GB, MaxMemAllocated=6.3GB
+[2022-11-24 01:02:27,741] [INFO] [logging.py:68:log_dist] [Rank 0] step=102, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:02:27,745] [INFO] [timer.py:198:stop] 0/204, RunningAvgSamplesPerSec=16.697028273739697, CurrSamplesPerSec=14.08500763974008, MemAllocated=1.9GB, MaxMemAllocated=6.3GB
+[2022-11-24 01:02:33,466] [INFO] [timer.py:198:stop] 0/206, RunningAvgSamplesPerSec=16.684687141647256, CurrSamplesPerSec=14.12956212985858, MemAllocated=1.9GB, MaxMemAllocated=6.3GB
+[2022-11-24 01:02:39,190] [INFO] [logging.py:68:log_dist] [Rank 0] step=104, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:02:39,194] [INFO] [timer.py:198:stop] 0/208, RunningAvgSamplesPerSec=16.672243508211256, CurrSamplesPerSec=14.086213873948607, MemAllocated=1.9GB, MaxMemAllocated=6.3GB
+[2022-11-24 01:02:44,923] [INFO] [timer.py:198:stop] 0/210, RunningAvgSamplesPerSec=16.660065463327687, CurrSamplesPerSec=14.082312098360877, MemAllocated=1.9GB, MaxMemAllocated=6.3GB
+***** Evaluating perplexity, Epoch 1/2 *****
+'step':210, 'ppl': 111.5278477818038, 'seq_len': 456, 'consume layer-tokens': 2364992
+[2022-11-24 01:02:53,419] [INFO] [logging.py:68:log_dist] [Rank 0] step=106, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:02:53,422] [INFO] [timer.py:198:stop] 0/212, RunningAvgSamplesPerSec=16.629487551396984, CurrSamplesPerSec=13.939149421238215, MemAllocated=1.91GB, MaxMemAllocated=6.3GB
+[2022-11-24 01:02:59,154] [INFO] [timer.py:198:stop] 0/214, RunningAvgSamplesPerSec=16.61624922081472, CurrSamplesPerSec=13.956101691813446, MemAllocated=1.91GB, MaxMemAllocated=6.3GB
+[2022-11-24 01:03:04,879] [INFO] [logging.py:68:log_dist] [Rank 0] step=108, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:03:04,880] [INFO] [timer.py:198:stop] 0/216, RunningAvgSamplesPerSec=16.60315780376725, CurrSamplesPerSec=13.959283382201706, MemAllocated=1.91GB, MaxMemAllocated=6.3GB
+[2022-11-24 01:03:10,612] [INFO] [timer.py:198:stop] 0/218, RunningAvgSamplesPerSec=16.590029772409583, CurrSamplesPerSec=13.922954612598796, MemAllocated=1.91GB, MaxMemAllocated=6.3GB
+[2022-11-24 01:03:16,342] [INFO] [logging.py:68:log_dist] [Rank 0] step=110, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:03:16,346] [INFO] [timer.py:198:stop] 0/220, RunningAvgSamplesPerSec=16.572688197747294, CurrSamplesPerSec=13.314701298041667, MemAllocated=1.91GB, MaxMemAllocated=6.3GB
+***** Evaluating perplexity, Epoch 1/2 *****
+'step':220, 'ppl': 131.58190056471366, 'seq_len': 464, 'consume layer-tokens': 2497792
+[2022-11-24 01:03:24,805] [INFO] [timer.py:198:stop] 0/222, RunningAvgSamplesPerSec=16.559411119328182, CurrSamplesPerSec=13.866315791213678, MemAllocated=1.91GB, MaxMemAllocated=6.3GB
+[2022-11-24 01:03:30,538] [INFO] [logging.py:68:log_dist] [Rank 0] step=112, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:03:30,542] [INFO] [timer.py:198:stop] 0/224, RunningAvgSamplesPerSec=16.546549938591202, CurrSamplesPerSec=13.892080862346214, MemAllocated=1.91GB, MaxMemAllocated=6.3GB
+[2022-11-24 01:03:36,275] [INFO] [timer.py:198:stop] 0/226, RunningAvgSamplesPerSec=16.533618812948994, CurrSamplesPerSec=13.866705458007822, MemAllocated=1.91GB, MaxMemAllocated=6.3GB
+[2022-11-24 01:03:42,006] [INFO] [logging.py:68:log_dist] [Rank 0] step=114, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:03:42,010] [INFO] [timer.py:198:stop] 0/228, RunningAvgSamplesPerSec=16.520029980341707, CurrSamplesPerSec=13.806249228515705, MemAllocated=1.91GB, MaxMemAllocated=6.3GB
+[2022-11-24 01:03:47,740] [INFO] [timer.py:198:stop] 0/230, RunningAvgSamplesPerSec=16.5066616794051, CurrSamplesPerSec=13.793649593028036, MemAllocated=1.91GB, MaxMemAllocated=6.3GB
+***** Evaluating perplexity, Epoch 1/2 *****
+'step':230, 'ppl': 98.02806412930428, 'seq_len': 472, 'consume layer-tokens': 2632512
+[2022-11-24 01:03:56,199] [INFO] [logging.py:68:log_dist] [Rank 0] step=116, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:03:56,203] [INFO] [timer.py:198:stop] 0/232, RunningAvgSamplesPerSec=16.493500258578113, CurrSamplesPerSec=13.78320142094047, MemAllocated=1.91GB, MaxMemAllocated=6.3GB
+[2022-11-24 01:04:01,932] [INFO] [timer.py:198:stop] 0/234, RunningAvgSamplesPerSec=16.480544322845457, CurrSamplesPerSec=13.803545746848023, MemAllocated=1.91GB, MaxMemAllocated=6.3GB
+[2022-11-24 01:04:07,661] [INFO] [logging.py:68:log_dist] [Rank 0] step=118, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:04:07,665] [INFO] [timer.py:198:stop] 0/236, RunningAvgSamplesPerSec=16.467248063599026, CurrSamplesPerSec=13.740306071471275, MemAllocated=1.91GB, MaxMemAllocated=6.3GB
+[2022-11-24 01:04:13,394] [INFO] [timer.py:198:stop] 0/238, RunningAvgSamplesPerSec=16.453790122316104, CurrSamplesPerSec=13.710325800936838, MemAllocated=1.91GB, MaxMemAllocated=6.3GB
+[2022-11-24 01:04:19,125] [INFO] [logging.py:68:log_dist] [Rank 0] step=120, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:04:19,128] [INFO] [timer.py:198:stop] 0/240, RunningAvgSamplesPerSec=16.44031945405413, CurrSamplesPerSec=13.689763612477867, MemAllocated=1.91GB, MaxMemAllocated=6.3GB
+***** Evaluating perplexity, Epoch 1/2 *****
+'step':240, 'ppl': 90.32747264716178, 'seq_len': 480, 'consume layer-tokens': 2769152
+[2022-11-24 01:04:27,590] [INFO] [timer.py:198:stop] 0/242, RunningAvgSamplesPerSec=16.427659767835777, CurrSamplesPerSec=13.726366360076645, MemAllocated=1.91GB, MaxMemAllocated=6.3GB
+[2022-11-24 01:04:33,324] [INFO] [logging.py:68:log_dist] [Rank 0] step=122, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:04:33,327] [INFO] [timer.py:198:stop] 0/244, RunningAvgSamplesPerSec=16.413931739255858, CurrSamplesPerSec=13.623045117788251, MemAllocated=1.91GB, MaxMemAllocated=6.3GB
+[2022-11-24 01:04:39,058] [INFO] [timer.py:198:stop] 0/246, RunningAvgSamplesPerSec=16.400523926947017, CurrSamplesPerSec=13.632011128427054, MemAllocated=1.91GB, MaxMemAllocated=6.3GB
+[2022-11-24 01:04:44,792] [INFO] [logging.py:68:log_dist] [Rank 0] step=124, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:04:44,796] [INFO] [timer.py:198:stop] 0/248, RunningAvgSamplesPerSec=16.387251246676538, CurrSamplesPerSec=13.604464431963958, MemAllocated=1.91GB, MaxMemAllocated=6.3GB
+[2022-11-24 01:04:50,534] [INFO] [timer.py:198:stop] 0/250, RunningAvgSamplesPerSec=16.374287696274532, CurrSamplesPerSec=13.634049497049258, MemAllocated=1.91GB, MaxMemAllocated=6.3GB
+***** Evaluating perplexity, Epoch 1/2 *****
+'step':250, 'ppl': 95.26155941187656, 'seq_len': 496, 'consume layer-tokens': 2908032
+[2022-11-24 01:04:58,998] [INFO] [logging.py:68:log_dist] [Rank 0] step=126, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:04:59,001] [INFO] [timer.py:198:stop] 0/252, RunningAvgSamplesPerSec=16.360914494009663, CurrSamplesPerSec=13.547165362596191, MemAllocated=1.91GB, MaxMemAllocated=6.31GB
+[2022-11-24 01:05:04,744] [INFO] [timer.py:198:stop] 0/254, RunningAvgSamplesPerSec=16.34803581632764, CurrSamplesPerSec=13.597187395147316, MemAllocated=1.91GB, MaxMemAllocated=6.31GB
+[2022-11-24 01:05:10,482] [INFO] [logging.py:68:log_dist] [Rank 0] step=128, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:05:10,485] [INFO] [timer.py:198:stop] 0/256, RunningAvgSamplesPerSec=16.3352196837768, CurrSamplesPerSec=13.570044534602886, MemAllocated=1.91GB, MaxMemAllocated=6.31GB
+[2022-11-24 01:05:16,221] [INFO] [timer.py:198:stop] 0/258, RunningAvgSamplesPerSec=16.322649840140183, CurrSamplesPerSec=13.590644714970335, MemAllocated=1.91GB, MaxMemAllocated=6.31GB
+[2022-11-24 01:05:21,960] [INFO] [logging.py:68:log_dist] [Rank 0] step=130, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:05:21,963] [INFO] [timer.py:198:stop] 0/260, RunningAvgSamplesPerSec=16.309927843372485, CurrSamplesPerSec=13.569825018886055, MemAllocated=1.91GB, MaxMemAllocated=6.31GB
+***** Evaluating perplexity, Epoch 1/2 *****
+'step':260, 'ppl': 90.71486355765545, 'seq_len': 504, 'consume layer-tokens': 3048512
+[2022-11-24 01:05:30,437] [INFO] [timer.py:198:stop] 0/262, RunningAvgSamplesPerSec=16.296862833957032, CurrSamplesPerSec=13.49731457018642, MemAllocated=1.91GB, MaxMemAllocated=6.31GB
+[2022-11-24 01:05:36,171] [INFO] [logging.py:68:log_dist] [Rank 0] step=132, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:05:36,175] [INFO] [timer.py:198:stop] 0/264, RunningAvgSamplesPerSec=16.284136450392815, CurrSamplesPerSec=13.502659129247846, MemAllocated=1.91GB, MaxMemAllocated=6.31GB
+[2022-11-24 01:05:41,917] [INFO] [timer.py:198:stop] 0/266, RunningAvgSamplesPerSec=16.271429940978287, CurrSamplesPerSec=13.501072700614328, MemAllocated=1.91GB, MaxMemAllocated=6.31GB
+[2022-11-24 01:05:47,651] [INFO] [logging.py:68:log_dist] [Rank 0] step=134, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:05:47,655] [INFO] [timer.py:198:stop] 0/268, RunningAvgSamplesPerSec=16.259093814356827, CurrSamplesPerSec=13.50931314920686, MemAllocated=1.91GB, MaxMemAllocated=6.31GB
+[2022-11-24 01:05:53,410] [INFO] [timer.py:198:stop] 0/270, RunningAvgSamplesPerSec=16.2468746069984, CurrSamplesPerSec=13.508073177919089, MemAllocated=1.92GB, MaxMemAllocated=6.31GB
+***** Evaluating perplexity, Epoch 1/2 *****
+'step':270, 'ppl': 81.54332452444254, 'seq_len': 512, 'consume layer-tokens': 3190912
+[2022-11-24 01:06:01,874] [INFO] [logging.py:68:log_dist] [Rank 0] step=136, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:06:01,877] [INFO] [timer.py:198:stop] 0/272, RunningAvgSamplesPerSec=16.234797466736293, CurrSamplesPerSec=13.527045680302384, MemAllocated=1.92GB, MaxMemAllocated=6.31GB
+[2022-11-24 01:06:07,611] [INFO] [timer.py:198:stop] 0/274, RunningAvgSamplesPerSec=16.2232007329751, CurrSamplesPerSec=13.513556878317532, MemAllocated=1.92GB, MaxMemAllocated=6.31GB
+[2022-11-24 01:06:13,349] [INFO] [logging.py:68:log_dist] [Rank 0] step=138, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:06:13,352] [INFO] [timer.py:198:stop] 0/276, RunningAvgSamplesPerSec=16.2112671733121, CurrSamplesPerSec=13.473943910822706, MemAllocated=1.92GB, MaxMemAllocated=6.31GB
+[2022-11-24 01:06:19,101] [INFO] [timer.py:198:stop] 0/278, RunningAvgSamplesPerSec=16.198347170347372, CurrSamplesPerSec=13.350470606584354, MemAllocated=1.92GB, MaxMemAllocated=6.31GB
+[2022-11-24 01:06:24,841] [INFO] [logging.py:68:log_dist] [Rank 0] step=140, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:06:24,845] [INFO] [timer.py:198:stop] 0/280, RunningAvgSamplesPerSec=16.1860441433815, CurrSamplesPerSec=13.400396487523103, MemAllocated=1.92GB, MaxMemAllocated=6.31GB
+***** Evaluating perplexity, Epoch 1/2 *****
+'step':280, 'ppl': 76.55175380924102, 'seq_len': 520, 'consume layer-tokens': 3335232
+[2022-11-24 01:06:33,315] [INFO] [timer.py:198:stop] 0/282, RunningAvgSamplesPerSec=16.174077264926982, CurrSamplesPerSec=13.412845210228072, MemAllocated=1.92GB, MaxMemAllocated=6.31GB
+[2022-11-24 01:06:39,052] [INFO] [logging.py:68:log_dist] [Rank 0] step=142, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:06:39,056] [INFO] [timer.py:198:stop] 0/284, RunningAvgSamplesPerSec=16.162020937798722, CurrSamplesPerSec=13.363209869069788, MemAllocated=1.92GB, MaxMemAllocated=6.31GB
+[2022-11-24 01:06:44,795] [INFO] [timer.py:198:stop] 0/286, RunningAvgSamplesPerSec=16.149609423659182, CurrSamplesPerSec=13.329468893804185, MemAllocated=1.92GB, MaxMemAllocated=6.31GB
+[2022-11-24 01:06:50,544] [INFO] [logging.py:68:log_dist] [Rank 0] step=144, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:06:50,548] [INFO] [timer.py:198:stop] 0/288, RunningAvgSamplesPerSec=16.136860138777802, CurrSamplesPerSec=13.27044723607756, MemAllocated=1.92GB, MaxMemAllocated=6.32GB
+[2022-11-24 01:06:56,295] [INFO] [timer.py:198:stop] 0/290, RunningAvgSamplesPerSec=16.12481494553421, CurrSamplesPerSec=13.333579173912076, MemAllocated=1.92GB, MaxMemAllocated=6.32GB
+***** Evaluating perplexity, Epoch 1/2 *****
+'step':290, 'ppl': 72.51320945877836, 'seq_len': 528, 'consume layer-tokens': 3481472
+[2022-11-24 01:07:04,765] [INFO] [logging.py:68:log_dist] [Rank 0] step=146, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:07:04,769] [INFO] [timer.py:198:stop] 0/292, RunningAvgSamplesPerSec=16.11291827275322, CurrSamplesPerSec=13.340300914256453, MemAllocated=1.92GB, MaxMemAllocated=6.32GB
+[2022-11-24 01:07:10,522] [INFO] [timer.py:198:stop] 0/294, RunningAvgSamplesPerSec=16.100627597347028, CurrSamplesPerSec=13.277084444556996, MemAllocated=1.92GB, MaxMemAllocated=6.32GB
+[2022-11-24 01:07:16,261] [INFO] [logging.py:68:log_dist] [Rank 0] step=148, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:07:16,265] [INFO] [timer.py:198:stop] 0/296, RunningAvgSamplesPerSec=16.088661561543194, CurrSamplesPerSec=13.279312337246024, MemAllocated=1.92GB, MaxMemAllocated=6.32GB
+[2022-11-24 01:07:22,011] [INFO] [timer.py:198:stop] 0/298, RunningAvgSamplesPerSec=16.076792931025068, CurrSamplesPerSec=13.275424520090523, MemAllocated=1.92GB, MaxMemAllocated=6.32GB
+[2022-11-24 01:07:27,746] [INFO] [logging.py:68:log_dist] [Rank 0] step=150, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:07:27,750] [INFO] [timer.py:198:stop] 0/300, RunningAvgSamplesPerSec=16.065204828173357, CurrSamplesPerSec=13.270636178688155, MemAllocated=1.92GB, MaxMemAllocated=6.32GB
+***** Evaluating perplexity, Epoch 1/2 *****
+'step':300, 'ppl': 71.46642954731543, 'seq_len': 544, 'consume layer-tokens': 3629952
+[2022-11-24 01:07:36,224] [INFO] [timer.py:198:stop] 0/302, RunningAvgSamplesPerSec=16.052712767323456, CurrSamplesPerSec=13.157032259683552, MemAllocated=1.92GB, MaxMemAllocated=6.32GB
+[2022-11-24 01:07:41,969] [INFO] [logging.py:68:log_dist] [Rank 0] step=152, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:07:41,973] [INFO] [timer.py:198:stop] 0/304, RunningAvgSamplesPerSec=16.040654532708576, CurrSamplesPerSec=13.198538007555412, MemAllocated=1.92GB, MaxMemAllocated=6.32GB
+[2022-11-24 01:07:47,717] [INFO] [timer.py:198:stop] 0/306, RunningAvgSamplesPerSec=16.028475604620898, CurrSamplesPerSec=13.135811439291206, MemAllocated=1.92GB, MaxMemAllocated=6.32GB
+[2022-11-24 01:07:53,464] [INFO] [logging.py:68:log_dist] [Rank 0] step=154, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:07:53,467] [INFO] [timer.py:198:stop] 0/308, RunningAvgSamplesPerSec=16.016818484608983, CurrSamplesPerSec=13.21465163611617, MemAllocated=1.92GB, MaxMemAllocated=6.32GB
+[2022-11-24 01:07:59,212] [INFO] [timer.py:198:stop] 0/310, RunningAvgSamplesPerSec=16.00529575937707, CurrSamplesPerSec=13.209595001251891, MemAllocated=1.92GB, MaxMemAllocated=6.32GB
+***** Evaluating perplexity, Epoch 1/2 *****
+'step':310, 'ppl': 71.48109913262519, 'seq_len': 552, 'consume layer-tokens': 3780032
+[2022-11-24 01:08:07,685] [INFO] [logging.py:68:log_dist] [Rank 0] step=156, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:08:07,688] [INFO] [timer.py:198:stop] 0/312, RunningAvgSamplesPerSec=15.992978428491643, CurrSamplesPerSec=13.102286642509059, MemAllocated=1.92GB, MaxMemAllocated=6.32GB
+[2022-11-24 01:08:13,442] [INFO] [timer.py:198:stop] 0/314, RunningAvgSamplesPerSec=15.980960152929965, CurrSamplesPerSec=13.124261540002003, MemAllocated=1.92GB, MaxMemAllocated=6.32GB
+[2022-11-24 01:08:19,192] [INFO] [logging.py:68:log_dist] [Rank 0] step=158, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:08:19,196] [INFO] [timer.py:198:stop] 0/316, RunningAvgSamplesPerSec=15.96881778977758, CurrSamplesPerSec=13.104599556025601, MemAllocated=1.92GB, MaxMemAllocated=6.32GB
+[2022-11-24 01:08:24,951] [INFO] [timer.py:198:stop] 0/318, RunningAvgSamplesPerSec=15.95692473283063, CurrSamplesPerSec=13.095536787548589, MemAllocated=1.92GB, MaxMemAllocated=6.32GB
+[2022-11-24 01:08:30,696] [INFO] [logging.py:68:log_dist] [Rank 0] step=160, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:08:30,700] [INFO] [timer.py:198:stop] 0/320, RunningAvgSamplesPerSec=15.94477394926015, CurrSamplesPerSec=13.038098080175072, MemAllocated=1.92GB, MaxMemAllocated=6.32GB
+***** Evaluating perplexity, Epoch 1/2 *****
+'step':320, 'ppl': 65.82443213877356, 'seq_len': 560, 'consume layer-tokens': 3932032
+[2022-11-24 01:08:39,177] [INFO] [timer.py:198:stop] 0/322, RunningAvgSamplesPerSec=15.932512807300487, CurrSamplesPerSec=13.025627010844586, MemAllocated=1.92GB, MaxMemAllocated=6.32GB
+[2022-11-24 01:08:44,922] [INFO] [logging.py:68:log_dist] [Rank 0] step=162, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:08:44,926] [INFO] [timer.py:198:stop] 0/324, RunningAvgSamplesPerSec=15.920377242548481, CurrSamplesPerSec=13.015744060872278, MemAllocated=1.92GB, MaxMemAllocated=6.32GB
+[2022-11-24 01:08:50,689] [INFO] [timer.py:198:stop] 0/326, RunningAvgSamplesPerSec=15.908687398206673, CurrSamplesPerSec=13.034471721068849, MemAllocated=1.92GB, MaxMemAllocated=6.32GB
+[2022-11-24 01:08:56,443] [INFO] [logging.py:68:log_dist] [Rank 0] step=164, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:08:56,446] [INFO] [timer.py:198:stop] 0/328, RunningAvgSamplesPerSec=15.89608729907554, CurrSamplesPerSec=12.907874186584355, MemAllocated=1.93GB, MaxMemAllocated=6.32GB
+[2022-11-24 01:09:02,198] [INFO] [timer.py:198:stop] 0/330, RunningAvgSamplesPerSec=15.883814302759315, CurrSamplesPerSec=12.942646384946393, MemAllocated=1.93GB, MaxMemAllocated=6.32GB
+***** Evaluating perplexity, Epoch 1/2 *****
+'step':330, 'ppl': 62.58608702749047, 'seq_len': 568, 'consume layer-tokens': 4085952
+[2022-11-24 01:09:10,674] [INFO] [logging.py:68:log_dist] [Rank 0] step=166, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:09:10,677] [INFO] [timer.py:198:stop] 0/332, RunningAvgSamplesPerSec=15.871702749032934, CurrSamplesPerSec=12.95655974830139, MemAllocated=1.93GB, MaxMemAllocated=6.33GB
+[2022-11-24 01:09:16,433] [INFO] [timer.py:198:stop] 0/334, RunningAvgSamplesPerSec=15.859403287997104, CurrSamplesPerSec=12.91590336254136, MemAllocated=1.93GB, MaxMemAllocated=6.33GB
+[2022-11-24 01:09:22,182] [INFO] [logging.py:68:log_dist] [Rank 0] step=168, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:09:22,186] [INFO] [timer.py:198:stop] 0/336, RunningAvgSamplesPerSec=15.846870165241102, CurrSamplesPerSec=12.940969206489761, MemAllocated=1.93GB, MaxMemAllocated=6.33GB
+[2022-11-24 01:09:27,937] [INFO] [timer.py:198:stop] 0/338, RunningAvgSamplesPerSec=15.835229385575653, CurrSamplesPerSec=12.94140842549896, MemAllocated=1.93GB, MaxMemAllocated=6.33GB
+[2022-11-24 01:09:33,686] [INFO] [logging.py:68:log_dist] [Rank 0] step=170, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:09:33,690] [INFO] [timer.py:198:stop] 0/340, RunningAvgSamplesPerSec=15.823576425909105, CurrSamplesPerSec=12.905252955701023, MemAllocated=1.93GB, MaxMemAllocated=6.33GB
+***** Evaluating perplexity, Epoch 1/2 *****
+'step':340, 'ppl': 62.46836629940191, 'seq_len': 576, 'consume layer-tokens': 4241792
+[2022-11-24 01:09:42,173] [INFO] [timer.py:198:stop] 0/342, RunningAvgSamplesPerSec=15.812156029507632, CurrSamplesPerSec=12.938115009469989, MemAllocated=1.93GB, MaxMemAllocated=6.33GB
+[2022-11-24 01:09:47,921] [INFO] [logging.py:68:log_dist] [Rank 0] step=172, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:09:47,924] [INFO] [timer.py:198:stop] 0/344, RunningAvgSamplesPerSec=15.799517379899616, CurrSamplesPerSec=12.769778554476938, MemAllocated=1.93GB, MaxMemAllocated=6.33GB
+[2022-11-24 01:09:53,686] [INFO] [timer.py:198:stop] 0/346, RunningAvgSamplesPerSec=15.787032228087972, CurrSamplesPerSec=12.78005067163531, MemAllocated=1.93GB, MaxMemAllocated=6.33GB
+[2022-11-24 01:09:59,437] [INFO] [logging.py:68:log_dist] [Rank 0] step=174, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:09:59,441] [INFO] [timer.py:198:stop] 0/348, RunningAvgSamplesPerSec=15.77464545982588, CurrSamplesPerSec=12.764842923771047, MemAllocated=1.93GB, MaxMemAllocated=6.33GB
+[2022-11-24 01:10:05,204] [INFO] [timer.py:198:stop] 0/350, RunningAvgSamplesPerSec=15.762634720571368, CurrSamplesPerSec=12.789032842319665, MemAllocated=1.93GB, MaxMemAllocated=6.33GB
+***** Evaluating perplexity, Epoch 1/2 *****
+'step':350, 'ppl': 56.8304375802395, 'seq_len': 592, 'consume layer-tokens': 4399872
+[2022-11-24 01:10:13,689] [INFO] [logging.py:68:log_dist] [Rank 0] step=176, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:10:13,693] [INFO] [timer.py:198:stop] 0/352, RunningAvgSamplesPerSec=15.750390529928001, CurrSamplesPerSec=12.745138495337908, MemAllocated=1.93GB, MaxMemAllocated=6.33GB
+[2022-11-24 01:10:19,454] [INFO] [timer.py:198:stop] 0/354, RunningAvgSamplesPerSec=15.738302568866578, CurrSamplesPerSec=12.735695774357074, MemAllocated=1.93GB, MaxMemAllocated=6.33GB
+[2022-11-24 01:10:25,207] [INFO] [logging.py:68:log_dist] [Rank 0] step=178, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:10:25,210] [INFO] [timer.py:198:stop] 0/356, RunningAvgSamplesPerSec=15.72627164681285, CurrSamplesPerSec=12.748528128922837, MemAllocated=1.93GB, MaxMemAllocated=6.33GB
+[2022-11-24 01:10:30,977] [INFO] [timer.py:198:stop] 0/358, RunningAvgSamplesPerSec=15.714516109638783, CurrSamplesPerSec=12.750155793543916, MemAllocated=1.93GB, MaxMemAllocated=6.33GB
+[2022-11-24 01:10:36,728] [INFO] [logging.py:68:log_dist] [Rank 0] step=180, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:10:36,732] [INFO] [timer.py:198:stop] 0/360, RunningAvgSamplesPerSec=15.70285006999616, CurrSamplesPerSec=12.736565931396365, MemAllocated=1.93GB, MaxMemAllocated=6.33GB
+***** Evaluating perplexity, Epoch 1/2 *****
+'step':360, 'ppl': 55.38920777429542, 'seq_len': 600, 'consume layer-tokens': 4559552
+[2022-11-24 01:10:45,220] [INFO] [timer.py:198:stop] 0/362, RunningAvgSamplesPerSec=15.690884789156392, CurrSamplesPerSec=12.684585293419403, MemAllocated=1.93GB, MaxMemAllocated=6.33GB
+[2022-11-24 01:10:50,974] [INFO] [logging.py:68:log_dist] [Rank 0] step=182, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:10:50,978] [INFO] [timer.py:198:stop] 0/364, RunningAvgSamplesPerSec=15.678906762207673, CurrSamplesPerSec=12.65948925047613, MemAllocated=1.93GB, MaxMemAllocated=6.33GB
+[2022-11-24 01:10:56,733] [INFO] [timer.py:198:stop] 0/366, RunningAvgSamplesPerSec=15.667103898515307, CurrSamplesPerSec=12.66369370212586, MemAllocated=1.93GB, MaxMemAllocated=6.33GB
+[2022-11-24 01:11:02,490] [INFO] [logging.py:68:log_dist] [Rank 0] step=184, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:11:02,493] [INFO] [timer.py:198:stop] 0/368, RunningAvgSamplesPerSec=15.655365271371677, CurrSamplesPerSec=12.65912626970677, MemAllocated=1.93GB, MaxMemAllocated=6.33GB
+[2022-11-24 01:11:08,259] [INFO] [timer.py:198:stop] 0/370, RunningAvgSamplesPerSec=15.643535764671542, CurrSamplesPerSec=12.639156245291547, MemAllocated=1.93GB, MaxMemAllocated=6.33GB
+***** Evaluating perplexity, Epoch 1/2 *****
+'step':370, 'ppl': 56.00081847788906, 'seq_len': 608, 'consume layer-tokens': 4721152
+[2022-11-24 01:11:16,744] [INFO] [logging.py:68:log_dist] [Rank 0] step=186, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:11:16,747] [INFO] [timer.py:198:stop] 0/372, RunningAvgSamplesPerSec=15.632027600095661, CurrSamplesPerSec=12.65910716603235, MemAllocated=1.93GB, MaxMemAllocated=6.33GB
+[2022-11-24 01:11:22,501] [INFO] [timer.py:198:stop] 0/374, RunningAvgSamplesPerSec=15.620460360058527, CurrSamplesPerSec=12.611167320381314, MemAllocated=1.93GB, MaxMemAllocated=6.33GB
+[2022-11-24 01:11:28,256] [INFO] [logging.py:68:log_dist] [Rank 0] step=188, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:11:28,260] [INFO] [timer.py:198:stop] 0/376, RunningAvgSamplesPerSec=15.608948475464741, CurrSamplesPerSec=12.598250369825262, MemAllocated=1.93GB, MaxMemAllocated=6.33GB
+[2022-11-24 01:11:34,029] [INFO] [timer.py:198:stop] 0/378, RunningAvgSamplesPerSec=15.596822582841977, CurrSamplesPerSec=12.535277943813508, MemAllocated=1.93GB, MaxMemAllocated=6.33GB
+[2022-11-24 01:11:39,803] [INFO] [logging.py:68:log_dist] [Rank 0] step=190, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:11:39,807] [INFO] [timer.py:198:stop] 0/380, RunningAvgSamplesPerSec=15.584860003238475, CurrSamplesPerSec=12.527901982395303, MemAllocated=1.93GB, MaxMemAllocated=6.33GB
+***** Evaluating perplexity, Epoch 1/2 *****
+'step':380, 'ppl': 53.40818945066338, 'seq_len': 616, 'consume layer-tokens': 4884672
+[2022-11-24 01:11:48,305] [INFO] [timer.py:198:stop] 0/382, RunningAvgSamplesPerSec=15.57287394203144, CurrSamplesPerSec=12.492695995865855, MemAllocated=1.93GB, MaxMemAllocated=6.33GB
+[2022-11-24 01:11:54,069] [INFO] [logging.py:68:log_dist] [Rank 0] step=192, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:11:54,072] [INFO] [timer.py:198:stop] 0/384, RunningAvgSamplesPerSec=15.56113263079921, CurrSamplesPerSec=12.522515905786392, MemAllocated=1.93GB, MaxMemAllocated=6.33GB
+[2022-11-24 01:11:59,860] [INFO] [timer.py:198:stop] 0/386, RunningAvgSamplesPerSec=15.544825774920232, CurrSamplesPerSec=12.470892210717233, MemAllocated=1.93GB, MaxMemAllocated=6.34GB
+[2022-11-24 01:12:05,623] [INFO] [logging.py:68:log_dist] [Rank 0] step=194, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:12:05,627] [INFO] [timer.py:198:stop] 0/388, RunningAvgSamplesPerSec=15.532786824339384, CurrSamplesPerSec=12.439103524157218, MemAllocated=1.94GB, MaxMemAllocated=6.34GB
+[2022-11-24 01:12:11,395] [INFO] [timer.py:198:stop] 0/390, RunningAvgSamplesPerSec=15.521056051010092, CurrSamplesPerSec=12.455523137115154, MemAllocated=1.93GB, MaxMemAllocated=6.34GB
+***** Evaluating perplexity, Epoch 1/2 *****
+'step':390, 'ppl': 50.45664173401422, 'seq_len': 624, 'consume layer-tokens': 5050112
+[2022-11-24 01:12:19,892] [INFO] [logging.py:68:log_dist] [Rank 0] step=196, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:12:19,896] [INFO] [timer.py:198:stop] 0/392, RunningAvgSamplesPerSec=15.509408765633943, CurrSamplesPerSec=12.447391030159142, MemAllocated=1.94GB, MaxMemAllocated=6.34GB
+[2022-11-24 01:12:25,666] [INFO] [timer.py:198:stop] 0/394, RunningAvgSamplesPerSec=15.497419635645393, CurrSamplesPerSec=12.405935132369187, MemAllocated=1.94GB, MaxMemAllocated=6.38GB
+[2022-11-24 01:12:31,432] [INFO] [logging.py:68:log_dist] [Rank 0] step=198, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:12:31,436] [INFO] [timer.py:198:stop] 0/396, RunningAvgSamplesPerSec=15.485774781209434, CurrSamplesPerSec=12.448480855244219, MemAllocated=1.94GB, MaxMemAllocated=6.38GB
+[2022-11-24 01:12:37,216] [INFO] [timer.py:198:stop] 0/398, RunningAvgSamplesPerSec=15.473582463620096, CurrSamplesPerSec=12.246893970141235, MemAllocated=1.94GB, MaxMemAllocated=6.38GB
+[2022-11-24 01:12:42,978] [INFO] [logging.py:68:log_dist] [Rank 0] step=200, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:12:42,982] [INFO] [timer.py:198:stop] 0/400, RunningAvgSamplesPerSec=15.462251150716835, CurrSamplesPerSec=12.43938021143041, MemAllocated=1.94GB, MaxMemAllocated=6.38GB
+***** Evaluating perplexity, Epoch 1/2 *****
+'step':400, 'ppl': 50.00030680310894, 'seq_len': 640, 'consume layer-tokens': 5217792
+[2022-11-24 01:12:51,482] [INFO] [timer.py:198:stop] 0/402, RunningAvgSamplesPerSec=15.450265896417086, CurrSamplesPerSec=12.28750801969843, MemAllocated=1.94GB, MaxMemAllocated=6.42GB
+[2022-11-24 01:12:57,243] [INFO] [logging.py:68:log_dist] [Rank 0] step=202, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:12:57,247] [INFO] [timer.py:198:stop] 0/404, RunningAvgSamplesPerSec=15.438670233199788, CurrSamplesPerSec=12.342577334149443, MemAllocated=1.94GB, MaxMemAllocated=6.42GB
+[2022-11-24 01:13:03,009] [INFO] [timer.py:198:stop] 0/406, RunningAvgSamplesPerSec=15.427285659691567, CurrSamplesPerSec=12.37648461313748, MemAllocated=1.94GB, MaxMemAllocated=6.42GB
+[2022-11-24 01:13:08,777] [INFO] [logging.py:68:log_dist] [Rank 0] step=204, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:13:08,781] [INFO] [timer.py:198:stop] 0/408, RunningAvgSamplesPerSec=15.41593229856258, CurrSamplesPerSec=12.36442640324152, MemAllocated=1.94GB, MaxMemAllocated=6.42GB
+[2022-11-24 01:13:14,549] [INFO] [timer.py:198:stop] 0/410, RunningAvgSamplesPerSec=15.404817983040438, CurrSamplesPerSec=12.383829556056831, MemAllocated=1.94GB, MaxMemAllocated=6.42GB
+***** Evaluating perplexity, Epoch 1/2 *****
+'step':410, 'ppl': 51.08823002340233, 'seq_len': 648, 'consume layer-tokens': 5387072
+[2022-11-24 01:13:23,049] [INFO] [logging.py:68:log_dist] [Rank 0] step=206, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:13:23,052] [INFO] [timer.py:198:stop] 0/412, RunningAvgSamplesPerSec=15.391961122778264, CurrSamplesPerSec=12.137016229261285, MemAllocated=1.94GB, MaxMemAllocated=6.45GB
+[2022-11-24 01:13:28,835] [INFO] [timer.py:198:stop] 0/414, RunningAvgSamplesPerSec=15.379102056051833, CurrSamplesPerSec=12.09840127494177, MemAllocated=1.94GB, MaxMemAllocated=6.45GB
+[2022-11-24 01:13:34,605] [INFO] [logging.py:68:log_dist] [Rank 0] step=208, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:13:34,609] [INFO] [timer.py:198:stop] 0/416, RunningAvgSamplesPerSec=15.3665523183738, CurrSamplesPerSec=12.139633290401008, MemAllocated=1.94GB, MaxMemAllocated=6.45GB
+[2022-11-24 01:13:40,387] [INFO] [timer.py:198:stop] 0/418, RunningAvgSamplesPerSec=15.354133829258737, CurrSamplesPerSec=12.128558023598949, MemAllocated=1.94GB, MaxMemAllocated=6.46GB
+[2022-11-24 01:13:46,153] [INFO] [logging.py:68:log_dist] [Rank 0] step=210, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:13:46,157] [INFO] [timer.py:198:stop] 0/420, RunningAvgSamplesPerSec=15.341362936813148, CurrSamplesPerSec=12.079864176179278, MemAllocated=1.94GB, MaxMemAllocated=6.49GB
+***** Evaluating perplexity, Epoch 1/2 *****
+'step':420, 'ppl': 46.2431318137021, 'seq_len': 656, 'consume layer-tokens': 5558272
+[2022-11-24 01:13:54,671] [INFO] [timer.py:198:stop] 0/422, RunningAvgSamplesPerSec=15.328768476264012, CurrSamplesPerSec=12.069713803914459, MemAllocated=1.94GB, MaxMemAllocated=6.49GB
+[2022-11-24 01:14:00,445] [INFO] [logging.py:68:log_dist] [Rank 0] step=212, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:14:00,448] [INFO] [timer.py:198:stop] 0/424, RunningAvgSamplesPerSec=15.316224434420402, CurrSamplesPerSec=12.085885981935878, MemAllocated=1.94GB, MaxMemAllocated=6.49GB
+[2022-11-24 01:14:06,227] [INFO] [timer.py:198:stop] 0/426, RunningAvgSamplesPerSec=15.30372953567566, CurrSamplesPerSec=12.029247824983402, MemAllocated=1.94GB, MaxMemAllocated=6.49GB
+[2022-11-24 01:14:12,001] [INFO] [logging.py:68:log_dist] [Rank 0] step=214, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:14:12,005] [INFO] [timer.py:198:stop] 0/428, RunningAvgSamplesPerSec=15.29078677283686, CurrSamplesPerSec=11.956908077597388, MemAllocated=1.94GB, MaxMemAllocated=6.53GB
+[2022-11-24 01:14:17,776] [INFO] [timer.py:198:stop] 0/430, RunningAvgSamplesPerSec=15.278226569315905, CurrSamplesPerSec=12.008910114354103, MemAllocated=1.94GB, MaxMemAllocated=6.53GB
+***** Evaluating perplexity, Epoch 1/2 *****
+'step':430, 'ppl': 43.8355828871518, 'seq_len': 664, 'consume layer-tokens': 5731392
+[2022-11-24 01:14:26,284] [INFO] [logging.py:68:log_dist] [Rank 0] step=216, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:14:26,287] [INFO] [timer.py:198:stop] 0/432, RunningAvgSamplesPerSec=15.265707853124574, CurrSamplesPerSec=12.001075841073094, MemAllocated=1.94GB, MaxMemAllocated=6.53GB
+[2022-11-24 01:14:32,067] [INFO] [timer.py:198:stop] 0/434, RunningAvgSamplesPerSec=15.253274738144402, CurrSamplesPerSec=12.00112734894168, MemAllocated=1.94GB, MaxMemAllocated=6.53GB
+[2022-11-24 01:14:37,839] [INFO] [logging.py:68:log_dist] [Rank 0] step=218, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:14:37,842] [INFO] [timer.py:198:stop] 0/436, RunningAvgSamplesPerSec=15.240599483292748, CurrSamplesPerSec=11.935370413581547, MemAllocated=1.94GB, MaxMemAllocated=6.57GB
+[2022-11-24 01:14:43,633] [INFO] [timer.py:198:stop] 0/438, RunningAvgSamplesPerSec=15.227977836518715, CurrSamplesPerSec=11.918378945154993, MemAllocated=1.94GB, MaxMemAllocated=6.57GB
+[2022-11-24 01:14:49,409] [INFO] [logging.py:68:log_dist] [Rank 0] step=220, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:14:49,412] [INFO] [timer.py:198:stop] 0/440, RunningAvgSamplesPerSec=15.21561820562041, CurrSamplesPerSec=11.950264972363097, MemAllocated=1.94GB, MaxMemAllocated=6.57GB
+***** Evaluating perplexity, Epoch 1/2 *****
+'step':440, 'ppl': 44.05246531650787, 'seq_len': 672, 'consume layer-tokens': 5906432
+[2022-11-24 01:14:57,939] [INFO] [timer.py:198:stop] 0/442, RunningAvgSamplesPerSec=15.203340861216194, CurrSamplesPerSec=11.921055025011368, MemAllocated=1.94GB, MaxMemAllocated=6.57GB
+[2022-11-24 01:15:03,732] [INFO] [logging.py:68:log_dist] [Rank 0] step=222, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:15:03,735] [INFO] [timer.py:198:stop] 0/444, RunningAvgSamplesPerSec=15.187092505026888, CurrSamplesPerSec=11.037380693615152, MemAllocated=1.94GB, MaxMemAllocated=6.6GB
+[2022-11-24 01:15:09,529] [INFO] [timer.py:198:stop] 0/446, RunningAvgSamplesPerSec=15.173954553399676, CurrSamplesPerSec=11.761632488243427, MemAllocated=1.95GB, MaxMemAllocated=6.6GB
+[2022-11-24 01:15:15,309] [INFO] [logging.py:68:log_dist] [Rank 0] step=224, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:15:15,312] [INFO] [timer.py:198:stop] 0/448, RunningAvgSamplesPerSec=15.16105102060809, CurrSamplesPerSec=11.789419243131418, MemAllocated=1.94GB, MaxMemAllocated=6.6GB
+[2022-11-24 01:15:21,105] [INFO] [timer.py:198:stop] 0/450, RunningAvgSamplesPerSec=15.148204710087283, CurrSamplesPerSec=11.775121034361266, MemAllocated=1.94GB, MaxMemAllocated=6.6GB
+***** Evaluating perplexity, Epoch 1/2 *****
+'step':450, 'ppl': 44.71588413630405, 'seq_len': 688, 'consume layer-tokens': 6083712
+[2022-11-24 01:15:29,615] [INFO] [logging.py:68:log_dist] [Rank 0] step=226, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:15:29,618] [INFO] [timer.py:198:stop] 0/452, RunningAvgSamplesPerSec=15.135175090951314, CurrSamplesPerSec=11.743520392878242, MemAllocated=1.95GB, MaxMemAllocated=6.65GB
+[2022-11-24 01:15:35,401] [INFO] [timer.py:198:stop] 0/454, RunningAvgSamplesPerSec=15.122121241924456, CurrSamplesPerSec=11.693476912354068, MemAllocated=1.95GB, MaxMemAllocated=6.65GB
+[2022-11-24 01:15:41,186] [INFO] [logging.py:68:log_dist] [Rank 0] step=228, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:15:41,190] [INFO] [timer.py:198:stop] 0/456, RunningAvgSamplesPerSec=15.109275878961293, CurrSamplesPerSec=11.709162579179077, MemAllocated=1.95GB, MaxMemAllocated=6.65GB
+[2022-11-24 01:15:46,974] [INFO] [timer.py:198:stop] 0/458, RunningAvgSamplesPerSec=15.096665404087473, CurrSamplesPerSec=11.74213957967643, MemAllocated=1.95GB, MaxMemAllocated=6.65GB
+[2022-11-24 01:15:52,759] [INFO] [logging.py:68:log_dist] [Rank 0] step=230, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:15:52,762] [INFO] [timer.py:198:stop] 0/460, RunningAvgSamplesPerSec=15.084069095010024, CurrSamplesPerSec=11.71208890936634, MemAllocated=1.95GB, MaxMemAllocated=6.65GB
+***** Evaluating perplexity, Epoch 1/2 *****
+'step':460, 'ppl': 42.768472709763635, 'seq_len': 696, 'consume layer-tokens': 6262592
+[2022-11-24 01:16:01,293] [INFO] [timer.py:198:stop] 0/462, RunningAvgSamplesPerSec=15.070996802855447, CurrSamplesPerSec=11.621435755629504, MemAllocated=1.95GB, MaxMemAllocated=6.69GB
+[2022-11-24 01:16:07,090] [INFO] [logging.py:68:log_dist] [Rank 0] step=232, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:16:07,093] [INFO] [timer.py:198:stop] 0/464, RunningAvgSamplesPerSec=15.058162072282087, CurrSamplesPerSec=11.655992507802058, MemAllocated=1.95GB, MaxMemAllocated=6.69GB
+[2022-11-24 01:16:12,886] [INFO] [timer.py:198:stop] 0/466, RunningAvgSamplesPerSec=15.045427211139929, CurrSamplesPerSec=11.649000019441367, MemAllocated=1.95GB, MaxMemAllocated=6.69GB
+[2022-11-24 01:16:18,677] [INFO] [logging.py:68:log_dist] [Rank 0] step=234, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:16:18,680] [INFO] [timer.py:198:stop] 0/468, RunningAvgSamplesPerSec=15.03287054363147, CurrSamplesPerSec=11.639463635556345, MemAllocated=1.95GB, MaxMemAllocated=6.69GB
+[2022-11-24 01:16:24,471] [INFO] [timer.py:198:stop] 0/470, RunningAvgSamplesPerSec=15.02001966318785, CurrSamplesPerSec=11.589868856626525, MemAllocated=1.95GB, MaxMemAllocated=6.73GB
+***** Evaluating perplexity, Epoch 1/2 *****
+'step':470, 'ppl': 41.137536447188225, 'seq_len': 704, 'consume layer-tokens': 6443392
+[2022-11-24 01:16:32,992] [INFO] [logging.py:68:log_dist] [Rank 0] step=236, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:16:32,996] [INFO] [timer.py:198:stop] 0/472, RunningAvgSamplesPerSec=15.007249956142765, CurrSamplesPerSec=11.58983683112505, MemAllocated=1.95GB, MaxMemAllocated=6.73GB
+[2022-11-24 01:16:38,786] [INFO] [timer.py:198:stop] 0/474, RunningAvgSamplesPerSec=14.994575985796097, CurrSamplesPerSec=11.583275338304336, MemAllocated=1.95GB, MaxMemAllocated=6.73GB
+[2022-11-24 01:16:44,568] [INFO] [logging.py:68:log_dist] [Rank 0] step=238, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:16:44,571] [INFO] [timer.py:198:stop] 0/476, RunningAvgSamplesPerSec=14.98217770912431, CurrSamplesPerSec=11.601233060288019, MemAllocated=1.95GB, MaxMemAllocated=6.73GB
+[2022-11-24 01:16:50,372] [INFO] [timer.py:198:stop] 0/478, RunningAvgSamplesPerSec=14.969132982049942, CurrSamplesPerSec=11.502036842790838, MemAllocated=1.95GB, MaxMemAllocated=6.75GB
+[2022-11-24 01:16:56,161] [INFO] [logging.py:68:log_dist] [Rank 0] step=240, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:16:56,164] [INFO] [timer.py:198:stop] 0/480, RunningAvgSamplesPerSec=14.956036182290296, CurrSamplesPerSec=11.481775303106206, MemAllocated=1.95GB, MaxMemAllocated=6.77GB
+***** Evaluating perplexity, Epoch 1/2 *****
+'step':480, 'ppl': 40.955337123845034, 'seq_len': 712, 'consume layer-tokens': 6626112
+[2022-11-24 01:17:04,691] [INFO] [timer.py:198:stop] 0/482, RunningAvgSamplesPerSec=14.943179496375599, CurrSamplesPerSec=11.49655114758457, MemAllocated=1.95GB, MaxMemAllocated=6.77GB
+[2022-11-24 01:17:10,484] [INFO] [logging.py:68:log_dist] [Rank 0] step=242, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:17:10,488] [INFO] [timer.py:198:stop] 0/484, RunningAvgSamplesPerSec=14.93026706492784, CurrSamplesPerSec=11.487514327540238, MemAllocated=1.95GB, MaxMemAllocated=6.77GB
+[2022-11-24 01:17:16,276] [INFO] [timer.py:198:stop] 0/486, RunningAvgSamplesPerSec=14.91705931929173, CurrSamplesPerSec=11.373674319974619, MemAllocated=1.95GB, MaxMemAllocated=6.79GB
+[2022-11-24 01:17:22,069] [INFO] [logging.py:68:log_dist] [Rank 0] step=244, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:17:22,073] [INFO] [timer.py:198:stop] 0/488, RunningAvgSamplesPerSec=14.904065830403225, CurrSamplesPerSec=11.415091104549104, MemAllocated=1.95GB, MaxMemAllocated=6.8GB
+[2022-11-24 01:17:27,873] [INFO] [timer.py:198:stop] 0/490, RunningAvgSamplesPerSec=14.891208930754425, CurrSamplesPerSec=11.411550568767701, MemAllocated=1.95GB, MaxMemAllocated=6.8GB
+***** Evaluating perplexity, Epoch 1/2 *****
+'step':490, 'ppl': 40.76069775918648, 'seq_len': 720, 'consume layer-tokens': 6810752
+[2022-11-24 01:17:36,390] [INFO] [logging.py:68:log_dist] [Rank 0] step=246, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:17:36,394] [INFO] [timer.py:198:stop] 0/492, RunningAvgSamplesPerSec=14.878409134921142, CurrSamplesPerSec=11.408632831306457, MemAllocated=1.95GB, MaxMemAllocated=6.8GB
+[2022-11-24 01:17:42,186] [INFO] [timer.py:198:stop] 0/494, RunningAvgSamplesPerSec=14.865581234231753, CurrSamplesPerSec=11.390987541161694, MemAllocated=1.95GB, MaxMemAllocated=6.84GB
+[2022-11-24 01:17:47,974] [INFO] [logging.py:68:log_dist] [Rank 0] step=248, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:17:47,978] [INFO] [timer.py:198:stop] 0/496, RunningAvgSamplesPerSec=14.852836128554909, CurrSamplesPerSec=11.373257969041708, MemAllocated=1.95GB, MaxMemAllocated=6.84GB
+[2022-11-24 01:17:53,775] [INFO] [timer.py:198:stop] 0/498, RunningAvgSamplesPerSec=14.840161759438491, CurrSamplesPerSec=11.365938258758238, MemAllocated=1.95GB, MaxMemAllocated=6.84GB
+[2022-11-24 01:17:59,580] [INFO] [logging.py:68:log_dist] [Rank 0] step=250, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:17:59,583] [INFO] [timer.py:198:stop] 0/500, RunningAvgSamplesPerSec=14.82750923566886, CurrSamplesPerSec=11.34083024867443, MemAllocated=1.95GB, MaxMemAllocated=6.84GB
+***** Evaluating perplexity, Epoch 1/2 *****
+'step':500, 'ppl': 40.25755346273977, 'seq_len': 736, 'consume layer-tokens': 6997632
+[2022-11-24 01:18:08,105] [INFO] [timer.py:198:stop] 0/502, RunningAvgSamplesPerSec=14.814738887553299, CurrSamplesPerSec=11.317283239411728, MemAllocated=1.95GB, MaxMemAllocated=6.88GB
+[2022-11-24 01:18:13,898] [INFO] [logging.py:68:log_dist] [Rank 0] step=252, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:18:13,902] [INFO] [timer.py:198:stop] 0/504, RunningAvgSamplesPerSec=14.802001792410163, CurrSamplesPerSec=11.31372681245229, MemAllocated=1.95GB, MaxMemAllocated=6.88GB
+[2022-11-24 01:18:19,704] [INFO] [timer.py:198:stop] 0/506, RunningAvgSamplesPerSec=14.789388184500677, CurrSamplesPerSec=11.29068720414231, MemAllocated=1.95GB, MaxMemAllocated=6.88GB
+[2022-11-24 01:18:25,506] [INFO] [logging.py:68:log_dist] [Rank 0] step=254, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:18:25,509] [INFO] [timer.py:198:stop] 0/508, RunningAvgSamplesPerSec=14.776933479240082, CurrSamplesPerSec=11.309410208739756, MemAllocated=1.95GB, MaxMemAllocated=6.88GB
+[2022-11-24 01:18:31,306] [INFO] [timer.py:198:stop] 0/510, RunningAvgSamplesPerSec=14.764624104854057, CurrSamplesPerSec=11.306635899606292, MemAllocated=1.95GB, MaxMemAllocated=6.88GB
+***** Evaluating perplexity, Epoch 1/2 *****
+'step':510, 'ppl': 37.92479757238434, 'seq_len': 744, 'consume layer-tokens': 7186112
+[2022-11-24 01:18:39,851] [INFO] [logging.py:68:log_dist] [Rank 0] step=256, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:18:39,855] [INFO] [timer.py:198:stop] 0/512, RunningAvgSamplesPerSec=14.75206170471175, CurrSamplesPerSec=11.26388312621268, MemAllocated=1.96GB, MaxMemAllocated=6.92GB
+[2022-11-24 01:18:45,657] [INFO] [timer.py:198:stop] 0/514, RunningAvgSamplesPerSec=14.739528013245675, CurrSamplesPerSec=11.23290246642626, MemAllocated=1.96GB, MaxMemAllocated=6.92GB
+[2022-11-24 01:18:51,451] [INFO] [logging.py:68:log_dist] [Rank 0] step=258, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:18:51,455] [INFO] [timer.py:198:stop] 0/516, RunningAvgSamplesPerSec=14.72716666502035, CurrSamplesPerSec=11.267378012744055, MemAllocated=1.96GB, MaxMemAllocated=6.92GB
+[2022-11-24 01:18:57,257] [INFO] [timer.py:198:stop] 0/518, RunningAvgSamplesPerSec=14.714979044951763, CurrSamplesPerSec=11.262083576110218, MemAllocated=1.96GB, MaxMemAllocated=6.92GB
+[2022-11-24 01:19:03,052] [INFO] [logging.py:68:log_dist] [Rank 0] step=260, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:19:03,055] [INFO] [timer.py:198:stop] 0/520, RunningAvgSamplesPerSec=14.702539414373415, CurrSamplesPerSec=11.207180198342558, MemAllocated=1.96GB, MaxMemAllocated=6.96GB
+***** Evaluating perplexity, Epoch 1/2 *****
+'step':520, 'ppl': 37.97636109512137, 'seq_len': 752, 'consume layer-tokens': 7376512
+[2022-11-24 01:19:11,588] [INFO] [timer.py:198:stop] 0/522, RunningAvgSamplesPerSec=14.690038394819714, CurrSamplesPerSec=11.170438036393174, MemAllocated=1.96GB, MaxMemAllocated=6.96GB
+[2022-11-24 01:19:17,386] [INFO] [logging.py:68:log_dist] [Rank 0] step=262, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:19:17,389] [INFO] [timer.py:198:stop] 0/524, RunningAvgSamplesPerSec=14.677719255437623, CurrSamplesPerSec=11.183319557392348, MemAllocated=1.96GB, MaxMemAllocated=6.96GB
+***** Evaluating perplexity, Epoch 1/2 *****
+'step':523, 'ppl': 37.98067332825408, 'seq_len': 752, 'consume layer-tokens': 7414784
+[2022-11-24 01:19:25,926] [INFO] [timer.py:198:stop] 0/526, RunningAvgSamplesPerSec=14.66549822156882, CurrSamplesPerSec=11.192451380142177, MemAllocated=1.96GB, MaxMemAllocated=6.96GB
+[2022-11-24 01:19:31,725] [INFO] [logging.py:68:log_dist] [Rank 0] step=264, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:19:31,729] [INFO] [timer.py:198:stop] 0/528, RunningAvgSamplesPerSec=14.6532475471404, CurrSamplesPerSec=11.1657693080733, MemAllocated=1.96GB, MaxMemAllocated=6.99GB
+[2022-11-24 01:19:37,528] [INFO] [timer.py:198:stop] 0/530, RunningAvgSamplesPerSec=14.641194643807657, CurrSamplesPerSec=11.180845193571347, MemAllocated=1.96GB, MaxMemAllocated=6.99GB
+***** Evaluating perplexity, Epoch 2/2 *****
+'step':530, 'ppl': 36.96602753298154, 'seq_len': 760, 'consume layer-tokens': 7568832
+[2022-11-24 01:19:46,065] [INFO] [logging.py:68:log_dist] [Rank 0] step=266, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:19:46,068] [INFO] [timer.py:198:stop] 0/532, RunningAvgSamplesPerSec=14.6291180893533, CurrSamplesPerSec=11.161342084709883, MemAllocated=1.96GB, MaxMemAllocated=7.0GB
+[2022-11-24 01:19:51,867] [INFO] [timer.py:198:stop] 0/534, RunningAvgSamplesPerSec=14.617296846508959, CurrSamplesPerSec=11.182648687920336, MemAllocated=1.96GB, MaxMemAllocated=7.0GB
+[2022-11-24 01:19:57,669] [INFO] [logging.py:68:log_dist] [Rank 0] step=268, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:19:57,672] [INFO] [timer.py:198:stop] 0/536, RunningAvgSamplesPerSec=14.604924922765438, CurrSamplesPerSec=11.040997987546215, MemAllocated=1.96GB, MaxMemAllocated=7.04GB
+[2022-11-24 01:20:03,471] [INFO] [timer.py:198:stop] 0/538, RunningAvgSamplesPerSec=14.592887241895806, CurrSamplesPerSec=11.103635687368213, MemAllocated=1.96GB, MaxMemAllocated=7.04GB
+[2022-11-24 01:20:09,275] [INFO] [logging.py:68:log_dist] [Rank 0] step=270, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:20:09,279] [INFO] [timer.py:198:stop] 0/540, RunningAvgSamplesPerSec=14.580994281300079, CurrSamplesPerSec=11.127555683489883, MemAllocated=1.96GB, MaxMemAllocated=7.04GB
+***** Evaluating perplexity, Epoch 2/2 *****
+'step':540, 'ppl': 35.74022163600443, 'seq_len': 768, 'consume layer-tokens': 7763072
+[2022-11-24 01:20:17,814] [INFO] [timer.py:198:stop] 0/542, RunningAvgSamplesPerSec=14.569103468657541, CurrSamplesPerSec=11.091406237604387, MemAllocated=1.96GB, MaxMemAllocated=7.04GB
+[2022-11-24 01:20:23,617] [INFO] [logging.py:68:log_dist] [Rank 0] step=272, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:20:23,620] [INFO] [timer.py:198:stop] 0/544, RunningAvgSamplesPerSec=14.556868643231967, CurrSamplesPerSec=11.036785302193646, MemAllocated=1.96GB, MaxMemAllocated=7.08GB
+[2022-11-24 01:20:29,430] [INFO] [timer.py:198:stop] 0/546, RunningAvgSamplesPerSec=14.544789099458145, CurrSamplesPerSec=11.030588334302012, MemAllocated=1.96GB, MaxMemAllocated=7.08GB
+[2022-11-24 01:20:35,229] [INFO] [logging.py:68:log_dist] [Rank 0] step=274, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:20:35,233] [INFO] [timer.py:198:stop] 0/548, RunningAvgSamplesPerSec=14.532820121562771, CurrSamplesPerSec=11.04378884563382, MemAllocated=1.96GB, MaxMemAllocated=7.08GB
+[2022-11-24 01:20:41,037] [INFO] [timer.py:198:stop] 0/550, RunningAvgSamplesPerSec=14.52103104589343, CurrSamplesPerSec=11.046668396150013, MemAllocated=1.96GB, MaxMemAllocated=7.08GB
+***** Evaluating perplexity, Epoch 2/2 *****
+'step':550, 'ppl': 35.57909948890313, 'seq_len': 784, 'consume layer-tokens': 7959552
+[2022-11-24 01:20:49,571] [INFO] [logging.py:68:log_dist] [Rank 0] step=276, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:20:49,575] [INFO] [timer.py:198:stop] 0/552, RunningAvgSamplesPerSec=14.509004629261577, CurrSamplesPerSec=11.006736348201235, MemAllocated=1.96GB, MaxMemAllocated=7.12GB
+[2022-11-24 01:20:55,392] [INFO] [timer.py:198:stop] 0/554, RunningAvgSamplesPerSec=14.495650278076775, CurrSamplesPerSec=10.566900587889254, MemAllocated=1.96GB, MaxMemAllocated=7.12GB
+[2022-11-24 01:21:01,203] [INFO] [logging.py:68:log_dist] [Rank 0] step=278, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:21:01,207] [INFO] [timer.py:198:stop] 0/556, RunningAvgSamplesPerSec=14.483834235960046, CurrSamplesPerSec=11.004541602495651, MemAllocated=1.96GB, MaxMemAllocated=7.12GB
+[2022-11-24 01:21:07,010] [INFO] [timer.py:198:stop] 0/558, RunningAvgSamplesPerSec=14.472177296480854, CurrSamplesPerSec=11.009827803443931, MemAllocated=1.96GB, MaxMemAllocated=7.12GB
+[2022-11-24 01:21:12,809] [INFO] [logging.py:68:log_dist] [Rank 0] step=280, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:21:12,812] [INFO] [timer.py:198:stop] 0/560, RunningAvgSamplesPerSec=14.460702924169432, CurrSamplesPerSec=11.015017838360945, MemAllocated=1.96GB, MaxMemAllocated=7.12GB
+***** Evaluating perplexity, Epoch 2/2 *****
+'step':560, 'ppl': 35.376982420731366, 'seq_len': 792, 'consume layer-tokens': 8157632
+[2022-11-24 01:21:21,355] [INFO] [timer.py:198:stop] 0/562, RunningAvgSamplesPerSec=14.448861757706764, CurrSamplesPerSec=10.94292818212889, MemAllocated=1.96GB, MaxMemAllocated=7.16GB
+[2022-11-24 01:21:27,155] [INFO] [logging.py:68:log_dist] [Rank 0] step=282, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:21:27,158] [INFO] [timer.py:198:stop] 0/564, RunningAvgSamplesPerSec=14.437172894052551, CurrSamplesPerSec=10.952357824205725, MemAllocated=1.96GB, MaxMemAllocated=7.17GB
+[2022-11-24 01:21:32,965] [INFO] [timer.py:198:stop] 0/566, RunningAvgSamplesPerSec=14.425526775774397, CurrSamplesPerSec=10.937249666221629, MemAllocated=1.96GB, MaxMemAllocated=7.17GB
+[2022-11-24 01:21:38,772] [INFO] [logging.py:68:log_dist] [Rank 0] step=284, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:21:38,775] [INFO] [timer.py:198:stop] 0/568, RunningAvgSamplesPerSec=14.413979787577508, CurrSamplesPerSec=10.937477834567643, MemAllocated=1.96GB, MaxMemAllocated=7.17GB
+[2022-11-24 01:21:44,583] [INFO] [timer.py:198:stop] 0/570, RunningAvgSamplesPerSec=14.402436790121865, CurrSamplesPerSec=10.924601231468072, MemAllocated=1.97GB, MaxMemAllocated=7.2GB
+***** Evaluating perplexity, Epoch 2/2 *****
+'step':570, 'ppl': 34.84620267752827, 'seq_len': 800, 'consume layer-tokens': 8357632
+[2022-11-24 01:21:53,124] [INFO] [logging.py:68:log_dist] [Rank 0] step=286, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:21:53,128] [INFO] [timer.py:198:stop] 0/572, RunningAvgSamplesPerSec=14.390900213032884, CurrSamplesPerSec=10.918742743493224, MemAllocated=1.97GB, MaxMemAllocated=7.2GB
+[2022-11-24 01:21:58,939] [INFO] [timer.py:198:stop] 0/574, RunningAvgSamplesPerSec=14.379417941861252, CurrSamplesPerSec=10.899278631270398, MemAllocated=1.97GB, MaxMemAllocated=7.2GB
+[2022-11-24 01:22:04,745] [INFO] [logging.py:68:log_dist] [Rank 0] step=288, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:22:04,748] [INFO] [timer.py:198:stop] 0/576, RunningAvgSamplesPerSec=14.368082680521626, CurrSamplesPerSec=10.921102446264207, MemAllocated=1.97GB, MaxMemAllocated=7.2GB
+[2022-11-24 01:22:10,561] [INFO] [timer.py:198:stop] 0/578, RunningAvgSamplesPerSec=14.356372916111756, CurrSamplesPerSec=10.83334796960477, MemAllocated=1.97GB, MaxMemAllocated=7.25GB
+[2022-11-24 01:22:16,371] [INFO] [logging.py:68:log_dist] [Rank 0] step=290, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:22:16,375] [INFO] [timer.py:198:stop] 0/580, RunningAvgSamplesPerSec=14.344805628561222, CurrSamplesPerSec=10.831823211839248, MemAllocated=1.97GB, MaxMemAllocated=7.25GB
+***** Evaluating perplexity, Epoch 2/2 *****
+'step':580, 'ppl': 34.11851570873258, 'seq_len': 808, 'consume layer-tokens': 8559552
+[2022-11-24 01:22:24,919] [INFO] [timer.py:198:stop] 0/582, RunningAvgSamplesPerSec=14.333241752340939, CurrSamplesPerSec=10.815553257710745, MemAllocated=1.97GB, MaxMemAllocated=7.25GB
+[2022-11-24 01:22:30,731] [INFO] [logging.py:68:log_dist] [Rank 0] step=292, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:22:30,735] [INFO] [timer.py:198:stop] 0/584, RunningAvgSamplesPerSec=14.32181587079029, CurrSamplesPerSec=10.823353938535341, MemAllocated=1.97GB, MaxMemAllocated=7.25GB
+[2022-11-24 01:22:36,549] [INFO] [timer.py:198:stop] 0/586, RunningAvgSamplesPerSec=14.310524806557895, CurrSamplesPerSec=10.828509393580301, MemAllocated=1.97GB, MaxMemAllocated=7.29GB
+[2022-11-24 01:22:42,360] [INFO] [logging.py:68:log_dist] [Rank 0] step=294, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:22:42,364] [INFO] [timer.py:198:stop] 0/588, RunningAvgSamplesPerSec=14.29940088142192, CurrSamplesPerSec=10.855989967866632, MemAllocated=1.97GB, MaxMemAllocated=7.29GB
+[2022-11-24 01:22:48,176] [INFO] [timer.py:198:stop] 0/590, RunningAvgSamplesPerSec=14.288387738563062, CurrSamplesPerSec=10.84076805177552, MemAllocated=1.97GB, MaxMemAllocated=7.29GB
+***** Evaluating perplexity, Epoch 2/2 *****
+'step':590, 'ppl': 34.0805557546493, 'seq_len': 816, 'consume layer-tokens': 8763392
+[2022-11-24 01:22:56,715] [INFO] [logging.py:68:log_dist] [Rank 0] step=296, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:22:56,719] [INFO] [timer.py:198:stop] 0/592, RunningAvgSamplesPerSec=14.277399894321457, CurrSamplesPerSec=10.82782451108584, MemAllocated=1.97GB, MaxMemAllocated=7.29GB
+[2022-11-24 01:23:02,543] [INFO] [timer.py:198:stop] 0/594, RunningAvgSamplesPerSec=14.265868221776252, CurrSamplesPerSec=10.73578296553869, MemAllocated=1.97GB, MaxMemAllocated=7.33GB
+[2022-11-24 01:23:08,357] [INFO] [logging.py:68:log_dist] [Rank 0] step=298, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:23:08,361] [INFO] [timer.py:198:stop] 0/596, RunningAvgSamplesPerSec=14.254423861822309, CurrSamplesPerSec=10.731346873193022, MemAllocated=1.97GB, MaxMemAllocated=7.33GB
+[2022-11-24 01:23:14,182] [INFO] [timer.py:198:stop] 0/598, RunningAvgSamplesPerSec=14.243036858490559, CurrSamplesPerSec=10.711313483682646, MemAllocated=1.97GB, MaxMemAllocated=7.33GB
+[2022-11-24 01:23:19,993] [INFO] [logging.py:68:log_dist] [Rank 0] step=300, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:23:19,997] [INFO] [timer.py:198:stop] 0/600, RunningAvgSamplesPerSec=14.231798769084808, CurrSamplesPerSec=10.729809517474969, MemAllocated=1.97GB, MaxMemAllocated=7.33GB
+***** Evaluating perplexity, Epoch 2/2 *****
+'step':600, 'ppl': 33.24456131391025, 'seq_len': 832, 'consume layer-tokens': 8969472
+[2022-11-24 01:23:28,545] [INFO] [timer.py:198:stop] 0/602, RunningAvgSamplesPerSec=14.220699229144389, CurrSamplesPerSec=10.74879648600823, MemAllocated=1.97GB, MaxMemAllocated=7.37GB
+[2022-11-24 01:23:34,359] [INFO] [logging.py:68:log_dist] [Rank 0] step=302, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:23:34,363] [INFO] [timer.py:198:stop] 0/604, RunningAvgSamplesPerSec=14.209729952208669, CurrSamplesPerSec=10.740470252026816, MemAllocated=1.97GB, MaxMemAllocated=7.37GB
+[2022-11-24 01:23:40,186] [INFO] [timer.py:198:stop] 0/606, RunningAvgSamplesPerSec=14.198806451184321, CurrSamplesPerSec=10.738916533634773, MemAllocated=1.97GB, MaxMemAllocated=7.37GB
+[2022-11-24 01:23:46,003] [INFO] [logging.py:68:log_dist] [Rank 0] step=304, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:23:46,007] [INFO] [timer.py:198:stop] 0/608, RunningAvgSamplesPerSec=14.187934406366153, CurrSamplesPerSec=10.72873911920213, MemAllocated=1.97GB, MaxMemAllocated=7.37GB
+[2022-11-24 01:23:51,824] [INFO] [timer.py:198:stop] 0/610, RunningAvgSamplesPerSec=14.177211601461483, CurrSamplesPerSec=10.752006562504006, MemAllocated=1.97GB, MaxMemAllocated=7.37GB
+***** Evaluating perplexity, Epoch 2/2 *****
+'step':610, 'ppl': 32.79575321476949, 'seq_len': 840, 'consume layer-tokens': 9177152
+[2022-11-24 01:24:00,380] [INFO] [logging.py:68:log_dist] [Rank 0] step=306, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:24:00,383] [INFO] [timer.py:198:stop] 0/612, RunningAvgSamplesPerSec=14.164435458094061, CurrSamplesPerSec=10.369120357379922, MemAllocated=1.97GB, MaxMemAllocated=7.41GB
+[2022-11-24 01:24:06,212] [INFO] [timer.py:198:stop] 0/614, RunningAvgSamplesPerSec=14.151873152717629, CurrSamplesPerSec=10.389604213008605, MemAllocated=1.97GB, MaxMemAllocated=7.41GB
+[2022-11-24 01:24:12,035] [INFO] [logging.py:68:log_dist] [Rank 0] step=308, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:24:12,039] [INFO] [timer.py:198:stop] 0/616, RunningAvgSamplesPerSec=14.139427269947836, CurrSamplesPerSec=10.407172836121239, MemAllocated=1.97GB, MaxMemAllocated=7.42GB
+[2022-11-24 01:24:17,865] [INFO] [timer.py:198:stop] 0/618, RunningAvgSamplesPerSec=14.127058257684826, CurrSamplesPerSec=10.397588449944472, MemAllocated=1.97GB, MaxMemAllocated=7.42GB
+[2022-11-24 01:24:23,689] [INFO] [logging.py:68:log_dist] [Rank 0] step=310, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:24:23,693] [INFO] [timer.py:198:stop] 0/620, RunningAvgSamplesPerSec=14.114637727824409, CurrSamplesPerSec=10.35984898539377, MemAllocated=1.97GB, MaxMemAllocated=7.46GB
+***** Evaluating perplexity, Epoch 2/2 *****
+'step':620, 'ppl': 32.217089550861694, 'seq_len': 848, 'consume layer-tokens': 9386752
+[2022-11-24 01:24:32,256] [INFO] [timer.py:198:stop] 0/622, RunningAvgSamplesPerSec=14.102370907078202, CurrSamplesPerSec=10.367300631163172, MemAllocated=1.97GB, MaxMemAllocated=7.46GB
+[2022-11-24 01:24:38,081] [INFO] [logging.py:68:log_dist] [Rank 0] step=312, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:24:38,085] [INFO] [timer.py:198:stop] 0/624, RunningAvgSamplesPerSec=14.090215447955321, CurrSamplesPerSec=10.367608145669909, MemAllocated=1.97GB, MaxMemAllocated=7.46GB
+[2022-11-24 01:24:43,915] [INFO] [timer.py:198:stop] 0/626, RunningAvgSamplesPerSec=14.078109157268477, CurrSamplesPerSec=10.388806463677728, MemAllocated=1.97GB, MaxMemAllocated=7.46GB
+[2022-11-24 01:24:49,749] [INFO] [logging.py:68:log_dist] [Rank 0] step=314, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:24:49,753] [INFO] [timer.py:198:stop] 0/628, RunningAvgSamplesPerSec=14.065162097536103, CurrSamplesPerSec=10.205913842440287, MemAllocated=1.97GB, MaxMemAllocated=7.5GB
+[2022-11-24 01:24:55,589] [INFO] [timer.py:198:stop] 0/630, RunningAvgSamplesPerSec=14.052258357794713, CurrSamplesPerSec=10.219478707916842, MemAllocated=1.97GB, MaxMemAllocated=7.5GB
+***** Evaluating perplexity, Epoch 2/2 *****
+'step':630, 'ppl': 32.09963003189613, 'seq_len': 856, 'consume layer-tokens': 9598272
+[2022-11-24 01:25:04,172] [INFO] [logging.py:68:log_dist] [Rank 0] step=316, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:25:04,175] [INFO] [timer.py:198:stop] 0/632, RunningAvgSamplesPerSec=14.039478699596511, CurrSamplesPerSec=10.205615845053288, MemAllocated=1.97GB, MaxMemAllocated=7.5GB
+[2022-11-24 01:25:10,011] [INFO] [timer.py:198:stop] 0/634, RunningAvgSamplesPerSec=14.026746779205393, CurrSamplesPerSec=10.206373289175435, MemAllocated=1.97GB, MaxMemAllocated=7.5GB
+[2022-11-24 01:25:15,847] [INFO] [logging.py:68:log_dist] [Rank 0] step=318, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:25:15,851] [INFO] [timer.py:198:stop] 0/636, RunningAvgSamplesPerSec=14.013839721367725, CurrSamplesPerSec=10.129652081089306, MemAllocated=1.98GB, MaxMemAllocated=7.54GB
+[2022-11-24 01:25:21,692] [INFO] [timer.py:198:stop] 0/638, RunningAvgSamplesPerSec=14.001156800557547, CurrSamplesPerSec=10.185318565610892, MemAllocated=1.98GB, MaxMemAllocated=7.55GB
+[2022-11-24 01:25:27,534] [INFO] [logging.py:68:log_dist] [Rank 0] step=320, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:25:27,538] [INFO] [timer.py:198:stop] 0/640, RunningAvgSamplesPerSec=13.988454877062747, CurrSamplesPerSec=10.139336881279968, MemAllocated=1.98GB, MaxMemAllocated=7.55GB
+***** Evaluating perplexity, Epoch 2/2 *****
+'step':640, 'ppl': 31.255942087272626, 'seq_len': 864, 'consume layer-tokens': 9811712
+[2022-11-24 01:25:36,117] [INFO] [timer.py:198:stop] 0/642, RunningAvgSamplesPerSec=13.975955784333877, CurrSamplesPerSec=10.166444680637042, MemAllocated=1.98GB, MaxMemAllocated=7.55GB
+[2022-11-24 01:25:41,950] [INFO] [logging.py:68:log_dist] [Rank 0] step=322, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:25:41,954] [INFO] [timer.py:198:stop] 0/644, RunningAvgSamplesPerSec=13.963056704665506, CurrSamplesPerSec=10.080389727592046, MemAllocated=1.98GB, MaxMemAllocated=7.59GB
+[2022-11-24 01:25:47,797] [INFO] [timer.py:198:stop] 0/646, RunningAvgSamplesPerSec=13.95024203819031, CurrSamplesPerSec=10.089215977523414, MemAllocated=1.98GB, MaxMemAllocated=7.59GB
+[2022-11-24 01:25:53,627] [INFO] [logging.py:68:log_dist] [Rank 0] step=324, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:25:53,631] [INFO] [timer.py:198:stop] 0/648, RunningAvgSamplesPerSec=13.937590367805047, CurrSamplesPerSec=10.086498562525627, MemAllocated=1.98GB, MaxMemAllocated=7.59GB
+[2022-11-24 01:25:59,471] [INFO] [timer.py:198:stop] 0/650, RunningAvgSamplesPerSec=13.925008938715402, CurrSamplesPerSec=10.089555757353427, MemAllocated=1.98GB, MaxMemAllocated=7.59GB
+***** Evaluating perplexity, Epoch 2/2 *****
+'step':650, 'ppl': 30.83411761404442, 'seq_len': 880, 'consume layer-tokens': 10027392
+[2022-11-24 01:26:08,047] [INFO] [logging.py:68:log_dist] [Rank 0] step=326, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:26:08,050] [INFO] [timer.py:198:stop] 0/652, RunningAvgSamplesPerSec=13.912284472017586, CurrSamplesPerSec=10.033728010946831, MemAllocated=1.98GB, MaxMemAllocated=7.63GB
+[2022-11-24 01:26:13,890] [INFO] [timer.py:198:stop] 0/654, RunningAvgSamplesPerSec=13.899630322709573, CurrSamplesPerSec=10.030416696061422, MemAllocated=1.98GB, MaxMemAllocated=7.63GB
+[2022-11-24 01:26:19,732] [INFO] [logging.py:68:log_dist] [Rank 0] step=328, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:26:19,736] [INFO] [timer.py:198:stop] 0/656, RunningAvgSamplesPerSec=13.887094073826521, CurrSamplesPerSec=10.033415982211952, MemAllocated=1.98GB, MaxMemAllocated=7.63GB
+[2022-11-24 01:26:25,584] [INFO] [timer.py:198:stop] 0/658, RunningAvgSamplesPerSec=13.874653608730405, CurrSamplesPerSec=10.033740012439596, MemAllocated=1.98GB, MaxMemAllocated=7.63GB
+[2022-11-24 01:26:31,428] [INFO] [logging.py:68:log_dist] [Rank 0] step=330, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:26:31,431] [INFO] [timer.py:198:stop] 0/660, RunningAvgSamplesPerSec=13.861796580985883, CurrSamplesPerSec=9.868997030574262, MemAllocated=1.98GB, MaxMemAllocated=7.63GB
+***** Evaluating perplexity, Epoch 2/2 *****
+'step':660, 'ppl': 31.377452537273335, 'seq_len': 888, 'consume layer-tokens': 10244672
+[2022-11-24 01:26:40,009] [INFO] [timer.py:198:stop] 0/662, RunningAvgSamplesPerSec=13.849240676072563, CurrSamplesPerSec=9.985748603072645, MemAllocated=1.98GB, MaxMemAllocated=7.68GB
+[2022-11-24 01:26:45,846] [INFO] [logging.py:68:log_dist] [Rank 0] step=332, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:26:45,850] [INFO] [timer.py:198:stop] 0/664, RunningAvgSamplesPerSec=13.83682963210719, CurrSamplesPerSec=10.003503596015584, MemAllocated=1.98GB, MaxMemAllocated=7.68GB
+[2022-11-24 01:26:51,695] [INFO] [timer.py:198:stop] 0/666, RunningAvgSamplesPerSec=13.824532018826826, CurrSamplesPerSec=10.00645099723256, MemAllocated=1.98GB, MaxMemAllocated=7.68GB
+[2022-11-24 01:26:57,535] [INFO] [logging.py:68:log_dist] [Rank 0] step=334, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:26:57,539] [INFO] [timer.py:198:stop] 0/668, RunningAvgSamplesPerSec=13.812358320157566, CurrSamplesPerSec=10.005197841190327, MemAllocated=1.98GB, MaxMemAllocated=7.68GB
+[2022-11-24 01:27:03,388] [INFO] [timer.py:198:stop] 0/670, RunningAvgSamplesPerSec=13.799962201985794, CurrSamplesPerSec=9.963569331344248, MemAllocated=1.98GB, MaxMemAllocated=7.72GB
+***** Evaluating perplexity, Epoch 2/2 *****
+'step':670, 'ppl': 30.383053866931913, 'seq_len': 896, 'consume layer-tokens': 10463872
+[2022-11-24 01:27:11,967] [INFO] [logging.py:68:log_dist] [Rank 0] step=336, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:27:11,971] [INFO] [timer.py:198:stop] 0/672, RunningAvgSamplesPerSec=13.787699970586036, CurrSamplesPerSec=9.944175350000593, MemAllocated=1.98GB, MaxMemAllocated=7.72GB
+[2022-11-24 01:27:17,815] [INFO] [timer.py:198:stop] 0/674, RunningAvgSamplesPerSec=13.775541631876598, CurrSamplesPerSec=9.942690258102445, MemAllocated=1.98GB, MaxMemAllocated=7.72GB
+[2022-11-24 01:27:23,660] [INFO] [logging.py:68:log_dist] [Rank 0] step=338, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:27:23,663] [INFO] [timer.py:198:stop] 0/676, RunningAvgSamplesPerSec=13.763435774220904, CurrSamplesPerSec=9.952977134016118, MemAllocated=1.98GB, MaxMemAllocated=7.72GB
+[2022-11-24 01:27:29,518] [INFO] [timer.py:198:stop] 0/678, RunningAvgSamplesPerSec=13.750760410006055, CurrSamplesPerSec=9.818207780260371, MemAllocated=1.98GB, MaxMemAllocated=7.77GB
+[2022-11-24 01:27:35,366] [INFO] [logging.py:68:log_dist] [Rank 0] step=340, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:27:35,370] [INFO] [timer.py:198:stop] 0/680, RunningAvgSamplesPerSec=13.738155170346783, CurrSamplesPerSec=9.809378807758062, MemAllocated=1.98GB, MaxMemAllocated=7.77GB
+***** Evaluating perplexity, Epoch 2/2 *****
+'step':680, 'ppl': 29.687858177419454, 'seq_len': 904, 'consume layer-tokens': 10684992
+[2022-11-24 01:27:43,947] [INFO] [timer.py:198:stop] 0/682, RunningAvgSamplesPerSec=13.725755326951784, CurrSamplesPerSec=9.848003305909312, MemAllocated=1.98GB, MaxMemAllocated=7.77GB
+[2022-11-24 01:27:49,802] [INFO] [logging.py:68:log_dist] [Rank 0] step=342, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:27:49,806] [INFO] [timer.py:198:stop] 0/684, RunningAvgSamplesPerSec=13.713440417238814, CurrSamplesPerSec=9.85543125547778, MemAllocated=1.98GB, MaxMemAllocated=7.77GB
+[2022-11-24 01:27:55,664] [INFO] [timer.py:198:stop] 0/686, RunningAvgSamplesPerSec=13.700960885479436, CurrSamplesPerSec=9.793460291961258, MemAllocated=1.98GB, MaxMemAllocated=7.81GB
+[2022-11-24 01:28:01,517] [INFO] [logging.py:68:log_dist] [Rank 0] step=344, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:28:01,521] [INFO] [timer.py:198:stop] 0/688, RunningAvgSamplesPerSec=13.688624122533396, CurrSamplesPerSec=9.816243136851073, MemAllocated=1.98GB, MaxMemAllocated=7.81GB
+[2022-11-24 01:28:07,366] [INFO] [timer.py:198:stop] 0/690, RunningAvgSamplesPerSec=13.676397098681536, CurrSamplesPerSec=9.814497447105238, MemAllocated=1.98GB, MaxMemAllocated=7.81GB
+***** Evaluating perplexity, Epoch 2/2 *****
+'step':690, 'ppl': 29.500566356963482, 'seq_len': 912, 'consume layer-tokens': 10908032
+[2022-11-24 01:28:15,953] [INFO] [logging.py:68:log_dist] [Rank 0] step=346, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:28:15,957] [INFO] [timer.py:198:stop] 0/692, RunningAvgSamplesPerSec=13.664039402929204, CurrSamplesPerSec=9.774346414177135, MemAllocated=1.98GB, MaxMemAllocated=7.81GB
+[2022-11-24 01:28:21,813] [INFO] [timer.py:198:stop] 0/694, RunningAvgSamplesPerSec=13.651492765817359, CurrSamplesPerSec=9.718463046334293, MemAllocated=1.99GB, MaxMemAllocated=7.85GB
+[2022-11-24 01:28:27,662] [INFO] [logging.py:68:log_dist] [Rank 0] step=348, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:28:27,666] [INFO] [timer.py:198:stop] 0/696, RunningAvgSamplesPerSec=13.639097950915339, CurrSamplesPerSec=9.726959861225778, MemAllocated=1.99GB, MaxMemAllocated=7.86GB
+[2022-11-24 01:28:33,521] [INFO] [timer.py:198:stop] 0/698, RunningAvgSamplesPerSec=13.626757894875112, CurrSamplesPerSec=9.727444875429777, MemAllocated=1.99GB, MaxMemAllocated=7.86GB
+[2022-11-24 01:28:39,379] [INFO] [logging.py:68:log_dist] [Rank 0] step=350, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:28:39,383] [INFO] [timer.py:198:stop] 0/700, RunningAvgSamplesPerSec=13.614585794066294, CurrSamplesPerSec=9.748233057455556, MemAllocated=1.99GB, MaxMemAllocated=7.86GB
+***** Evaluating perplexity, Epoch 2/2 *****
+'step':700, 'ppl': 29.261930792476424, 'seq_len': 928, 'consume layer-tokens': 11133312
+[2022-11-24 01:28:47,973] [INFO] [timer.py:198:stop] 0/702, RunningAvgSamplesPerSec=13.602223282968634, CurrSamplesPerSec=9.674995386602694, MemAllocated=1.99GB, MaxMemAllocated=7.9GB
+[2022-11-24 01:28:53,823] [INFO] [logging.py:68:log_dist] [Rank 0] step=352, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:28:53,827] [INFO] [timer.py:198:stop] 0/704, RunningAvgSamplesPerSec=13.589965025818948, CurrSamplesPerSec=9.685249883965538, MemAllocated=1.99GB, MaxMemAllocated=7.9GB
+[2022-11-24 01:28:59,700] [INFO] [timer.py:198:stop] 0/706, RunningAvgSamplesPerSec=13.577692572093955, CurrSamplesPerSec=9.687643490994425, MemAllocated=1.99GB, MaxMemAllocated=7.9GB
+[2022-11-24 01:29:05,556] [INFO] [logging.py:68:log_dist] [Rank 0] step=354, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:29:05,560] [INFO] [timer.py:198:stop] 0/708, RunningAvgSamplesPerSec=13.56562956095161, CurrSamplesPerSec=9.694349648507066, MemAllocated=1.99GB, MaxMemAllocated=7.9GB
+[2022-11-24 01:29:11,574] [INFO] [timer.py:198:stop] 0/710, RunningAvgSamplesPerSec=13.53310240050268, CurrSamplesPerSec=9.664873932539738, MemAllocated=1.99GB, MaxMemAllocated=7.9GB
+***** Evaluating perplexity, Epoch 2/2 *****
+'step':710, 'ppl': 28.832328567864487, 'seq_len': 936, 'consume layer-tokens': 11360192
+[2022-11-24 01:29:20,154] [INFO] [logging.py:68:log_dist] [Rank 0] step=356, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:29:20,158] [INFO] [timer.py:198:stop] 0/712, RunningAvgSamplesPerSec=13.520956442510055, CurrSamplesPerSec=9.625493546177333, MemAllocated=1.99GB, MaxMemAllocated=7.95GB
+[2022-11-24 01:29:26,019] [INFO] [timer.py:198:stop] 0/714, RunningAvgSamplesPerSec=13.50887022380811, CurrSamplesPerSec=9.61327149564466, MemAllocated=1.99GB, MaxMemAllocated=7.95GB
+[2022-11-24 01:29:31,878] [INFO] [logging.py:68:log_dist] [Rank 0] step=358, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:29:31,882] [INFO] [timer.py:198:stop] 0/716, RunningAvgSamplesPerSec=13.49692522214263, CurrSamplesPerSec=9.628277629650375, MemAllocated=1.99GB, MaxMemAllocated=7.95GB
+[2022-11-24 01:29:37,741] [INFO] [timer.py:198:stop] 0/718, RunningAvgSamplesPerSec=13.485118019391855, CurrSamplesPerSec=9.643086805631393, MemAllocated=1.99GB, MaxMemAllocated=7.95GB
+[2022-11-24 01:29:43,598] [INFO] [logging.py:68:log_dist] [Rank 0] step=360, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:29:43,601] [INFO] [timer.py:198:stop] 0/720, RunningAvgSamplesPerSec=13.47302972940815, CurrSamplesPerSec=9.578726446011094, MemAllocated=1.99GB, MaxMemAllocated=7.99GB
+***** Evaluating perplexity, Epoch 2/2 *****
+'step':720, 'ppl': 28.61654958885603, 'seq_len': 944, 'consume layer-tokens': 11588992
+[2022-11-24 01:29:52,190] [INFO] [timer.py:198:stop] 0/722, RunningAvgSamplesPerSec=13.461037989720824, CurrSamplesPerSec=9.577643737019796, MemAllocated=1.99GB, MaxMemAllocated=7.99GB
+[2022-11-24 01:29:58,044] [INFO] [logging.py:68:log_dist] [Rank 0] step=362, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:29:58,047] [INFO] [timer.py:198:stop] 0/724, RunningAvgSamplesPerSec=13.449247503987463, CurrSamplesPerSec=9.592209696028577, MemAllocated=1.99GB, MaxMemAllocated=7.99GB
+[2022-11-24 01:30:03,913] [INFO] [timer.py:198:stop] 0/726, RunningAvgSamplesPerSec=13.437474778815796, CurrSamplesPerSec=9.58573168752871, MemAllocated=1.99GB, MaxMemAllocated=8.0GB
+[2022-11-24 01:30:09,771] [INFO] [logging.py:68:log_dist] [Rank 0] step=364, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:30:09,775] [INFO] [timer.py:198:stop] 0/728, RunningAvgSamplesPerSec=13.425417560467627, CurrSamplesPerSec=9.526760556982094, MemAllocated=1.99GB, MaxMemAllocated=8.04GB
+[2022-11-24 01:30:15,642] [INFO] [timer.py:198:stop] 0/730, RunningAvgSamplesPerSec=13.413465030402742, CurrSamplesPerSec=9.52941203199869, MemAllocated=1.99GB, MaxMemAllocated=8.04GB
+***** Evaluating perplexity, Epoch 2/2 *****
+'step':730, 'ppl': 28.36948817323098, 'seq_len': 952, 'consume layer-tokens': 11819712
+[2022-11-24 01:30:24,241] [INFO] [logging.py:68:log_dist] [Rank 0] step=366, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:30:24,245] [INFO] [timer.py:198:stop] 0/732, RunningAvgSamplesPerSec=13.401581456001795, CurrSamplesPerSec=9.515759192058525, MemAllocated=1.99GB, MaxMemAllocated=8.04GB
+[2022-11-24 01:30:30,109] [INFO] [timer.py:198:stop] 0/734, RunningAvgSamplesPerSec=13.389802371303793, CurrSamplesPerSec=9.526674003082203, MemAllocated=1.99GB, MaxMemAllocated=8.05GB
+[2022-11-24 01:30:35,975] [INFO] [logging.py:68:log_dist] [Rank 0] step=368, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:30:35,978] [INFO] [timer.py:198:stop] 0/736, RunningAvgSamplesPerSec=13.377791753121945, CurrSamplesPerSec=9.45274084825101, MemAllocated=1.99GB, MaxMemAllocated=8.09GB
+[2022-11-24 01:30:41,845] [INFO] [timer.py:198:stop] 0/738, RunningAvgSamplesPerSec=13.365874880705158, CurrSamplesPerSec=9.456182652972654, MemAllocated=1.99GB, MaxMemAllocated=8.09GB
+[2022-11-24 01:30:47,707] [INFO] [logging.py:68:log_dist] [Rank 0] step=370, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:30:47,711] [INFO] [timer.py:198:stop] 0/740, RunningAvgSamplesPerSec=13.354122710705372, CurrSamplesPerSec=9.485115847294823, MemAllocated=1.99GB, MaxMemAllocated=8.09GB
+***** Evaluating perplexity, Epoch 2/2 *****
+'step':740, 'ppl': 28.043649066481027, 'seq_len': 960, 'consume layer-tokens': 12052352
+[2022-11-24 01:30:56,320] [INFO] [timer.py:198:stop] 0/742, RunningAvgSamplesPerSec=13.342412218668734, CurrSamplesPerSec=9.462582754937095, MemAllocated=1.99GB, MaxMemAllocated=8.09GB
+[2022-11-24 01:31:02,204] [INFO] [logging.py:68:log_dist] [Rank 0] step=372, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:31:02,208] [INFO] [timer.py:198:stop] 0/744, RunningAvgSamplesPerSec=13.330448976949812, CurrSamplesPerSec=9.412837695301103, MemAllocated=1.99GB, MaxMemAllocated=8.13GB
+[2022-11-24 01:31:08,079] [INFO] [timer.py:198:stop] 0/746, RunningAvgSamplesPerSec=13.318496651539295, CurrSamplesPerSec=9.387640726068176, MemAllocated=1.99GB, MaxMemAllocated=8.13GB
+[2022-11-24 01:31:13,960] [INFO] [logging.py:68:log_dist] [Rank 0] step=374, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:31:13,964] [INFO] [timer.py:198:stop] 0/748, RunningAvgSamplesPerSec=13.30664731200178, CurrSamplesPerSec=9.388985642205737, MemAllocated=1.99GB, MaxMemAllocated=8.13GB
+[2022-11-24 01:31:19,838] [INFO] [timer.py:198:stop] 0/750, RunningAvgSamplesPerSec=13.29496429303597, CurrSamplesPerSec=9.40964901457111, MemAllocated=1.99GB, MaxMemAllocated=8.13GB
+***** Evaluating perplexity, Epoch 2/2 *****
+'step':750, 'ppl': 27.678926680975568, 'seq_len': 976, 'consume layer-tokens': 12287232
+[2022-11-24 01:31:28,437] [INFO] [logging.py:68:log_dist] [Rank 0] step=376, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:31:28,440] [INFO] [timer.py:198:stop] 0/752, RunningAvgSamplesPerSec=13.283112941446255, CurrSamplesPerSec=9.357366830605786, MemAllocated=2.0GB, MaxMemAllocated=8.18GB
+[2022-11-24 01:31:34,312] [INFO] [timer.py:198:stop] 0/754, RunningAvgSamplesPerSec=13.271377093336648, CurrSamplesPerSec=9.373071022571732, MemAllocated=2.0GB, MaxMemAllocated=8.18GB
+[2022-11-24 01:31:40,179] [INFO] [logging.py:68:log_dist] [Rank 0] step=378, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:31:40,183] [INFO] [timer.py:198:stop] 0/756, RunningAvgSamplesPerSec=13.259709715643302, CurrSamplesPerSec=9.373961317891482, MemAllocated=2.0GB, MaxMemAllocated=8.18GB
+[2022-11-24 01:31:46,057] [INFO] [timer.py:198:stop] 0/758, RunningAvgSamplesPerSec=13.248116848843807, CurrSamplesPerSec=9.3698045641536, MemAllocated=2.0GB, MaxMemAllocated=8.18GB
+[2022-11-24 01:31:51,934] [INFO] [logging.py:68:log_dist] [Rank 0] step=380, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:31:51,938] [INFO] [timer.py:198:stop] 0/760, RunningAvgSamplesPerSec=13.236630684534685, CurrSamplesPerSec=9.374726059469541, MemAllocated=2.0GB, MaxMemAllocated=8.18GB
+***** Evaluating perplexity, Epoch 2/2 *****
+'step':760, 'ppl': 27.50452906772409, 'seq_len': 984, 'consume layer-tokens': 12523712
+[2022-11-24 01:32:00,559] [INFO] [timer.py:198:stop] 0/762, RunningAvgSamplesPerSec=13.224981950268472, CurrSamplesPerSec=9.329787648158591, MemAllocated=2.0GB, MaxMemAllocated=8.23GB
+[2022-11-24 01:32:06,459] [INFO] [logging.py:68:log_dist] [Rank 0] step=382, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:32:06,462] [INFO] [timer.py:198:stop] 0/764, RunningAvgSamplesPerSec=13.213369182954823, CurrSamplesPerSec=9.321866682965046, MemAllocated=2.0GB, MaxMemAllocated=8.23GB
+[2022-11-24 01:32:12,353] [INFO] [timer.py:198:stop] 0/766, RunningAvgSamplesPerSec=13.20183030708398, CurrSamplesPerSec=9.323742030712323, MemAllocated=2.0GB, MaxMemAllocated=8.23GB
+[2022-11-24 01:32:18,221] [INFO] [logging.py:68:log_dist] [Rank 0] step=384, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:32:18,225] [INFO] [timer.py:198:stop] 0/768, RunningAvgSamplesPerSec=13.190397035571106, CurrSamplesPerSec=9.323897480129245, MemAllocated=2.0GB, MaxMemAllocated=8.23GB
+[2022-11-24 01:32:24,109] [INFO] [timer.py:198:stop] 0/770, RunningAvgSamplesPerSec=13.17889531406096, CurrSamplesPerSec=9.295319988254262, MemAllocated=2.0GB, MaxMemAllocated=8.27GB
+***** Evaluating perplexity, Epoch 2/2 *****
+'step':770, 'ppl': 27.29367273577406, 'seq_len': 992, 'consume layer-tokens': 12762112
+[2022-11-24 01:32:32,714] [INFO] [logging.py:68:log_dist] [Rank 0] step=386, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:32:32,718] [INFO] [timer.py:198:stop] 0/772, RunningAvgSamplesPerSec=13.167486057711837, CurrSamplesPerSec=9.287292897197297, MemAllocated=2.0GB, MaxMemAllocated=8.28GB
+[2022-11-24 01:32:38,589] [INFO] [timer.py:198:stop] 0/774, RunningAvgSamplesPerSec=13.156103971506356, CurrSamplesPerSec=9.282935266510929, MemAllocated=2.0GB, MaxMemAllocated=8.28GB
+[2022-11-24 01:32:44,464] [INFO] [logging.py:68:log_dist] [Rank 0] step=388, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:32:44,468] [INFO] [timer.py:198:stop] 0/776, RunningAvgSamplesPerSec=13.14478720269906, CurrSamplesPerSec=9.270501541103648, MemAllocated=2.0GB, MaxMemAllocated=8.28GB
+[2022-11-24 01:32:50,348] [INFO] [timer.py:198:stop] 0/778, RunningAvgSamplesPerSec=13.13346327719483, CurrSamplesPerSec=9.265617199132267, MemAllocated=2.0GB, MaxMemAllocated=8.32GB
+[2022-11-24 01:32:56,229] [INFO] [logging.py:68:log_dist] [Rank 0] step=390, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:32:56,233] [INFO] [timer.py:198:stop] 0/780, RunningAvgSamplesPerSec=13.122099665584695, CurrSamplesPerSec=9.242972962847881, MemAllocated=2.0GB, MaxMemAllocated=8.32GB
+***** Evaluating perplexity, Epoch 2/2 *****
+'step':780, 'ppl': 27.181435364862534, 'seq_len': 1000, 'consume layer-tokens': 13002432
+[2022-11-24 01:33:04,844] [INFO] [timer.py:198:stop] 0/782, RunningAvgSamplesPerSec=13.110941950028707, CurrSamplesPerSec=9.267408550630654, MemAllocated=2.0GB, MaxMemAllocated=8.32GB
+[2022-11-24 01:33:10,717] [INFO] [logging.py:68:log_dist] [Rank 0] step=392, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:33:10,720] [INFO] [timer.py:198:stop] 0/784, RunningAvgSamplesPerSec=13.099831946544404, CurrSamplesPerSec=9.267347121398089, MemAllocated=2.0GB, MaxMemAllocated=8.32GB
+[2022-11-24 01:33:16,603] [INFO] [timer.py:198:stop] 0/786, RunningAvgSamplesPerSec=13.088597371882624, CurrSamplesPerSec=9.228584535870386, MemAllocated=2.0GB, MaxMemAllocated=8.37GB
+[2022-11-24 01:33:22,478] [INFO] [logging.py:68:log_dist] [Rank 0] step=394, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:33:22,482] [INFO] [timer.py:198:stop] 0/788, RunningAvgSamplesPerSec=13.077422321501919, CurrSamplesPerSec=9.215516275390819, MemAllocated=2.0GB, MaxMemAllocated=8.37GB
+[2022-11-24 01:33:28,363] [INFO] [timer.py:198:stop] 0/790, RunningAvgSamplesPerSec=13.06630752520023, CurrSamplesPerSec=9.227275027224428, MemAllocated=2.0GB, MaxMemAllocated=8.37GB
+***** Evaluating perplexity, Epoch 2/2 *****
+'step':790, 'ppl': 26.865936337279507, 'seq_len': 1008, 'consume layer-tokens': 13244672
+[2022-11-24 01:33:36,974] [INFO] [logging.py:68:log_dist] [Rank 0] step=396, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:33:36,978] [INFO] [timer.py:198:stop] 0/792, RunningAvgSamplesPerSec=13.055225973116098, CurrSamplesPerSec=9.195453907675038, MemAllocated=2.0GB, MaxMemAllocated=8.37GB
+[2022-11-24 01:33:42,862] [INFO] [timer.py:198:stop] 0/794, RunningAvgSamplesPerSec=13.044144218774917, CurrSamplesPerSec=9.192984993989048, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:33:48,736] [INFO] [logging.py:68:log_dist] [Rank 0] step=398, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:33:48,740] [INFO] [timer.py:198:stop] 0/796, RunningAvgSamplesPerSec=13.033152478639062, CurrSamplesPerSec=9.189852894133733, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:33:54,626] [INFO] [timer.py:198:stop] 0/798, RunningAvgSamplesPerSec=13.0221904079055, CurrSamplesPerSec=9.17346187788632, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:34:00,502] [INFO] [logging.py:68:log_dist] [Rank 0] step=400, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:34:00,505] [INFO] [timer.py:198:stop] 0/800, RunningAvgSamplesPerSec=13.011348661514617, CurrSamplesPerSec=9.207939680731137, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+***** Evaluating perplexity, Epoch 2/2 *****
+'step':800, 'ppl': 26.609612860386058, 'seq_len': 1024, 'consume layer-tokens': 13489152
+[2022-11-24 01:34:09,111] [INFO] [timer.py:198:stop] 0/802, RunningAvgSamplesPerSec=13.00062599722795, CurrSamplesPerSec=9.199306044475444, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:34:14,993] [INFO] [logging.py:68:log_dist] [Rank 0] step=402, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:34:14,997] [INFO] [timer.py:198:stop] 0/804, RunningAvgSamplesPerSec=12.990032202428651, CurrSamplesPerSec=9.22338929491486, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:34:20,877] [INFO] [timer.py:198:stop] 0/806, RunningAvgSamplesPerSec=12.979539234342878, CurrSamplesPerSec=9.22999597289738, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:34:26,748] [INFO] [logging.py:68:log_dist] [Rank 0] step=404, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:34:26,752] [INFO] [timer.py:198:stop] 0/808, RunningAvgSamplesPerSec=12.969073160847309, CurrSamplesPerSec=9.209759353738695, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:34:32,635] [INFO] [timer.py:198:stop] 0/810, RunningAvgSamplesPerSec=12.958659535743443, CurrSamplesPerSec=9.213977693860649, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+***** Evaluating perplexity, Epoch 2/2 *****
+'step':810, 'ppl': 26.431389494571537, 'seq_len': 1024, 'consume layer-tokens': 13734912
+[2022-11-24 01:34:41,242] [INFO] [logging.py:68:log_dist] [Rank 0] step=406, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:34:41,246] [INFO] [timer.py:198:stop] 0/812, RunningAvgSamplesPerSec=12.948346739843657, CurrSamplesPerSec=9.220631701593268, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:34:47,124] [INFO] [timer.py:198:stop] 0/814, RunningAvgSamplesPerSec=12.938031061320094, CurrSamplesPerSec=9.20416110283928, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:34:53,005] [INFO] [logging.py:68:log_dist] [Rank 0] step=408, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:34:53,009] [INFO] [timer.py:198:stop] 0/816, RunningAvgSamplesPerSec=12.927830422611748, CurrSamplesPerSec=9.218118862038235, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:34:58,891] [INFO] [timer.py:198:stop] 0/818, RunningAvgSamplesPerSec=12.917608128954122, CurrSamplesPerSec=9.196189799634503, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:35:04,768] [INFO] [logging.py:68:log_dist] [Rank 0] step=410, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:35:04,772] [INFO] [timer.py:198:stop] 0/820, RunningAvgSamplesPerSec=12.907526710808023, CurrSamplesPerSec=9.22167574329806, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+***** Evaluating perplexity, Epoch 2/2 *****
+'step':820, 'ppl': 26.234388793788966, 'seq_len': 1024, 'consume layer-tokens': 13980672
+[2022-11-24 01:35:13,382] [INFO] [timer.py:198:stop] 0/822, RunningAvgSamplesPerSec=12.897517793462706, CurrSamplesPerSec=9.211519054756689, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:35:19,257] [INFO] [logging.py:68:log_dist] [Rank 0] step=412, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:35:19,260] [INFO] [timer.py:198:stop] 0/824, RunningAvgSamplesPerSec=12.887603954595537, CurrSamplesPerSec=9.219446038057683, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:35:25,142] [INFO] [timer.py:198:stop] 0/826, RunningAvgSamplesPerSec=12.877751368271086, CurrSamplesPerSec=9.22264904360981, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:35:31,015] [INFO] [logging.py:68:log_dist] [Rank 0] step=414, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:35:31,019] [INFO] [timer.py:198:stop] 0/828, RunningAvgSamplesPerSec=12.867937994985231, CurrSamplesPerSec=9.215809878922176, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:35:36,896] [INFO] [timer.py:198:stop] 0/830, RunningAvgSamplesPerSec=12.858207432408273, CurrSamplesPerSec=9.220216177954422, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+***** Evaluating perplexity, Epoch 2/2 *****
+'step':830, 'ppl': 26.032651057293897, 'seq_len': 1024, 'consume layer-tokens': 14226432
+[2022-11-24 01:35:45,507] [INFO] [logging.py:68:log_dist] [Rank 0] step=416, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:35:45,510] [INFO] [timer.py:198:stop] 0/832, RunningAvgSamplesPerSec=12.848494380453365, CurrSamplesPerSec=9.21030539589475, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:35:51,389] [INFO] [timer.py:198:stop] 0/834, RunningAvgSamplesPerSec=12.838851015227865, CurrSamplesPerSec=9.208990959639483, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:35:57,268] [INFO] [logging.py:68:log_dist] [Rank 0] step=418, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:35:57,272] [INFO] [timer.py:198:stop] 0/836, RunningAvgSamplesPerSec=12.82926748564328, CurrSamplesPerSec=9.211761824912342, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:36:03,152] [INFO] [timer.py:198:stop] 0/838, RunningAvgSamplesPerSec=12.819697369189184, CurrSamplesPerSec=9.188685197518314, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:36:09,026] [INFO] [logging.py:68:log_dist] [Rank 0] step=420, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:36:09,030] [INFO] [timer.py:198:stop] 0/840, RunningAvgSamplesPerSec=12.810203556350114, CurrSamplesPerSec=9.192571958331781, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+***** Evaluating perplexity, Epoch 2/2 *****
+'step':840, 'ppl': 25.94889410570119, 'seq_len': 1024, 'consume layer-tokens': 14472192
+[2022-11-24 01:36:17,629] [INFO] [timer.py:198:stop] 0/842, RunningAvgSamplesPerSec=12.800770600705297, CurrSamplesPerSec=9.217612407053139, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:36:23,513] [INFO] [logging.py:68:log_dist] [Rank 0] step=422, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:36:23,517] [INFO] [timer.py:198:stop] 0/844, RunningAvgSamplesPerSec=12.791459921553479, CurrSamplesPerSec=9.218301199457139, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:36:29,395] [INFO] [timer.py:198:stop] 0/846, RunningAvgSamplesPerSec=12.78221008421649, CurrSamplesPerSec=9.223744252071013, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:36:35,266] [INFO] [logging.py:68:log_dist] [Rank 0] step=424, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:36:35,269] [INFO] [timer.py:198:stop] 0/848, RunningAvgSamplesPerSec=12.77297242557142, CurrSamplesPerSec=9.201546204033995, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:36:41,143] [INFO] [timer.py:198:stop] 0/850, RunningAvgSamplesPerSec=12.76376330505917, CurrSamplesPerSec=9.210669459971957, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+***** Evaluating perplexity, Epoch 2/2 *****
+'step':850, 'ppl': 25.82082628801311, 'seq_len': 1024, 'consume layer-tokens': 14717952
+[2022-11-24 01:36:49,745] [INFO] [logging.py:68:log_dist] [Rank 0] step=426, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:36:49,749] [INFO] [timer.py:198:stop] 0/852, RunningAvgSamplesPerSec=12.7546534994023, CurrSamplesPerSec=9.213046696700983, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:36:55,625] [INFO] [timer.py:198:stop] 0/854, RunningAvgSamplesPerSec=12.745586523774834, CurrSamplesPerSec=9.215404913427832, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:37:01,498] [INFO] [logging.py:68:log_dist] [Rank 0] step=428, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:37:01,502] [INFO] [timer.py:198:stop] 0/856, RunningAvgSamplesPerSec=12.736544985548553, CurrSamplesPerSec=9.20511050708933, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:37:07,383] [INFO] [timer.py:198:stop] 0/858, RunningAvgSamplesPerSec=12.727580422017919, CurrSamplesPerSec=9.209688575236648, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:37:13,260] [INFO] [logging.py:68:log_dist] [Rank 0] step=430, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:37:13,264] [INFO] [timer.py:198:stop] 0/860, RunningAvgSamplesPerSec=12.718699796345845, CurrSamplesPerSec=9.221371629078853, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+***** Evaluating perplexity, Epoch 2/2 *****
+'step':860, 'ppl': 25.65389475338226, 'seq_len': 1024, 'consume layer-tokens': 14963712
+[2022-11-24 01:37:21,883] [INFO] [timer.py:198:stop] 0/862, RunningAvgSamplesPerSec=12.709888381178304, CurrSamplesPerSec=9.222872120535126, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:37:27,758] [INFO] [logging.py:68:log_dist] [Rank 0] step=432, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:37:27,761] [INFO] [timer.py:198:stop] 0/864, RunningAvgSamplesPerSec=12.701072211272734, CurrSamplesPerSec=9.19783338084691, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:37:33,637] [INFO] [timer.py:198:stop] 0/866, RunningAvgSamplesPerSec=12.692308416498289, CurrSamplesPerSec=9.203121023021493, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:37:39,508] [INFO] [logging.py:68:log_dist] [Rank 0] step=434, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:37:39,512] [INFO] [timer.py:198:stop] 0/868, RunningAvgSamplesPerSec=12.683647372862024, CurrSamplesPerSec=9.223064786564416, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:37:45,392] [INFO] [timer.py:198:stop] 0/870, RunningAvgSamplesPerSec=12.674999492743206, CurrSamplesPerSec=9.201798542605692, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+***** Evaluating perplexity, Epoch 2/2 *****
+'step':870, 'ppl': 25.53236562629254, 'seq_len': 1024, 'consume layer-tokens': 15209472
+[2022-11-24 01:37:54,009] [INFO] [logging.py:68:log_dist] [Rank 0] step=436, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:37:54,013] [INFO] [timer.py:198:stop] 0/872, RunningAvgSamplesPerSec=12.66641310082558, CurrSamplesPerSec=9.221148624732608, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:37:59,895] [INFO] [timer.py:198:stop] 0/874, RunningAvgSamplesPerSec=12.65791402360823, CurrSamplesPerSec=9.220499946140707, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:38:05,784] [INFO] [logging.py:68:log_dist] [Rank 0] step=438, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:38:05,788] [INFO] [timer.py:198:stop] 0/876, RunningAvgSamplesPerSec=12.649315777186704, CurrSamplesPerSec=9.153032677057102, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:38:11,687] [INFO] [timer.py:198:stop] 0/878, RunningAvgSamplesPerSec=12.640903225817551, CurrSamplesPerSec=9.225691931733948, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:38:17,559] [INFO] [logging.py:68:log_dist] [Rank 0] step=440, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:38:17,563] [INFO] [timer.py:198:stop] 0/880, RunningAvgSamplesPerSec=12.632501517771871, CurrSamplesPerSec=9.208232801677296, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+***** Evaluating perplexity, Epoch 2/2 *****
+'step':880, 'ppl': 25.51190859940563, 'seq_len': 1024, 'consume layer-tokens': 15455232
+[2022-11-24 01:38:26,168] [INFO] [timer.py:198:stop] 0/882, RunningAvgSamplesPerSec=12.624175660303525, CurrSamplesPerSec=9.218199900000549, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:38:32,044] [INFO] [logging.py:68:log_dist] [Rank 0] step=442, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:38:32,048] [INFO] [timer.py:198:stop] 0/884, RunningAvgSamplesPerSec=12.615896475892281, CurrSamplesPerSec=9.224484679206277, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:38:37,924] [INFO] [timer.py:198:stop] 0/886, RunningAvgSamplesPerSec=12.60764173952067, CurrSamplesPerSec=9.216569285163366, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:38:43,798] [INFO] [logging.py:68:log_dist] [Rank 0] step=444, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:38:43,801] [INFO] [timer.py:198:stop] 0/888, RunningAvgSamplesPerSec=12.599476728299367, CurrSamplesPerSec=9.217217410795714, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:38:49,680] [INFO] [timer.py:198:stop] 0/890, RunningAvgSamplesPerSec=12.591350693457914, CurrSamplesPerSec=9.208434964927495, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+***** Evaluating perplexity, Epoch 2/2 *****
+'step':890, 'ppl': 25.321883808805925, 'seq_len': 1024, 'consume layer-tokens': 15700992
+[2022-11-24 01:38:58,287] [INFO] [logging.py:68:log_dist] [Rank 0] step=446, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:38:58,291] [INFO] [timer.py:198:stop] 0/892, RunningAvgSamplesPerSec=12.583221469486668, CurrSamplesPerSec=9.18363530867171, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:39:04,170] [INFO] [timer.py:198:stop] 0/894, RunningAvgSamplesPerSec=12.575199455361837, CurrSamplesPerSec=9.22264904360981, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:39:10,043] [INFO] [logging.py:68:log_dist] [Rank 0] step=448, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:39:10,046] [INFO] [timer.py:198:stop] 0/896, RunningAvgSamplesPerSec=12.567224245413474, CurrSamplesPerSec=9.210598667480642, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:39:15,924] [INFO] [timer.py:198:stop] 0/898, RunningAvgSamplesPerSec=12.559295457369043, CurrSamplesPerSec=9.216387016251659, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:39:21,804] [INFO] [logging.py:68:log_dist] [Rank 0] step=450, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:39:21,807] [INFO] [timer.py:198:stop] 0/900, RunningAvgSamplesPerSec=12.551386237319994, CurrSamplesPerSec=9.214503992882015, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+***** Evaluating perplexity, Epoch 2/2 *****
+'step':900, 'ppl': 25.208022971480663, 'seq_len': 1024, 'consume layer-tokens': 15946752
+[2022-11-24 01:39:30,428] [INFO] [timer.py:198:stop] 0/902, RunningAvgSamplesPerSec=12.543523642387212, CurrSamplesPerSec=9.216447771754536, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:39:36,307] [INFO] [logging.py:68:log_dist] [Rank 0] step=452, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:39:36,310] [INFO] [timer.py:198:stop] 0/904, RunningAvgSamplesPerSec=12.535745423978948, CurrSamplesPerSec=9.219871625780357, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:39:42,187] [INFO] [timer.py:198:stop] 0/906, RunningAvgSamplesPerSec=12.528019270951841, CurrSamplesPerSec=9.23055457439422, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:39:48,056] [INFO] [logging.py:68:log_dist] [Rank 0] step=454, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:39:48,060] [INFO] [timer.py:198:stop] 0/908, RunningAvgSamplesPerSec=12.520295329022971, CurrSamplesPerSec=9.222152229239843, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:39:53,943] [INFO] [timer.py:198:stop] 0/910, RunningAvgSamplesPerSec=12.51260420065178, CurrSamplesPerSec=9.204241895576512, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+***** Evaluating perplexity, Epoch 2/2 *****
+'step':910, 'ppl': 25.131984402468913, 'seq_len': 1024, 'consume layer-tokens': 16192512
+[2022-11-24 01:40:02,557] [INFO] [logging.py:68:log_dist] [Rank 0] step=456, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:40:02,561] [INFO] [timer.py:198:stop] 0/912, RunningAvgSamplesPerSec=12.504981354707855, CurrSamplesPerSec=9.22098644652809, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:40:08,453] [INFO] [timer.py:198:stop] 0/914, RunningAvgSamplesPerSec=12.497345777244805, CurrSamplesPerSec=9.206241967894625, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:40:14,327] [INFO] [logging.py:68:log_dist] [Rank 0] step=458, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:40:14,330] [INFO] [timer.py:198:stop] 0/916, RunningAvgSamplesPerSec=12.489740076334439, CurrSamplesPerSec=9.188504029811183, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:40:20,210] [INFO] [timer.py:198:stop] 0/918, RunningAvgSamplesPerSec=12.482215670061512, CurrSamplesPerSec=9.21373480689684, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:40:26,080] [INFO] [logging.py:68:log_dist] [Rank 0] step=460, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:40:26,084] [INFO] [timer.py:198:stop] 0/920, RunningAvgSamplesPerSec=12.474756331429052, CurrSamplesPerSec=9.212469977629421, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+***** Evaluating perplexity, Epoch 2/2 *****
+'step':920, 'ppl': 25.078155830314962, 'seq_len': 1024, 'consume layer-tokens': 16438272
+[2022-11-24 01:40:34,691] [INFO] [timer.py:198:stop] 0/922, RunningAvgSamplesPerSec=12.467365667848238, CurrSamplesPerSec=9.222202922131462, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:40:40,565] [INFO] [logging.py:68:log_dist] [Rank 0] step=462, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:40:40,569] [INFO] [timer.py:198:stop] 0/924, RunningAvgSamplesPerSec=12.459944001803855, CurrSamplesPerSec=9.212227170146992, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:40:46,449] [INFO] [timer.py:198:stop] 0/926, RunningAvgSamplesPerSec=12.452607570720359, CurrSamplesPerSec=9.210082926459721, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:40:52,321] [INFO] [logging.py:68:log_dist] [Rank 0] step=464, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:40:52,324] [INFO] [timer.py:198:stop] 0/928, RunningAvgSamplesPerSec=12.445330132019432, CurrSamplesPerSec=9.220236446531342, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:40:58,203] [INFO] [timer.py:198:stop] 0/930, RunningAvgSamplesPerSec=12.438073270473737, CurrSamplesPerSec=9.205999488592653, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+***** Evaluating perplexity, Epoch 2/2 *****
+'step':930, 'ppl': 24.941122234561885, 'seq_len': 1024, 'consume layer-tokens': 16684032
+[2022-11-24 01:41:06,813] [INFO] [logging.py:68:log_dist] [Rank 0] step=466, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:41:06,816] [INFO] [timer.py:198:stop] 0/932, RunningAvgSamplesPerSec=12.430823302904479, CurrSamplesPerSec=9.206838117147097, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:41:12,687] [INFO] [timer.py:198:stop] 0/934, RunningAvgSamplesPerSec=12.423626445885327, CurrSamplesPerSec=9.212166470276225, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:41:18,562] [INFO] [logging.py:68:log_dist] [Rank 0] step=468, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:41:18,565] [INFO] [timer.py:198:stop] 0/936, RunningAvgSamplesPerSec=12.416482636600328, CurrSamplesPerSec=9.217470609629734, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:41:24,444] [INFO] [timer.py:198:stop] 0/938, RunningAvgSamplesPerSec=12.409377161766683, CurrSamplesPerSec=9.206767383538114, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:41:30,314] [INFO] [logging.py:68:log_dist] [Rank 0] step=470, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:41:30,318] [INFO] [timer.py:198:stop] 0/940, RunningAvgSamplesPerSec=12.402249267901372, CurrSamplesPerSec=9.204191399949528, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+***** Evaluating perplexity, Epoch 2/2 *****
+'step':940, 'ppl': 24.791482290459243, 'seq_len': 1024, 'consume layer-tokens': 16929792
+[2022-11-24 01:41:38,927] [INFO] [timer.py:198:stop] 0/942, RunningAvgSamplesPerSec=12.395226142807385, CurrSamplesPerSec=9.218868517559969, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:41:44,803] [INFO] [logging.py:68:log_dist] [Rank 0] step=472, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:41:44,806] [INFO] [timer.py:198:stop] 0/944, RunningAvgSamplesPerSec=12.38824260338833, CurrSamplesPerSec=9.208050862341494, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:41:50,686] [INFO] [timer.py:198:stop] 0/946, RunningAvgSamplesPerSec=12.381259185796027, CurrSamplesPerSec=9.21425095700218, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:41:56,561] [INFO] [logging.py:68:log_dist] [Rank 0] step=474, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:41:56,565] [INFO] [timer.py:198:stop] 0/948, RunningAvgSamplesPerSec=12.37432006189874, CurrSamplesPerSec=9.203040249960505, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:42:02,447] [INFO] [timer.py:198:stop] 0/950, RunningAvgSamplesPerSec=12.367401823943473, CurrSamplesPerSec=9.192279833569113, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+***** Evaluating perplexity, Epoch 2/2 *****
+'step':950, 'ppl': 24.77486176894873, 'seq_len': 1024, 'consume layer-tokens': 17175552
+[2022-11-24 01:42:11,055] [INFO] [logging.py:68:log_dist] [Rank 0] step=476, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:42:11,059] [INFO] [timer.py:198:stop] 0/952, RunningAvgSamplesPerSec=12.360494439655685, CurrSamplesPerSec=9.180338776787726, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:42:16,942] [INFO] [timer.py:198:stop] 0/954, RunningAvgSamplesPerSec=12.353656954290681, CurrSamplesPerSec=9.207818394763734, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:42:22,818] [INFO] [logging.py:68:log_dist] [Rank 0] step=478, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:42:22,822] [INFO] [timer.py:198:stop] 0/956, RunningAvgSamplesPerSec=12.346843211546723, CurrSamplesPerSec=9.213117526828459, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:42:28,704] [INFO] [timer.py:198:stop] 0/958, RunningAvgSamplesPerSec=12.340114775229774, CurrSamplesPerSec=9.211438134215026, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:42:34,596] [INFO] [logging.py:68:log_dist] [Rank 0] step=480, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:42:34,600] [INFO] [timer.py:198:stop] 0/960, RunningAvgSamplesPerSec=12.333411456990417, CurrSamplesPerSec=9.216711054856772, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+***** Evaluating perplexity, Epoch 2/2 *****
+'step':960, 'ppl': 24.668691794368677, 'seq_len': 1024, 'consume layer-tokens': 17421312
+[2022-11-24 01:42:43,201] [INFO] [timer.py:198:stop] 0/962, RunningAvgSamplesPerSec=12.326763812553128, CurrSamplesPerSec=9.225631054293984, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:42:49,072] [INFO] [logging.py:68:log_dist] [Rank 0] step=482, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:42:49,075] [INFO] [timer.py:198:stop] 0/964, RunningAvgSamplesPerSec=12.320128224193796, CurrSamplesPerSec=9.21232833837588, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:42:54,952] [INFO] [timer.py:198:stop] 0/966, RunningAvgSamplesPerSec=12.313560883751968, CurrSamplesPerSec=9.20792957344515, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:43:00,826] [INFO] [logging.py:68:log_dist] [Rank 0] step=484, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:43:00,830] [INFO] [timer.py:198:stop] 0/968, RunningAvgSamplesPerSec=12.306997467945514, CurrSamplesPerSec=9.214767164939847, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:43:06,704] [INFO] [timer.py:198:stop] 0/970, RunningAvgSamplesPerSec=12.300438478894902, CurrSamplesPerSec=9.213147882930773, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+***** Evaluating perplexity, Epoch 2/2 *****
+'step':970, 'ppl': 24.609128468903144, 'seq_len': 1024, 'consume layer-tokens': 17667072
+[2022-11-24 01:43:15,322] [INFO] [logging.py:68:log_dist] [Rank 0] step=486, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:43:15,326] [INFO] [timer.py:198:stop] 0/972, RunningAvgSamplesPerSec=12.293936774100176, CurrSamplesPerSec=9.224444104778044, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:43:21,202] [INFO] [timer.py:198:stop] 0/974, RunningAvgSamplesPerSec=12.287472096754234, CurrSamplesPerSec=9.205787329681135, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:43:27,075] [INFO] [logging.py:68:log_dist] [Rank 0] step=488, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:43:27,079] [INFO] [timer.py:198:stop] 0/976, RunningAvgSamplesPerSec=12.281030864437051, CurrSamplesPerSec=9.213694326981162, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:43:32,966] [INFO] [timer.py:198:stop] 0/978, RunningAvgSamplesPerSec=12.274636117411323, CurrSamplesPerSec=9.21404853830396, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:43:38,845] [INFO] [logging.py:68:log_dist] [Rank 0] step=490, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:43:38,849] [INFO] [timer.py:198:stop] 0/980, RunningAvgSamplesPerSec=12.268284707271135, CurrSamplesPerSec=9.212085538359494, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+***** Evaluating perplexity, Epoch 2/2 *****
+'step':980, 'ppl': 24.55865664669359, 'seq_len': 1024, 'consume layer-tokens': 17912832
+[2022-11-24 01:43:47,468] [INFO] [timer.py:198:stop] 0/982, RunningAvgSamplesPerSec=12.261949820450356, CurrSamplesPerSec=9.21367408715671, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:43:53,355] [INFO] [logging.py:68:log_dist] [Rank 0] step=492, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:43:53,358] [INFO] [timer.py:198:stop] 0/984, RunningAvgSamplesPerSec=12.255643790450378, CurrSamplesPerSec=9.20923359655546, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:43:59,247] [INFO] [timer.py:198:stop] 0/986, RunningAvgSamplesPerSec=12.249310142240413, CurrSamplesPerSec=9.196542666321694, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:44:05,125] [INFO] [logging.py:68:log_dist] [Rank 0] step=494, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:44:05,129] [INFO] [timer.py:198:stop] 0/988, RunningAvgSamplesPerSec=12.243096638983367, CurrSamplesPerSec=9.218746943516738, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:44:11,018] [INFO] [timer.py:198:stop] 0/990, RunningAvgSamplesPerSec=12.23691496940855, CurrSamplesPerSec=9.217470609629734, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+***** Evaluating perplexity, Epoch 2/2 *****
+'step':990, 'ppl': 24.491030174170657, 'seq_len': 1024, 'consume layer-tokens': 18158592
+[2022-11-24 01:44:19,641] [INFO] [logging.py:68:log_dist] [Rank 0] step=496, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:44:19,644] [INFO] [timer.py:198:stop] 0/992, RunningAvgSamplesPerSec=12.230765216283901, CurrSamplesPerSec=9.216235130998825, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:44:25,528] [INFO] [timer.py:198:stop] 0/994, RunningAvgSamplesPerSec=12.22454843829633, CurrSamplesPerSec=9.190648305692903, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:44:31,407] [INFO] [logging.py:68:log_dist] [Rank 0] step=498, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:44:31,411] [INFO] [timer.py:198:stop] 0/996, RunningAvgSamplesPerSec=12.218369132981918, CurrSamplesPerSec=9.203141216508282, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:44:37,299] [INFO] [timer.py:198:stop] 0/998, RunningAvgSamplesPerSec=12.212255533314485, CurrSamplesPerSec=9.198660435248888, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:44:43,186] [INFO] [logging.py:68:log_dist] [Rank 0] step=500, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:44:43,190] [INFO] [timer.py:198:stop] 0/1000, RunningAvgSamplesPerSec=12.206198712052336, CurrSamplesPerSec=9.20332296187722, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+***** Evaluating perplexity, Epoch 2/2 *****
+'step':1000, 'ppl': 24.333278948363304, 'seq_len': 1024, 'consume layer-tokens': 18404352
+[2022-11-24 01:44:51,819] [INFO] [timer.py:198:stop] 0/1002, RunningAvgSamplesPerSec=12.200165397702426, CurrSamplesPerSec=9.2121867034776, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:44:57,693] [INFO] [logging.py:68:log_dist] [Rank 0] step=502, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:44:57,697] [INFO] [timer.py:198:stop] 0/1004, RunningAvgSamplesPerSec=12.194173221676172, CurrSamplesPerSec=9.225336824659822, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:45:03,570] [INFO] [timer.py:198:stop] 0/1006, RunningAvgSamplesPerSec=12.188232814941985, CurrSamplesPerSec=9.216822448389864, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:45:09,445] [INFO] [logging.py:68:log_dist] [Rank 0] step=504, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:45:09,449] [INFO] [timer.py:198:stop] 0/1008, RunningAvgSamplesPerSec=12.182313231712548, CurrSamplesPerSec=9.215728882975977, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:45:15,329] [INFO] [timer.py:198:stop] 0/1010, RunningAvgSamplesPerSec=12.176397655225948, CurrSamplesPerSec=9.204958993277838, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+***** Evaluating perplexity, Epoch 2/2 *****
+'step':1010, 'ppl': 24.268299214191433, 'seq_len': 1024, 'consume layer-tokens': 18650112
+[2022-11-24 01:45:23,935] [INFO] [logging.py:68:log_dist] [Rank 0] step=506, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:45:23,938] [INFO] [timer.py:198:stop] 0/1012, RunningAvgSamplesPerSec=12.170545987996212, CurrSamplesPerSec=9.22275044087445, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:45:29,816] [INFO] [timer.py:198:stop] 0/1014, RunningAvgSamplesPerSec=12.164698825969113, CurrSamplesPerSec=9.207879037348041, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:45:35,697] [INFO] [logging.py:68:log_dist] [Rank 0] step=508, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:45:35,701] [INFO] [timer.py:198:stop] 0/1016, RunningAvgSamplesPerSec=12.158881719976621, CurrSamplesPerSec=9.22621956987024, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:45:41,579] [INFO] [timer.py:198:stop] 0/1018, RunningAvgSamplesPerSec=12.153100131795886, CurrSamplesPerSec=9.220287118363506, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:45:47,458] [INFO] [logging.py:68:log_dist] [Rank 0] step=510, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:45:47,461] [INFO] [timer.py:198:stop] 0/1020, RunningAvgSamplesPerSec=12.147299483113212, CurrSamplesPerSec=9.192310052511155, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+***** Evaluating perplexity, Epoch 2/2 *****
+'step':1020, 'ppl': 24.15939172473932, 'seq_len': 1024, 'consume layer-tokens': 18895872
+[2022-11-24 01:45:56,085] [INFO] [timer.py:198:stop] 0/1022, RunningAvgSamplesPerSec=12.141551325256437, CurrSamplesPerSec=9.193236863216129, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:46:01,965] [INFO] [logging.py:68:log_dist] [Rank 0] step=512, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:46:01,968] [INFO] [timer.py:198:stop] 0/1024, RunningAvgSamplesPerSec=12.135835502934485, CurrSamplesPerSec=9.215334048125428, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:46:07,848] [INFO] [timer.py:198:stop] 0/1026, RunningAvgSamplesPerSec=12.130140401132026, CurrSamplesPerSec=9.204514581536564, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:46:13,733] [INFO] [logging.py:68:log_dist] [Rank 0] step=514, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:46:13,737] [INFO] [timer.py:198:stop] 0/1028, RunningAvgSamplesPerSec=12.124523473508432, CurrSamplesPerSec=9.224180379694639, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:46:19,611] [INFO] [timer.py:198:stop] 0/1030, RunningAvgSamplesPerSec=12.118880212244298, CurrSamplesPerSec=9.218909042953618, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+***** Evaluating perplexity, Epoch 2/2 *****
+'step':1030, 'ppl': 24.050528440510657, 'seq_len': 1024, 'consume layer-tokens': 19141632
+[2022-11-24 01:46:28,220] [INFO] [logging.py:68:log_dist] [Rank 0] step=516, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:46:28,224] [INFO] [timer.py:198:stop] 0/1032, RunningAvgSamplesPerSec=12.113289899872417, CurrSamplesPerSec=9.211488709386956, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:46:34,102] [INFO] [timer.py:198:stop] 0/1034, RunningAvgSamplesPerSec=12.107737506127965, CurrSamplesPerSec=9.214119383836698, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:46:39,972] [INFO] [logging.py:68:log_dist] [Rank 0] step=518, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:46:39,976] [INFO] [timer.py:198:stop] 0/1036, RunningAvgSamplesPerSec=12.102166751071747, CurrSamplesPerSec=9.194536727802031, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:46:45,849] [INFO] [timer.py:198:stop] 0/1038, RunningAvgSamplesPerSec=12.096633560179995, CurrSamplesPerSec=9.204797384043102, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:46:51,726] [INFO] [logging.py:68:log_dist] [Rank 0] step=520, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:46:51,729] [INFO] [timer.py:198:stop] 0/1040, RunningAvgSamplesPerSec=12.091120373368488, CurrSamplesPerSec=9.212925276159055, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+***** Evaluating perplexity, Epoch 2/2 *****
+'step':1040, 'ppl': 24.011458611104988, 'seq_len': 1024, 'consume layer-tokens': 19387392
+[2022-11-24 01:47:00,339] [INFO] [timer.py:198:stop] 0/1042, RunningAvgSamplesPerSec=12.085667975030056, CurrSamplesPerSec=9.218382240625415, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:47:06,212] [INFO] [logging.py:68:log_dist] [Rank 0] step=522, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:47:06,216] [INFO] [timer.py:198:stop] 0/1044, RunningAvgSamplesPerSec=12.080237520860983, CurrSamplesPerSec=9.205595384806163, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:47:12,102] [INFO] [timer.py:198:stop] 0/1046, RunningAvgSamplesPerSec=12.074783443992153, CurrSamplesPerSec=9.196532584040545, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+[2022-11-24 01:47:17,985] [INFO] [logging.py:68:log_dist] [Rank 0] step=524, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.999), (0.9, 0.999)]
+[2022-11-24 01:47:17,988] [INFO] [timer.py:198:stop] 0/1048, RunningAvgSamplesPerSec=12.069392969964717, CurrSamplesPerSec=9.224677412614943, MemAllocated=2.0GB, MaxMemAllocated=8.42GB
+***** Evaluating perplexity, Epoch 2/2 *****
+'step':1047, 'ppl': 23.9859276900444, 'seq_len': 1024, 'consume layer-tokens': 19534848
+***** Evaluating perplexity, Epoch 2/2 *****
+Before cleaning, Epoch at 2 with Perplexity: 23.9859276900444
+saving model ...
