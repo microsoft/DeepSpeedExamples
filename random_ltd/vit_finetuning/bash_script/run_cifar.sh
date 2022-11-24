@@ -16,8 +16,8 @@ mkdir -p out/cifar/
 #     --batchsize 32 \
 #     --data_outdir check/cifar/ | tee -a check/cifar/training.log
 
-deepspeed --master_port 60000 main_cifar.py      \
-    --deepspeed_config config/ds_config.json  \
+deepspeed  --num_nodes 1 --num_gpus 1  --master_port 60000 main_cifar.py      \
+    --deepspeed_config config/ds_config_cifar.json  \
     --deepspeed   --random_ltd  \
     --dataset cifar10vit224      \
     --seed 1234                   \
@@ -28,4 +28,4 @@ deepspeed --master_port 60000 main_cifar.py      \
     --scheduler constant    \
     --epochs 14  \
     --batchsize 128 \
-    --data_outdir out/cifar/ | tee -a out/cifar/training.log
+    --data_outdir out/cifar/ | tee -a out/cifar/training1.log

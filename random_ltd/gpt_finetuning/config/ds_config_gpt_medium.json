@@ -37,7 +37,7 @@
           "max_value": 1024,
           "schedule_type":"fixed_linear",
           "schedule_config": {
-            "require_steps": 500,
+            "require_steps": 400,
             "seq_per_step": 8
           }
         }
