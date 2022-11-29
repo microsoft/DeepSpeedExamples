@@ -6,7 +6,6 @@ import os
 import torch
 import time
 from utils import DSPipeline
-from transformers.models.opt.modeling_opt import OPTDecoderLayer
 from deepspeed.runtime.utils import see_memory_usage
 
 parser = ArgumentParser()
