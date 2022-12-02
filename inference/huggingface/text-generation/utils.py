@@ -49,6 +49,7 @@ class DSPipeline():
                 self.model = AutoModelForCausalLM.from_config(self.config)
         else:
             self.model = AutoModelForCausalLM.from_pretrained(self.model_name)
+            self.model = self.model.to(dtype).to(self.device)
 
         self.model.eval()
 

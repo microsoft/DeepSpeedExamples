@@ -84,6 +84,8 @@ if args.ds_inference:
                                     **ds_kwargs
                                     )
 
+    
+
 responses = []
 times = []
 mtimes = []
@@ -121,7 +123,36 @@ input_sentences = [
          "Unlike other types of fish",
          "Fish think about",
          "Fish are friends not", #30
-
+         "DeepSpeed is a machine learning framework",
+         "He is working on",
+         "He has a",
+         "He got all",
+         "Everyone is happy and I can",
+         "The new movie that got Oscar this year",
+         "In the far far distance from our galaxy,",
+         "Peace is the only way",
+         "She went to the",
+         "This little piggy went to the", #10
+         "Have you heard that",
+         "The greatest artist of all time",
+         "Once upon a time there was",
+         "A moose, a fish, and a bird walk into a bar",
+         "She was looking for",
+         "DeepSpeed will solve",
+         "The president will be",
+         "The weather is",
+         "Tomorrow will be the first time",
+         "Yesterday was", #20
+         "I will be going to",
+         "Her friends all thought that",
+         "In order to make a pie you",
+         "The recipe for cake is",
+         "During the apocalypse",
+         "Everyone wants",
+         "This holiday season will be",
+         "Unlike other types of fish",
+         "Fish think about",
+         "Fish are friends not", #30
 ]
 
 if args.batch_size > len(input_sentences):
