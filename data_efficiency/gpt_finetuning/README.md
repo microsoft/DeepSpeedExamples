@@ -2,7 +2,7 @@
 
 #### Install
 
-``pip install -r requirements.txt``
+``pip install -r requirement.txt``
 
 You will also need to install updated DeepSpeed version (>0.7.5), which contains the random-ltd library.
 
@@ -16,11 +16,11 @@ The python code is modified based on huggingface (https://github.com/huggingface
 
 #### bash script
 
-* **run_base.sh/run_medium.sh**  This bash script contains jobs for training with random-ltd
+* **run_base_random_ltd.sh/run_medium_random_ltd.sh**  This bash script contains jobs for training with random-ltd
 * Run the job under the gpt_finetuning directory:
 
- ``DeepSpeedExamples/random_ltd/gpt_finetuning$ . ./bash_script/run_base.sh``
+ ``DeepSpeedExamples/random_ltd/gpt_finetuning$ . ./bash_script/run_base_random_ltd.sh``
 
 
- ``DeepSpeedExamples/random_ltd/gpt_finetuning$ . ./bash_script/run_medium.sh``
+ ``DeepSpeedExamples/random_ltd/gpt_finetuning$ . ./bash_script/run_medium_random_ltd.sh``
  See more descriptions and results in our [tutorial page](https://www.deepspeed.ai/).

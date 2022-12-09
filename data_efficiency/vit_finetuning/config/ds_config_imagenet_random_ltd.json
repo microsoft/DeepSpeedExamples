@@ -1,26 +1,26 @@
 {
-    "train_batch_size" : 256,
-    "train_micro_batch_size_per_gpu": "auto",
-    "steps_per_print": 200,
-    "optimizer": {
-      "type": "Adam",
-      "params": {
-        "lr": 0.0001,
-        "betas": [0.8,0.999],
-        "eps": 1e-8,
-        "weight_decay": 3e-7
-      }
-    },
-    "zero_optimization": {
-      "stage": 0
-    },
-    "fp16":{
-      "enabled": false
-    },
-    "gradient_clipping": 1.0,
-    "prescale_gradients": true,
-    "wall_clock_breakdown" : false,
-    "data_efficiency": {
+  "train_batch_size" : 256,
+  "train_micro_batch_size_per_gpu": "auto",
+  "steps_per_print": 200,
+  "optimizer": {
+    "type": "Adam",
+    "params": {
+      "lr": 0.0001,
+      "betas": [0.8,0.999],
+      "eps": 1e-8,
+      "weight_decay": 3e-7
+    }
+  },
+  "zero_optimization": {
+    "stage": 0
+  },
+  "fp16":{
+    "enabled": false
+  },
+  "gradient_clipping": 1.0,
+  "prescale_gradients": true,
+  "wall_clock_breakdown" : false,
+  "data_efficiency": {
     "enabled": true,
     "data_routing": {
       "enabled": true,
@@ -44,5 +44,5 @@
       } 
     }
   }
-    }
+}
   

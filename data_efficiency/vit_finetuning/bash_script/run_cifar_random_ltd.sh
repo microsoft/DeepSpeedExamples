@@ -17,7 +17,7 @@ mkdir -p out/cifar/
 #     --data_outdir check/cifar/ | tee -a check/cifar/training.log
 
 deepspeed  --num_nodes 1 --num_gpus 1  --master_port 60000 main_cifar.py      \
-    --deepspeed_config config/ds_config_cifar.json  \
+    --deepspeed_config config/ds_config_cifar_random_ltd.json  \
     --deepspeed   --random_ltd  \
     --dataset cifar10vit224      \
     --seed 1234                   \
