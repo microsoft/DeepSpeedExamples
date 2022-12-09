@@ -3,9 +3,8 @@
 #if you want to test with dummy dataset, use --dummy #<<=========================================================
 #################################################################################
 ## Note that if you use 16GPU and set batch-size to be 256, then the micro-batch-size will be 256/16=16
-## so you NEED to set  train_batch_size=256 in "config/ds_config_imagenet_random_ltd.json"   
-used_gpu=0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15 #<========================= 
-######################################################################## train_micro_batch_size_per_gpu
+## so you NEED to set train_batch_size=256 and train_micro_batch_size_per_gpu=16 in "config/ds_config_imagenet_random_ltd.json"
+used_gpu=0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15
 mkdir out/imagenet
 deepspeed  --include worker-0:${used_gpu} --master_port 60000  main_imagenet.py /blob/data/ImageNetData/ --seed 2345    \
                 --deepspeed_config config/ds_config_imagenet_random_ltd.json  \
