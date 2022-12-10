@@ -77,8 +77,8 @@ class DSPipeline():
                                       revision=None)
         else:
             repo_root = checkpoint_path
-        if os.path.exists(os.path.join(repo_root, "ds-inference_config.json")):
-            checkpoints_json = os.path.join(repo_root, "ds-inference_config.json")
+        if os.path.exists(os.path.join(repo_root, "ds_inference_config.json")):
+            checkpoints_json = os.path.join(repo_root, "ds_inference_config.json")
         elif (self.model_name in self.tp_presharded_models):
             # tp presharded repos come with their own checkpoints config file
             checkpoints_json = os.path.join(repo_root, "ds_inference_config.json")
