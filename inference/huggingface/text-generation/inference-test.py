@@ -6,7 +6,7 @@ import os
 import torch
 import time
 from utils import DSPipeline
-from transformers.models.opt.modeling_opt import OPTDecoderLayer
+from deepspeed.runtime.utils import see_memory_usage
 
 parser = ArgumentParser()
 
@@ -29,7 +29,7 @@ def print_latency(latency_set, title, config, warmup=3):
     latency_set = list(latency_set)
     latency_set = latency_set[warmup:]
     count = len(latency_set)
-#    print(latency_set)
+
     if count > 0:
         latency_set.sort()
         n50 = (count - 1) * 0.5 + 1
@@ -59,7 +59,7 @@ def print_latency(latency_set, title, config, warmup=3):
 
 world_size = int(os.getenv('WORLD_SIZE', '1'))
 local_rank = int(os.getenv('LOCAL_RANK', '0'))
-print(world_size)
+
 data_type = getattr(torch, args.dtype)
 pipe = DSPipeline(model_name=args.name,
                   dtype=data_type,
@@ -77,52 +77,14 @@ if args.ds_inference:
                                     mp_size=world_size,
                                     replace_with_kernel_inject=args.use_kernel,
                                     replace_method=args.replace_method,
-#                                    injection_policy={
-#                                        OPTDecoderLayer: ()
-#                                    },
                                     max_tokens=args.max_tokens,
                                     **ds_kwargs
                                     )
-
-    
-
-responses = []
+   
+see_memory_usage('post-init', force=True)
 times = []
-mtimes = []
-
-#print(pipe.model)
 
 input_sentences = [
-         "DeepSpeed is a machine learning framework",
-         "He is working on",
-         "He has a",
-         "He got all",
-         "Everyone is happy and I can",
-         "The new movie that got Oscar this year",
-         "In the far far distance from our galaxy,",
-         "Peace is the only way",
-         "She went to the",
-         "This little piggy went to the", #10
-         "Have you heard that",
-         "The greatest artist of all time",
-         "Once upon a time there was",
-         "A moose, a fish, and a bird walk into a bar",
-         "She was looking for",
-         "DeepSpeed will solve",
-         "The president will be",
-         "The weather is",
-         "Tomorrow will be the first time",
-         "Yesterday was", #20
-         "I will be going to",
-         "Her friends all thought that",
-         "In order to make a pie you",
-         "The recipe for cake is",
-         "During the apocalypse",
-         "Everyone wants",
-         "This holiday season will be",
-         "Unlike other types of fish",
-         "Fish think about",
-         "Fish are friends not", #30
          "DeepSpeed is a machine learning framework",
          "He is working on",
          "He has a",
@@ -168,15 +130,12 @@ for i in range(30):
     outputs = pipe(inputs,
               num_tokens=args.max_new_tokens,
               do_sample=(not args.greedy))
-
+     
     torch.cuda.synchronize()
     end = time.time()
 
-    times.append(end - start)  # / (args.max_tokens - 3))
+    times.append(end - start) 
 
-
-#for i, o in zip(inputs, outputs):
-#    print(f"\nin={i}\nout={o}\n{'-'*60}")
 
 if args.local_rank == 0:
     for i, o in zip(inputs, outputs):
