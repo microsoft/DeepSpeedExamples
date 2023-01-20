@@ -7,12 +7,19 @@ from deepspeed.model_implementations import DeepSpeedTransformerInference
 ##########################################
 #           Static variables
 ##########################################
-model_name = "EleutherAI/gpt-j-6B"
-dtype = getattr(torch, 'int8')
+#model_name = 'EleutherAI/gpt-j-6B'
+#dtype = getattr(torch, 'int8')
+
+#model_name = 'EleutherAI/gpt-neox-20b'
+#dtype = getattr(torch, 'float16')
+
+model_name = 'bigscience/bloom-3b'
+dtype = getattr(torch, 'float16')
+
 model_tmpdir = './tmp/'
 
 
-world_size = int(os.getenv("WORLD_SIZE", "1"))
+world_size = int(os.getenv('WORLD_SIZE', '1'))
 local_rank = int(os.getenv('LOCAL_RANK', '0'))
 
 device = torch.device(f"cuda:{local_rank}")
