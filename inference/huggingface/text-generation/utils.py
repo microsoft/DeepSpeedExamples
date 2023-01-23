@@ -33,7 +33,10 @@ class DSPipeline():
         elif device < 0:
             self.device = torch.device("cpu")
         else:
+            print("Final else condition")
             self.device = torch.device(f"cuda:{device}")
+
+        print(f"self.device = {self.device}")
 
         # the Deepspeed team made these so it's super fast to load (~1 minute), rather than wait 10-20min loading time.
         self.tp_presharded_models = ["microsoft/bloom-deepspeed-inference-int8", "microsoft/bloom-deepspeed-inference-fp16"]
@@ -68,6 +71,7 @@ class DSPipeline():
 
 
     def _generate_json(self, checkpoint_path=None):
+        print(f"Checkpoint path is {checkpoint_path}")
         if checkpoint_path is None:
             repo_root = snapshot_download(self.model_name,
                                       allow_patterns=["*"],
@@ -75,10 +79,11 @@ class DSPipeline():
                                       ignore_patterns=["*.safetensors"],
                                       local_files_only=False,
                                       revision=None)
+            print(f"repo_root = {repo_root}")
         else:
             repo_root = checkpoint_path
-        if os.path.exists(os.path.join(repo_root, "ds-inference_config.json")):
-            checkpoints_json = os.path.join(repo_root, "ds-inference_config.json")
+        if os.path.exists(os.path.join(repo_root, "ds_inference_config.json")):
+            checkpoints_json = os.path.join(repo_root, "ds_inference_config.json")
         elif (self.model_name in self.tp_presharded_models):
             # tp presharded repos come with their own checkpoints config file
             checkpoints_json = os.path.join(repo_root, "ds_inference_config.json")

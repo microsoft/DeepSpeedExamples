@@ -7,16 +7,16 @@ from deepspeed.model_implementations import DeepSpeedTransformerInference
 ##########################################
 #           Static variables
 ##########################################
-#model_name = 'EleutherAI/gpt-j-6B'
-#dtype = getattr(torch, 'int8')
 
-#model_name = 'EleutherAI/gpt-neox-20b'
+dtype = getattr(torch, 'int8')
 #dtype = getattr(torch, 'float16')
 
-model_name = 'bigscience/bloom-3b'
-dtype = getattr(torch, 'float16')
+#model_name = 'EleutherAI/gpt-j-6B'
+#model_name = 'EleutherAI/gpt-neox-20b'
+#model_name = 'bigscience/bloom-3b'
+model_name = 'facebook/opt-30b'
 
-model_tmpdir = './tmp/'
+model_tmpdir = './tmp_opt_30b/'
 
 
 world_size = int(os.getenv('WORLD_SIZE', '1'))

@@ -25,6 +25,8 @@ parser.add_argument("--use_cache", default=True, type=bool, help="use cache for 
 parser.add_argument("--local_rank", type=int, default=0, help="local rank")
 args = parser.parse_args()
 
+print(f"args = {args}")
+
 world_size = int(os.getenv('WORLD_SIZE', '1'))
 local_rank = int(os.getenv('LOCAL_RANK', '0'))
 
@@ -39,6 +41,10 @@ pipe = DSPipeline(model_name=args.name,
                   is_meta=args.use_meta_tensor,
                   device=args.local_rank,
                   checkpoint_path=args.checkpoint_path)
+
+#print(f"pipe.repo_root = {pipe.repo_root}")
+#print(f"pipe.checkpoints_json = {pipe.checkpoints_json}")
+
 if local_rank == 0:
     print(f"initialization time: {(time.time()-t0) * 1000}ms")
     see_memory_usage("after init", True)
