@@ -23,11 +23,11 @@ parser.add_argument("--max_new_tokens", default=50, type=int, help="maximum new 
 parser.add_argument("--greedy", action='store_true', help="greedy generation mode")
 parser.add_argument("--use_meta_tensor", action='store_true', help="use the meta tensors to initialize model")
 parser.add_argument("--use_cache", default=True, type=bool, help="use cache for generation")
-parser.add_argument("--test_throughput", action='store_true', help="enable bandwidth and throughout testing")
+parser.add_argument("--test_performance", action='store_true', help="enable latency, bandwidth, and throughout testing")
 parser.add_argument("--local_rank", type=int, default=0, help="local rank")
 args = parser.parse_args()
 
-def print_bw_tp(latency_set, config, warmup=3):
+def print_perf_stats(latency_set, config, warmup=3):
     # trim warmup queries
     latency_set = list(latency_set)
     latency_set = latency_set[warmup:]
@@ -37,8 +37,10 @@ def print_bw_tp(latency_set, config, warmup=3):
         latency_set.sort()
         avg = sum(latency_set) / count
         num_layers = config.num_layers if hasattr(config,'num_layers') else config.num_hidden_layers
-        print("Avg BW: {0:8.2f} GB/s".format(1/avg * num_layers * config.hidden_size * config.hidden_size * 12 * 2 / 1000000000))
-        print("Avg flops: {0:8.2f} TFlops/s".format(1/avg * num_layers * config.hidden_size * config.hidden_size * 12 * 2 / 1000000000000 * args.batch_size))
+        num_parameters = num_layers * config.hidden_size * config.hidden_size * 12
+        print("Avg Per Token Latency: {0:8.2f} ms".format(avg * 1000))
+        print("Avg BW: {0:8.2f} GB/s".format(1/avg * num_parameters * 2 / 1e9))
+        print("Avg flops: {0:8.2f} TFlops/s".format(1/avg * num_parameters * 2 / 1e12 * args.batch_size))
 
 world_size = int(os.getenv('WORLD_SIZE', '1'))
 local_rank = int(os.getenv('LOCAL_RANK', '0'))
@@ -93,7 +95,7 @@ if args.batch_size > len(input_sentences):
 
 inputs = input_sentences[:args.batch_size]
 
-if args.test_throughput:
+if args.test_performance:
     times = []
     for i in range(30):
         torch.cuda.synchronize()
@@ -109,7 +111,7 @@ if args.test_throughput:
         times.append(end - start)
 
     if args.local_rank == 0:
-        print_bw_tp(map(lambda t: t / (args.max_new_tokens),
+        print_perf_stats(map(lambda t: t / (args.max_new_tokens),
                     times),
                     pipe.model.config)
 else:
