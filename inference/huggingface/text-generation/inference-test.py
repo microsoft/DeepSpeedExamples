@@ -17,13 +17,28 @@ parser.add_argument("--batch_size", default=1, type=int, help="batch size")
 parser.add_argument("--dtype", default="float16", type=str, choices=["float32", "float16", "int8"], help="data-type")
 parser.add_argument("--ds_inference", action='store_true', help="enable ds-inference")
 parser.add_argument("--use_kernel", action='store_true', help="enable kernel-injection")
+parser.add_argument("--replace_method", required=False, default='', type=str, help="replace method['', 'auto', 'dict']")
 parser.add_argument("--max_tokens", default=1024, type=int, help="maximum tokens used for the text-generation KV-cache")
 parser.add_argument("--max_new_tokens", default=50, type=int, help="maximum new tokens to generate")
 parser.add_argument("--greedy", action='store_true', help="greedy generation mode")
 parser.add_argument("--use_meta_tensor", action='store_true', help="use the meta tensors to initialize model")
 parser.add_argument("--use_cache", default=True, type=bool, help="use cache for generation")
+parser.add_argument("--test_throughput", action='store_true', help="enable bandwidth and throughout testing")
 parser.add_argument("--local_rank", type=int, default=0, help="local rank")
 args = parser.parse_args()
+
+def print_bw_tp(latency_set, config, warmup=3):
+    # trim warmup queries
+    latency_set = list(latency_set)
+    latency_set = latency_set[warmup:]
+    count = len(latency_set)
+
+    if count > 0:
+        latency_set.sort()
+        avg = sum(latency_set) / count
+        num_layers = config.num_layers if hasattr(config,'num_layers') else config.num_hidden_layers
+        print("Avg BW: {0:8.2f} GB/s".format(1/avg * num_layers * config.hidden_size * config.hidden_size * 12 * 2 / 1000000000))
+        print("Avg flops: {0:8.2f} TFlops/s".format(1/avg * num_layers * config.hidden_size * config.hidden_size * 12 * 2 / 1000000000000 * args.batch_size))
 
 world_size = int(os.getenv('WORLD_SIZE', '1'))
 local_rank = int(os.getenv('LOCAL_RANK', '0'))
@@ -52,7 +67,7 @@ if args.ds_inference:
                                     dtype=data_type,
                                     mp_size=world_size,
                                     replace_with_kernel_inject=args.use_kernel,
-                                    replace_method='auto',
+                                    replace_method=args.replace_method,
                                     max_tokens=args.max_tokens,
                                     save_mp_checkpoint_path=args.save_mp_checkpoint_path,
                                     **ds_kwargs
@@ -78,21 +93,41 @@ if args.batch_size > len(input_sentences):
 
 inputs = input_sentences[:args.batch_size]
 
-# warmup
-outputs = pipe(inputs,
-              num_tokens=args.max_new_tokens,
-              do_sample=(not args.greedy))
+if args.test_throughput:
+    times = []
+    for i in range(30):
+        torch.cuda.synchronize()
+        start = time.time()
 
-torch.cuda.synchronize()
-start = time.time()
+        outputs = pipe(inputs,
+                num_tokens=args.max_new_tokens,
+                do_sample=(not args.greedy))
+        
+        torch.cuda.synchronize()
+        end = time.time()
 
-outputs = pipe(inputs,
-              num_tokens=args.max_new_tokens,
-              do_sample=(not args.greedy))
+        times.append(end - start)
 
-torch.cuda.synchronize()
-end = time.time()
-print(f'generation time is {end-start} sec')
+    if args.local_rank == 0:
+        print_bw_tp(map(lambda t: t / (args.max_new_tokens),
+                    times),
+                    pipe.model.config)
+else:
+    # warmup
+    outputs = pipe(inputs,
+                num_tokens=args.max_new_tokens,
+                do_sample=(not args.greedy))
+
+    torch.cuda.synchronize()
+    start = time.time()
+
+    outputs = pipe(inputs,
+                num_tokens=args.max_new_tokens,
+                do_sample=(not args.greedy))
+
+    torch.cuda.synchronize()
+    end = time.time()
+    print(f'generation time is {end-start} sec')
 
 if args.local_rank == 0:
     for i, o in zip(inputs, outputs):
