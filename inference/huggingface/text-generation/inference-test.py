@@ -36,7 +36,7 @@ def print_perf_stats(latency_set, config, warmup=3):
     if count > 0:
         latency_set.sort()
         avg = sum(latency_set) / count
-        num_layers = config.num_layers if hasattr(config,'num_layers') else config.num_hidden_layers
+        num_layers = getattr(config, "num_layers", config.num_hidden_layers)
         num_parameters = num_layers * config.hidden_size * config.hidden_size * 12
         print("Avg Per Token Latency: {0:8.2f} ms".format(avg * 1000))
         print("Avg BW: {0:8.2f} GB/s".format(1/avg * num_parameters * 2 / 1e9))
