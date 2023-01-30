@@ -95,43 +95,20 @@ if args.batch_size > len(input_sentences):
 
 inputs = input_sentences[:args.batch_size]
 
-if args.test_performance:
-    times = []
-    for i in range(30):
-        torch.cuda.synchronize()
-        start = time.time()
-
-        outputs = pipe(inputs,
-                num_tokens=args.max_new_tokens,
-                do_sample=(not args.greedy))
-        
-        torch.cuda.synchronize()
-        end = time.time()
-
-        times.append(end - start)
-
-    if args.local_rank == 0:
-        print_perf_stats(map(lambda t: t / (args.max_new_tokens),
-                    times),
-                    pipe.model.config)
-else:
-    # warmup
-    outputs = pipe(inputs,
-                num_tokens=args.max_new_tokens,
-                do_sample=(not args.greedy))
-
+iters = 30 if args.test_performance else 1
+times = []
+for i in range(iters):
     torch.cuda.synchronize()
     start = time.time()
-
     outputs = pipe(inputs,
-                num_tokens=args.max_new_tokens,
-                do_sample=(not args.greedy))
-
+            num_tokens=args.max_new_tokens,
+            do_sample=(not args.greedy))
     torch.cuda.synchronize()
     end = time.time()
-    print(f'generation time is {end-start} sec')
+    times.append(end - start)
 
 if args.local_rank == 0:
-    for i, o in zip(inputs, outputs):
-        print(f"\nin={i}\nout={o}\n{'-'*60}")
+    if args.test_performance:
+        print_perf_stats(map(lambda t: t / args.max_new_tokens, times), pipe.model.config)
+    print(f"generation time is {times[0]} sec")
 
