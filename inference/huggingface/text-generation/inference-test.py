@@ -38,9 +38,15 @@ def print_perf_stats(latency_set, config, warmup=3):
         avg = sum(latency_set) / count
         num_layers = getattr(config, "num_layers", config.num_hidden_layers)
         num_parameters = num_layers * config.hidden_size * config.hidden_size * 12
+        if args.dtype == "float16":
+            num_bytes = 2
+        elif args.dtype == "float32":
+            num_bytes = 4
+        else:
+            num_bytes = 1
         print("Avg Per Token Latency: {0:8.2f} ms".format(avg * 1000))
-        print("Avg BW: {0:8.2f} GB/s".format(1/avg * num_parameters * 2 / 1e9))
-        print("Avg flops: {0:8.2f} TFlops/s".format(1/avg * num_parameters * 2 / 1e12 * args.batch_size))
+        print("Avg BW: {0:8.2f} GB/s".format(1/avg * num_parameters * num_bytes / 1e9))
+        print("Avg flops: {0:8.2f} TFlops/s".format(1/avg * num_parameters * num_bytes * args.batch_size / 1e12))
 
 world_size = int(os.getenv('WORLD_SIZE', '1'))
 local_rank = int(os.getenv('LOCAL_RANK', '0'))
