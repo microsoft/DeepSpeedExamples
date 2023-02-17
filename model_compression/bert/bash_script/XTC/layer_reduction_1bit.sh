@@ -19,7 +19,7 @@ mkdir -p ${SAVE_PATH}
 MODEL=yoshitomo-matsubara/bert-base-uncased-${TASK_NAME} ## for both student and teacher
 student_model=./out/XTC/layer_reduction/best/pytorch_model.bin # <====================================================================Need student model
 python -m torch.distributed.launch --nproc_per_node=1 \
-  --master_port 66664 \
+  --master_port 6664 \
   run_glue_no_trainer.py \
   --pretrained_dir_student  ${student_model} \
   --seed 42 \
