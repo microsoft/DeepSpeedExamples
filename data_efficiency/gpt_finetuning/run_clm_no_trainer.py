@@ -613,12 +613,12 @@ def main():
                         if args.random_ltd:
                             log_text = f"{log_text} random-ltd reserved_length {reserved_length}"
                         print_rank_0(log_text)
-                if consumed_token >= total_tokens and lr_scheduler.cur_lr == 0:
+                if consumed_token >= total_tokens:
                     break
             perplexity = evaluation(model, eval_dataloader)
             current_best = min(current_best, perplexity)
             print_rank_0(f"End of epoch {epoch+1} step {global_step} consumed_token {consumed_token} perplexity {perplexity} current best {current_best}")
-            if consumed_token >= total_tokens and lr_scheduler.cur_lr == 0:
+            if consumed_token >= total_tokens:
                 break
             epoch += 1
         duration = (time.time() - start) / 3600.0
