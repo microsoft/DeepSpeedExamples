@@ -45,24 +45,22 @@ class DSPipeline():
                 inputs=["test"],
                 num_tokens=50
                 ):
-        if isinstance(inputs, str):
-            input_list = [inputs]
-        else:
-            input_list = inputs
-        outputs = self.generate_outputs(input_list,num_tokens=num_tokens)
+        outputs = self.generate_outputs(inputs,num_tokens=num_tokens)
         return outputs
 
     def generate_outputs(self,
                          inputs=["test"],
                         num_tokens=50,
                         ):
-        generate_kwargs = dict(max_new_tokens=num_tokens)
-        input_tokens = self.tokenizer.batch_encode_plus(inputs, return_tensors="pt", padding=True)
-        for t in input_tokens:
-            if torch.is_tensor(input_tokens[t]):
-                input_tokens[t] = input_tokens[t].to(self.device)
+        #generate_kwargs = dict(max_new_tokens=num_tokens)
+        #input_tokens = self.tokenizer.batch_encode_plus(inputs, return_tensors="pt", padding=True)
+        # for t in input_tokens:
+        #     if torch.is_tensor(input_tokens[t]):
+        #         input_tokens[t] = input_tokens[t].to(self.device)
+        # self.model.cuda().to(self.device)
+        inputs = self.tokenizer(inputs, return_tensors="pt", padding=True, truncation=True)
         self.model.cuda().to(self.device)
-        outputs = self.model.generate(**input_tokens,**generate_kwargs)
+        outputs = self.model.generate(inputs["input_ids"].to(self.device), max_new_tokens=args.max_new_tokens)
         outputs = self.tokenizer.batch_decode(outputs, skip_special_tokens=True)
         return outputs
 
@@ -112,14 +110,17 @@ if local_rank == 0:
     see_memory_usage("after init", True)
 
 input_sentences = [
+         "Is this review positive or negative? Review: this is the best cast iron skillet you will ever buy",
          "DeepSpeed is a machine learning framework",
-         "He is working on",
-         "He has a",
-         "He got all",
-         "Everyone is happy and I can",
-         "The new movie that got Oscar this year",
-         "In the far far distance from our galaxy,",
-         "Peace is the only way"
+         "summarize: My friends are cool but they eat too many carbs",
+         "summarize: There are many reasons to have a dog",
+         "translate English to French: He is working on it",
+         "summarize: My friends are cool but they eat too many carbs.",
+         "translate English to German: The house is wonderful.",
+         "summarize: studies have shown that owning a dog is good for you",
+         "translate English to Spanish: The new movie that got Oscar this year",
+         "translate English to French: In the far far distance from our galaxy,",
+         "translate English to German: Peace is the only way."
 ]
 
 if args.batch_size > len(input_sentences):
