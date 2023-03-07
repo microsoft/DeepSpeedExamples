@@ -13,7 +13,6 @@ parser.add_argument("--model", required=True, type=str, help="model_id")
 parser.add_argument("--ds_inference", action='store_true', help="enable ds-inference")
 parser.add_argument("--batch_size", default=1, type=int, help="batch size")
 parser.add_argument("--dtype", default="float16", type=str, choices=["float32", "float16", "int8"], help="data-type")
-#parser.add_argument("--max_new_tokens", default=50, type=int, help="maximum new tokens to generate")
 parser.add_argument("--test_performance", action='store_true', help="enable latency, bandwidth, and throughout testing")
 parser.add_argument("--local_rank", type=int, default=0, help="local rank")
 args = parser.parse_args()
@@ -43,33 +42,24 @@ class DSPipeline():
         self.model.eval()
 
     def __call__(self,
-                inputs=["test"],
-                num_tokens=50
+                inputs=["test"]
                 ):
-        outputs = self.generate_outputs(inputs,num_tokens=num_tokens)
+        outputs = self.generate_outputs(inputs)
         return outputs
 
     def generate_outputs(self,
-                         inputs=["test"],
-                        num_tokens=50,
+                         inputs=["test"]
                         ):
-        #generate_kwargs = dict(max_new_tokens=num_tokens)
-        #input_tokens = self.tokenizer.batch_encode_plus(inputs, return_tensors="pt", padding=True)
-        # for t in input_tokens:
-        #     if torch.is_tensor(input_tokens[t]):
-        #         input_tokens[t] = input_tokens[t].to(self.device)
-        # self.model.cuda().to(self.device)
         inputs = self.tokenizer(inputs, return_tensors="pt", padding=True, truncation=True)
         self.model.cuda().to(self.device)
-        outputs = self.model.generate(inputs["input_ids"].to(self.device))#, max_new_tokens=args.max_new_tokens)
+        outputs = self.model.generate(inputs["input_ids"].to(self.device))
         outputs = self.tokenizer.batch_decode(outputs, skip_special_tokens=True)
 
         average_num_tokens = 0
         for o in outputs:
             average_num_tokens += len(self.tokenizer.tokenize(o))
         average_num_tokens = average_num_tokens/args.batch_size
-        print(average_num_tokens)
-        return outputs
+        return outputs, average_num_tokens
 
 def print_perf_stats(latency_set, config, warmup=3):
     # trim warmup queries
@@ -80,6 +70,7 @@ def print_perf_stats(latency_set, config, warmup=3):
     if count > 0:
         latency_set.sort()
         avg = sum(latency_set) / count
+        avg = avg/args.batch_size
         num_layers = getattr(config, "num_layers", config.num_hidden_layers)
         num_parameters = num_layers * config.hidden_size * config.hidden_size * 12
         if args.dtype == "float16":
@@ -88,15 +79,12 @@ def print_perf_stats(latency_set, config, warmup=3):
             num_bytes = 4
         else:
             num_bytes = 1
-        print("Avg Per Token Latency: {0:8.2f} ms".format(avg * 1000))
-        print("Avg BW: {0:8.2f} GB/s".format(1/avg * num_parameters * num_bytes / 1e9))
-        print("Avg flops: {0:8.2f} TFlops/s".format(1/avg * num_parameters * num_bytes * args.batch_size / 1e12))
 
         log = open("log.txt","a")
         log.write(str(os.getenv('WORLD_SIZE', '1')) + " gpus, " + str(args.batch_size) + " batch\n")
         log.write("Avg Per Token Latency: {0:8.2f} ms\n".format(avg * 1000))
-        log.write("Avg flops: {0:8.2f} TFlops/s\n".format(1/avg * num_parameters * num_bytes * args.batch_size / 1e12))
-
+        log.write("Avg flops: {0:8.2f} TFlops/s\n".format(1/avg * num_parameters * num_bytes / 1e12))
+        log.close()
 
 local_rank = int(os.getenv('LOCAL_RANK', '0'))
 world_size = int(os.getenv('WORLD_SIZE', '1'))
@@ -122,7 +110,6 @@ if local_rank == 0:
     see_memory_usage("after init", True)
 
 input_sentences = [
-         "Is this review positive or negative? Review: this is the best cast iron skillet you will ever buy",
          "DeepSpeed is a machine learning framework",
          "summarize: My friends are cool but they eat too many carbs",
          "summarize: There are many reasons to have a dog",
@@ -146,16 +133,13 @@ times=[]
 for i in range(iters):
     torch.cuda.synchronize()
     start = time.time()
-    outputs = pipe(inputs)
+    outputs, average_num_tokens = pipe(inputs)
     torch.cuda.synchronize()
     end = time.time()
     times.append(end - start)
-
-
 
 if not torch.distributed.is_initialized() or torch.distributed.get_rank() == 0:
     for i, o in zip(inputs, outputs):
         print(f"\nin={i}\nout={o}\n{'-'*60}")
     if args.test_performance:
-        print_perf_stats(map(lambda t: t / average_num_tokens*args.batch_size, times), pipe.model.config)
-
+        print_perf_stats(map(lambda t: t / average_num_tokens, times), pipe.model.config)
