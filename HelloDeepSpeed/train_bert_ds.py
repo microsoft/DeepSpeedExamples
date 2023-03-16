@@ -607,6 +607,9 @@ def train(
         h_dim: int = 256,
         dropout: float = 0.1,
         # Training Parameters
+	zero_stage = 0,
+	offload_optim = False,
+	offload_param = False,
         batch_size: int = 8,
         num_iterations: int = 10000,
         checkpoint_every: int = 1000,
@@ -789,15 +792,28 @@ def train(
             "enabled": True
         },
         "zero_optimization": {
-            "stage": 1,
+            "stage": zero_stage,
             "offload_optimizer": {
-                "device": "cpu"
-            }
+                "device": "none"
+            },
+	    "offload_param": {
+		"device": "none"
+	    }
         }
     }
+
+    if offload_optim:
+        ds_config['zero_optimization']['offload_optimizer']['device'] = "cpu"
+        #from deepspeed.ops.adam.cpu import DeepSpeedCPUAdam
+        #optimizer = DeepSpeedCPUAdam()
+
+    if offload_param:
+        ds_config['zero_optimization']['offload_param']['device'] = "cpu"
+
     model, _, _, _ = deepspeed.initialize(model=model,
                                           model_parameters=model.parameters(),
                                           config=ds_config)
+
     log_dist("DeepSpeed engine created", ranks=[0], level=logging.INFO)
     ################################
     #### Load Model checkpoint #####
