@@ -18,7 +18,7 @@ mkdir -p ${SAVE_PATH}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% the following command will first download huggingface models and then compress %%%%%%%
 MODEL=yoshitomo-matsubara/bert-base-uncased-${TASK_NAME} ## for both student and teacher
 python -m torch.distributed.launch --nproc_per_node=1 \
-  --master_port 66665 \
+  --master_port 6665 \
   run_glue_no_trainer.py \
   --seed 42 \
   --distill_method ${STAGE} \
@@ -47,7 +47,7 @@ python -m torch.distributed.launch --nproc_per_node=1 \
 # MODEL=yoshitomo-matsubara/bert-base-uncased-${TASK_NAME} ## for both student and teacher
 # student_model=./out/XTC/layer_reduction/best/pytorch_model.bin # <====================================================================Need student model
 # python -m torch.distributed.launch --nproc_per_node=1 \
-#   --master_port 66665 \
+#   --master_port 6665 \
 #   run_glue_no_trainer.py \
 #   --pretrained_dir_student  ${student_model} \
 #   --seed 42 \

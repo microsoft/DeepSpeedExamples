@@ -39,7 +39,7 @@ python -m torch.distributed.launch --nproc_per_node=1 \
 # TEACHER=/blob/users/xwu/compression/huggingface_models/bert-base-uncased-${TASK_NAME}/pytorch_model.bin
 # STUDENT=${TEACHER}
 # python -m torch.distributed.launch --nproc_per_node=1 \
-#   --master_port 66667 \
+#   --master_port 6667 \
 #   run_glue_no_trainer_clean.py \
 #   --seed 42 \
 #   --distill_method ${STAGE} \

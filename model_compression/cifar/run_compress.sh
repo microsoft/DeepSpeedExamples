@@ -11,7 +11,7 @@ python -m torch.distributed.launch --nproc_per_node=1 \
 ### Step 2: compress: channel pruning 
 ### you may enbale other compression methods, see ds_config.json or our compression tutorial 
 python -m torch.distributed.launch --nproc_per_node=1 \
-  --master_port 66665 \
+  --master_port 6665 \
   train.py \
   --deepspeed_config config/ds_config_channel_prune.json \
   --deepspeed \
@@ -32,7 +32,7 @@ python -m torch.distributed.launch --nproc_per_node=1 \
 #### Step 2: compress: channel pruning 
 #### you may enbale other compression methods, see ds_config.json or our compression tutorial 
 # python -m torch.distributed.launch --nproc_per_node=1 \
-#   --master_port 66665 \
+#   --master_port 6665 \
 #   train.py \
 #   --deepspeed_config config/ds_config_channel_prune.json \
 #   --deepspeed \
