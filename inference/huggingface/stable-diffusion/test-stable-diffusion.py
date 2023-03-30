@@ -22,9 +22,7 @@ baseline_image.save(f"baseline.png")
 # NOTE: DeepSpeed inference supports local CUDA graphs for replaced SD modules
 pipe = deepspeed.init_inference(
     pipe,
-    mp_size=1,
     dtype=torch.half,
-    replace_method="auto",
     replace_with_kernel_inject=True,
     enable_cuda_graph=True,
 )
