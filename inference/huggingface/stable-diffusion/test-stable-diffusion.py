@@ -9,7 +9,7 @@ prompt = "a dog on a rocket"
 model = "prompthero/midjourney-v4-diffusion"
 local_rank = int(os.getenv("LOCAL_RANK", "0"))
 device = torch.device(f"cuda:{local_rank}")
-world_size = int(os.getenv('WORLD_SIZE', '4'))
+world_size = int(os.getenv('WORLD_SIZE', '1'))
 generator = torch.Generator(device=torch.cuda.current_device())
 
 pipe = DiffusionPipeline.from_pretrained(model, torch_dtype=torch.half)
