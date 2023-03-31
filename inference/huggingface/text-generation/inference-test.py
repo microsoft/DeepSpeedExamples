@@ -20,12 +20,13 @@ parser.add_argument("--ds_inference", action='store_true', help="enable ds-infer
 parser.add_argument("--use_kernel", action='store_true', help="enable kernel-injection")
 parser.add_argument("--replace_method", required=False, default='', type=str, help="replace method['', 'auto']")
 parser.add_argument("--max_tokens", default=1024, type=int, help="maximum tokens used for the text-generation KV-cache")
-parser.add_argument("--max_new_tokens", default=50, type=int, help="maximum new tokens to generate")
+parser.add_argument("--max_new_tokens", default=1, type=int, help="maximum new tokens to generate")
 parser.add_argument("--greedy", action='store_true', help="greedy generation mode")
 parser.add_argument("--use_meta_tensor", action='store_true', help="use the meta tensors to initialize model")
 parser.add_argument("--use_cache", default=True, type=bool, help="use cache for generation")
 parser.add_argument("--test_performance", action='store_true', help="enable latency, bandwidth, and throughout testing")
 parser.add_argument("--local_rank", type=int, default=0, help="local rank")
+parser.add_argument("--seq_length", type=int, default=75, help="input sequence length")
 args = parser.parse_args()
 
 def print_perf_stats(latency_set, config, warmup=3):
@@ -87,123 +88,835 @@ if local_rank == 0:
     see_memory_usage("after init_inference", True)
 
 
-input_sentences = [
-         "DeepSpeed is a machine learning framework for deep neural network research that has gained widespread use among researchers ie pyDeepSpeed especially in recent years \
-         While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
-         resurgence in popularity of DeepSpeed stems largely from the fact that it is easy to use has the full complement of modern deep learning library features and has a \
-         well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good \
-         question and getting a fair response is as follows:nnFirst please use the existing GitHubGitHub user group to ask general questions This group is specifically for users of \
-         DeepSpeed. DeepSpeed and the pyDeepSpeedpyDeepSpeed package If your question does not have enough detail to be specific it will probably be better suited to the GitHubGitHub \
-         user group for general R usersnnIf you do have a valid question post it in the following sectionnnQuestions regarding the package itself its documentation features or other \
-         functionality:nnAsk on GitHubGitHub Note that GitHub is the de-facto user group for questions that require more structure and context than you might find in \
-         commentsnnGitHubGitHub for questions about the package itself specifically issues pull requests reporting bugs etcnnQuestions about the DeepSpeed user community itself or \
-         questions relevant to the research community:nnDeepSpeed issues and forums are a good place to ask general questions that do not relate to a question about the functionality \
-         of the code or packages but rather to questions regarding collaboration between DeepSpeed usersnnOther questions:nnPlease do not use this channel for other questions which \
-         could be on-topic at another forum or the wrong place Asking questions in the Questions about DeepSpeed and related topics forum is a great way to get started with the \
-         communitynn<https:wwwdeepspeedorgcommunitiesusershtml>nnIf you have a question regarding how to use the package functionality not addressed here please post a GitHub \
-         issueGitHub or make a comment in the comments on this page If you are looking for feedback on a problem you have encountered please use the github Issues channel as detailed \
-         abovennTips and general guidelines:nnIn the GitHub issueshttp:helpgithubcomtagref_issue channel use the category feature_request for reporting bugs or making feature requests; \
-         use the category question for asking questions you have to get answers to or reporting general questions about the packagennIf you have issues or questions on a feature that \
-         While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
-         resurgence in popularity of DeepSpeed stems largely from the fact that it is easy to use has the full complement of modern deep learning library features and has a \
-         well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good \
-         question and getting a fair response is as follows:nnFirst please use the existing GitHubGitHub user group to ask general questions This group is specifically for users of \
-         DeepSpeedDeepSpeed and the pyDeepSpeedpyDeepSpeed package If your question does not have enough detail to be specific it will probably be better suited to the GitHubGitHub \
-         user group for general R usersnnIf you do have a valid question post it in the following sectionnnQuestions regarding the package itself its documentation features or other \
-         functionality:nnAsk on GitHubGitHub Note that GitHub is the de-facto user group for questions that require more structure and context than you might find in \
-         commentsnnGitHubGitHub for questions about the package itself specifically issues pull requests reporting bugs etcnnQuestions about the DeepSpeed user community itself or \
-         questions relevant to the research community:nnDeepSpeed issues and forums are a good place to ask general questions that do not relate to a question about the functionality \
-         of the code or packages but rather to questions regarding collaboration between DeepSpeed usersnnOther questions:nnPlease do not use this channel for other questions which \
-         could be on-topic at another forum or the wrong place Asking questions in the Questions about DeepSpeed and related topics forum is a great way to get started with the \
-         communitynn<https:wwwdeepspeedorgcommunitiesusershtml>nnIf you have a question regarding how to use the package functionality not addressed here please post a GitHub \
-         issueGitHub or make a comment in the comments on this page If you are looking for feedback on a problem you have encountered please use the github Issues channel as detailed \
-         abovennTips and general guidelines:nnIn the GitHub issueshttp:helpgithubcomtagref_issue channel use the category feature_request for reporting bugs or making feature requests; \
-         use the category question for asking questions you have to get answers to or reporting general questions about the packagennIf you have issues or questions on a feature that \
-         While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
-         resurgence in popularity of DeepSpeed stems largely from the fact that it is easy to use has the full complement of modern deep learning library features and has a \
-         While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
-         resurgence in popularity of DeepSpeed stems largely from the fact that it is easy to use has the full complement of modern deep learning library features and has a \
-         well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good \
-         question and getting a fair response is as follows:nnFirst please use the existing GitHubGitHub user group to ask general questions This group is specifically for users of \
-         DeepSpeed. DeepSpeed and the pyDeepSpeedpyDeepSpeed package If your question does not have enough detail to be specific it will probably be better suited to the GitHubGitHub \
-         user group for general R usersnnIf you do have a valid question post it in the following sectionnnQuestions regarding the package itself its documentation features or other \
-         functionality:nnAsk on GitHubGitHub Note that GitHub is the de-facto user group for questions that require more structure and context than you might find in \
-         commentsnnGitHubGitHub for questions about the package itself specifically issues pull requests reporting bugs etcnnQuestions about the DeepSpeed user community itself or \
-         questions relevant to the research community:nnDeepSpeed issues and forums are a good place to ask general questions that do not relate to a question about the functionality \
-         of the code or packages but rather to questions regarding collaboration between DeepSpeed usersnnOther questions:nnPlease do not use this channel for other questions which \
-         could be on-topic at another forum or the wrong place Asking questions in the Questions about DeepSpeed and related topics forum is a great way to get started with the \
-         communitynn<https:wwwdeepspeedorgcommunitiesusershtml>nnIf you have a question regarding how to use the package functionality not addressed here please post a GitHub \
-         issueGitHub or make a comment in the comments on this page If you are looking for feedback on a problem you have encountered please use the github Issues channel as detailed \
-         abovennTips and general guidelines:nnIn the GitHub issueshttp:helpgithubcomtagref_issue channel use the category feature_request for reporting bugs or making feature requests; \
-         use the category question for asking questions you have to get answers to or reporting general questions about the packagennIf you have issues or questions on a feature that \
-         While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
-         resurgence in popularity of DeepSpeed stems largely from the fact that it is easy to use has the full complement of modern deep learning library features and has a \
-         well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good \
-         question and getting a fair response is as follows:nnFirst please use the existing GitHubGitHub user group to ask general questions This group is specifically for users of \
-         DeepSpeedDeepSpeed and the pyDeepSpeedpyDeepSpeed package If your question does not have enough detail to be specific it will probably be better suited to the GitHubGitHub \
-         user group for general R usersnnIf you do have a valid question post it in the following sectionnnQuestions regarding the package itself its documentation features or other \
-         functionality:nnAsk on GitHubGitHub Note that GitHub is the de-facto user group for questions that require more structure and context than you might find in \
-         commentsnnGitHubGitHub for questions about the package itself specifically issues pull requests reporting bugs etcnnQuestions about the DeepSpeed user community itself or \
-         questions relevant to the research community:nnDeepSpeed issues and forums are a good place to ask general questions that do not relate to a question about the functionality \
-         of the code or packages but rather to questions regarding collaboration between DeepSpeed usersnnOther questions:nnPlease do not use this channel for other questions which \
-         could be on-topic at another forum or the wrong place Asking questions in the Questions about DeepSpeed and related topics forum is a great way to get started with the \
-         communitynn<https:wwwdeepspeedorgcommunitiesusershtml>nnIf you have a question regarding how to use the package functionality not addressed here please post a GitHub \
-         issueGitHub or make a comment in the comments on this page If you are looking for feedback on a problem you have encountered please use the github Issues channel as detailed \
-         abovennTips and general guidelines:nnIn the GitHub issueshttp:helpgithubcomtagref_issue channel use the category feature_request for reporting bugs or making feature requests; \
-         use the category question for asking questions you have to get answers to or reporting general questions about the packagennIf you have issues or questions on a feature that \
-         While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
-         resurgence in popularity of DeepSpeed stems largely from the fact that it is easy to use has the full complement of modern deep learning library features and has a \
-         While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
-         resurgence in popularity of DeepSpeed stems largely from the fact that it is easy to use has the full complement of modern deep learning library features and has a \
-         well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good \
-         question and getting a fair response is as follows:nnFirst please use the existing GitHubGitHub user group to ask general questions This group is specifically for users of \
-         DeepSpeed. DeepSpeed and the pyDeepSpeedpyDeepSpeed package If your question does not have enough detail to be specific it will probably be better suited to the GitHubGitHub \
-         user group for general R usersnnIf you do have a valid question post it in the following sectionnnQuestions regarding the package itself its documentation features or other \
-         functionality:nnAsk on GitHubGitHub Note that GitHub is the de-facto user group for questions that require more structure and context than you might find in \
-         commentsnnGitHubGitHub for questions about the package itself specifically issues pull requests reporting bugs etcnnQuestions about the DeepSpeed user community itself or \
-         questions relevant to the research community:nnDeepSpeed issues and forums are a good place to ask general questions that do not relate to a question about the functionality \
-         of the code or packages but rather to questions regarding collaboration between DeepSpeed usersnnOther questions:nnPlease do not use this channel for other questions which \
-         could be on-topic at another forum or the wrong place Asking questions in the Questions about DeepSpeed and related topics forum is a great way to get started with the \
-         communitynn<https:wwwdeepspeedorgcommunitiesusershtml>nnIf you have a question regarding how to use the package functionality not addressed here please post a GitHub \
-         issueGitHub or make a comment in the comments on this page If you are looking for feedback on a problem you have encountered please use the github Issues channel as detailed \
-         abovennTips and general guidelines:nnIn the GitHub issueshttp:helpgithubcomtagref_issue channel use the category feature_request for reporting bugs or making feature requests; \
-         use the category question for asking questions you have to get answers to or reporting general questions about the packagennIf you have issues or questions on a feature that \
-         While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
-         resurgence in popularity of DeepSpeed stems largely from the fact that it is easy to use has the full complement of modern deep learning library features and has a \
-         well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good \
-         question and getting a fair response is as follows:nnFirst please use the existing GitHubGitHub user group to ask general questions This group is specifically for users of \
-         DeepSpeedDeepSpeed and the pyDeepSpeedpyDeepSpeed package If your question does not have enough detail to be specific it will probably be better suited to the GitHubGitHub \
-         user group for general R usersnnIf you do have a valid question post it in the following sectionnnQuestions regarding the package itself its documentation features or other \
-         functionality:nnAsk on GitHubGitHub Note that GitHub is the de-facto user group for questions that require more structure and context than you might find in \
-         commentsnnGitHubGitHub for questions about the package itself specifically issues pull requests reporting bugs etcnnQuestions about the DeepSpeed user community itself or \
-         questions relevant to the research community:nnDeepSpeed issues and forums are a good place to ask general questions that do not relate to a question about the functionality \
-         of the code or packages but rather to questions regarding collaboration between DeepSpeed usersnnOther questions:nnPlease do not use this channel for other questions which \
-         could be on-topic at another forum or the wrong place Asking questions in the Questions about DeepSpeed and related topics forum is a great way to get started with the \
-         communitynn<https:wwwdeepspeedorgcommunitiesusershtml>nnIf you have a question regarding how to use the package functionality not addressed here please post a GitHub \
-         issueGitHub or make a comment in the comments on this page If you are looking for feedback on a problem you have encountered please use the github Issues channel as detailed \
-         abovennTips and general guidelines:nnIn the GitHub issueshttp:helpgithubcomtagref_issue channel use the category feature_request for reporting bugs or making feature requests; \
-         use the category question for asking questions you have to get answers to or reporting general questions about the packagennIf you have issues or questions on a feature that \
-         While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
-         resurgence in popularity of DeepSpeed stems largely from the fact that it is easy to use has the full complement of modern deep learning library features and has a \
-         While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
-         resurgence in popularity of DeepSpeed stems largely from the fact that it is easy to use has the full complement of modern deep learning library features and has a \
-         well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good \
-         question and getting a fair response is as follows:nnFirst please use the existing GitHubGitHub user group to ask general questions This group is specifically for users of \
-         DeepSpeed. DeepSpeed and the pyDeepSpeedpyDeepSpeed package If your question does not have enough detail to be specific it will probably be better suited to the GitHubGitHub \
-         user group for general R usersnnIf you do have a valid question post it in the following sectionnnQuestions regarding the package itself its documentation features or other \
-         functionality:nnAsk on GitHubGitHub Note that GitHub is the de-facto user group for questions that require more structure and context than you might find in \
-         commentsnnGitHubGitHub for questions about the package itself specifically issues pull requests reporting bugs etcnnQuestions about the DeepSpeed user community itself or \
-         questions relevant to the research community:nnDeepSpeed issues and forums are a good place to ask general questions that do not relate to a question about the functionality \
-         well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good ",
-         "DeepSpeed is a machine learning framework ",
-         "He is working on",
-         "He has a",
-         "He got all",
-         "Everyone is happy and I can",
-         "The new movie that got Oscar this year",
-         "In the far far distance from our galaxy,",
-         "Peace is the only way"
-]
+if args.seq_length == 8000:
+    input_sentences = [
+            "DeepSpeed is a machine learning framework for deep neural network research that has gained widespread use among researchers ie pyDeepSpeed especially in recent years \
+            While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
+            resurgence in popularity of DeepSpeed stems largely from the fact that it is easy to use has the full complement of modern deep learning library features and has a \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good \
+            question and getting a fair response is as follows:nnFirst please use the existing GitHubGitHub user group to ask general questions This group is specifically for users of \
+            DeepSpeed. DeepSpeed and the pyDeepSpeedpyDeepSpeed package If your question does not have enough detail to be specific it will probably be better suited to the GitHubGitHub \
+            user group for general R usersnnIf you do have a valid question post it in the following sectionnnQuestions regarding the package itself its documentation features or other \
+            functionality:nnAsk on GitHubGitHub Note that GitHub is the de-facto user group for questions that require more structure and context than you might find in \
+            commentsnnGitHubGitHub for questions about the package itself specifically issues pull requests reporting bugs etcnnQuestions about the DeepSpeed user community itself or \
+            questions relevant to the research community:nnDeepSpeed issues and forums are a good place to ask general questions that do not relate to a question about the functionality \
+            of the code or packages but rather to questions regarding collaboration between DeepSpeed usersnnOther questions:nnPlease do not use this channel for other questions which \
+            could be on-topic at another forum or the wrong place Asking questions in the Questions about DeepSpeed and related topics forum is a great way to get started with the \
+            communitynn<https:wwwdeepspeedorgcommunitiesusershtml>nnIf you have a question regarding how to use the package functionality not addressed here please post a GitHub \
+            issueGitHub or make a comment in the comments on this page If you are looking for feedback on a problem you have encountered please use the github Issues channel as detailed \
+            abovennTips and general guidelines:nnIn the GitHub issueshttp:helpgithubcomtagref_issue channel use the category feature_request for reporting bugs or making feature requests; \
+            use the category question for asking questions you have to get answers to or reporting general questions about the packagennIf you have issues or questions on a feature that \
+            While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
+            resurgence in popularity of DeepSpeed stems largely from the fact that it is easy to use has the full complement of modern deep learning library features and has a \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good \
+            question and getting a fair response is as follows:nnFirst please use the existing GitHubGitHub user group to ask general questions This group is specifically for users of \
+            DeepSpeedDeepSpeed and the pyDeepSpeedpyDeepSpeed package If your question does not have enough detail to be specific it will probably be better suited to the GitHubGitHub \
+            user group for general R usersnnIf you do have a valid question post it in the following sectionnnQuestions regarding the package itself its documentation features or other \
+            functionality:nnAsk on GitHubGitHub Note that GitHub is the de-facto user group for questions that require more structure and context than you might find in \
+            commentsnnGitHubGitHub for questions about the package itself specifically issues pull requests reporting bugs etcnnQuestions about the DeepSpeed user community itself or \
+            questions relevant to the research community:nnDeepSpeed issues and forums are a good place to ask general questions that do not relate to a question about the functionality \
+            of the code or packages but rather to questions regarding collaboration between DeepSpeed usersnnOther questions:nnPlease do not use this channel for other questions which \
+            While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
+            resurgence in popularity of DeepSpeed stems largely from the fact that it is easy to use has the full complement of modern deep learning library features and has a \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good \
+            question and getting a fair response is as follows:nnFirst please use the existing GitHubGitHub user group to ask general questions This group is specifically for users of \
+            DeepSpeed. DeepSpeed and the pyDeepSpeedpyDeepSpeed package If your question does not have enough detail to be specific it will probably be better suited to the GitHubGitHub \
+            user group for general R usersnnIf you do have a valid question post it in the following sectionnnQuestions regarding the package itself its documentation features or other \
+            functionality:nnAsk on GitHubGitHub Note that GitHub is the de-facto user group for questions that require more structure and context than you might find in \
+            commentsnnGitHubGitHub for questions about the package itself specifically issues pull requests reporting bugs etcnnQuestions about the DeepSpeed user community itself or \
+            questions relevant to the research community:nnDeepSpeed issues and forums are a good place to ask general questions that do not relate to a question about the functionality \
+            of the code or packages but rather to questions regarding collaboration between DeepSpeed usersnnOther questions:nnPlease do not use this channel for other questions which \
+            could be on-topic at another forum or the wrong place Asking questions in the Questions about DeepSpeed and related topics forum is a great way to get started with the \
+            communitynn<https:wwwdeepspeedorgcommunitiesusershtml>nnIf you have a question regarding how to use the package functionality not addressed here please post a GitHub \
+            issueGitHub or make a comment in the comments on this page If you are looking for feedback on a problem you have encountered please use the github Issues channel as detailed \
+            abovennTips and general guidelines:nnIn the GitHub issueshttp:helpgithubcomtagref_issue channel use the category feature_request for reporting bugs or making feature requests; \
+            use the category question for asking questions you have to get answers to or reporting general questions about the packagennIf you have issues or questions on a feature that \
+            While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
+            resurgence in popularity of DeepSpeed stems largely from the fact that it is easy to use has the full complement of modern deep learning library features and has a \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good \
+            question and getting a fair response is as follows:nnFirst please use the existing GitHubGitHub user group to ask general questions This group is specifically for users of \
+            DeepSpeedDeepSpeed and the pyDeepSpeedpyDeepSpeed package If your question does not have enough detail to be specific it will probably be better suited to the GitHubGitHub \
+            user group for general R usersnnIf you do have a valid question post it in the following sectionnnQuestions regarding the package itself its documentation features or other \
+            functionality:nnAsk on GitHubGitHub Note that GitHub is the de-facto user group for questions that require more structure and context than you might find in \
+            commentsnnGitHubGitHub for questions about the package itself specifically issues pull requests reporting bugs etcnnQuestions about the DeepSpeed user community itself or \
+            questions relevant to the research community:nnDeepSpeed issues and forums are a good place to ask general questions that do not relate to a question about the functionality \
+            of the code or packages but rather to questions regarding collaboration between DeepSpeed usersnnOther questions:nnPlease do not use this channel for other questions which \
+            could be on-topic at another forum or the wrong place Asking questions in the Questions about DeepSpeed and related topics forum is a great way to get started with the \
+            communitynn<https:wwwdeepspeedorgcommunitiesusershtml>nnIf you have a question regarding how to use the package functionality not addressed here please post a GitHub \
+            issueGitHub or make a comment in the comments on this page If you are looking for feedback on a problem you have encountered please use the github Issues channel as detailed \
+            abovennTips and general guidelines:nnIn the GitHub issueshttp:helpgithubcomtagref_issue channel use the category feature_request for reporting bugs or making feature requests; \
+            use the category question for asking questions you have to get answers to or reporting general questions about the packagennIf you have issues or questions on a feature that \
+            While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
+            resurgence in popularity of DeepSpeed stems largely from the fact that it is easy to use has the full complement of modern deep learning library features and has a \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good \
+            question and getting a fair response is as follows:nnFirst please use the existing GitHubGitHub user group to ask general questions This group is specifically for users of \
+            DeepSpeedDeepSpeed and the pyDeepSpeedpyDeepSpeed package If your question does not have enough detail to be specific it will probably be better suited to the GitHubGitHub \
+            user group for general R usersnnIf you do have a valid question post it in the following sectionnnQuestions regarding the package itself its documentation features or other \
+            functionality:nnAsk on GitHubGitHub Note that GitHub is the de-facto user group for questions that require more structure and context than you might find in \
+            commentsnnGitHubGitHub for questions about the package itself specifically issues pull requests reporting bugs etcnnQuestions about the DeepSpeed user community itself or \
+            questions relevant to the research community:nnDeepSpeed issues and forums are a good place to ask general questions that do not relate to a question about the functionality \
+            of the code or packages but rather to questions regarding collaboration between DeepSpeed usersnnOther questions:nnPlease do not use this channel for other questions which \
+            could be on-topic at another forum or the wrong place Asking questions in the Questions about DeepSpeed and related topics forum is a great way to get started with the \
+            communitynn<https:wwwdeepspeedorgcommunitiesusershtml>nnIf you have a question regarding how to use the package functionality not addressed here please post a GitHub \
+            issueGitHub or make a comment in the comments on this page If you are looking for feedback on a problem you have encountered please use the github Issues channel as detailed \
+            abovennTips and general guidelines:nnIn the GitHub issueshttp:helpgithubcomtagref_issue channel use the category feature_request for reporting bugs or making feature requests; \
+            use the category question for asking questions you have to get answers to or reporting general questions about the packagennIf you have issues or questions on a feature that \
+            While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
+            resurgence in popularity of DeepSpeed stems largely from the fact that it is easy to use has the full complement of modern deep learning library features and has a \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good \
+            question and getting a fair response is as follows:nnFirst please use the existing GitHubGitHub user group to ask general questions This group is specifically for users of \
+            DeepSpeedDeepSpeed and the pyDeepSpeedpyDeepSpeed package If your question does not have enough detail to be specific it will probably be better suited to the GitHubGitHub \
+            user group for general R usersnnIf you do have a valid question post it in the following sectionnnQuestions regarding the package itself its documentation features or other \
+            functionality:nnAsk on GitHubGitHub Note that GitHub is the de-facto user group for questions that require more structure and context than you might find in \
+            commentsnnGitHubGitHub for questions about the package itself specifically issues pull requests reporting bugs etcnnQuestions about the DeepSpeed user community itself or \
+            questions relevant to the research community:nnDeepSpeed issues and forums are a good place to ask general questions that do not relate to a question about the functionality \
+            of the code or packages but rather to questions regarding collaboration between DeepSpeed usersnnOther questions:nnPlease do not use this channel for other questions which \
+            could be on-topic at another forum or the wrong place Asking questions in the Questions about DeepSpeed and related topics forum is a great way to get started with the \
+            communitynn<https:wwwdeepspeedorgcommunitiesusershtml>nnIf you have a question regarding how to use the package functionality not addressed here please post a GitHub \
+            issueGitHub or make a comment in the comments on this page If you are looking for feedback on a problem you have encountered please use the github Issues channel as detailed \
+            abovennTips and general guidelines:nnIn the GitHub issueshttp:helpgithubcomtagref_issue channel use the category feature_request for reporting bugs or making feature requests; \
+            use the category question for asking questions you have to get answers to or reporting general questions about the packagennIf you have issues or questions on a feature that \
+            While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
+            resurgence in popularity of DeepSpeed stems largely from the fact that it is easy to use has the full complement of modern deep learning library features and has a \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good \
+            question and getting a fair response is as follows:nnFirst please use the existing GitHubGitHub user group to ask general questions This group is specifically for users of \
+            DeepSpeedDeepSpeed and the pyDeepSpeedpyDeepSpeed package If your question does not have enough detail to be specific it will probably be better suited to the GitHubGitHub \
+            user group for general R usersnnIf you do have a valid question post it in the following sectionnnQuestions regarding the package itself its documentation features or other \
+            functionality:nnAsk on GitHubGitHub Note that GitHub is the de-facto user group for questions that require more structure and context than you might find in \
+            commentsnnGitHubGitHub for questions about the package itself specifically issues pull requests reporting bugs etcnnQuestions about the DeepSpeed user community itself or \
+            questions relevant to the research community:nnDeepSpeed issues and forums are a good place to ask general questions that do not relate to a question about the functionality \
+            of the code or packages but rather to questions regarding collaboration between DeepSpeed usersnnOther questions:nnPlease do not use this channel for other questions which \
+            could be on-topic at another forum or the wrong place Asking questions in the Questions about DeepSpeed and related topics forum is a great way to get started with the \
+            communitynn<https:wwwdeepspeedorgcommunitiesusershtml>nnIf you have a question regarding how to use the package functionality not addressed here please post a GitHub \
+            issueGitHub or make a comment in the comments on this page If you are looking for feedback on a problem you have encountered please use the github Issues channel as detailed \
+            abovennTips and general guidelines:nnIn the GitHub issueshttp:helpgithubcomtagref_issue channel use the category feature_request for reporting bugs or making feature requests; \
+            use the category question for asking questions you have to get answers to or reporting general questions about the packagennIf you have issues or questions on a feature that \
+            While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
+            resurgence in popularity of DeepSpeed stems largely from the fact that it is easy to use has the full complement of modern deep learning library features and has a \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good \
+            question and getting a fair response is as follows:nnFirst please use the existing GitHubGitHub user group to ask general questions This group is specifically for users of \
+            DeepSpeedDeepSpeed and the pyDeepSpeedpyDeepSpeed package If your question does not have enough detail to be specific it will probably be better suited to the GitHubGitHub \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good "
+    ]
+
+if args.seq_length == 7400:
+    input_sentences = [
+            "DeepSpeed is a machine learning framework for deep neural network research that has gained widespread use among researchers ie pyDeepSpeed especially in recent years \
+            While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
+            resurgence in popularity of DeepSpeed stems largely from the fact that it is easy to use has the full complement of modern deep learning library features and has a \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good \
+            question and getting a fair response is as follows:nnFirst please use the existing GitHubGitHub user group to ask general questions This group is specifically for users of \
+            DeepSpeed. DeepSpeed and the pyDeepSpeedpyDeepSpeed package If your question does not have enough detail to be specific it will probably be better suited to the GitHubGitHub \
+            user group for general R usersnnIf you do have a valid question post it in the following sectionnnQuestions regarding the package itself its documentation features or other \
+            functionality:nnAsk on GitHubGitHub Note that GitHub is the de-facto user group for questions that require more structure and context than you might find in \
+            commentsnnGitHubGitHub for questions about the package itself specifically issues pull requests reporting bugs etcnnQuestions about the DeepSpeed user community itself or \
+            questions relevant to the research community:nnDeepSpeed issues and forums are a good place to ask general questions that do not relate to a question about the functionality \
+            of the code or packages but rather to questions regarding collaboration between DeepSpeed usersnnOther questions:nnPlease do not use this channel for other questions which \
+            could be on-topic at another forum or the wrong place Asking questions in the Questions about DeepSpeed and related topics forum is a great way to get started with the \
+            communitynn<https:wwwdeepspeedorgcommunitiesusershtml>nnIf you have a question regarding how to use the package functionality not addressed here please post a GitHub \
+            issueGitHub or make a comment in the comments on this page If you are looking for feedback on a problem you have encountered please use the github Issues channel as detailed \
+            abovennTips and general guidelines:nnIn the GitHub issueshttp:helpgithubcomtagref_issue channel use the category feature_request for reporting bugs or making feature requests; \
+            use the category question for asking questions you have to get answers to or reporting general questions about the packagennIf you have issues or questions on a feature that \
+            While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
+            resurgence in popularity of DeepSpeed stems largely from the fact that it is easy to use has the full complement of modern deep learning library features and has a \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good \
+            question and getting a fair response is as follows:nnFirst please use the existing GitHubGitHub user group to ask general questions This group is specifically for users of \
+            DeepSpeedDeepSpeed and the pyDeepSpeedpyDeepSpeed package If your question does not have enough detail to be specific it will probably be better suited to the GitHubGitHub \
+            user group for general R usersnnIf you do have a valid question post it in the following sectionnnQuestions regarding the package itself its documentation features or other \
+            functionality:nnAsk on GitHubGitHub Note that GitHub is the de-facto user group for questions that require more structure and context than you might find in \
+            commentsnnGitHubGitHub for questions about the package itself specifically issues pull requests reporting bugs etcnnQuestions about the DeepSpeed user community itself or \
+            questions relevant to the research community:nnDeepSpeed issues and forums are a good place to ask general questions that do not relate to a question about the functionality \
+            of the code or packages but rather to questions regarding collaboration between DeepSpeed usersnnOther questions:nnPlease do not use this channel for other questions which \
+            While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
+            resurgence in popularity of DeepSpeed stems largely from the fact that it is easy to use has the full complement of modern deep learning library features and has a \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good \
+            question and getting a fair response is as follows:nnFirst please use the existing GitHubGitHub user group to ask general questions This group is specifically for users of \
+            DeepSpeed. DeepSpeed and the pyDeepSpeedpyDeepSpeed package If your question does not have enough detail to be specific it will probably be better suited to the GitHubGitHub \
+            user group for general R usersnnIf you do have a valid question post it in the following sectionnnQuestions regarding the package itself its documentation features or other \
+            functionality:nnAsk on GitHubGitHub Note that GitHub is the de-facto user group for questions that require more structure and context than you might find in \
+            commentsnnGitHubGitHub for questions about the package itself specifically issues pull requests reporting bugs etcnnQuestions about the DeepSpeed user community itself or \
+            questions relevant to the research community:nnDeepSpeed issues and forums are a good place to ask general questions that do not relate to a question about the functionality \
+            of the code or packages but rather to questions regarding collaboration between DeepSpeed usersnnOther questions:nnPlease do not use this channel for other questions which \
+            could be on-topic at another forum or the wrong place Asking questions in the Questions about DeepSpeed and related topics forum is a great way to get started with the \
+            communitynn<https:wwwdeepspeedorgcommunitiesusershtml>nnIf you have a question regarding how to use the package functionality not addressed here please post a GitHub \
+            issueGitHub or make a comment in the comments on this page If you are looking for feedback on a problem you have encountered please use the github Issues channel as detailed \
+            abovennTips and general guidelines:nnIn the GitHub issueshttp:helpgithubcomtagref_issue channel use the category feature_request for reporting bugs or making feature requests; \
+            use the category question for asking questions you have to get answers to or reporting general questions about the packagennIf you have issues or questions on a feature that \
+            While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
+            resurgence in popularity of DeepSpeed stems largely from the fact that it is easy to use has the full complement of modern deep learning library features and has a \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good \
+            question and getting a fair response is as follows:nnFirst please use the existing GitHubGitHub user group to ask general questions This group is specifically for users of \
+            DeepSpeedDeepSpeed and the pyDeepSpeedpyDeepSpeed package If your question does not have enough detail to be specific it will probably be better suited to the GitHubGitHub \
+            user group for general R usersnnIf you do have a valid question post it in the following sectionnnQuestions regarding the package itself its documentation features or other \
+            functionality:nnAsk on GitHubGitHub Note that GitHub is the de-facto user group for questions that require more structure and context than you might find in \
+            commentsnnGitHubGitHub for questions about the package itself specifically issues pull requests reporting bugs etcnnQuestions about the DeepSpeed user community itself or \
+            questions relevant to the research community:nnDeepSpeed issues and forums are a good place to ask general questions that do not relate to a question about the functionality \
+            of the code or packages but rather to questions regarding collaboration between DeepSpeed usersnnOther questions:nnPlease do not use this channel for other questions which \
+            could be on-topic at another forum or the wrong place Asking questions in the Questions about DeepSpeed and related topics forum is a great way to get started with the \
+            communitynn<https:wwwdeepspeedorgcommunitiesusershtml>nnIf you have a question regarding how to use the package functionality not addressed here please post a GitHub \
+            issueGitHub or make a comment in the comments on this page If you are looking for feedback on a problem you have encountered please use the github Issues channel as detailed \
+            abovennTips and general guidelines:nnIn the GitHub issueshttp:helpgithubcomtagref_issue channel use the category feature_request for reporting bugs or making feature requests; \
+            use the category question for asking questions you have to get answers to or reporting general questions about the packagennIf you have issues or questions on a feature that \
+            While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
+            resurgence in popularity of DeepSpeed stems largely from the fact that it is easy to use has the full complement of modern deep learning library features and has a \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good \
+            question and getting a fair response is as follows:nnFirst please use the existing GitHubGitHub user group to ask general questions This group is specifically for users of \
+            DeepSpeedDeepSpeed and the pyDeepSpeedpyDeepSpeed package If your question does not have enough detail to be specific it will probably be better suited to the GitHubGitHub \
+            user group for general R usersnnIf you do have a valid question post it in the following sectionnnQuestions regarding the package itself its documentation features or other \
+            functionality:nnAsk on GitHubGitHub Note that GitHub is the de-facto user group for questions that require more structure and context than you might find in \
+            commentsnnGitHubGitHub for questions about the package itself specifically issues pull requests reporting bugs etcnnQuestions about the DeepSpeed user community itself or \
+            questions relevant to the research community:nnDeepSpeed issues and forums are a good place to ask general questions that do not relate to a question about the functionality \
+            of the code or packages but rather to questions regarding collaboration between DeepSpeed usersnnOther questions:nnPlease do not use this channel for other questions which \
+            could be on-topic at another forum or the wrong place Asking questions in the Questions about DeepSpeed and related topics forum is a great way to get started with the \
+            communitynn<https:wwwdeepspeedorgcommunitiesusershtml>nnIf you have a question regarding how to use the package functionality not addressed here please post a GitHub \
+            issueGitHub or make a comment in the comments on this page If you are looking for feedback on a problem you have encountered please use the github Issues channel as detailed \
+            abovennTips and general guidelines:nnIn the GitHub issueshttp:helpgithubcomtagref_issue channel use the category feature_request for reporting bugs or making feature requests; \
+            use the category question for asking questions you have to get answers to or reporting general questions about the packagennIf you have issues or questions on a feature that \
+            While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
+            resurgence in popularity of DeepSpeed stems largely from the fact that it is easy to use has the full complement of modern deep learning library features and has a \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good \
+            question and getting a fair response is as follows:nnFirst please use the existing GitHubGitHub user group to ask general questions This group is specifically for users of \
+            DeepSpeedDeepSpeed and the pyDeepSpeedpyDeepSpeed package If your question does not have enough detail to be specific it will probably be better suited to the GitHubGitHub \
+            user group for general R usersnnIf you do have a valid question post it in the following sectionnnQuestions regarding the package itself its documentation features or other \
+            functionality:nnAsk on GitHubGitHub Note that GitHub is the de-facto user group for questions that require more structure and context than you might find in \
+            commentsnnGitHubGitHub for questions about the package itself specifically issues pull requests reporting bugs etcnnQuestions about the DeepSpeed user community itself or \
+            questions relevant to the research community:nnDeepSpeed issues and forums are a good place to ask general questions that do not relate to a question about the functionality \
+            of the code or packages but rather to questions regarding collaboration between DeepSpeed usersnnOther questions:nnPlease do not use this channel for other questions which \
+            could be on-topic at another forum or the wrong place Asking questions in the Questions about DeepSpeed and related topics forum is a great way to get started with the \
+            communitynn<https:wwwdeepspeedorgcommunitiesusershtml>nnIf you have a question regarding how to use the package functionality not addressed here please post a GitHub \
+            issueGitHub or make a comment in the comments on this page If you are looking for feedback on a problem you have encountered please use the github Issues channel as detailed \
+            abovennTips and general guidelines:nnIn the GitHub issueshttp:helpgithubcomtagref_issue channel use the category feature_request for reporting bugs or making feature requests; \
+            use the category question for asking questions you have to get answers to or reporting general questions about the packagennIf you have issues or questions on a feature that \
+            While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
+            resurgence in popularity of DeepSpeed stems largely from the fact that it is easy to use has the full complement of modern deep learning library features and has a \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good \
+            question and getting a fair response is as follows:nnFirst please use the existing GitHubGitHub user group to ask general questions This group is specifically for users of \
+            DeepSpeedDeepSpeed and the pyDeepSpeedpyDeepSpeed package If your question does not have enough detail to be specific it will probably be better suited to the GitHubGitHub \
+            user group for general R usersnnIf you do have a valid question post it in the following sectionnnQuestions regarding the package itself its documentation features or other \
+            functionality:nnAsk on GitHubGitHub Note that GitHub is the de-facto user group for questions that require more structure and context than you might find in \
+            commentsnnGitHubGitHub for questions about the package itself specifically issues pull requests reporting bugs etcnnQuestions about the DeepSpeed user community itself or \
+            questions relevant to the research community:nnDeepSpeed issues and forums are a good place to ask general questions that do not relate to a question about the functionality \
+            of the code or packages but rather to questions regarding collaboration between DeepSpeed usersnnOther questions:nnPlease do not use this channel for other questions which \
+            could be on-topic at another forum or the wrong place Asking questions in the Questions about DeepSpeed and related topics forum is a great way to get started with the \
+            communitynn<https:wwwdeepspeedorgcommunitiesusershtml>nnIf you have a question regarding how to use the package functionality not addressed here please post a GitHub \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good "
+    ]
+
+if args.seq_length == 6800:
+    input_sentences = [
+            "DeepSpeed is a machine learning framework for deep neural network research that has gained widespread use among researchers ie pyDeepSpeed especially in recent years \
+            While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
+            resurgence in popularity of DeepSpeed stems largely from the fact that it is easy to use has the full complement of modern deep learning library features and has a \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good \
+            question and getting a fair response is as follows:nnFirst please use the existing GitHubGitHub user group to ask general questions This group is specifically for users of \
+            DeepSpeed. DeepSpeed and the pyDeepSpeedpyDeepSpeed package If your question does not have enough detail to be specific it will probably be better suited to the GitHubGitHub \
+            user group for general R usersnnIf you do have a valid question post it in the following sectionnnQuestions regarding the package itself its documentation features or other \
+            functionality:nnAsk on GitHubGitHub Note that GitHub is the de-facto user group for questions that require more structure and context than you might find in \
+            commentsnnGitHubGitHub for questions about the package itself specifically issues pull requests reporting bugs etcnnQuestions about the DeepSpeed user community itself or \
+            questions relevant to the research community:nnDeepSpeed issues and forums are a good place to ask general questions that do not relate to a question about the functionality \
+            of the code or packages but rather to questions regarding collaboration between DeepSpeed usersnnOther questions:nnPlease do not use this channel for other questions which \
+            could be on-topic at another forum or the wrong place Asking questions in the Questions about DeepSpeed and related topics forum is a great way to get started with the \
+            communitynn<https:wwwdeepspeedorgcommunitiesusershtml>nnIf you have a question regarding how to use the package functionality not addressed here please post a GitHub \
+            issueGitHub or make a comment in the comments on this page If you are looking for feedback on a problem you have encountered please use the github Issues channel as detailed \
+            abovennTips and general guidelines:nnIn the GitHub issueshttp:helpgithubcomtagref_issue channel use the category feature_request for reporting bugs or making feature requests; \
+            use the category question for asking questions you have to get answers to or reporting general questions about the packagennIf you have issues or questions on a feature that \
+            While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
+            resurgence in popularity of DeepSpeed stems largely from the fact that it is easy to use has the full complement of modern deep learning library features and has a \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good \
+            question and getting a fair response is as follows:nnFirst please use the existing GitHubGitHub user group to ask general questions This group is specifically for users of \
+            DeepSpeedDeepSpeed and the pyDeepSpeedpyDeepSpeed package If your question does not have enough detail to be specific it will probably be better suited to the GitHubGitHub \
+            user group for general R usersnnIf you do have a valid question post it in the following sectionnnQuestions regarding the package itself its documentation features or other \
+            functionality:nnAsk on GitHubGitHub Note that GitHub is the de-facto user group for questions that require more structure and context than you might find in \
+            commentsnnGitHubGitHub for questions about the package itself specifically issues pull requests reporting bugs etcnnQuestions about the DeepSpeed user community itself or \
+            questions relevant to the research community:nnDeepSpeed issues and forums are a good place to ask general questions that do not relate to a question about the functionality \
+            of the code or packages but rather to questions regarding collaboration between DeepSpeed usersnnOther questions:nnPlease do not use this channel for other questions which \
+            While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
+            resurgence in popularity of DeepSpeed stems largely from the fact that it is easy to use has the full complement of modern deep learning library features and has a \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good \
+            question and getting a fair response is as follows:nnFirst please use the existing GitHubGitHub user group to ask general questions This group is specifically for users of \
+            DeepSpeed. DeepSpeed and the pyDeepSpeedpyDeepSpeed package If your question does not have enough detail to be specific it will probably be better suited to the GitHubGitHub \
+            user group for general R usersnnIf you do have a valid question post it in the following sectionnnQuestions regarding the package itself its documentation features or other \
+            functionality:nnAsk on GitHubGitHub Note that GitHub is the de-facto user group for questions that require more structure and context than you might find in \
+            commentsnnGitHubGitHub for questions about the package itself specifically issues pull requests reporting bugs etcnnQuestions about the DeepSpeed user community itself or \
+            questions relevant to the research community:nnDeepSpeed issues and forums are a good place to ask general questions that do not relate to a question about the functionality \
+            of the code or packages but rather to questions regarding collaboration between DeepSpeed usersnnOther questions:nnPlease do not use this channel for other questions which \
+            could be on-topic at another forum or the wrong place Asking questions in the Questions about DeepSpeed and related topics forum is a great way to get started with the \
+            communitynn<https:wwwdeepspeedorgcommunitiesusershtml>nnIf you have a question regarding how to use the package functionality not addressed here please post a GitHub \
+            issueGitHub or make a comment in the comments on this page If you are looking for feedback on a problem you have encountered please use the github Issues channel as detailed \
+            abovennTips and general guidelines:nnIn the GitHub issueshttp:helpgithubcomtagref_issue channel use the category feature_request for reporting bugs or making feature requests; \
+            use the category question for asking questions you have to get answers to or reporting general questions about the packagennIf you have issues or questions on a feature that \
+            While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
+            resurgence in popularity of DeepSpeed stems largely from the fact that it is easy to use has the full complement of modern deep learning library features and has a \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good \
+            question and getting a fair response is as follows:nnFirst please use the existing GitHubGitHub user group to ask general questions This group is specifically for users of \
+            DeepSpeedDeepSpeed and the pyDeepSpeedpyDeepSpeed package If your question does not have enough detail to be specific it will probably be better suited to the GitHubGitHub \
+            user group for general R usersnnIf you do have a valid question post it in the following sectionnnQuestions regarding the package itself its documentation features or other \
+            functionality:nnAsk on GitHubGitHub Note that GitHub is the de-facto user group for questions that require more structure and context than you might find in \
+            commentsnnGitHubGitHub for questions about the package itself specifically issues pull requests reporting bugs etcnnQuestions about the DeepSpeed user community itself or \
+            questions relevant to the research community:nnDeepSpeed issues and forums are a good place to ask general questions that do not relate to a question about the functionality \
+            of the code or packages but rather to questions regarding collaboration between DeepSpeed usersnnOther questions:nnPlease do not use this channel for other questions which \
+            could be on-topic at another forum or the wrong place Asking questions in the Questions about DeepSpeed and related topics forum is a great way to get started with the \
+            communitynn<https:wwwdeepspeedorgcommunitiesusershtml>nnIf you have a question regarding how to use the package functionality not addressed here please post a GitHub \
+            issueGitHub or make a comment in the comments on this page If you are looking for feedback on a problem you have encountered please use the github Issues channel as detailed \
+            abovennTips and general guidelines:nnIn the GitHub issueshttp:helpgithubcomtagref_issue channel use the category feature_request for reporting bugs or making feature requests; \
+            use the category question for asking questions you have to get answers to or reporting general questions about the packagennIf you have issues or questions on a feature that \
+            While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
+            resurgence in popularity of DeepSpeed stems largely from the fact that it is easy to use has the full complement of modern deep learning library features and has a \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good \
+            question and getting a fair response is as follows:nnFirst please use the existing GitHubGitHub user group to ask general questions This group is specifically for users of \
+            DeepSpeedDeepSpeed and the pyDeepSpeedpyDeepSpeed package If your question does not have enough detail to be specific it will probably be better suited to the GitHubGitHub \
+            user group for general R usersnnIf you do have a valid question post it in the following sectionnnQuestions regarding the package itself its documentation features or other \
+            functionality:nnAsk on GitHubGitHub Note that GitHub is the de-facto user group for questions that require more structure and context than you might find in \
+            commentsnnGitHubGitHub for questions about the package itself specifically issues pull requests reporting bugs etcnnQuestions about the DeepSpeed user community itself or \
+            questions relevant to the research community:nnDeepSpeed issues and forums are a good place to ask general questions that do not relate to a question about the functionality \
+            of the code or packages but rather to questions regarding collaboration between DeepSpeed usersnnOther questions:nnPlease do not use this channel for other questions which \
+            could be on-topic at another forum or the wrong place Asking questions in the Questions about DeepSpeed and related topics forum is a great way to get started with the \
+            communitynn<https:wwwdeepspeedorgcommunitiesusershtml>nnIf you have a question regarding how to use the package functionality not addressed here please post a GitHub \
+            issueGitHub or make a comment in the comments on this page If you are looking for feedback on a problem you have encountered please use the github Issues channel as detailed \
+            abovennTips and general guidelines:nnIn the GitHub issueshttp:helpgithubcomtagref_issue channel use the category feature_request for reporting bugs or making feature requests; \
+            use the category question for asking questions you have to get answers to or reporting general questions about the packagennIf you have issues or questions on a feature that \
+            While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
+            resurgence in popularity of DeepSpeed stems largely from the fact that it is easy to use has the full complement of modern deep learning library features and has a \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good \
+            question and getting a fair response is as follows:nnFirst please use the existing GitHubGitHub user group to ask general questions This group is specifically for users of \
+            DeepSpeedDeepSpeed and the pyDeepSpeedpyDeepSpeed package If your question does not have enough detail to be specific it will probably be better suited to the GitHubGitHub \
+            user group for general R usersnnIf you do have a valid question post it in the following sectionnnQuestions regarding the package itself its documentation features or other \
+            functionality:nnAsk on GitHubGitHub Note that GitHub is the de-facto user group for questions that require more structure and context than you might find in \
+            commentsnnGitHubGitHub for questions about the package itself specifically issues pull requests reporting bugs etcnnQuestions about the DeepSpeed user community itself or \
+            questions relevant to the research community:nnDeepSpeed issues and forums are a good place to ask general questions that do not relate to a question about the functionality \
+            of the code or packages but rather to questions regarding collaboration between DeepSpeed usersnnOther questions:nnPlease do not use this channel for other questions which \
+            could be on-topic at another forum or the wrong place Asking questions in the Questions about DeepSpeed and related topics forum is a great way to get started with the \
+            communitynn<https:wwwdeepspeedorgcommunitiesusershtml>nnIf you have a question regarding how to use the package functionality not addressed here please post a GitHub \
+            issueGitHub or make a comment in the comments on this page If you are looking for feedback on a problem you have encountered please use the github Issues channel as detailed \
+            abovennTips and general guidelines:nnIn the GitHub issueshttp:helpgithubcomtagref_issue channel use the category feature_request for reporting bugs or making feature requests; \
+            use the category question for asking questions you have to get answers to or reporting general questions about the packagennIf you have issues or questions on a feature that \
+            While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
+            resurgence in popularity of DeepSpeed stems largely from the fact that it is easy to use has the full complement of modern deep learning library features and has a \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good \
+            question and getting a fair response is as follows:nnFirst please use the existing GitHubGitHub user group to ask general questions This group is specifically for users of \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good "
+    ]
+
+if args.seq_length == 6200:
+    input_sentences = [
+            "DeepSpeed is a machine learning framework for deep neural network research that has gained widespread use among researchers ie pyDeepSpeed especially in recent years \
+            While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
+            resurgence in popularity of DeepSpeed stems largely from the fact that it is easy to use has the full complement of modern deep learning library features and has a \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good \
+            question and getting a fair response is as follows:nnFirst please use the existing GitHubGitHub user group to ask general questions This group is specifically for users of \
+            DeepSpeed. DeepSpeed and the pyDeepSpeedpyDeepSpeed package If your question does not have enough detail to be specific it will probably be better suited to the GitHubGitHub \
+            user group for general R usersnnIf you do have a valid question post it in the following sectionnnQuestions regarding the package itself its documentation features or other \
+            functionality:nnAsk on GitHubGitHub Note that GitHub is the de-facto user group for questions that require more structure and context than you might find in \
+            commentsnnGitHubGitHub for questions about the package itself specifically issues pull requests reporting bugs etcnnQuestions about the DeepSpeed user community itself or \
+            questions relevant to the research community:nnDeepSpeed issues and forums are a good place to ask general questions that do not relate to a question about the functionality \
+            of the code or packages but rather to questions regarding collaboration between DeepSpeed usersnnOther questions:nnPlease do not use this channel for other questions which \
+            could be on-topic at another forum or the wrong place Asking questions in the Questions about DeepSpeed and related topics forum is a great way to get started with the \
+            communitynn<https:wwwdeepspeedorgcommunitiesusershtml>nnIf you have a question regarding how to use the package functionality not addressed here please post a GitHub \
+            issueGitHub or make a comment in the comments on this page If you are looking for feedback on a problem you have encountered please use the github Issues channel as detailed \
+            abovennTips and general guidelines:nnIn the GitHub issueshttp:helpgithubcomtagref_issue channel use the category feature_request for reporting bugs or making feature requests; \
+            use the category question for asking questions you have to get answers to or reporting general questions about the packagennIf you have issues or questions on a feature that \
+            While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
+            resurgence in popularity of DeepSpeed stems largely from the fact that it is easy to use has the full complement of modern deep learning library features and has a \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good \
+            question and getting a fair response is as follows:nnFirst please use the existing GitHubGitHub user group to ask general questions This group is specifically for users of \
+            DeepSpeedDeepSpeed and the pyDeepSpeedpyDeepSpeed package If your question does not have enough detail to be specific it will probably be better suited to the GitHubGitHub \
+            user group for general R usersnnIf you do have a valid question post it in the following sectionnnQuestions regarding the package itself its documentation features or other \
+            functionality:nnAsk on GitHubGitHub Note that GitHub is the de-facto user group for questions that require more structure and context than you might find in \
+            commentsnnGitHubGitHub for questions about the package itself specifically issues pull requests reporting bugs etcnnQuestions about the DeepSpeed user community itself or \
+            questions relevant to the research community:nnDeepSpeed issues and forums are a good place to ask general questions that do not relate to a question about the functionality \
+            of the code or packages but rather to questions regarding collaboration between DeepSpeed usersnnOther questions:nnPlease do not use this channel for other questions which \
+            While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
+            resurgence in popularity of DeepSpeed stems largely from the fact that it is easy to use has the full complement of modern deep learning library features and has a \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good \
+            question and getting a fair response is as follows:nnFirst please use the existing GitHubGitHub user group to ask general questions This group is specifically for users of \
+            DeepSpeed. DeepSpeed and the pyDeepSpeedpyDeepSpeed package If your question does not have enough detail to be specific it will probably be better suited to the GitHubGitHub \
+            user group for general R usersnnIf you do have a valid question post it in the following sectionnnQuestions regarding the package itself its documentation features or other \
+            functionality:nnAsk on GitHubGitHub Note that GitHub is the de-facto user group for questions that require more structure and context than you might find in \
+            commentsnnGitHubGitHub for questions about the package itself specifically issues pull requests reporting bugs etcnnQuestions about the DeepSpeed user community itself or \
+            questions relevant to the research community:nnDeepSpeed issues and forums are a good place to ask general questions that do not relate to a question about the functionality \
+            of the code or packages but rather to questions regarding collaboration between DeepSpeed usersnnOther questions:nnPlease do not use this channel for other questions which \
+            could be on-topic at another forum or the wrong place Asking questions in the Questions about DeepSpeed and related topics forum is a great way to get started with the \
+            communitynn<https:wwwdeepspeedorgcommunitiesusershtml>nnIf you have a question regarding how to use the package functionality not addressed here please post a GitHub \
+            issueGitHub or make a comment in the comments on this page If you are looking for feedback on a problem you have encountered please use the github Issues channel as detailed \
+            abovennTips and general guidelines:nnIn the GitHub issueshttp:helpgithubcomtagref_issue channel use the category feature_request for reporting bugs or making feature requests; \
+            use the category question for asking questions you have to get answers to or reporting general questions about the packagennIf you have issues or questions on a feature that \
+            While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
+            resurgence in popularity of DeepSpeed stems largely from the fact that it is easy to use has the full complement of modern deep learning library features and has a \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good \
+            question and getting a fair response is as follows:nnFirst please use the existing GitHubGitHub user group to ask general questions This group is specifically for users of \
+            DeepSpeedDeepSpeed and the pyDeepSpeedpyDeepSpeed package If your question does not have enough detail to be specific it will probably be better suited to the GitHubGitHub \
+            user group for general R usersnnIf you do have a valid question post it in the following sectionnnQuestions regarding the package itself its documentation features or other \
+            functionality:nnAsk on GitHubGitHub Note that GitHub is the de-facto user group for questions that require more structure and context than you might find in \
+            commentsnnGitHubGitHub for questions about the package itself specifically issues pull requests reporting bugs etcnnQuestions about the DeepSpeed user community itself or \
+            questions relevant to the research community:nnDeepSpeed issues and forums are a good place to ask general questions that do not relate to a question about the functionality \
+            of the code or packages but rather to questions regarding collaboration between DeepSpeed usersnnOther questions:nnPlease do not use this channel for other questions which \
+            could be on-topic at another forum or the wrong place Asking questions in the Questions about DeepSpeed and related topics forum is a great way to get started with the \
+            communitynn<https:wwwdeepspeedorgcommunitiesusershtml>nnIf you have a question regarding how to use the package functionality not addressed here please post a GitHub \
+            issueGitHub or make a comment in the comments on this page If you are looking for feedback on a problem you have encountered please use the github Issues channel as detailed \
+            abovennTips and general guidelines:nnIn the GitHub issueshttp:helpgithubcomtagref_issue channel use the category feature_request for reporting bugs or making feature requests; \
+            use the category question for asking questions you have to get answers to or reporting general questions about the packagennIf you have issues or questions on a feature that \
+            While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
+            resurgence in popularity of DeepSpeed stems largely from the fact that it is easy to use has the full complement of modern deep learning library features and has a \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good \
+            question and getting a fair response is as follows:nnFirst please use the existing GitHubGitHub user group to ask general questions This group is specifically for users of \
+            DeepSpeedDeepSpeed and the pyDeepSpeedpyDeepSpeed package If your question does not have enough detail to be specific it will probably be better suited to the GitHubGitHub \
+            user group for general R usersnnIf you do have a valid question post it in the following sectionnnQuestions regarding the package itself its documentation features or other \
+            functionality:nnAsk on GitHubGitHub Note that GitHub is the de-facto user group for questions that require more structure and context than you might find in \
+            commentsnnGitHubGitHub for questions about the package itself specifically issues pull requests reporting bugs etcnnQuestions about the DeepSpeed user community itself or \
+            questions relevant to the research community:nnDeepSpeed issues and forums are a good place to ask general questions that do not relate to a question about the functionality \
+            of the code or packages but rather to questions regarding collaboration between DeepSpeed usersnnOther questions:nnPlease do not use this channel for other questions which \
+            could be on-topic at another forum or the wrong place Asking questions in the Questions about DeepSpeed and related topics forum is a great way to get started with the \
+            communitynn<https:wwwdeepspeedorgcommunitiesusershtml>nnIf you have a question regarding how to use the package functionality not addressed here please post a GitHub \
+            issueGitHub or make a comment in the comments on this page If you are looking for feedback on a problem you have encountered please use the github Issues channel as detailed \
+            abovennTips and general guidelines:nnIn the GitHub issueshttp:helpgithubcomtagref_issue channel use the category feature_request for reporting bugs or making feature requests; \
+            use the category question for asking questions you have to get answers to or reporting general questions about the packagennIf you have issues or questions on a feature that \
+            While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
+            resurgence in popularity of DeepSpeed stems largely from the fact that it is easy to use has the full complement of modern deep learning library features and has a \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good \
+            question and getting a fair response is as follows:nnFirst please use the existing GitHubGitHub user group to ask general questions This group is specifically for users of \
+            DeepSpeedDeepSpeed and the pyDeepSpeedpyDeepSpeed package If your question does not have enough detail to be specific it will probably be better suited to the GitHubGitHub \
+            user group for general R usersnnIf you do have a valid question post it in the following sectionnnQuestions regarding the package itself its documentation features or other \
+            functionality:nnAsk on GitHubGitHub Note that GitHub is the de-facto user group for questions that require more structure and context than you might find in \
+            commentsnnGitHubGitHub for questions about the package itself specifically issues pull requests reporting bugs etcnnQuestions about the DeepSpeed user community itself or \
+            questions relevant to the research community:nnDeepSpeed issues and forums are a good place to ask general questions that do not relate to a question about the functionality \
+            of the code or packages but rather to questions regarding collaboration between DeepSpeed usersnnOther questions:nnPlease do not use this channel for other questions which \
+            could be on-topic at another forum or the wrong place Asking questions in the Questions about DeepSpeed and related topics forum is a great way to get started with the \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good "
+    ]
+
+if args.seq_length == 5600:
+    input_sentences = [
+            "DeepSpeed is a machine learning framework for deep neural network research that has gained widespread use among researchers ie pyDeepSpeed especially in recent years \
+            While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
+            resurgence in popularity of DeepSpeed stems largely from the fact that it is easy to use has the full complement of modern deep learning library features and has a \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good \
+            question and getting a fair response is as follows:nnFirst please use the existing GitHubGitHub user group to ask general questions This group is specifically for users of \
+            DeepSpeed. DeepSpeed and the pyDeepSpeedpyDeepSpeed package If your question does not have enough detail to be specific it will probably be better suited to the GitHubGitHub \
+            user group for general R usersnnIf you do have a valid question post it in the following sectionnnQuestions regarding the package itself its documentation features or other \
+            functionality:nnAsk on GitHubGitHub Note that GitHub is the de-facto user group for questions that require more structure and context than you might find in \
+            commentsnnGitHubGitHub for questions about the package itself specifically issues pull requests reporting bugs etcnnQuestions about the DeepSpeed user community itself or \
+            questions relevant to the research community:nnDeepSpeed issues and forums are a good place to ask general questions that do not relate to a question about the functionality \
+            of the code or packages but rather to questions regarding collaboration between DeepSpeed usersnnOther questions:nnPlease do not use this channel for other questions which \
+            could be on-topic at another forum or the wrong place Asking questions in the Questions about DeepSpeed and related topics forum is a great way to get started with the \
+            communitynn<https:wwwdeepspeedorgcommunitiesusershtml>nnIf you have a question regarding how to use the package functionality not addressed here please post a GitHub \
+            issueGitHub or make a comment in the comments on this page If you are looking for feedback on a problem you have encountered please use the github Issues channel as detailed \
+            abovennTips and general guidelines:nnIn the GitHub issueshttp:helpgithubcomtagref_issue channel use the category feature_request for reporting bugs or making feature requests; \
+            use the category question for asking questions you have to get answers to or reporting general questions about the packagennIf you have issues or questions on a feature that \
+            While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
+            resurgence in popularity of DeepSpeed stems largely from the fact that it is easy to use has the full complement of modern deep learning library features and has a \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good \
+            question and getting a fair response is as follows:nnFirst please use the existing GitHubGitHub user group to ask general questions This group is specifically for users of \
+            DeepSpeedDeepSpeed and the pyDeepSpeedpyDeepSpeed package If your question does not have enough detail to be specific it will probably be better suited to the GitHubGitHub \
+            user group for general R usersnnIf you do have a valid question post it in the following sectionnnQuestions regarding the package itself its documentation features or other \
+            functionality:nnAsk on GitHubGitHub Note that GitHub is the de-facto user group for questions that require more structure and context than you might find in \
+            commentsnnGitHubGitHub for questions about the package itself specifically issues pull requests reporting bugs etcnnQuestions about the DeepSpeed user community itself or \
+            questions relevant to the research community:nnDeepSpeed issues and forums are a good place to ask general questions that do not relate to a question about the functionality \
+            of the code or packages but rather to questions regarding collaboration between DeepSpeed usersnnOther questions:nnPlease do not use this channel for other questions which \
+            While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
+            resurgence in popularity of DeepSpeed stems largely from the fact that it is easy to use has the full complement of modern deep learning library features and has a \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good \
+            question and getting a fair response is as follows:nnFirst please use the existing GitHubGitHub user group to ask general questions This group is specifically for users of \
+            DeepSpeed. DeepSpeed and the pyDeepSpeedpyDeepSpeed package If your question does not have enough detail to be specific it will probably be better suited to the GitHubGitHub \
+            user group for general R usersnnIf you do have a valid question post it in the following sectionnnQuestions regarding the package itself its documentation features or other \
+            functionality:nnAsk on GitHubGitHub Note that GitHub is the de-facto user group for questions that require more structure and context than you might find in \
+            commentsnnGitHubGitHub for questions about the package itself specifically issues pull requests reporting bugs etcnnQuestions about the DeepSpeed user community itself or \
+            questions relevant to the research community:nnDeepSpeed issues and forums are a good place to ask general questions that do not relate to a question about the functionality \
+            of the code or packages but rather to questions regarding collaboration between DeepSpeed usersnnOther questions:nnPlease do not use this channel for other questions which \
+            could be on-topic at another forum or the wrong place Asking questions in the Questions about DeepSpeed and related topics forum is a great way to get started with the \
+            communitynn<https:wwwdeepspeedorgcommunitiesusershtml>nnIf you have a question regarding how to use the package functionality not addressed here please post a GitHub \
+            issueGitHub or make a comment in the comments on this page If you are looking for feedback on a problem you have encountered please use the github Issues channel as detailed \
+            abovennTips and general guidelines:nnIn the GitHub issueshttp:helpgithubcomtagref_issue channel use the category feature_request for reporting bugs or making feature requests; \
+            use the category question for asking questions you have to get answers to or reporting general questions about the packagennIf you have issues or questions on a feature that \
+            While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
+            resurgence in popularity of DeepSpeed stems largely from the fact that it is easy to use has the full complement of modern deep learning library features and has a \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good \
+            question and getting a fair response is as follows:nnFirst please use the existing GitHubGitHub user group to ask general questions This group is specifically for users of \
+            DeepSpeedDeepSpeed and the pyDeepSpeedpyDeepSpeed package If your question does not have enough detail to be specific it will probably be better suited to the GitHubGitHub \
+            user group for general R usersnnIf you do have a valid question post it in the following sectionnnQuestions regarding the package itself its documentation features or other \
+            functionality:nnAsk on GitHubGitHub Note that GitHub is the de-facto user group for questions that require more structure and context than you might find in \
+            commentsnnGitHubGitHub for questions about the package itself specifically issues pull requests reporting bugs etcnnQuestions about the DeepSpeed user community itself or \
+            questions relevant to the research community:nnDeepSpeed issues and forums are a good place to ask general questions that do not relate to a question about the functionality \
+            of the code or packages but rather to questions regarding collaboration between DeepSpeed usersnnOther questions:nnPlease do not use this channel for other questions which \
+            could be on-topic at another forum or the wrong place Asking questions in the Questions about DeepSpeed and related topics forum is a great way to get started with the \
+            communitynn<https:wwwdeepspeedorgcommunitiesusershtml>nnIf you have a question regarding how to use the package functionality not addressed here please post a GitHub \
+            issueGitHub or make a comment in the comments on this page If you are looking for feedback on a problem you have encountered please use the github Issues channel as detailed \
+            abovennTips and general guidelines:nnIn the GitHub issueshttp:helpgithubcomtagref_issue channel use the category feature_request for reporting bugs or making feature requests; \
+            use the category question for asking questions you have to get answers to or reporting general questions about the packagennIf you have issues or questions on a feature that \
+            While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
+            resurgence in popularity of DeepSpeed stems largely from the fact that it is easy to use has the full complement of modern deep learning library features and has a \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good \
+            question and getting a fair response is as follows:nnFirst please use the existing GitHubGitHub user group to ask general questions This group is specifically for users of \
+            DeepSpeedDeepSpeed and the pyDeepSpeedpyDeepSpeed package If your question does not have enough detail to be specific it will probably be better suited to the GitHubGitHub \
+            user group for general R usersnnIf you do have a valid question post it in the following sectionnnQuestions regarding the package itself its documentation features or other \
+            functionality:nnAsk on GitHubGitHub Note that GitHub is the de-facto user group for questions that require more structure and context than you might find in \
+            commentsnnGitHubGitHub for questions about the package itself specifically issues pull requests reporting bugs etcnnQuestions about the DeepSpeed user community itself or \
+            questions relevant to the research community:nnDeepSpeed issues and forums are a good place to ask general questions that do not relate to a question about the functionality \
+            of the code or packages but rather to questions regarding collaboration between DeepSpeed usersnnOther questions:nnPlease do not use this channel for other questions which \
+            could be on-topic at another forum or the wrong place Asking questions in the Questions about DeepSpeed and related topics forum is a great way to get started with the \
+            communitynn<https:wwwdeepspeedorgcommunitiesusershtml>nnIf you have a question regarding how to use the package functionality not addressed here please post a GitHub \
+            issueGitHub or make a comment in the comments on this page If you are looking for feedback on a problem you have encountered please use the github Issues channel as detailed \
+            abovennTips and general guidelines:nnIn the GitHub issueshttp:helpgithubcomtagref_issue channel use the category feature_request for reporting bugs or making feature requests; \
+            use the category question for asking questions you have to get answers to or reporting general questions about the packagennIf you have issues or questions on a feature that \
+            While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
+            resurgence in popularity of DeepSpeed stems largely from the fact that it is easy to use has the full complement of modern deep learning library features and has a \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good "
+    ]
+
+if args.seq_length == 5000:
+    input_sentences = [
+            "DeepSpeed is a machine learning framework for deep neural network research that has gained widespread use among researchers ie pyDeepSpeed especially in recent years \
+            While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
+            resurgence in popularity of DeepSpeed stems largely from the fact that it is easy to use has the full complement of modern deep learning library features and has a \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good \
+            question and getting a fair response is as follows:nnFirst please use the existing GitHubGitHub user group to ask general questions This group is specifically for users of \
+            DeepSpeed. DeepSpeed and the pyDeepSpeedpyDeepSpeed package If your question does not have enough detail to be specific it will probably be better suited to the GitHubGitHub \
+            user group for general R usersnnIf you do have a valid question post it in the following sectionnnQuestions regarding the package itself its documentation features or other \
+            functionality:nnAsk on GitHubGitHub Note that GitHub is the de-facto user group for questions that require more structure and context than you might find in \
+            commentsnnGitHubGitHub for questions about the package itself specifically issues pull requests reporting bugs etcnnQuestions about the DeepSpeed user community itself or \
+            questions relevant to the research community:nnDeepSpeed issues and forums are a good place to ask general questions that do not relate to a question about the functionality \
+            of the code or packages but rather to questions regarding collaboration between DeepSpeed usersnnOther questions:nnPlease do not use this channel for other questions which \
+            could be on-topic at another forum or the wrong place Asking questions in the Questions about DeepSpeed and related topics forum is a great way to get started with the \
+            communitynn<https:wwwdeepspeedorgcommunitiesusershtml>nnIf you have a question regarding how to use the package functionality not addressed here please post a GitHub \
+            issueGitHub or make a comment in the comments on this page If you are looking for feedback on a problem you have encountered please use the github Issues channel as detailed \
+            abovennTips and general guidelines:nnIn the GitHub issueshttp:helpgithubcomtagref_issue channel use the category feature_request for reporting bugs or making feature requests; \
+            use the category question for asking questions you have to get answers to or reporting general questions about the packagennIf you have issues or questions on a feature that \
+            While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
+            resurgence in popularity of DeepSpeed stems largely from the fact that it is easy to use has the full complement of modern deep learning library features and has a \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good \
+            question and getting a fair response is as follows:nnFirst please use the existing GitHubGitHub user group to ask general questions This group is specifically for users of \
+            DeepSpeedDeepSpeed and the pyDeepSpeedpyDeepSpeed package If your question does not have enough detail to be specific it will probably be better suited to the GitHubGitHub \
+            user group for general R usersnnIf you do have a valid question post it in the following sectionnnQuestions regarding the package itself its documentation features or other \
+            functionality:nnAsk on GitHubGitHub Note that GitHub is the de-facto user group for questions that require more structure and context than you might find in \
+            commentsnnGitHubGitHub for questions about the package itself specifically issues pull requests reporting bugs etcnnQuestions about the DeepSpeed user community itself or \
+            questions relevant to the research community:nnDeepSpeed issues and forums are a good place to ask general questions that do not relate to a question about the functionality \
+            of the code or packages but rather to questions regarding collaboration between DeepSpeed usersnnOther questions:nnPlease do not use this channel for other questions which \
+            While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
+            resurgence in popularity of DeepSpeed stems largely from the fact that it is easy to use has the full complement of modern deep learning library features and has a \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good \
+            question and getting a fair response is as follows:nnFirst please use the existing GitHubGitHub user group to ask general questions This group is specifically for users of \
+            DeepSpeed. DeepSpeed and the pyDeepSpeedpyDeepSpeed package If your question does not have enough detail to be specific it will probably be better suited to the GitHubGitHub \
+            user group for general R usersnnIf you do have a valid question post it in the following sectionnnQuestions regarding the package itself its documentation features or other \
+            functionality:nnAsk on GitHubGitHub Note that GitHub is the de-facto user group for questions that require more structure and context than you might find in \
+            commentsnnGitHubGitHub for questions about the package itself specifically issues pull requests reporting bugs etcnnQuestions about the DeepSpeed user community itself or \
+            questions relevant to the research community:nnDeepSpeed issues and forums are a good place to ask general questions that do not relate to a question about the functionality \
+            of the code or packages but rather to questions regarding collaboration between DeepSpeed usersnnOther questions:nnPlease do not use this channel for other questions which \
+            could be on-topic at another forum or the wrong place Asking questions in the Questions about DeepSpeed and related topics forum is a great way to get started with the \
+            communitynn<https:wwwdeepspeedorgcommunitiesusershtml>nnIf you have a question regarding how to use the package functionality not addressed here please post a GitHub \
+            issueGitHub or make a comment in the comments on this page If you are looking for feedback on a problem you have encountered please use the github Issues channel as detailed \
+            abovennTips and general guidelines:nnIn the GitHub issueshttp:helpgithubcomtagref_issue channel use the category feature_request for reporting bugs or making feature requests; \
+            use the category question for asking questions you have to get answers to or reporting general questions about the packagennIf you have issues or questions on a feature that \
+            While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
+            resurgence in popularity of DeepSpeed stems largely from the fact that it is easy to use has the full complement of modern deep learning library features and has a \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good \
+            question and getting a fair response is as follows:nnFirst please use the existing GitHubGitHub user group to ask general questions This group is specifically for users of \
+            DeepSpeedDeepSpeed and the pyDeepSpeedpyDeepSpeed package If your question does not have enough detail to be specific it will probably be better suited to the GitHubGitHub \
+            user group for general R usersnnIf you do have a valid question post it in the following sectionnnQuestions regarding the package itself its documentation features or other \
+            functionality:nnAsk on GitHubGitHub Note that GitHub is the de-facto user group for questions that require more structure and context than you might find in \
+            commentsnnGitHubGitHub for questions about the package itself specifically issues pull requests reporting bugs etcnnQuestions about the DeepSpeed user community itself or \
+            questions relevant to the research community:nnDeepSpeed issues and forums are a good place to ask general questions that do not relate to a question about the functionality \
+            of the code or packages but rather to questions regarding collaboration between DeepSpeed usersnnOther questions:nnPlease do not use this channel for other questions which \
+            could be on-topic at another forum or the wrong place Asking questions in the Questions about DeepSpeed and related topics forum is a great way to get started with the \
+            communitynn<https:wwwdeepspeedorgcommunitiesusershtml>nnIf you have a question regarding how to use the package functionality not addressed here please post a GitHub \
+            issueGitHub or make a comment in the comments on this page If you are looking for feedback on a problem you have encountered please use the github Issues channel as detailed \
+            abovennTips and general guidelines:nnIn the GitHub issueshttp:helpgithubcomtagref_issue channel use the category feature_request for reporting bugs or making feature requests; \
+            use the category question for asking questions you have to get answers to or reporting general questions about the packagennIf you have issues or questions on a feature that \
+            While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
+            resurgence in popularity of DeepSpeed stems largely from the fact that it is easy to use has the full complement of modern deep learning library features and has a \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good \
+            question and getting a fair response is as follows:nnFirst please use the existing GitHubGitHub user group to ask general questions This group is specifically for users of \
+            DeepSpeedDeepSpeed and the pyDeepSpeedpyDeepSpeed package If your question does not have enough detail to be specific it will probably be better suited to the GitHubGitHub \
+            user group for general R usersnnIf you do have a valid question post it in the following sectionnnQuestions regarding the package itself its documentation features or other \
+            functionality:nnAsk on GitHubGitHub Note that GitHub is the de-facto user group for questions that require more structure and context than you might find in \
+            commentsnnGitHubGitHub for questions about the package itself specifically issues pull requests reporting bugs etcnnQuestions about the DeepSpeed user community itself or \
+            questions relevant to the research community:nnDeepSpeed issues and forums are a good place to ask general questions that do not relate to a question about the functionality \
+            of the code or packages but rather to questions regarding collaboration between DeepSpeed usersnnOther questions:nnPlease do not use this channel for other questions which \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good "
+    ]
+
+if args.seq_length == 4400:
+    input_sentences = [
+            "DeepSpeed is a machine learning framework for deep neural network research that has gained widespread use among researchers ie pyDeepSpeed especially in recent years \
+            While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
+            resurgence in popularity of DeepSpeed stems largely from the fact that it is easy to use has the full complement of modern deep learning library features and has a \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good \
+            question and getting a fair response is as follows:nnFirst please use the existing GitHubGitHub user group to ask general questions This group is specifically for users of \
+            DeepSpeed. DeepSpeed and the pyDeepSpeedpyDeepSpeed package If your question does not have enough detail to be specific it will probably be better suited to the GitHubGitHub \
+            user group for general R usersnnIf you do have a valid question post it in the following sectionnnQuestions regarding the package itself its documentation features or other \
+            functionality:nnAsk on GitHubGitHub Note that GitHub is the de-facto user group for questions that require more structure and context than you might find in \
+            commentsnnGitHubGitHub for questions about the package itself specifically issues pull requests reporting bugs etcnnQuestions about the DeepSpeed user community itself or \
+            questions relevant to the research community:nnDeepSpeed issues and forums are a good place to ask general questions that do not relate to a question about the functionality \
+            of the code or packages but rather to questions regarding collaboration between DeepSpeed usersnnOther questions:nnPlease do not use this channel for other questions which \
+            could be on-topic at another forum or the wrong place Asking questions in the Questions about DeepSpeed and related topics forum is a great way to get started with the \
+            communitynn<https:wwwdeepspeedorgcommunitiesusershtml>nnIf you have a question regarding how to use the package functionality not addressed here please post a GitHub \
+            issueGitHub or make a comment in the comments on this page If you are looking for feedback on a problem you have encountered please use the github Issues channel as detailed \
+            abovennTips and general guidelines:nnIn the GitHub issueshttp:helpgithubcomtagref_issue channel use the category feature_request for reporting bugs or making feature requests; \
+            use the category question for asking questions you have to get answers to or reporting general questions about the packagennIf you have issues or questions on a feature that \
+            While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
+            resurgence in popularity of DeepSpeed stems largely from the fact that it is easy to use has the full complement of modern deep learning library features and has a \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good \
+            question and getting a fair response is as follows:nnFirst please use the existing GitHubGitHub user group to ask general questions This group is specifically for users of \
+            DeepSpeedDeepSpeed and the pyDeepSpeedpyDeepSpeed package If your question does not have enough detail to be specific it will probably be better suited to the GitHubGitHub \
+            user group for general R usersnnIf you do have a valid question post it in the following sectionnnQuestions regarding the package itself its documentation features or other \
+            functionality:nnAsk on GitHubGitHub Note that GitHub is the de-facto user group for questions that require more structure and context than you might find in \
+            commentsnnGitHubGitHub for questions about the package itself specifically issues pull requests reporting bugs etcnnQuestions about the DeepSpeed user community itself or \
+            questions relevant to the research community:nnDeepSpeed issues and forums are a good place to ask general questions that do not relate to a question about the functionality \
+            of the code or packages but rather to questions regarding collaboration between DeepSpeed usersnnOther questions:nnPlease do not use this channel for other questions which \
+            While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
+            resurgence in popularity of DeepSpeed stems largely from the fact that it is easy to use has the full complement of modern deep learning library features and has a \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good \
+            question and getting a fair response is as follows:nnFirst please use the existing GitHubGitHub user group to ask general questions This group is specifically for users of \
+            DeepSpeed. DeepSpeed and the pyDeepSpeedpyDeepSpeed package If your question does not have enough detail to be specific it will probably be better suited to the GitHubGitHub \
+            user group for general R usersnnIf you do have a valid question post it in the following sectionnnQuestions regarding the package itself its documentation features or other \
+            functionality:nnAsk on GitHubGitHub Note that GitHub is the de-facto user group for questions that require more structure and context than you might find in \
+            commentsnnGitHubGitHub for questions about the package itself specifically issues pull requests reporting bugs etcnnQuestions about the DeepSpeed user community itself or \
+            questions relevant to the research community:nnDeepSpeed issues and forums are a good place to ask general questions that do not relate to a question about the functionality \
+            of the code or packages but rather to questions regarding collaboration between DeepSpeed usersnnOther questions:nnPlease do not use this channel for other questions which \
+            could be on-topic at another forum or the wrong place Asking questions in the Questions about DeepSpeed and related topics forum is a great way to get started with the \
+            communitynn<https:wwwdeepspeedorgcommunitiesusershtml>nnIf you have a question regarding how to use the package functionality not addressed here please post a GitHub \
+            issueGitHub or make a comment in the comments on this page If you are looking for feedback on a problem you have encountered please use the github Issues channel as detailed \
+            abovennTips and general guidelines:nnIn the GitHub issueshttp:helpgithubcomtagref_issue channel use the category feature_request for reporting bugs or making feature requests; \
+            use the category question for asking questions you have to get answers to or reporting general questions about the packagennIf you have issues or questions on a feature that \
+            While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
+            resurgence in popularity of DeepSpeed stems largely from the fact that it is easy to use has the full complement of modern deep learning library features and has a \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good \
+            question and getting a fair response is as follows:nnFirst please use the existing GitHubGitHub user group to ask general questions This group is specifically for users of \
+            DeepSpeedDeepSpeed and the pyDeepSpeedpyDeepSpeed package If your question does not have enough detail to be specific it will probably be better suited to the GitHubGitHub \
+            user group for general R usersnnIf you do have a valid question post it in the following sectionnnQuestions regarding the package itself its documentation features or other \
+            functionality:nnAsk on GitHubGitHub Note that GitHub is the de-facto user group for questions that require more structure and context than you might find in \
+            commentsnnGitHubGitHub for questions about the package itself specifically issues pull requests reporting bugs etcnnQuestions about the DeepSpeed user community itself or \
+            questions relevant to the research community:nnDeepSpeed issues and forums are a good place to ask general questions that do not relate to a question about the functionality \
+            of the code or packages but rather to questions regarding collaboration between DeepSpeed usersnnOther questions:nnPlease do not use this channel for other questions which \
+            could be on-topic at another forum or the wrong place Asking questions in the Questions about DeepSpeed and related topics forum is a great way to get started with the \
+            communitynn<https:wwwdeepspeedorgcommunitiesusershtml>nnIf you have a question regarding how to use the package functionality not addressed here please post a GitHub \
+            issueGitHub or make a comment in the comments on this page If you are looking for feedback on a problem you have encountered please use the github Issues channel as detailed \
+            abovennTips and general guidelines:nnIn the GitHub issueshttp:helpgithubcomtagref_issue channel use the category feature_request for reporting bugs or making feature requests; \
+            use the category question for asking questions you have to get answers to or reporting general questions about the packagennIf you have issues or questions on a feature that \
+            While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
+            resurgence in popularity of DeepSpeed stems largely from the fact that it is easy to use has the full complement of modern deep learning library features and has a \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good "
+    ]
+
+if args.seq_length == 3800:
+    input_sentences = [
+            "DeepSpeed is a machine learning framework for deep neural network research that has gained widespread use among researchers ie pyDeepSpeed especially in recent years \
+            While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
+            resurgence in popularity of DeepSpeed stems largely from the fact that it is easy to use has the full complement of modern deep learning library features and has a \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good \
+            question and getting a fair response is as follows:nnFirst please use the existing GitHubGitHub user group to ask general questions This group is specifically for users of \
+            DeepSpeed. DeepSpeed and the pyDeepSpeedpyDeepSpeed package If your question does not have enough detail to be specific it will probably be better suited to the GitHubGitHub \
+            user group for general R usersnnIf you do have a valid question post it in the following sectionnnQuestions regarding the package itself its documentation features or other \
+            functionality:nnAsk on GitHubGitHub Note that GitHub is the de-facto user group for questions that require more structure and context than you might find in \
+            commentsnnGitHubGitHub for questions about the package itself specifically issues pull requests reporting bugs etcnnQuestions about the DeepSpeed user community itself or \
+            questions relevant to the research community:nnDeepSpeed issues and forums are a good place to ask general questions that do not relate to a question about the functionality \
+            of the code or packages but rather to questions regarding collaboration between DeepSpeed usersnnOther questions:nnPlease do not use this channel for other questions which \
+            could be on-topic at another forum or the wrong place Asking questions in the Questions about DeepSpeed and related topics forum is a great way to get started with the \
+            communitynn<https:wwwdeepspeedorgcommunitiesusershtml>nnIf you have a question regarding how to use the package functionality not addressed here please post a GitHub \
+            issueGitHub or make a comment in the comments on this page If you are looking for feedback on a problem you have encountered please use the github Issues channel as detailed \
+            abovennTips and general guidelines:nnIn the GitHub issueshttp:helpgithubcomtagref_issue channel use the category feature_request for reporting bugs or making feature requests; \
+            use the category question for asking questions you have to get answers to or reporting general questions about the packagennIf you have issues or questions on a feature that \
+            While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
+            resurgence in popularity of DeepSpeed stems largely from the fact that it is easy to use has the full complement of modern deep learning library features and has a \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good \
+            question and getting a fair response is as follows:nnFirst please use the existing GitHubGitHub user group to ask general questions This group is specifically for users of \
+            DeepSpeedDeepSpeed and the pyDeepSpeedpyDeepSpeed package If your question does not have enough detail to be specific it will probably be better suited to the GitHubGitHub \
+            user group for general R usersnnIf you do have a valid question post it in the following sectionnnQuestions regarding the package itself its documentation features or other \
+            functionality:nnAsk on GitHubGitHub Note that GitHub is the de-facto user group for questions that require more structure and context than you might find in \
+            commentsnnGitHubGitHub for questions about the package itself specifically issues pull requests reporting bugs etcnnQuestions about the DeepSpeed user community itself or \
+            questions relevant to the research community:nnDeepSpeed issues and forums are a good place to ask general questions that do not relate to a question about the functionality \
+            of the code or packages but rather to questions regarding collaboration between DeepSpeed usersnnOther questions:nnPlease do not use this channel for other questions which \
+            While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
+            resurgence in popularity of DeepSpeed stems largely from the fact that it is easy to use has the full complement of modern deep learning library features and has a \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good \
+            question and getting a fair response is as follows:nnFirst please use the existing GitHubGitHub user group to ask general questions This group is specifically for users of \
+            DeepSpeed. DeepSpeed and the pyDeepSpeedpyDeepSpeed package If your question does not have enough detail to be specific it will probably be better suited to the GitHubGitHub \
+            user group for general R usersnnIf you do have a valid question post it in the following sectionnnQuestions regarding the package itself its documentation features or other \
+            functionality:nnAsk on GitHubGitHub Note that GitHub is the de-facto user group for questions that require more structure and context than you might find in \
+            commentsnnGitHubGitHub for questions about the package itself specifically issues pull requests reporting bugs etcnnQuestions about the DeepSpeed user community itself or \
+            questions relevant to the research community:nnDeepSpeed issues and forums are a good place to ask general questions that do not relate to a question about the functionality \
+            of the code or packages but rather to questions regarding collaboration between DeepSpeed usersnnOther questions:nnPlease do not use this channel for other questions which \
+            could be on-topic at another forum or the wrong place Asking questions in the Questions about DeepSpeed and related topics forum is a great way to get started with the \
+            communitynn<https:wwwdeepspeedorgcommunitiesusershtml>nnIf you have a question regarding how to use the package functionality not addressed here please post a GitHub \
+            issueGitHub or make a comment in the comments on this page If you are looking for feedback on a problem you have encountered please use the github Issues channel as detailed \
+            abovennTips and general guidelines:nnIn the GitHub issueshttp:helpgithubcomtagref_issue channel use the category feature_request for reporting bugs or making feature requests; \
+            use the category question for asking questions you have to get answers to or reporting general questions about the packagennIf you have issues or questions on a feature that \
+            While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
+            resurgence in popularity of DeepSpeed stems largely from the fact that it is easy to use has the full complement of modern deep learning library features and has a \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good \
+            question and getting a fair response is as follows:nnFirst please use the existing GitHubGitHub user group to ask general questions This group is specifically for users of \
+            DeepSpeedDeepSpeed and the pyDeepSpeedpyDeepSpeed package If your question does not have enough detail to be specific it will probably be better suited to the GitHubGitHub \
+            user group for general R usersnnIf you do have a valid question post it in the following sectionnnQuestions regarding the package itself its documentation features or other \
+            functionality:nnAsk on GitHubGitHub Note that GitHub is the de-facto user group for questions that require more structure and context than you might find in \
+            commentsnnGitHubGitHub for questions about the package itself specifically issues pull requests reporting bugs etcnnQuestions about the DeepSpeed user community itself or \
+            questions relevant to the research community:nnDeepSpeed issues and forums are a good place to ask general questions that do not relate to a question about the functionality \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good "
+    ]
+
+if args.seq_length == 3200:
+    input_sentences = [
+            "DeepSpeed is a machine learning framework for deep neural network research that has gained widespread use among researchers ie pyDeepSpeed especially in recent years \
+            While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
+            resurgence in popularity of DeepSpeed stems largely from the fact that it is easy to use has the full complement of modern deep learning library features and has a \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good \
+            question and getting a fair response is as follows:nnFirst please use the existing GitHubGitHub user group to ask general questions This group is specifically for users of \
+            DeepSpeed. DeepSpeed and the pyDeepSpeedpyDeepSpeed package If your question does not have enough detail to be specific it will probably be better suited to the GitHubGitHub \
+            user group for general R usersnnIf you do have a valid question post it in the following sectionnnQuestions regarding the package itself its documentation features or other \
+            functionality:nnAsk on GitHubGitHub Note that GitHub is the de-facto user group for questions that require more structure and context than you might find in \
+            commentsnnGitHubGitHub for questions about the package itself specifically issues pull requests reporting bugs etcnnQuestions about the DeepSpeed user community itself or \
+            questions relevant to the research community:nnDeepSpeed issues and forums are a good place to ask general questions that do not relate to a question about the functionality \
+            of the code or packages but rather to questions regarding collaboration between DeepSpeed usersnnOther questions:nnPlease do not use this channel for other questions which \
+            could be on-topic at another forum or the wrong place Asking questions in the Questions about DeepSpeed and related topics forum is a great way to get started with the \
+            communitynn<https:wwwdeepspeedorgcommunitiesusershtml>nnIf you have a question regarding how to use the package functionality not addressed here please post a GitHub \
+            issueGitHub or make a comment in the comments on this page If you are looking for feedback on a problem you have encountered please use the github Issues channel as detailed \
+            abovennTips and general guidelines:nnIn the GitHub issueshttp:helpgithubcomtagref_issue channel use the category feature_request for reporting bugs or making feature requests; \
+            use the category question for asking questions you have to get answers to or reporting general questions about the packagennIf you have issues or questions on a feature that \
+            While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
+            resurgence in popularity of DeepSpeed stems largely from the fact that it is easy to use has the full complement of modern deep learning library features and has a \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good \
+            question and getting a fair response is as follows:nnFirst please use the existing GitHubGitHub user group to ask general questions This group is specifically for users of \
+            DeepSpeedDeepSpeed and the pyDeepSpeedpyDeepSpeed package If your question does not have enough detail to be specific it will probably be better suited to the GitHubGitHub \
+            user group for general R usersnnIf you do have a valid question post it in the following sectionnnQuestions regarding the package itself its documentation features or other \
+            functionality:nnAsk on GitHubGitHub Note that GitHub is the de-facto user group for questions that require more structure and context than you might find in \
+            commentsnnGitHubGitHub for questions about the package itself specifically issues pull requests reporting bugs etcnnQuestions about the DeepSpeed user community itself or \
+            questions relevant to the research community:nnDeepSpeed issues and forums are a good place to ask general questions that do not relate to a question about the functionality \
+            of the code or packages but rather to questions regarding collaboration between DeepSpeed usersnnOther questions:nnPlease do not use this channel for other questions which \
+            While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
+            resurgence in popularity of DeepSpeed stems largely from the fact that it is easy to use has the full complement of modern deep learning library features and has a \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good \
+            question and getting a fair response is as follows:nnFirst please use the existing GitHubGitHub user group to ask general questions This group is specifically for users of \
+            DeepSpeed. DeepSpeed and the pyDeepSpeedpyDeepSpeed package If your question does not have enough detail to be specific it will probably be better suited to the GitHubGitHub \
+            user group for general R usersnnIf you do have a valid question post it in the following sectionnnQuestions regarding the package itself its documentation features or other \
+            functionality:nnAsk on GitHubGitHub Note that GitHub is the de-facto user group for questions that require more structure and context than you might find in \
+            commentsnnGitHubGitHub for questions about the package itself specifically issues pull requests reporting bugs etcnnQuestions about the DeepSpeed user community itself or \
+            questions relevant to the research community:nnDeepSpeed issues and forums are a good place to ask general questions that do not relate to a question about the functionality \
+            of the code or packages but rather to questions regarding collaboration between DeepSpeed usersnnOther questions:nnPlease do not use this channel for other questions which \
+            could be on-topic at another forum or the wrong place Asking questions in the Questions about DeepSpeed and related topics forum is a great way to get started with the \
+            communitynn<https:wwwdeepspeedorgcommunitiesusershtml>nnIf you have a question regarding how to use the package functionality not addressed here please post a GitHub \
+            issueGitHub or make a comment in the comments on this page If you are looking for feedback on a problem you have encountered please use the github Issues channel as detailed \
+            abovennTips and general guidelines:nnIn the GitHub issueshttp:helpgithubcomtagref_issue channel use the category feature_request for reporting bugs or making feature requests; \
+            use the category question for asking questions you have to get answers to or reporting general questions about the packagennIf you have issues or questions on a feature that \
+            While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good "
+    ]
+
+if args.seq_length == 2600:
+    input_sentences = [
+            "DeepSpeed is a machine learning framework for deep neural network research that has gained widespread use among researchers ie pyDeepSpeed especially in recent years \
+            While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
+            resurgence in popularity of DeepSpeed stems largely from the fact that it is easy to use has the full complement of modern deep learning library features and has a \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good \
+            question and getting a fair response is as follows:nnFirst please use the existing GitHubGitHub user group to ask general questions This group is specifically for users of \
+            DeepSpeed. DeepSpeed and the pyDeepSpeedpyDeepSpeed package If your question does not have enough detail to be specific it will probably be better suited to the GitHubGitHub \
+            user group for general R usersnnIf you do have a valid question post it in the following sectionnnQuestions regarding the package itself its documentation features or other \
+            functionality:nnAsk on GitHubGitHub Note that GitHub is the de-facto user group for questions that require more structure and context than you might find in \
+            commentsnnGitHubGitHub for questions about the package itself specifically issues pull requests reporting bugs etcnnQuestions about the DeepSpeed user community itself or \
+            questions relevant to the research community:nnDeepSpeed issues and forums are a good place to ask general questions that do not relate to a question about the functionality \
+            of the code or packages but rather to questions regarding collaboration between DeepSpeed usersnnOther questions:nnPlease do not use this channel for other questions which \
+            could be on-topic at another forum or the wrong place Asking questions in the Questions about DeepSpeed and related topics forum is a great way to get started with the \
+            communitynn<https:wwwdeepspeedorgcommunitiesusershtml>nnIf you have a question regarding how to use the package functionality not addressed here please post a GitHub \
+            issueGitHub or make a comment in the comments on this page If you are looking for feedback on a problem you have encountered please use the github Issues channel as detailed \
+            abovennTips and general guidelines:nnIn the GitHub issueshttp:helpgithubcomtagref_issue channel use the category feature_request for reporting bugs or making feature requests; \
+            use the category question for asking questions you have to get answers to or reporting general questions about the packagennIf you have issues or questions on a feature that \
+            While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
+            resurgence in popularity of DeepSpeed stems largely from the fact that it is easy to use has the full complement of modern deep learning library features and has a \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good \
+            question and getting a fair response is as follows:nnFirst please use the existing GitHubGitHub user group to ask general questions This group is specifically for users of \
+            DeepSpeedDeepSpeed and the pyDeepSpeedpyDeepSpeed package If your question does not have enough detail to be specific it will probably be better suited to the GitHubGitHub \
+            user group for general R usersnnIf you do have a valid question post it in the following sectionnnQuestions regarding the package itself its documentation features or other \
+            functionality:nnAsk on GitHubGitHub Note that GitHub is the de-facto user group for questions that require more structure and context than you might find in \
+            commentsnnGitHubGitHub for questions about the package itself specifically issues pull requests reporting bugs etcnnQuestions about the DeepSpeed user community itself or \
+            questions relevant to the research community:nnDeepSpeed issues and forums are a good place to ask general questions that do not relate to a question about the functionality \
+            of the code or packages but rather to questions regarding collaboration between DeepSpeed usersnnOther questions:nnPlease do not use this channel for other questions which \
+            While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
+            resurgence in popularity of DeepSpeed stems largely from the fact that it is easy to use has the full complement of modern deep learning library features and has a \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good \
+            question and getting a fair response is as follows:nnFirst please use the existing GitHubGitHub user group to ask general questions This group is specifically for users of \
+            DeepSpeed. DeepSpeed and the pyDeepSpeedpyDeepSpeed package If your question does not have enough detail to be specific it will probably be better suited to the GitHubGitHub \
+            user group for general R usersnnIf you do have a valid question post it in the following sectionnnQuestions regarding the package itself its documentation features or other \
+            functionality:nnAsk on GitHubGitHub Note that GitHub is the de-facto user group for questions that require more structure and context than you might find in \
+            commentsnnGitHubGitHub for questions about the package itself specifically issues pull requests reporting bugs etcnnQuestions about the DeepSpeed user community itself or \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good "
+    ]
+
+if args.seq_length == 2000:
+    input_sentences = [
+            "DeepSpeed is a machine learning framework for deep neural network research that has gained widespread use among researchers ie pyDeepSpeed especially in recent years \
+            While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
+            resurgence in popularity of DeepSpeed stems largely from the fact that it is easy to use has the full complement of modern deep learning library features and has a \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good \
+            question and getting a fair response is as follows:nnFirst please use the existing GitHubGitHub user group to ask general questions This group is specifically for users of \
+            DeepSpeed. DeepSpeed and the pyDeepSpeedpyDeepSpeed package If your question does not have enough detail to be specific it will probably be better suited to the GitHubGitHub \
+            user group for general R usersnnIf you do have a valid question post it in the following sectionnnQuestions regarding the package itself its documentation features or other \
+            functionality:nnAsk on GitHubGitHub Note that GitHub is the de-facto user group for questions that require more structure and context than you might find in \
+            commentsnnGitHubGitHub for questions about the package itself specifically issues pull requests reporting bugs etcnnQuestions about the DeepSpeed user community itself or \
+            questions relevant to the research community:nnDeepSpeed issues and forums are a good place to ask general questions that do not relate to a question about the functionality \
+            of the code or packages but rather to questions regarding collaboration between DeepSpeed usersnnOther questions:nnPlease do not use this channel for other questions which \
+            could be on-topic at another forum or the wrong place Asking questions in the Questions about DeepSpeed and related topics forum is a great way to get started with the \
+            communitynn<https:wwwdeepspeedorgcommunitiesusershtml>nnIf you have a question regarding how to use the package functionality not addressed here please post a GitHub \
+            issueGitHub or make a comment in the comments on this page If you are looking for feedback on a problem you have encountered please use the github Issues channel as detailed \
+            abovennTips and general guidelines:nnIn the GitHub issueshttp:helpgithubcomtagref_issue channel use the category feature_request for reporting bugs or making feature requests; \
+            use the category question for asking questions you have to get answers to or reporting general questions about the packagennIf you have issues or questions on a feature that \
+            While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
+            resurgence in popularity of DeepSpeed stems largely from the fact that it is easy to use has the full complement of modern deep learning library features and has a \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good \
+            question and getting a fair response is as follows:nnFirst please use the existing GitHubGitHub user group to ask general questions This group is specifically for users of \
+            DeepSpeedDeepSpeed and the pyDeepSpeedpyDeepSpeed package If your question does not have enough detail to be specific it will probably be better suited to the GitHubGitHub \
+            user group for general R usersnnIf you do have a valid question post it in the following sectionnnQuestions regarding the package itself its documentation features or other \
+            functionality:nnAsk on GitHubGitHub Note that GitHub is the de-facto user group for questions that require more structure and context than you might find in \
+            commentsnnGitHubGitHub for questions about the package itself specifically issues pull requests reporting bugs etcnnQuestions about the DeepSpeed user community itself or \
+            questions relevant to the research community:nnDeepSpeed issues and forums are a good place to ask general questions that do not relate to a question about the functionality \
+            of the code or packages but rather to questions regarding collaboration between DeepSpeed usersnnOther questions:nnPlease do not use this channel for other questions which \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good "
+    ]
+
+if args.seq_length == 1400:
+    input_sentences = [
+            "DeepSpeed is a machine learning framework for deep neural network research that has gained widespread use among researchers ie pyDeepSpeed especially in recent years \
+            While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
+            resurgence in popularity of DeepSpeed stems largely from the fact that it is easy to use has the full complement of modern deep learning library features and has a \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good \
+            question and getting a fair response is as follows:nnFirst please use the existing GitHubGitHub user group to ask general questions This group is specifically for users of \
+            DeepSpeed. DeepSpeed and the pyDeepSpeedpyDeepSpeed package If your question does not have enough detail to be specific it will probably be better suited to the GitHubGitHub \
+            user group for general R usersnnIf you do have a valid question post it in the following sectionnnQuestions regarding the package itself its documentation features or other \
+            functionality:nnAsk on GitHubGitHub Note that GitHub is the de-facto user group for questions that require more structure and context than you might find in \
+            commentsnnGitHubGitHub for questions about the package itself specifically issues pull requests reporting bugs etcnnQuestions about the DeepSpeed user community itself or \
+            questions relevant to the research community:nnDeepSpeed issues and forums are a good place to ask general questions that do not relate to a question about the functionality \
+            of the code or packages but rather to questions regarding collaboration between DeepSpeed usersnnOther questions:nnPlease do not use this channel for other questions which \
+            could be on-topic at another forum or the wrong place Asking questions in the Questions about DeepSpeed and related topics forum is a great way to get started with the \
+            communitynn<https:wwwdeepspeedorgcommunitiesusershtml>nnIf you have a question regarding how to use the package functionality not addressed here please post a GitHub \
+            issueGitHub or make a comment in the comments on this page If you are looking for feedback on a problem you have encountered please use the github Issues channel as detailed \
+            abovennTips and general guidelines:nnIn the GitHub issueshttp:helpgithubcomtagref_issue channel use the category feature_request for reporting bugs or making feature requests; \
+            use the category question for asking questions you have to get answers to or reporting general questions about the packagennIf you have issues or questions on a feature that \
+            While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
+            resurgence in popularity of DeepSpeed stems largely from the fact that it is easy to use has the full complement of modern deep learning library features and has a \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good "
+    ]
+
+if args.seq_length == 750:
+    input_sentences = [
+            "DeepSpeed is a machine learning framework for deep neural network research that has gained widespread use among researchers ie pyDeepSpeed especially in recent years \
+            While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
+            resurgence in popularity of DeepSpeed stems largely from the fact that it is easy to use has the full complement of modern deep learning library features and has a \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good \
+            question and getting a fair response is as follows:nnFirst please use the existing GitHubGitHub user group to ask general questions This group is specifically for users of \
+            DeepSpeed. DeepSpeed and the pyDeepSpeedpyDeepSpeed package If your question does not have enough detail to be specific it will probably be better suited to the GitHubGitHub \
+            user group for general R usersnnIf you do have a valid question post it in the following sectionnnQuestions regarding the package itself its documentation features or other \
+            functionality:nnAsk on GitHubGitHub Note that GitHub is the de-facto user group for questions that require more structure and context than you might find in \
+            commentsnnGitHubGitHub for questions about the package itself specifically issues pull requests reporting bugs etcnnQuestions about the DeepSpeed user community itself or \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good "
+    ]
+
+if args.seq_length == 150:
+    input_sentences = [
+            "DeepSpeed is a machine learning framework for deep neural network research that has gained widespread use among researchers ie pyDeepSpeed especially in recent years \
+            well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good "
+    ]
+
+if args.seq_length == 75:
+    input_sentences = [
+            "DeepSpeed is a machine learning framework for deep neural network research that has gained widespread use among researchers ie pyDeepSpeed especially in recent years "
+    ]
+
 
 if args.batch_size > len(input_sentences):
     # dynamically extend to support larger bs by repetition
@@ -216,17 +929,23 @@ times = []
 for i in range(iters):
     torch.cuda.synchronize()
     start = time.time()
-    # with profile(activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA], record_shapes=True) as prof:
-    #     with record_function("model_inference"):
-    outputs = pipe(inputs,
-            num_tokens=args.max_new_tokens,
-            do_sample=(not args.greedy))
+    with profile(activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA], record_shapes=True, with_stack=True) as prof:
+        with record_function("model_inference"):
+            outputs = pipe(inputs,
+                    num_tokens=args.max_new_tokens,
+                    do_sample=(not args.greedy))
     torch.cuda.synchronize()
     end = time.time()
     times.append(end - start)
 #print(f"generation time is {times[1]} sec")
 
 #print(prof.key_averages().table(sort_by="cuda_time_total"))#, row_limit=20))
+#prof.export_stacks("stack.txt",metric='self_cuda_time_total')
+
+ofile =open("log.txt","a")
+ofile.write("INPUT SEQUENCE LENGTH = " + str(args.seq_length) + "\n")
+ofile.write(prof.key_averages().table(sort_by="cuda_time_total", row_limit=50))
+ofile.close()
 
 if args.local_rank == 0:
     # for i, o in zip(inputs, outputs):

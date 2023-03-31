@@ -62,7 +62,11 @@ class DSPipeline():
             input_list = [inputs]
         else:
             input_list = inputs
-
+        for i in inputs:
+            print("\n")
+            print("TOKENS: ")
+            print(len(self.tokenizer.tokenize(i)))
+            print("\n")
         outputs = self.generate_outputs(input_list, num_tokens=num_tokens, do_sample=do_sample)
         return outputs
 
