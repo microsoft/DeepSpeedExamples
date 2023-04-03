@@ -36,3 +36,5 @@ for gpus in `echo "1 2 4 8"`; do
         done
     done
 done
+
+set +x
