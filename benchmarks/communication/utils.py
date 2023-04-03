@@ -232,7 +232,7 @@ def benchmark_parser():
     parser.add_argument("--dtype", type=str, default=DEFAULT_TYPE, help='PyTorch tensor dtype')
     parser.add_argument("--mem-factor",
                         type=float,
-                        default=.4,
+                        default=.3,
                         help='Proportion of max available GPU memory to use for single-size evals')
     parser.add_argument("--debug", action="store_true", help='Enables all_to_all debug prints')
     return parser
