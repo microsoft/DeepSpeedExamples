@@ -86,7 +86,8 @@ for i in range(args.trials):
     end = time.time()
     responses.append(r)
     times.append((end - start))
-    mtimes += pipe.model.model_times()
+    if args.deepspeed:
+        mtimes += pipe.model.model_times()
     #print(f"{pipe.model.model_times()=}")
 
 print_latency(times, "e2e latency")
