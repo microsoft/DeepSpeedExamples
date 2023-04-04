@@ -1,6 +1,8 @@
 import deepspeed
 import torch
 import os
+from deepspeed.accelerator import get_accelerator
+import time
 
 from diffusers import DiffusionPipeline
 
@@ -29,6 +31,28 @@ pipe = deepspeed.init_inference(
     enable_cuda_graph=True if world_size==1 else False,
 )
 
+times_list = []
+
+prompt_list = [
+    "a dog on a rocket",
+    "a dog on a table",
+    "a dog in a field",
+    "a grocery store full of produce",
+    "a city with bright lights",
+    ]
+
 generator.manual_seed(0xABEDABE7)
-deepspeed_image = pipe(prompt, guidance_scale=7.5, generator=generator).images[0]
-deepspeed_image.save(f"deepspeed.png")
+
+for prompt in prompt_list:
+    get_accelerator().synchronize()
+    start = time.time()
+
+    deepspeed_image = pipe(prompt, guidance_scale=7.5, generator=generator).images[0]
+    prompt_file_name = prompt.replace(" ", "_")
+    deepspeed_image.save(f"deepspeed_{prompt_file_name}.png")
+
+    get_accelerator().synchronize()
+    end = time.time()
+    times_list.append((end - start))
+
+print(times_list)
