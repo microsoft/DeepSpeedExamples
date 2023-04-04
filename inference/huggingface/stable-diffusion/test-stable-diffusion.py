@@ -48,11 +48,12 @@ for prompt in prompt_list:
     start = time.time()
 
     deepspeed_image = pipe(prompt, guidance_scale=7.5, generator=generator).images[0]
-    prompt_file_name = prompt.replace(" ", "_")
-    deepspeed_image.save(f"deepspeed_{prompt_file_name}.png")
 
     get_accelerator().synchronize()
     end = time.time()
     times_list.append((end - start))
+
+    prompt_file_name = prompt.replace(" ", "_")
+    deepspeed_image.save(f"deepspeed_{prompt_file_name}.png")
 
 print(times_list)
