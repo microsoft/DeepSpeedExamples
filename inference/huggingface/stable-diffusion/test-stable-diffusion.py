@@ -14,7 +14,8 @@ world_size = int(os.getenv('WORLD_SIZE', '1'))
 generator = torch.Generator(device=torch.cuda.current_device())
 
 pdb.set_trace()
-pipe = DiffusionPipeline.from_pretrained(model, torch_dtype=torch.half)
+#pipe = DiffusionPipeline.from_pretrained(model, torch_dtype=torch.half)
+pipe = local_pipeline_stable_diffusion.from_pretrained(model, torch_dtype=torch.half)
 pipe = pipe.to(device)
 
 generator.manual_seed(0xABEDABE7)
