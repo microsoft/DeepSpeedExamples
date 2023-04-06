@@ -21,13 +21,13 @@ baseline_image.save(f"baseline.png")
 
 # NOTE: DeepSpeed inference supports local CUDA graphs for replaced SD modules.
 #       Local CUDA graphs for replaced SD modules will only be enabled when `mp_size==1`
-pipe = deepspeed.init_inference(
-    pipe,
-    mp_size=world_size,
-    dtype=torch.half,
-    replace_with_kernel_inject=True,
-    enable_cuda_graph=True if world_size==1 else False,
-)
+#pipe = deepspeed.init_inference(
+#    pipe,
+#    mp_size=world_size,
+#    dtype=torch.half,
+#    replace_with_kernel_inject=True,
+#    enable_cuda_graph=True if world_size==1 else False,
+#)
 
 generator.manual_seed(0xABEDABE7)
 deepspeed_image = pipe(prompt, guidance_scale=7.5, generator=generator).images[0]
