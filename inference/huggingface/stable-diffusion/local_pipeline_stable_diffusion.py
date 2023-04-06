@@ -16,13 +16,21 @@ import inspect
 from typing import Any, Callable, Dict, List, Optional, Union
 
 import torch
+import pdb
 from packaging import version
 from transformers import CLIPFeatureExtractor, CLIPTextModel, CLIPTokenizer
 
-from ...configuration_utils import FrozenDict
-from ...models import AutoencoderKL, UNet2DConditionModel
-from ...schedulers import KarrasDiffusionSchedulers
-from ...utils import (
+#from ...configuration_utils import FrozenDict
+from diffusers.configuration_utils import FrozenDict
+
+#from ...models import AutoencoderKL, UNet2DConditionModel
+from diffusers.models import AutoencoderKL, UNet2DConditionModel
+
+#from ...schedulers import KarrasDiffusionSchedulers
+from diffusers.schedulers import KarrasDiffusionSchedulers
+
+#from ...utils import (
+from diffusers.utils import (
     deprecate,
     is_accelerate_available,
     is_accelerate_version,
@@ -30,9 +38,13 @@ from ...utils import (
     randn_tensor,
     replace_example_docstring,
 )
-from ..pipeline_utils import DiffusionPipeline
-from . import StableDiffusionPipelineOutput
-from .safety_checker import StableDiffusionSafetyChecker
+#from ..pipeline_utils import DiffusionPipeline
+from diffusers.pipeline_utils import DiffusionPipeline
+
+#from . import StableDiffusionPipelineOutput
+from diffusers.pipelines.stable_diffusion import StableDiffusionPipelineOutput
+#from .safety_checker import StableDiffusionSafetyChecker
+from diffusers.pipelines.stable_diffusion.safety_checker import StableDiffusionSafetyChecker
 
 
 logger = logging.get_logger(__name__)  # pylint: disable=invalid-name
@@ -605,6 +617,9 @@ class StableDiffusionPipeline(DiffusionPipeline):
         height = height or self.unet.config.sample_size * self.vae_scale_factor
         width = width or self.unet.config.sample_size * self.vae_scale_factor
 
+        print("MY VERSION")
+        pdb.set_trace()
+        
         # 1. Check inputs. Raise error if not correct
         self.check_inputs(
             prompt, height, width, callback_steps, negative_prompt, prompt_embeds, negative_prompt_embeds

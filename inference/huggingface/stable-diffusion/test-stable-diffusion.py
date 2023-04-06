@@ -2,8 +2,8 @@ import deepspeed
 import torch
 import os
 import pdb
-from diffusers import DiffusionPipeline
-import local_pipeline_stable_diffusion
+#from diffusers import DiffusionPipeline
+from local_pipeline_stable_diffusion import StableDiffusionPipeline
 
 prompt = "a dog on a rocket"
 
@@ -15,7 +15,7 @@ generator = torch.Generator(device=torch.cuda.current_device())
 
 pdb.set_trace()
 #pipe = DiffusionPipeline.from_pretrained(model, torch_dtype=torch.half)
-pipe = local_pipeline_stable_diffusion.from_pretrained(model, torch_dtype=torch.half)
+pipe = StableDiffusionPipeline.from_pretrained(model, torch_dtype=torch.half)
 pipe = pipe.to(device)
 
 generator.manual_seed(0xABEDABE7)
