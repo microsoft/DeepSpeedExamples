@@ -29,6 +29,6 @@ baseline_image.save(f"baseline.png")
 #    enable_cuda_graph=True if world_size==1 else False,
 #)
 
-generator.manual_seed(0xABEDABE7)
-deepspeed_image = pipe(prompt, guidance_scale=7.5, generator=generator).images[0]
-deepspeed_image.save(f"deepspeed.png")
+#generator.manual_seed(0xABEDABE7)
+#deepspeed_image = pipe(prompt, guidance_scale=7.5, generator=generator).images[0]
+#deepspeed_image.save(f"deepspeed.png")
