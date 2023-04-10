@@ -5,7 +5,9 @@
 There are two main challenges here:
 
 * 😵 How to handle the large memory consumption used for multiple models
-* 😵 How can one efficiently generate answers as it typically dominates the training cost in RLHF? Here, we will provide a brief answer to both questions.
+* 😵 How can one efficiently generate answers as it typically dominates the training cost in RLHF? 
+
+Here, we will provide a brief answer to both questions.
 
 #### 🚀 **Memory management in DeepSpeed-RLHF**
 
