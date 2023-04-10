@@ -16,7 +16,6 @@ import inspect
 from typing import Any, Callable, Dict, List, Optional, Union
 
 import torch
-import pdb
 from packaging import version
 from transformers import CLIPFeatureExtractor, CLIPTextModel, CLIPTokenizer
 
@@ -531,6 +530,7 @@ class StableDiffusionPipeline(DiffusionPipeline):
         width: Optional[int] = None,
         num_inference_steps: int = 50,
         guidance_scale: float = 7.5,
+        optimized_iterations: float = 0,
         negative_prompt: Optional[Union[str, List[str]]] = None,
         num_images_per_prompt: Optional[int] = 1,
         eta: float = 0.0,
@@ -616,9 +616,6 @@ class StableDiffusionPipeline(DiffusionPipeline):
         # 0. Default height and width to unet
         height = height or self.unet.config.sample_size * self.vae_scale_factor
         width = width or self.unet.config.sample_size * self.vae_scale_factor
-
-        print("MY VERSION")
-        pdb.set_trace()
         
         # 1. Check inputs. Raise error if not correct
         self.check_inputs(
@@ -671,25 +668,27 @@ class StableDiffusionPipeline(DiffusionPipeline):
         extra_step_kwargs = self.prepare_extra_step_kwargs(generator, eta)
 
         # 7. Denoising loop
+        max_iter = len(timesteps)
+        start_opt_iter = max_iter * (1 - optimized_iterations)
         num_warmup_steps = len(timesteps) - num_inference_steps * self.scheduler.order
+        _ , prompt_embeds_text = prompt_embeds.chunk(2)
         with self.progress_bar(total=num_inference_steps) as progress_bar:
             for i, t in enumerate(timesteps):
                 # expand the latents if we are doing classifier free guidance
                 latent_model_input = torch.cat([latents] * 2) if do_classifier_free_guidance else latents
                 latent_model_input = self.scheduler.scale_model_input(latent_model_input, t)
 
-                # predict the noise residual
-                noise_pred = self.unet(
-                    latent_model_input,
-                    t,
-                    encoder_hidden_states=prompt_embeds,
-                    cross_attention_kwargs=cross_attention_kwargs,
-                ).sample
-
                 # perform guidance
                 if do_classifier_free_guidance:
-                    noise_pred_uncond, noise_pred_text = noise_pred.chunk(2)
-                    noise_pred = noise_pred_uncond + guidance_scale * (noise_pred_text - noise_pred_uncond)
+                    # Apply optimization
+                    if i > start_opt_iter:
+                        # Compute only the conditional noise
+                        noise_pred = self.unet(latents, t, encoder_hidden_states=prompt_embeds_text).sample
+                    # No optimization
+                    else:
+                        noise_pred = self.unet(latent_model_input, t, encoder_hidden_states=prompt_embeds).sample
+                        noise_pred_uncond, noise_pred_text = noise_pred.chunk(2)
+                        noise_pred = noise_pred_uncond + guidance_scale * (noise_pred_text - noise_pred_uncond)
 
                 # compute the previous noisy sample x_t -> x_t-1
                 latents = self.scheduler.step(noise_pred, t, latents, **extra_step_kwargs).prev_sample
