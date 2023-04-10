@@ -7,7 +7,7 @@ If you don't have step 1 and step 2 models. You may simply try
 ``` bash
 --actor_model_name_or_path facebook/opt-1.3b --critic_model_name_or_path facebook/opt-350m
 ```
-⚡⚡⚡ When you use above script, please make sure you comment out the 
+⚡⚡⚡ When you use above script, please make sure you comment out the following such that it won't load the model weight from previous paths.
 ```bash
 applications/DeepSpeed-Chat/training/utils/model/model_utils.py#L60
 ```
