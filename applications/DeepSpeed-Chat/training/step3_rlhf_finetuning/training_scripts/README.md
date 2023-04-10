@@ -8,6 +8,8 @@ If you don't have step 1 and step 2 models. You may simply try
 --actor_model_name_or_path facebook/opt-1.3b --critic_model_name_or_path facebook/opt-350m
 ```
 ⚡⚡⚡ When you use above script, please make sure you comment out the 
-```applications/DeepSpeed-Chat/training/utils/model/model_utils.py#L60```
+```bash
+applications/DeepSpeed-Chat/training/utils/model/model_utils.py#L60
+```
 
 For the models we support, please see [our landing page](./../../../README.md#-supported-models-)
