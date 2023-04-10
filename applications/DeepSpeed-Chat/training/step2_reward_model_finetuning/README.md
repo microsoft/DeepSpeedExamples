@@ -4,7 +4,7 @@ Finetuning the Reward Model (RM) is more or less similar to Step-1 Supervised  F
 
 👉 **The training data difference**
 
-For SFT finetuning, the data is the concatenation of a query and an answer. However, for RM finetuning, each batch of data consists of two query-answer pairs, i.e., the same query with a high-score answer and a low score answer. This also leads to the second difference as describe below.
+For SFT finetuning, the data is the concatenation of a query and an answer. However, for RM finetuning, each batch of data consists of two query-answer pairs, i.e., the same query with a high-score answer and a low-score answer. This also leads to the second difference as describe below.
 
 👉**The training objective difference**
 
