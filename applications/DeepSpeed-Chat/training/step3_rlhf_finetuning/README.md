@@ -59,7 +59,7 @@ Theoretically, the largest model you can train for this step is similar to the s
 * LoRA
 * reference model offloading.
 
-However, in practice, this is not always the case, and we are still investigating the reasons behind it. For now, we suggest that users use "Total-GPU-Memory-in-GB / 10" as the upper parameter bound for the sum of the actor model and critical model, for safety. Nevertheless, users are welcome to try the real limit and explore why we cannot train larger models.
+However, in practice, this is not always the case, and we are still investigating the reasons behind it. For now, we suggest that users use "Total-GPU-Memory-in-GB / 6" as the upper parameter bound for the sum of the actor model and critical model, for safety. Nevertheless, users are welcome to try the real limit and explore why we cannot train larger models.
 
 ## 🏃  How to evaluate
 
