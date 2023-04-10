@@ -362,7 +362,7 @@ For other detailed results and in-depth analysis, including effective throughput
 
 
 
-DeepSpeed Chat's model support will continue to grow over time to including emerging models for ChatGPT-style training! See [Roadmap](#-deepspeed-chats-roadmap-) for more details. Currently, we support the following model families:
+Currently, we support the following model families. We will continue to grow over time to including emerging models for ChatGPT-style training! See [Roadmap](#-deepspeed-chats-roadmap-) for more details.
 
 model family | size range 
 ------ | ------ 
@@ -374,7 +374,7 @@ model family | size range
 [gpt2](https://huggingface.co/models?other=gpt2) | 0.3B - 1.5B 
 [codegen](https://huggingface.co/Salesforce/codegen-16B-multi) | 0.35b - 16B 
 
-
+* All performance and accuracy tests have been performed using the OPT model family only. For other models, please see our training_scripts folder on how to change model families.
 
 ## ⚓ Documentation and Tutorial ⚓
 
@@ -390,9 +390,6 @@ For more APIs, example scripts, and evaluation results, please refer to
 Our future plan includes but not limited to :
 - [ ] System support and finetuning for LLaMA 
 - [ ] Generalizing DeepSpeed-RLHF abstraction and system support for a wide range of RL algorithms/paradigms
-- [ ] Complete support and scoring for multi-round conversation system
-- [ ] Further in-depth compression+kernel+fusion optimizations for accelerating autoregressive generation phase
-
 
 
 ## 💬 DeepSpeed Chat and DeepSpeed Community 💬
