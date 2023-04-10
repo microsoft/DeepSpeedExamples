@@ -1,18 +1,34 @@
-# Supervised finetuning (SFT)
+# 🐕 Supervised finetuning (SFT)
 Supervised finetuning (SFT) is very similar to standard language model finetuning on casual language tasks (e.g., WikiText-103). The main difference is from the dataset resources, SFT will collect high-quality query-answer pairs to finetune the model for human-perferred generation. 
 
-## How to train the model
-We provide multiple scritps for both single gpu (e.g., single A6000-48G, V100-32G, A100-40G etc) and single node (e.g., 8/16x V100-32G/ 8 A100-40G/80G) examples under directory "training_scripts". For example, if you have a single A6000-48G, you can simply do ``bash training_scripts/single_gpu_1.3b_lora.sh`` to train a OPT-1.3b model. It is easy to extend our single-node script to multi-node system.
+## 🏃 How to train the model
+We provide multiple scripts for training on both single GPUs (e.g., a single A6000-48G, V100-32G, A100-40G, etc.) and single nodes (e.g., 8/16x V100-32G, 8 A100-40G/80G), which can be found in the 'training_scripts' directory. For example, if you have a single A6000-48G, you can simply run the corresponding script.
+
+```bash
+ training_scripts/single_gpu_1.3b_lora.sh
+ ```
+
+to train a OPT-1.3b model. It is easy to extend our single-node script to multi-node system.
    
-## How to evaluate the SFT checkpoint?
-Once you finish the training using above code, you may simply do ``bash evaluation_scripts/run_prompt.sh``. It asks users to provide the paths of two models: (a) the original pretrained model (i.e., --model_name_or_path_baseline facebook/opt-1.3b) and (b) the fine-tuned model (i.e., --model_name_or_path_finetune output/check_base). "prompt_eval.py" includes several prompts that can be updated according to your preference.
+## 🏃 How to evaluate the SFT checkpoint?
+Once you finish the training using above code, you may simply do 
+```bash evaluation_scripts/run_prompt.sh```
 
-## Models and Datasets 
-Since there is no opensource checkpoint for GPT3, we utilized the Meta OPT family pretrained models (i.e., facebook/opt-1.3b). One may also use other pretrained models (such as GPT-Neo, Bloom etc). As for the dataset, we also used those open-sourced dataset from to the Huggingface Datasets, namely *Dahoas/rm-static Dahoas/full-hh-rlhf, Dahoas/synthetic-instruct-gptj-pairwise, yitingxie/rlhf-reward-datasets openai/webgpt_comparisons stanfordnlp/SHP.* 
+It asks users to provide the paths of two models: (a) the original pretrained model (i.e., --model_name_or_path_baseline facebook/opt-1.3b) and (b) the fine-tuned model (i.e., --model_name_or_path_finetune output/check_base). "prompt_eval.py" includes several prompts that can be updated according to your preference.
 
-Thanks to the DeepSpeed RLHF Data Abstraction and Blending, we are able to mix several resources of data to enable multiple datasets training. One thing that needs attention here is that, different datasets have different prompt word (e.g., *Dohas/rm-static* uses ``Human:`` for query and ``Assistant:`` for answer). As such, users need to align those by themselves. For our example, we always use the format from *Dohas/rm-static*. During our evaluation, we find diverse datasets may provide better model quality. Please take a look at the next section about several query-answer examples.
+## 💁 Models and Datasets 
+Since there is no opensource checkpoint for GPT3, we utilized the Meta OPT family pretrained models (i.e., facebook/opt-1.3b). One may also use other pretrained models (such as GPT-Neo, Bloom etc). As for the dataset, we also used those open-sourced dataset from to the Huggingface Datasets, namely
+```text 
+Dahoas/rm-static
+Dahoas/full-hh-rlhf
+Dahoas/synthetic-instruct-gptj-pairwise
+yitingxie/rlhf-reward-datasets
+openai/webgpt_comparisons stanfordnlp/SHP
+```
 
-## Prompt examples from OPT-1.3B and its SFT variants with different finetuning data
+Thanks to the DeepSpeed RLHF data abstraction and blending techniques, we are now able to combine multiple sources of data for training. However, it is important to note that different datasets may use different prompt words (e.g., *Dohas/rm-static* uses "Human:" for queries and "Assistant:" for answers). Therefore, users must align these prompts themselves. In our example, we use the format from *Dohas/rm-static* consistently. Through our evaluation, we have found that incorporating diverse datasets can improve the quality of the model. Please refer to the next section for examples of different query-answer pairs.
+
+## ☀️ Prompt examples from OPT-1.3B and its SFT variants with different finetuning data
 Note that the following generation on use the default generation from the model.
 
 |         Promt         | Human: Please tell me about Microsoft in a few sentence? Assistant:                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
@@ -29,8 +45,8 @@ Note that the following generation on use the default generation from the model.
 | Finetune w/4 datasets | A wise frog lives in a pond.<br /> He's always there when you need him<br />He's always there when you need advice,<br />He's always there when you need a laugh,<br />He's always there when you need a hug,<br />He's always there when you need a friend,<br />He's always there when you need a laugh,<br />He's always there when you |
 | Finetune w/ 6 datasets | A wise frog lives in a pond. He has a big mouth and a big heart.<br />He's always there to help.   He's a good friend to all.   He's a wise frog.`<\|endoftext\|>`                                                                                                                                                                         |
 
-## Some arguments explanation and largest model training on your own system
-Most arguments used in the ``main.py`` have clear explanation and usually easy-to-follow if you have previous experience on decoder model finetuning (please do not hesitate to reach out on GitHub issues if you are not clear with one or some of them). Here we give some specifial arguments explanation, particularly about their usage.
+## ☀️ Some arguments explanation and largest model training on your own system
+Most of the arguments used in the main.py file have clear explanations and are usually easy to follow if you have previous experience with finetuning decoder models. However, if you're not clear on any of them, please don't hesitate to reach out on GitHub issues. In this section, we provide some specific explanations of the arguments and their usage.
 
 | Args                                                     | Explanation                                                                              | Note                                                                                                                                                                                       |
 |----------------------------------------------------------|------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -44,7 +60,7 @@ Most arguments used in the ``main.py`` have clear explanation and usually easy-t
 | --only_optimize_lora                                     | Freeze all othre paramters and only optimize LoRA-related prameters                      |                                                                                                                                                                                            |
 | --gradient_checkpoint,   --lora_dim, only_optimizer_lora | When LoRA and Gradient Checkpointing are enabled. Only Optimize LoRA   cannot be enabled | If all three are enabled, it will affect the gradient flow (aka the   augo-grad system backend by PyTorch)                                                                                 |
 
-One important thing for users is that how they can estimate the largest model they can train using the current system. Here, we provide a method to do a rough estimation. Assume we do not use the offload feature and enable (i) zero stage 3 (if you use multiple GPUs) (ii) gradient checkpoint, and (iii) LoRA, then the approximate largest model (in billion parameters) you can train can be estimated by ``Total-GPU-memory-in-GB / 3``. For instance, if you have a single A6000-48G GPU, you probably can train up to 16B parameter models. Please note that this is a rough estimation, and you need to verify it by yourselves.
+One important consideration for users is determining the maximum model size they can train using their current system. Here, we present a method for estimating this limit. Assuming that you do not use the offload feature and enable (i) zero stage 3 (if using multiple GPUs), (ii) gradient checkpoint, and (iii) LoRA, the approximate maximum model size (in billions of parameters) that you can train can be estimated as "Total GPU memory in GB divided by 3." For example, if you have a single A6000-48G GPU, you can probably train models up to 16 billion parameters. It is important to note that this is a rough estimation, and you should verify it yourself.
 
-## Others
-From InstrucGPT work, it is recommended to train the model for overfitting (aka longer epochs) for better human-preferred answers. During our exploration, we also find this is helpful particularly for the smaller model finetuning, e.g., OPT-1.3B. Also note that the hyperparameters we provided in our script is not based on extensive hyparameter tuning. Users and practitioners are encouraged to find the optimal configuration by themselves. Our system can be seamlessly extended for other languages, e.g., Chinense and Japanese. We provide two such examples under ``training_scritps/other_language``.
+## 👀  Others
+From InstrucGPT work, it is recommended to train the model for overfitting (aka longer epochs) for better human-preferred answers. Through our exploration, we have found this to be particularly helpful for smaller model finetuning, such as OPT-1.3B. It's worth noting that the hyperparameters we have provided in our script have not undergone extensive tuning. As such, we encourage users and practitioners to find the optimal configuration themselves. Additionally, our system can be easily extended to other languages, such as Chinese and Japanese. To demonstrate this, we have included two examples under the "training_scripts/other_language" directory.
