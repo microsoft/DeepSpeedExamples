@@ -17,7 +17,7 @@ Once you finish the training using above code, you may simply do
 It asks users to provide the paths of two models: (a) the original pretrained model (i.e., --model_name_or_path_baseline facebook/opt-1.3b) and (b) the fine-tuned model (i.e., --model_name_or_path_finetune output/check_base). "prompt_eval.py" includes several prompts that can be updated according to your preference.
 
 ## 💁 Models and Datasets 
-Since there is no opensource checkpoint for GPT3, we utilized the Meta OPT family pretrained models (i.e., facebook/opt-1.3b). One may also use other pretrained models (such as GPT-Neo, Bloom etc). As for the dataset, we also used those open-sourced dataset from to the Huggingface Datasets, namely
+Since there is no opensource checkpoint for GPT3, we utilized the Meta OPT family pretrained models (i.e., facebook/opt-1.3b). One may also use other pretrained models (such as GPT-Neo, Bloom etc). As for the dataset, we also used those open-sourced datasets from to the Huggingface Datasets, namely
 ```text 
 Dahoas/rm-static
 Dahoas/full-hh-rlhf
