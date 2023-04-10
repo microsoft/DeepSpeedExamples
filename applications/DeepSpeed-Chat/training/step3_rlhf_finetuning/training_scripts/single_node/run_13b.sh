@@ -25,8 +25,8 @@ deepspeed --master_port 12346 main.py \
    --actor_model_name_or_path $ACTOR_MODEL_PATH \
    --critic_model_name_or_path $CRITIC_MODEL_PATH \
    --num_padding_at_beginning 1 \
-   --per_device_train_batch_size 4 \
-   --per_device_mini_train_batch_size 4 \
+   --per_device_train_batch_size 16 \
+   --per_device_mini_train_batch_size 16 \
    --generation_batch_numbers 1 \
    --ppo_epochs 1 \
    --max_answer_seq_len 256 \
@@ -40,10 +40,12 @@ deepspeed --master_port 12346 main.py \
    --gradient_accumulation_steps 1 \
    --num_warmup_steps 100 \
    --deepspeed --seed 1234 \
+   --enable_hybrid_engine \
+   --inference_tp_size 2 \
    ${ACTOR_ZERO_STAGE} \
    ${CRITIC_ZERO_STAGE} \
+   --actor_gradient_checkpointing \
    --actor_lora_dim 128 \
-   --enable_hybrid_engine \
    --actor_lora_module_name decoder.layers. \
    --output_dir $OUTPUT \
     &> $OUTPUT/training.log

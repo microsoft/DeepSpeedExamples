@@ -50,17 +50,17 @@ def parse_args():
     parser.add_argument(
         '--data_path',
         nargs='*',
-        default=None,
+        default=['Dahoas/rm-static'],
         help=
         'Path to the training dataset. Accepted format: 1) a single data path, 2) multiple datasets in the form: dataset1-path dataset2-path ...'
     )
     parser.add_argument(
         '--data_split',
         type=str,
-        default='2,4,4',
+        default='6,2,2',
         help=
         'Comma-separated list of proportions for training phase 1, 2, and 3 data. For example the split `2,4,4` '
-        'will use 20% of data for phase 1, 40% for phase 2 and 40% for phase 3.'
+        'will use 60% of data for phase 1, 20% for phase 2 and 20% for phase 3.'
     )
     parser.add_argument(
         '--data_output_path',
@@ -107,14 +107,14 @@ def parse_args():
     parser.add_argument(
         "--per_device_train_batch_size",
         type=int,
-        default=64,
+        default=16,
         help=
         "Batch size (per device) for the training dataloader and generation purpose."
     )
     parser.add_argument(
         "--per_device_mini_train_batch_size",
         type=int,
-        default=8,
+        default=16,
         help=
         "Mini Batch size (per device) for the training dataloader and training purpose."
     )
@@ -138,31 +138,31 @@ def parse_args():
     parser.add_argument(
         "--actor_learning_rate",
         type=float,
-        default=5e-5,
+        default=9.65e-6,
         help="Initial learning rate (after the potential warmup period) to use."
     )
     parser.add_argument(
         "--critic_learning_rate",
         type=float,
-        default=5e-5,
+        default=5e-6,
         help="Initial learning rate (after the potential warmup period) to use."
     )
     parser.add_argument("--actor_weight_decay",
                         type=float,
-                        default=0.0,
+                        default=0.1,
                         help="Weight decay to use.")
     parser.add_argument("--critic_weight_decay",
                         type=float,
-                        default=0.0,
+                        default=0.1,
                         help="Weight decay to use.")
     parser.add_argument("--num_train_epochs",
                         type=int,
-                        default=3,
+                        default=1,
                         help="Total number of training epochs to perform.")
     parser.add_argument(
         "--lr_scheduler_type",
         type=SchedulerType,
-        default="constant_with_warmup",
+        default="cosine",
         help="The scheduler type to use.",
         choices=[
             "linear", "cosine", "cosine_with_restarts", "polynomial",
@@ -177,7 +177,7 @@ def parse_args():
     parser.add_argument(
         "--num_warmup_steps",
         type=int,
-        default=0,
+        default=100,
         help="Number of steps for the warmup in the lr scheduler.")
     parser.add_argument("--output_dir",
                         type=str,
@@ -227,7 +227,7 @@ def parse_args():
     parser.add_argument(
         "--tp_gather_partition_size",
         type=int,
-        defualt=8,
+        default=8,
         help=
         "Granularity to bring in layers for TP sharding inside the hybrid engine. Please note hybrid-engine and tp_inference_size > 1 need to be true when using this feature."
     )
@@ -241,12 +241,12 @@ def parse_args():
     parser.add_argument(
         '--actor_zero_stage',
         type=int,
-        default=2,
+        default=0,
         help='ZeRO optimization stage for Actor model (and clones).')
     parser.add_argument(
         '--critic_zero_stage',
         type=int,
-        default=2,
+        default=0,
         help='ZeRO optimization stage for Critic model (and reward).')
     parser.add_argument(
         '--actor_gradient_checkpointing',
@@ -290,8 +290,8 @@ def parse_args():
             not args.only_optimize_lora
         ), "--{actor,critic}_gradient_checkpointing and --only_optimizer_lora cannot be enabled at the same time."
 
-    assert (
-        not (args.tp_inference_size > 1 and args.actor_zero_stage != 3),
+    if args.inference_tp_size > 1:
+        assert (args.actor_zero_stage == 3
     ), "Zero stage 3 must be used to do Tensor sharding in the hybrid engine"
 
     return args

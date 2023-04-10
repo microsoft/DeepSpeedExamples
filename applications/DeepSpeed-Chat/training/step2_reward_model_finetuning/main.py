@@ -36,17 +36,17 @@ def parse_args():
         "Finetune a transformers model on a causal language modeling task")
     parser.add_argument('--data_path',
                         nargs='*',
-                        default=None,
+                        default=['Dahoas/rm-static'],
                         help='Path to the training dataset. Accepted format:'
                         '1) a single data path, 2) multiple datasets in the'
                         'form: dataset1-path dataset2-path ...')
     parser.add_argument('--data_split',
                         type=str,
-                        default='2,4,4',
+                        default='6,2,2',
                         help='Comma-separated list of proportions for training'
                         'phase 1, 2, and 3 data. For example the split `2,4,4`'
-                        'will use 20% of data for phase 1, 40% for phase 2'
-                        'and 40% for phase 3.')
+                        'will use 60% of data for phase 1, 20% for phase 2'
+                        'and 20% for phase 3.')
     parser.add_argument(
         '--data_output_path',
         type=str,
@@ -70,13 +70,13 @@ def parse_args():
     parser.add_argument(
         "--per_device_train_batch_size",
         type=int,
-        default=8,
+        default=16,
         help="Batch size (per device) for the training dataloader.",
     )
     parser.add_argument(
         "--per_device_eval_batch_size",
         type=int,
-        default=2,
+        default=16,
         help="Batch size (per device) for the evaluation dataloader.",
     )
     parser.add_argument(
@@ -94,11 +94,11 @@ def parse_args():
     )
     parser.add_argument("--weight_decay",
                         type=float,
-                        default=0.0,
+                        default=0.1,
                         help="Weight decay to use.")
     parser.add_argument("--num_train_epochs",
                         type=int,
-                        default=3,
+                        default=1,
                         help="Total number of training epochs to perform.")
     parser.add_argument(
         "--gradient_accumulation_steps",
@@ -110,7 +110,7 @@ def parse_args():
     parser.add_argument(
         "--lr_scheduler_type",
         type=SchedulerType,
-        default="linear",
+        default="cosine",
         help="The scheduler type to use.",
         choices=[
             "linear", "cosine", "cosine_with_restarts", "polynomial",
@@ -128,7 +128,7 @@ def parse_args():
                         help="Where to store the model.")
     parser.add_argument("--seed",
                         type=int,
-                        default=None,
+                        default=1234,
                         help="A seed for reproducible training.")
     parser.add_argument("--local_rank",
                         type=int,
@@ -145,7 +145,7 @@ def parse_args():
     parser.add_argument(
         '--zero_stage',
         type=int,
-        default=2,
+        default=0,
         help='ZeRO optimization stage for Actor model (and clones).')
     ## LoRA for efficient training setting
     parser.add_argument("--lora_dim",
