@@ -1,6 +1,6 @@
 # 🐕 Reward Model (RM) finetuning
 
-Finetuning the Reward Model (RM) is more or less similar to Step-1 Supervised  Fine-Tuning (SFT) finetuning. However, there is a key difference between RM and SFT finetuning, which we will highlight for better understanding.
+Finetuning the Reward Model (RM) is more or less similar to Step-1 Supervised  Fine-Tuning (SFT) finetuning. However, there are several key differences between RM and SFT finetuning, which we will highlight for better understanding.
 
 👉 **The training data difference**
 
