@@ -18,11 +18,7 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 <a href="">
     <img alt="Documentation" src="https://readthedocs.org/projects/composer/badge/?version=stable">
-</a>
-<a href="">
-    <img alt="Chat @ Slack" src="https://img.shields.io/badge/slack-chat-2eb67d.svg?logo=slack">
-</a>
- 
+</a> 
   
 </div>
 
@@ -112,7 +108,7 @@ Please check out our [Blog Release](url) and [Documentation and Tutorial](#-docu
 ```bash
 pip install deepspeed
 git clone https://github.com/microsoft/DeepSpeedExamples.git
-cd DeepSpeedExamples-internal/applications/deepspeed-chat/
+cd DeepSpeedExamples/applications/DeepSpeed-Chat/
 pip install -r requirements.txt
 ```
 
@@ -126,7 +122,7 @@ pip install -r requirements.txt
 If you only have around **1-2 hour** for coffee or lunch break, you can also try to train a small/toy model with DeepSpeed-Chat. For example, we prepared a training example for a **1.3B** model with a single dataset to test our framework on your consumer-grade GPUs. The best part is that you will have your model checkpoint ready to play with when you are back from your lunch break!
 
   ```bash
-  python run.py --actor-model facebook/opt-1.3b --reward-model facebook/opt-350m --num-gpus 1 
+  python train.py --actor-model facebook/opt-1.3b --reward-model facebook/opt-350m --num-gpus 1 
   ```
 
   See the following table for the E2E time breakdown for training a 1.3 billion parameter ChatGPT model via DeepSpeed-Chat on a single commodity NVIDIA A6000 GPU with 48GB memory.
@@ -146,7 +142,7 @@ If you only have around **1-2 hour** for coffee or lunch break, you can also try
 If you only have around **half a day** and only a single server node, we suggest to use an example of pretrained **OPT-13B** as the actor model and OPT-350M as the reward model in the following single script to generate a final 13B ChatGPT-style model:
 
   ```bash
-  python run.py --actor-model facebook/opt-13b --reward-model facebook/opt-350m --num-gpus 8 
+  python train.py --actor-model facebook/opt-13b --reward-model facebook/opt-350m --num-gpus 8 
   ```
 
   See the following table for the E2E time breakdown for training a 13 billion parameter ChatGPT model via DeepSpeed-Chat on a single DGX node with 8 NVIDIA A100-40G GPUs.
@@ -165,7 +161,7 @@ If you only have around **half a day** and only a single server node, we suggest
 Want to try different model sizes and configurations? You got it! With DeepSpeed-Chat, users can easily do that. For example, if you have access to multi-nodes cluster or cloud resources and prefer to train a larger and higher-quality model for your research or business, you can simply use a similar script with your desired model sizes, e.g., **66B** and GPU counts=64:
 
   ```bash
-  python run.py --actor-model facebook/opt-66b --reward-model facebook/opt-350m --num-gpus 64 
+  python train.py --actor-model facebook/opt-66b --reward-model facebook/opt-350m --num-gpus 64 
   ```
 
   See the following table for E2E time breakdown for training a 66 billion parameter ChatGPT model via DeepSpeed-Chat on 8 DGX nodes with 8 NVIDIA A100-80G GPUs/node.
@@ -187,11 +183,15 @@ The run.py script has an easy-to-use command-line interface and can be launched 
 
 ```bash
 # Move into the first step of the pipeline
-cd step1_supervised_finetuning/
-# Feel free to modify the ds_config.json and the model.py to change configurations
+cd training/step1_supervised_finetuning/
+
+# Feel free to modify the ds_config.py and the model.py to change configurations
+
 # Run the training script
-bash training_scripts/single_gpu/run_1.3b_lora.sh
-bash eval.sh
+bash training_scripts/single_gpu/run_1.3b.sh
+
+# Evaluate the model
+bash evaluation_scripts/run_prompt.sh
 ```
 
 </p></details>
@@ -202,12 +202,15 @@ bash eval.sh
 
 ```bash
 # Move into the second step of the pipeline
-cd step2_reward_model_finetuning
+cd training/step2_reward_model_finetuning
 
-# Feel free to modify the ds_config.json and the model.py to change configurations
+# Feel free to modify the ds_config.py and the model.py to change configurations
+
 # Run the training script
 bash training_scripts/run_350m.sh
-bash eval.sh
+
+# Evaluate the model
+bash evaluation_scripts/run_eval.sh
 ```
 
 </p></details>
@@ -229,11 +232,12 @@ As the most complex step of the entire 3-step InstructGPT pipeline, DeepSpeed Ch
 
 ```bash
 # Move into the final step of the pipeline
-cd step3_rlhf_finetuning/
+cd training/step3_rlhf_finetuning/
 
-# Feel free to modify the ds_config.json and the model.py to change configurations
+# Feel free to modify the ds_config.py and the model.py to change configurations
+
 # Run the training script
-bash training_scripts/single_gpu/run_1.3b_lora.sh
+bash training_scripts/single_gpu/run_1.3b.sh
 ```
 </p></details>
 
@@ -267,7 +271,7 @@ For quickly testing your final models trained by DeepSpeed-Chat, we provide a si
 
 ```bash
 # serve the final model
-python chatbot.py --path  ${PATH-to-your-actor-model}
+python chat.py --path  ${PATH-to-your-actor-model}
 ```
 ***Example 1: Q&A Session from serving a 1.3B final model trained from DeepSpeed-Chat***
 
