@@ -390,7 +390,7 @@ For more APIs, example scripts, and evaluation results, please refer to
 Our future plan includes but not limited to :
 - [ ] System support and finetuning for LLaMA 
 - [ ] Generalizing DeepSpeed-RLHF abstraction and system support for a wide range of RL algorithms/paradigms
-
+- [ ] Investigating the RLHF training instability
 
 ## 💬 DeepSpeed Chat and DeepSpeed Community 💬
 

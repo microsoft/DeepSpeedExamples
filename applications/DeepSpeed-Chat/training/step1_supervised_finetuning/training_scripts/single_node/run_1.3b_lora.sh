@@ -5,7 +5,7 @@
 # DeepSpeed Team
 
 # Note that usually LoRA needs to use larger learning rate
-OUTPUT_PATH=./release_test/output_1.3b_lora
+OUTPUT_PATH=./output
 mkdir -p $OUTPUT_PATH
 
 deepspeed main.py \

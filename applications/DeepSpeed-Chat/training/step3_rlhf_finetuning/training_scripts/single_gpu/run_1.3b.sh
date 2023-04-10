@@ -5,12 +5,10 @@
 # DeepSpeed Team
 
 
-ACTOR_MODEL_PATH=/home/zheweiyao/ChatGPT_Pipeline/DeepSpeedExamples-internal/ChatGPT_RLHF_Example/step1_supervised_finetuning/final_coffee_break
-CRITIC_MODEL_PATH=/home/zheweiyao/ChatGPT_Pipeline/DeepSpeedExamples-internal/ChatGPT_RLHF_Example/step2_reward_model_finetuning/coffee_break4_diferent_dataets
+ACTOR_MODEL_PATH= # Provide the ckpt path of the actor model
+CRITIC_MODEL_PATH= # Provide the ckpt path of the critic model
 
-
-
-OUTPUT="./final_coffee_break_different_datasets"
+OUTPUT="./output"
 
 mkdir -p $OUTPUT
 

@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # DeepSpeed Team
-OUTPUT_PATH=./release_test/output_1.3b
+OUTPUT_PATH=./output
 mkdir -p $OUTPUT_PATH
 
 deepspeed main.py \

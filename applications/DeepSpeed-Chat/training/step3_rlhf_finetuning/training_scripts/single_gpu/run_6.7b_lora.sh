@@ -7,15 +7,15 @@
 
 ACTOR_ZERO_STAGE="--actor_zero_stage 0"
 CRITIC_ZERO_STAGE="--critic_zero_stage 0"
-ACTOR_MODEL_PATH= # give the path here
-CRITIC_MODEL_PATH=/vc_data/users/zheweiyao/shared/ChatGPT_RLHF_Example/step2_reward_model_finetuning/output
+ACTOR_MODEL_PATH= # Provide the ckpt path of the actor model
+CRITIC_MODEL_PATH= # Provide the ckpt path of the critic model
+
+OUTPUT="./output"
 
 Num_Padding_at_Beginning=1 # this is model related
 
 Actor_Lr=5e-4
 Critic_Lr=5e-6
-
-OUTPUT="./releasing_test/output_6.7b_Z0OffloadHE-singleGPU-test"
 
 mkdir -p $OUTPUT
 

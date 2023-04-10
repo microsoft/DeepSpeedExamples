@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # DeepSpeed Team
-OUTPUT_PATH=./coffee_break4_diferent_dataets
+OUTPUT_PATH=./output
 mkdir -p $OUTPUT_PATH
 
 deepspeed --num_gpus 1 main.py --model_name_or_path facebook/opt-350m \
