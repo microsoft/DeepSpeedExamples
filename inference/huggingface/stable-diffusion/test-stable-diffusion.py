@@ -19,19 +19,16 @@ generator.manual_seed(seed)
 baseline_image = pipe(prompt, guidance_scale=7.5, generator=generator, optimized_iterations=0).images[0]
 baseline_image.save(f"baseline.png")
 
-#generator.manual_seed(seed)
-#saving_image = pipe(prompt, guidance_scale=7.5, generator=generator, optimized_iterations=0.20).images[0]
-#baseline_image.save(f"saving-20percent.png")
 
 # NOTE: DeepSpeed inference supports local CUDA graphs for replaced SD modules.
 #       Local CUDA graphs for replaced SD modules will only be enabled when `mp_size==1`
-#pipe = deepspeed.init_inference(
-#    pipe,
-#    mp_size=world_size,
-#    dtype=torch.half,
-#    replace_with_kernel_inject=True,
-#    enable_cuda_graph=True if world_size==1 else False,
-#    )
+pipe = deepspeed.init_inference(
+    pipe,
+    mp_size=world_size,
+    dtype=torch.half,
+    replace_with_kernel_inject=True,
+    enable_cuda_graph=False if world_size==1 else False,
+    )
 
 generator.manual_seed(seed)
 deepspeed_image = pipe(prompt, guidance_scale=7.5, generator=generator, optimized_iterations=0.20).images[0]
