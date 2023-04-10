@@ -27,7 +27,7 @@ pipe = deepspeed.init_inference(
     mp_size=world_size,
     dtype=torch.half,
     replace_with_kernel_inject=True,
-    enable_cuda_graph=False if world_size==1 else False,
+    enable_cuda_graph=True if world_size==1 else False,
     )
 
 generator.manual_seed(seed)
