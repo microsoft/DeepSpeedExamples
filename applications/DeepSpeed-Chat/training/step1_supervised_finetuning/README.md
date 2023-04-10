@@ -26,7 +26,7 @@ yitingxie/rlhf-reward-datasets
 openai/webgpt_comparisons stanfordnlp/SHP
 ```
 
-Thanks to the DeepSpeed RLHF data abstraction and blending techniques, we are now able to combine multiple sources of data for training. However, it is important to note that different datasets may use different prompt words (e.g., *Dohas/rm-static* uses "Human:" for queries and "Assistant:" for answers). Therefore, users must align these prompts themselves. In our example, we use the format from *Dohas/rm-static* consistently. Through our evaluation, we have found that incorporating diverse datasets can improve the quality of the model. Please refer to the next section for examples of different query-answer pairs.
+Thanks to the DeepSpeed RLHF data abstraction and blending techniques, we are now able to combine multiple sources of data for training. However, it is important to note that different datasets may use different prompt words (e.g., *Dohas/rm-static* uses "Human:" for queries and "Assistant:" for answers). Therefore, users must align these prompts by themselves. In our example, we use the format from *Dohas/rm-static* consistently. Through our evaluation, we have found that incorporating diverse datasets can improve the quality of the model. Please refer to the next section for examples of different query-answer pairs.
 
 ## ☀️ Prompt examples from OPT-1.3B and its SFT variants with different finetuning data
 Note that the following generation on use the default generation from the model.
