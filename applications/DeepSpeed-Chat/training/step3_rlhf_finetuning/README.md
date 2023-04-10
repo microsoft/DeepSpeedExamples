@@ -23,7 +23,7 @@ Training and inference typically use two different backends in most high-optimiz
 
 Besides, as mentioned above, we are able to use ZeRO optimization to partition the model across different GPUs. During generation, if we have to gather the parameters across GPUs (or nodes) for each generation step, the communication cost will be very high, particularly for large models.
 
-To overcome both challenges, we are introducing the DeepSpeed Hybrid Engine (DeepSpeed-HE). This engine can automatically switch between the training engine and inference engine provided by DeepSpeed, allowing training to benefit from both optimizations. Additionally, DeepSpeed-HE can automatically change the ZeRO-3 training mode to Tensor Parallelism (also known as Model Parallelism) inference, eliminating the need for repeated parameter gathering and providing a highly effective inference experience. As a result, users can directly import Hugging Face models for training without having to modify them for tensor parallelism or pipeline parallelism training.
+To overcome both challenges, we are introducing the DeepSpeed Hybrid Engine (DeepSpeed-HE). This engine can automatically switch between the training engine and inference engine provided by DeepSpeed, allowing RLHF training to benefit from both optimizations. Additionally, DeepSpeed-HE can automatically change the ZeRO-3 training mode to Tensor Parallelism (also known as Model Parallelism) inference, eliminating the need for repeated parameter gathering and providing a highly effective inference experience. As a result, users can directly import Hugging Face models for training without having to modify them for tensor parallelism or pipeline parallelism training.
 
 ## 🏃 How to train RLHF
 
