@@ -59,7 +59,6 @@ A fast, affordable, scalable and open system framework for enabling end-to-end R
 - [⚓ Documentation and Tutorial ⚓](#-documentation-and-tutorial-)
 - [🌱 DeepSpeed Chat's Roadmap 🌱](#-deepspeed-chats-roadmap-)
 - [💬 DeepSpeed Chat and DeepSpeed Community 💬](#-deepspeed-chat-and-deepspeed-community-)
-- [🗄 DeepSpeed and DeepSpeed Chat Upholds the Open-Source Spirit! 🗄](#-deepspeed-and-deepspeed-chat-upholds-the-open-source-spirit-)
 - [🙏 Acknowledgement and Citation 🙏](#-acknowledgement-and-citation-)
 
 <!-- markdown-toc end -->
@@ -293,7 +292,7 @@ python chatbot.py --path  ${PATH-to-your-actor-model}
 
 ### 🐲 Superior Model Scale and Low Training Cost 
 
-A comprehensive view of the scale and end-to-end training times enabled by DeepSpeed-RLHF system are presented in Table 1. It also demonstrates the most cost-effective way to train models in Azure Cloud [^1] along with the associated cost. 
+A comprehensive view of the scale and end-to-end training times enabled by DeepSpeed-RLHF system are presented in Table 1. It also demonstrates the most cost-effective way to train models in Azure Cloud along with the associated cost. 
 
 
 | GPU SKUs      | OPT-1.3B      | OPT-6.7B       | OPT-13.2B       | OPT-30B       | OPT-66B           | Bloom-175B      |
@@ -309,13 +308,19 @@ A comprehensive view of the scale and end-to-end training times enabled by DeepS
 Table 1. End-to-end RLHF training (Step 3) for different actor model sizes and a fixed 350M critical model running on hardware ranging from single consumer grade GPU (NVIDIA A6000) to a more powerful cloud setup (64xA100-80GPUs).  
 </p>
 
-[^1]: The numbers in the table above are for Stage 3 of the training and based on actual measured training throughput on DeepSpeed-RLHF curated dataset and training recipe which trains for one epoch on a total of 135M tokens (6 open-sourced datasets with 40% used for RLHF training stage, i.e., Dahoas/rm-static, Dahoas/full-hh-rlhf, Dahoas/synthetic-instruct-gptj-pairwise, yitingxie/rlhf-reward-datasets, openai/webgpt_comparisons, and stanfordnlp/SHP from Huggingface Datasets. More specifically, we have in total 67.5M query tokens (131.9k queries with sequence length 256) and 67.5M generated tokens (131.9k answers with sequence length 256), and a maximum global batch size per step of 0.5M tokens (1024 query-answer pairs). We urge readers to pay attention to these specifications before making any cost and e2e time comparisons with DeepSpeed-RLHF.
+<details><summary> ⭕ Very Important Experimental Setup Details ⭕</summary><p>
+
+The numbers in the table above are for Stage 3 of the training and based on actual measured training throughput on DeepSpeed-RLHF curated dataset and training recipe which trains for one epoch on a total of 135M tokens (6 open-sourced datasets with 40% used for RLHF training stage, i.e., Dahoas/rm-static, Dahoas/full-hh-rlhf, Dahoas/synthetic-instruct-gptj-pairwise, yitingxie/rlhf-reward-datasets, openai/webgpt_comparisons, and stanfordnlp/SHP from Huggingface Datasets. More specifically, we have in total 67.5M query tokens (131.9k queries with sequence length 256) and 67.5M generated tokens (131.9k answers with sequence length 256), and a maximum global batch size per step of 0.5M tokens (1024 query-answer pairs). We urge readers to pay attention to these specifications before making any cost and e2e time comparisons with DeepSpeed-RLHF.
+
+ </p></details>
+
+
 
 ### 🐲 Throughput and Model Size Scalability Comparisons with Existing RLHF Systems
 
 &nbsp;&nbsp;***(I) Single-GPU's Model Scale and Throughput Comparision***
 
-&nbsp;&nbsp;With over an order of magnitude higher throughput, DeepSpeed-Chat unlocks the ability to train significantly larger actor models under the same latency budget or train models of similar size at over 10x lower cost, compared to the existing systems like Colossal-AI or HuggingFace-DDP. 
+&nbsp;&nbsp;With over an order of magnitude higher throughput, DeepSpeed-Chat unlocks the ability to train significantly larger actor models under the same latency budget or train models of similar size at much lower cost, compared to the existing systems like Colossal-AI or HuggingFace-DDP. For example, on a single GPU, DeepSpeed enables over **10X** throughput improvement for RLHF training on a single GPU. While both CAI-Coati and HF-DDP can run a max model size of 1.3B, DeepSpeed can run 6.5B model on the same hardware, **5x** higher.  
 
 <p align="center">
 
@@ -325,6 +330,8 @@ Figure 2: Step 3 throughput comparison against two other system frameworks (Colo
 </p>
 
 &nbsp;&nbsp;***(II) Single-Node Multi-GPU Model Scale and Throughput Comparision***
+
+On multi-GPUs of a single node, DeepSpeed-Chat enables **6-19X** speedup over CAI-Coati and **1.4-10.5X** speedup over HF-DDP (Figure 3) with respect to system throughput.   
 
 <p align="center">
 
@@ -355,8 +362,8 @@ DeepSpeed Chat's model support will continue to grow over time to including emer
 
 model family | size range 
 ------ | ------ 
-[bloom](https://huggingface.co/models?other=bloom) | 0.3B - 176B 
 [opt](https://huggingface.co/models?other=opt) | 0.1B - 66B 
+[bloom](https://huggingface.co/models?other=bloom) | 0.3B - 176B 
 [gpt\_neox](https://huggingface.co/models?other=gpt_neox) | 1.3B - 20B 
 [gptj](https://huggingface.co/models?other=gptj) | 1.4B - 6B 
 [gpt\_neo](https://huggingface.co/models?other=gpt_neo) | 0.1B - 2.7B 
@@ -380,7 +387,6 @@ Our future plan includes but not limited to :
 - [ ] System support and finetuning for LLaMA 
 - [ ] Generalizing DeepSpeed-RLHF abstraction and system support for a wide range of RL algorithms/paradigms
 - [ ] Complete support and scoring for multi-round conversation system
-- [ ] Training some of the largest ChatGPT models on the market, e.g., 530B. 
 - [ ] Further in-depth compression+kernel+fusion optimizations for accelerating autoregressive generation phase
 
 
@@ -393,9 +399,6 @@ Just like how the success of [the BLOOM model](https://huggingface.co/bigscience
 - Currently we prefer to interact with open source users mainly on GitHub so that it's easier for all users to search for related information. For bug report, please submit a GitHub issue. For contribution, please submit a pull request (PR). For general question/discussion, please open a new discussion or join any existing discussions.
 - We are open to collaborations with universities, research labs, companies, such as working together on deep learning research, applying DeepSpeed to empower real-world AI models and applications, and so on. For such requests (and other requests unsuitable for GitHub), please directly email to deepspeed-info@microsoft.com.
 
-## 🗄 Data 🗄
-
-The data-set for this project consists of 10,000 conversations from various sources thanks to the contributor from HuggingFace. These can be accessed under the `utils/data` folder. Each conversation consists of a series of user messages followed by the corresponding chatbot responses, separated by a newline character.
 
 ## 🙏 Acknowledgement and Citation 🙏
 
