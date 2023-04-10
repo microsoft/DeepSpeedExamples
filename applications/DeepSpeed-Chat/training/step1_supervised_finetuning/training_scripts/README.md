@@ -1,3 +1,5 @@
-### 💁In the training scripts, we give examples for "facebook/opt" family.
+### 💁For each folder, the bash scripts are examples of "facebook/opt" family.
 
-If you want to change your model such as EleutherAI/gpt-j-6b , you may simply replace the "facebook/opt-1.3b" to  "EleutherAI/gpt-j-6b".
+If you want to change your model such as EleutherAI/gpt-j-6b , you may simply replace the " --model_name_or_path facebook/opt-1.3b" to  "  --model_name_or_path EleutherAI/gpt-j-6b".
+
+For the models we support, please see [our landing page](./../../../README.md#😽-supported-models-😽)
