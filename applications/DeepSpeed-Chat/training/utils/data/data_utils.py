@@ -249,7 +249,8 @@ def create_prompt_dataset(local_rank,
     """
     os.makedirs(output_path, exist_ok=True)
     fname = '_'.join(data_path)
-    fname = f"{fname}_split{data_split}_phase{train_phase}_seed{seed}_tokenizer{tokenizer.__class__.__name__}_seqlen{max_seq_len}"
+    tokenizer_name = tokenizer.init_kwargs['name_or_path'].replace('/', '_')
+    fname = f"{fname}_split{data_split}_phase{train_phase}_seed{seed}_tokenizer{tokenizer_name}_seqlen{max_seq_len}"
     fname = '_'.join(fname.split('/'))
     train_fname = f"{output_path}/traindata_{fname}.pt"
     eval_fname = f"{output_path}/evaldata_{fname}.pt"
