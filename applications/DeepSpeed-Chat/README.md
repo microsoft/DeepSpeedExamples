@@ -170,7 +170,7 @@ Want to try different model sizes and configurations? You got it! With DeepSpeed
 
 ### 🐼 Demonstration: Individual Step Fine-Tuning
 
-The run.py script has an easy-to-use command-line interface and can be launched with several arguments including model type, model size, and number of GPUs to run. Considering users who would like to use DeepSpeed-Chat to only fine-tune their pretrained models in Step 1 or 2, or just use their own actor and reward model checkpoints directly to perform Step 3 in our RLHF pipeline, DeepSpeed-Chat provides greater configurability and flexibility to accommodate individual step fine-tuning:
+The train.py script has an easy-to-use command-line interface and can be launched with several arguments including model type, model size, and number of GPUs to run. Considering users who would like to use DeepSpeed-Chat to only fine-tune their pretrained models in Step 1 or 2, or just use their own actor and reward model checkpoints directly to perform Step 3 in our RLHF pipeline, DeepSpeed-Chat provides greater configurability and flexibility to accommodate individual step fine-tuning:
 
 #### 🕐 Step 1 - [Supervised Fine-Tuning](https://github.com/microsoft/DeepSpeedExamples-internal/tree/Leon/chatgpt/ChatGPT_RLHF_Example/step1_supervised_finetuning)
 
