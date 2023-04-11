@@ -1,0 +1,48 @@
+{
+    "fp16": {
+        "enabled": true,
+        "loss_scale": 0,
+        "loss_scale_window": 1000,
+        "initial_scale_power": 8,
+        "hysteresis": 2,
+        "min_loss_scale": 1
+    },
+    "optimizer": {
+        "type": "Adam",
+        "params": {
+            "lr": 1e-4
+        }
+    },
+    "zero_optimization": {
+        "stage": 3,
+        "stage3_gather_16bit_weights_on_model_save": false,
+        "offload_optimizer": {
+            "device": "cpu",
+            "pin_memory": true
+        },
+        "offload_param": {
+            "device": "cpu",
+            "pin_memory": true
+        },
+        "overlap_comm": false,
+        "contiguous_gradients": true,
+        "sub_group_size": 1e8,
+        "stage3_max_live_parameters": 2e8,
+        "stage3_max_reuse_distance": 2e8,
+        "stage3_prefetch_bucket_size": 1e8,
+        "stage3_param_persistence_threshold": 1e5,
+        "reduce_bucket_size": 1e7
+    },
+    "activation_checkpointing": {
+        "partition_activations": false,
+        "cpu_checkpointing": false,
+        "contiguous_memory_optimization": false,
+        "number_checkpoints": null,
+        "synchronize_checkpoint_boundary": false,
+        "profile": true
+    },
+    "gradient_clipping": 1.0,
+    "train_micro_batch_size_per_gpu": 8,
+    "gradient_accumulation_steps": 1,
+    "steps_per_print": 2000000
+}
