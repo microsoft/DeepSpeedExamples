@@ -35,7 +35,7 @@ A fast, affordable, scalable and open system framework for enabling end-to-end R
 
 - [📰 Latest News 📰](#-latest-news-)
 - [🚀 What is DeepSpeed Chat 🚀️](#-what-is-deepspeed-chat-)
-- [🧨 Capabilities from this Release 🧨](#-capabilities-from-this-release-)
+- [🧨 Capabilities 🧨](#-capabilities-)
 - [☕ Quick Start ☕](#-quick-start-)
   - [🐼 Installation](#-installation)
   - [🐼 Single Script for Training 3-Step RLHF Pipeline](#-one-single-script-completes-all-three-stages-of-rlhf-training-and-generate-your-first-chatgpt-model)
@@ -79,7 +79,7 @@ Beyond this release, DeepSpeed system has been proudly serving as the system bac
 - [Huggingface-PEFT](https://github.com/huggingface/peft)
 
 
-## 🧨 Capabilities from this Release 🧨
+## 🧨 Capabilities 🧨
 
 DeepSpeed Chat is evolving fast to accommodate the increasing demand for system-level acceleration support for training/finetuning as well as serving emerging models. Please stay tuned with our upcoming milestones at [Roadmap](#-deepspeed-chats-roadmap-).
 
