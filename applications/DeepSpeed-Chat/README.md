@@ -126,7 +126,7 @@ If you only have around **1-2 hour** for coffee or lunch break, you can also try
 
   | Model Size (A6000-48G)            | Step 1  | Step 2  | Step 3 | Total  |
   | --------------------------------- | ------- | ------- | ------ | ------ |
-  | Actor: OPT-1.3B  Reward: OPT-350M | 425 Sec | 586 Sec | 1.08hr | 1.36hr |
+  | Actor: OPT-1.3B  Reward: OPT-350M | 2900 Sec | 670 Sec | 1.2hr | 2.2hr |
   
  </p></details>
  
