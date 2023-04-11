@@ -285,14 +285,17 @@ def parse_args():
     args = parser.parse_args()
 
     # Validate settings
-    if (args.actor_gradient_checkpointing and args.actor_lora_dim > 0) or (args.critic_gradient_checkpointing and args.critic_lora_dim > 0):
+    if (args.actor_gradient_checkpointing
+            and args.actor_lora_dim > 0) or (args.critic_gradient_checkpointing
+                                             and args.critic_lora_dim > 0):
         assert (
             not args.only_optimize_lora
         ), "--{actor,critic}_gradient_checkpointing and --only_optimizer_lora cannot be enabled at the same time."
 
     if args.inference_tp_size > 1:
-        assert (args.actor_zero_stage == 3
-    ), "Zero stage 3 must be used to do Tensor sharding in the hybrid engine"
+        assert (
+            args.actor_zero_stage == 3
+        ), "Zero stage 3 must be used to do Tensor sharding in the hybrid engine"
 
     return args
 
@@ -358,7 +361,7 @@ def main():
     args.global_rank = torch.distributed.get_rank()
 
     assert not args.offload, "zero-offload is not currently supported but coming soon!"
-    
+
     unsupervised_training_enabled = args.unsupervised_dataset_name and args.unsupervised_dataset_config_name
     if unsupervised_training_enabled:
         # if we enable unsupervised training, we need to double the batch size for actor model

@@ -5,7 +5,7 @@
 There are two main challenges here:
 
 * 😵 How to handle the large memory consumption used for multiple models?
-* 😵 How can one efficiently generate answers as it typically dominates the training cost in RLHF? 
+* 😵 How can one efficiently generate answers as it typically dominates the training cost in RLHF?
 
 Here, we will provide a brief answer to both questions.
 
@@ -30,7 +30,7 @@ To overcome both challenges, we are introducing the DeepSpeed Hybrid Engine (Dee
 We provide multiple actor training scripts in the 'training_scripts' folder, all using a fixed OPT-350m reward model. However, users are encouraged to experiment with different reward model sizes based on their preferences. For example, if you have a single GPU and want to train an OPT-1.3B model, you can simply run the following bash script to initiate the training process.
 
 ```bash
-training_scripts/single_gpu/run_1.3b.sh 
+training_scripts/single_gpu/run_1.3b.sh
 ```
 
 ## 🎵 Some arguments explanation and largest model training on your own system
@@ -52,7 +52,7 @@ We provide most of unique arguments used in DeepSpeed RLHF other than the previo
 | --offload_reference_model                                          | Only offload the reference model to CPU                                                      | This helps increase the batch size with neglible time cost                                                                                                               |
 | --enable_ema                                                       | Add another model to collect the expotential moving average of the actor model's weight      | According to InstructGPT, the EMA weight has better performance than actor model's final checkpoint                                                                      |
 
-Theoretically, the largest model you can train for this step is similar to the step-1 SFT finetuning if you enable 
+Theoretically, the largest model you can train for this step is similar to the step-1 SFT finetuning if you enable
 
 * zero stage 3 (if you use multiple GPUs)
 * gradient checkpoint
@@ -75,6 +75,6 @@ We have also found that adding unsupervised training is not easy. We tried using
 
 👀 **Others**
 
-It is currently unclear how to effectively evaluate RLHF-trained models and SFT models trained in the first step. Often, researchers and practitioners rely on annotators to provide scores or use powerful pre-trained models such as ChatGPT or GPT4 to assess quality. As there is currently no standard solution, we do not provide a metric for our fine-tuned model. 
+It is currently unclear how to effectively evaluate RLHF-trained models and SFT models trained in the first step. Often, researchers and practitioners rely on annotators to provide scores or use powerful pre-trained models such as ChatGPT or GPT4 to assess quality. As there is currently no standard solution, we do not provide a metric for our fine-tuned model.
 
 Additionally, please note that the hyperparameters we provide in our script are not based on extensive hyperparameter tuning. Users and practitioners are encouraged to find the optimal configuration for themselves.

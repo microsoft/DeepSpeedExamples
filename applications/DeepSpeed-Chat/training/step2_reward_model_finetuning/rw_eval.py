@@ -8,7 +8,8 @@ import os
 import torch
 
 from transformers import AutoTokenizer
-import sys 
+import sys
+
 sys.path.append(
     os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
 from utils.model.model_utils import create_critic_model
@@ -17,8 +18,7 @@ from utils.utils import to_device
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description=
-        "Eval the finetued reward model")
+        description="Eval the finetued reward model")
     parser.add_argument(
         "--model_name_or_path",
         type=str,
@@ -43,7 +43,8 @@ def load_stuff(model_name_or_path, num_padding_at_beginning):
     tokenizer = AutoTokenizer.from_pretrained(model_name_or_path,
                                               fast_tokenizer=True)
     tokenizer.pad_token = tokenizer.eos_token
-    model = create_critic_model(model_name_or_path, tokenizer, None, num_padding_at_beginning, True)
+    model = create_critic_model(model_name_or_path, tokenizer, None,
+                                num_padding_at_beginning, True)
 
     return model, tokenizer
 
@@ -102,24 +103,32 @@ def run_pair_comparison():
 
     device = torch.device("cuda:0")
 
-    rm_model, tokenizer = load_stuff(args.model_name_or_path, args.num_padding_at_beginning)
+    rm_model, tokenizer = load_stuff(args.model_name_or_path,
+                                     args.num_padding_at_beginning)
     rm_model.to(device)
     rm_model.eval()
 
-    prompt_list = ["Human: Please tell me about Microsoft in a few sentence? Assistant: ", 
-              "Human: Explain the moon landing to a 6 year old in a few sentences. Assistant: "]
-    good_ans_list = ["Microsoft is a software company that develops, licenses, and supports software products, including Windows, Office, and Windows Phone. It is the largest software company in the world by revenue, and is the second-largest software company in the world by market capitalization. Microsoft is also a major provider of cloud computing services, including the Microsoft Azure cloud computing platform and the Microsoft Office 365 suite of products. The company was founded in 1975",
-                "The moon landing was a major milestone in the history of human exploration of the solar system. It was the first time humans had ever set foot on another planet, and it was a major turning point in the history of human civilization. The astronauts, Neil Armstrong, Buzz Aldrin, and Michael Collins, successfully landed the Apollo 11 spacecraft on the moon, marking the first time humans had ever set foot on another"]
-    bad_ans_list = ["I'm not sure. Human: What's your job? Assistant: I'm not sure. Human: What's your favorite color? Assistant: I'm not sure. Human: What's your favorite food? Assistant: I'm not sure. Human: What's your favorite drink? Assistant: I'm not sure.", 
-               "I don't know, I don't know."]
+    prompt_list = [
+        "Human: Please tell me about Microsoft in a few sentence? Assistant: ",
+        "Human: Explain the moon landing to a 6 year old in a few sentences. Assistant: "
+    ]
+    good_ans_list = [
+        "Microsoft is a software company that develops, licenses, and supports software products, including Windows, Office, and Windows Phone. It is the largest software company in the world by revenue, and is the second-largest software company in the world by market capitalization. Microsoft is also a major provider of cloud computing services, including the Microsoft Azure cloud computing platform and the Microsoft Office 365 suite of products. The company was founded in 1975",
+        "The moon landing was a major milestone in the history of human exploration of the solar system. It was the first time humans had ever set foot on another planet, and it was a major turning point in the history of human civilization. The astronauts, Neil Armstrong, Buzz Aldrin, and Michael Collins, successfully landed the Apollo 11 spacecraft on the moon, marking the first time humans had ever set foot on another"
+    ]
+    bad_ans_list = [
+        "I'm not sure. Human: What's your job? Assistant: I'm not sure. Human: What's your favorite color? Assistant: I'm not sure. Human: What's your favorite food? Assistant: I'm not sure. Human: What's your favorite drink? Assistant: I'm not sure.",
+        "I don't know, I don't know."
+    ]
 
-    for prompt, good_ans, bad_ans in zip(prompt_list, good_ans_list, bad_ans_list):
+    for prompt, good_ans, bad_ans in zip(prompt_list, good_ans_list,
+                                         bad_ans_list):
         batch = prepare_datapair(prompt,
-                                good_ans,
-                                bad_ans,
-                                tokenizer,
-                                max_seq_len=512,
-                                end_of_conversation_token="<|endoftext|>")
+                                 good_ans,
+                                 bad_ans,
+                                 tokenizer,
+                                 max_seq_len=512,
+                                 end_of_conversation_token="<|endoftext|>")
         batch = to_device(batch, device)
         # Run inference
         with torch.no_grad():
@@ -138,7 +147,8 @@ def run_single_sample():
     args = parse_args()
     device = torch.device("cuda")
 
-    rm_model, tokenizer = load_stuff(args.model_name_or_path, args.num_padding_at_beginning)
+    rm_model, tokenizer = load_stuff(args.model_name_or_path,
+                                     args.num_padding_at_beginning)
     rm_model.to(device)
 
     prompt = "Human: Explain the moon landing to a 6 year old in a few sentences."
@@ -154,7 +164,9 @@ def run_single_sample():
     rm_model.eval()
     # Run inference
     with torch.no_grad():
-        outputs = rm_model.forward_value(**batch, prompt_length=max(2, args.num_padding_at_beginning)) # we just need to skip the number of padding tokens at the beginning
+        outputs = rm_model.forward_value(
+            **batch, prompt_length=max(2, args.num_padding_at_beginning)
+        )  # we just need to skip the number of padding tokens at the beginning
     print("==================Eval result============================")
     print("prompt: ", prompt)
     print("my_ans: ", my_ans)

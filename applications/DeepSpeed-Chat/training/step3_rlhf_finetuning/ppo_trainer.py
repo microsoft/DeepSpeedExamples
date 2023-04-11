@@ -7,7 +7,6 @@ import torch.nn.functional as F
 import sys
 import os
 import deepspeed
-from deepspeed.runtime.utils import see_memory_usage
 from deepspeed.runtime.zero.partition_parameters import ZeroParamStatus
 
 sys.path.append(
@@ -66,7 +65,6 @@ class DeepSpeedPPOTrainer():
         self.gamma = 1.0
         self.lam = 0.95
 
-
     def _generate_sequence(self, prompts):
 
         max_min_length = self.max_answer_seq_len + prompts.shape[1]
@@ -75,7 +73,6 @@ class DeepSpeedPPOTrainer():
             seq = self.actor_model.module.generate(prompts,
                                                    max_length=max_min_length,
                                                    min_length=max_min_length)
-
 
         # Filter out seq with no asnwers (or very short). This happens when users directly use the pre-training ckpt without supervised finetuning
         # NOTE: this will causes each GPU has different number of examples

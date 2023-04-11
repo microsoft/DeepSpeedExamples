@@ -1,5 +1,5 @@
 # 🐕 Supervised finetuning (SFT)
-Supervised finetuning (SFT) is very similar to standard language model finetuning on casual language tasks (e.g., WikiText-103). The main difference is from the dataset resources, SFT will collect high-quality query-answer pairs to finetune the model for human-perferred generation. 
+Supervised finetuning (SFT) is very similar to standard language model finetuning on casual language tasks (e.g., WikiText-103). The main difference is from the dataset resources, SFT will collect high-quality query-answer pairs to finetune the model for human-perferred generation.
 
 ## 🏃 How to train the model
 We provide multiple scripts for training on single GPUs (e.g., a single A6000-48G, V100-32G, A100-40G, etc.), single nodes (e.g., 8/16x V100-32G, 8 A100-40G/80G), and multiple nodes setting (e.g., 64x A100-80G), which can be found in the 'training_scripts' directory. For example, if you have a single A6000-48G, you can simply run the corresponding script.
@@ -9,16 +9,16 @@ We provide multiple scripts for training on single GPUs (e.g., a single A6000-48
  ```
 
 to train a OPT-1.3b model. It is easy to extend our single-node script to multi-node system.
-   
+
 ## 🏃 How to evaluate the SFT checkpoint?
-Once you finish the training using above code, you may simply do 
+Once you finish the training using above code, you may simply do
 ```bash evaluation_scripts/run_prompt.sh```
 
 It asks users to provide the paths of two models: (a) the original pretrained model (i.e., --model_name_or_path_baseline facebook/opt-1.3b) and (b) the fine-tuned model (i.e., --model_name_or_path_finetune output/check_base). "prompt_eval.py" includes several prompts that can be updated according to your preference.
 
-## 💁 Models and Datasets 
+## 💁 Models and Datasets
 Since there is no opensource checkpoint for GPT3, we utilized the Meta OPT family pretrained models (i.e., facebook/opt-1.3b). One may also use other pretrained models (such as GPT-Neo, Bloom etc). As for the dataset, we also used those open-sourced datasets from to the Huggingface Datasets, namely
-```text 
+```text
 Dahoas/rm-static
 Dahoas/full-hh-rlhf
 Dahoas/synthetic-instruct-gptj-pairwise

@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # DeepSpeed Team
-
 """
 Run all steps with default settings:
 $ python3 train.py
@@ -42,8 +41,14 @@ step_dirs = {
 }
 model_type = {1: "actor", 2: "reward"}
 default_zero_stage = {
-    "single_node": {"1.3b": 2, "6.7b": 3, "13b": 3},
-    "multi_node": {"66b": 3},
+    "single_node": {
+        "1.3b": 2,
+        "6.7b": 3,
+        "13b": 3
+    },
+    "multi_node": {
+        "66b": 3
+    },
 }
 
 
@@ -112,7 +117,8 @@ def parse_args():
     elif args.num_gpus == 64:
         args.script_type = "multi_node"
     else:
-        raise NotImplementedError(f"{args.num_gpus} GPUs not supported by this script")
+        raise NotImplementedError(
+            f"{args.num_gpus} GPUs not supported by this script")
     return args
 
 
@@ -126,9 +132,9 @@ def get_zero_stage(args, step_num):
 
 def get_output_dir(args, step_num):
     model_size = get_model_size(args, step_num)
-    output_dir = os.path.join(
-        args.output_dir, f"{model_type[step_num]}-models", f"{model_size}"
-    )
+    output_dir = os.path.join(args.output_dir,
+                              f"{model_type[step_num]}-models",
+                              f"{model_size}")
     return output_dir
 
 
@@ -182,8 +188,7 @@ def launch_cmd(cmd, step_num):
     p.wait()
     if p.returncode != 0:
         raise RuntimeError(
-            f"Step {step_num} exited with non-zero status {p.returncode}"
-        )
+            f"Step {step_num} exited with non-zero status {p.returncode}")
 
 
 def main(args):

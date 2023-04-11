@@ -9,4 +9,3 @@ export CUDA_VISIBLE_DEVICES=0
 python prompt_eval.py \
     --model_name_or_path_baseline XXX \
     --model_name_or_path_finetune XXX
-    

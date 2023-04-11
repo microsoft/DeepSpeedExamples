@@ -16,9 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(
-        description=
-        "Eval the finetued SFT model")
+    parser = argparse.ArgumentParser(description="Eval the finetued SFT model")
     parser.add_argument(
         "--model_name_or_path_baseline",
         type=str,
@@ -163,10 +161,9 @@ def prompt_eval(args, model_baseline, model_fintuned, tokenizer, device,
                                 num_return_sequences=args.num_return_sequences,
                                 max_new_tokens=args.max_new_tokens)
         print_utils(r_finetune_g)
-        # Note: we use the above simplest greedy search as the baseline. Users can also use other baseline methods, 
+        # Note: we use the above simplest greedy search as the baseline. Users can also use other baseline methods,
         # such as beam search, multinomial sampling, and beam-search multinomial sampling.
         # We provide examples as below for users to try.
-
 
         # print("==========finetune: Multinomial sampling=========")
         # r_finetune_m = generate(model_fintuned, tokenizer, inputs,

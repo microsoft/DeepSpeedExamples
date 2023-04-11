@@ -30,7 +30,7 @@ class RewardModel(nn.Module):
 
     def gradient_checkpointing_enable(self):
         self.rwtranrsformer.gradient_checkpointing_enable()
-    
+
     def gradient_checkpointing_disable(self):
         self.rwtranrsformer.gradient_checkpointing_disable()
 

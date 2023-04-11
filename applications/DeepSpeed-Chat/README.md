@@ -12,13 +12,13 @@
 
 <div align="center">
 
-  
+
 [![Code License](https://img.shields.io/badge/Code%20License-Apache_2.0-green.svg)](LICENSE)
-  
+
 </div>
 
 
-A fast, affordable, scalable and open system framework for enabling end-to-end Reinforcement Learning Human Feedback (RLHF) training experience to generate high-quality ChatGPT-style models at all scales. 
+A fast, affordable, scalable and open system framework for enabling end-to-end Reinforcement Learning Human Feedback (RLHF) training experience to generate high-quality ChatGPT-style models at all scales.
 
 
 <div align="center">
@@ -31,7 +31,7 @@ A fast, affordable, scalable and open system framework for enabling end-to-end R
 
 
 <!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
-## Table of Contents 
+## Table of Contents
 
 - [📰 Latest News 📰](#-latest-news-)
 - [🚀 What is DeepSpeed Chat 🚀️](#-what-is-deepspeed-chat-)
@@ -44,7 +44,7 @@ A fast, affordable, scalable and open system framework for enabling end-to-end R
     - [🕑 Step 2 - Reward Model](#-step-2---reward-model)
     - [🕒 Step 3 - Reinforcement Learning with Human Feedback](#-step-3---reinforcement-learning-with-human-feedback)
    - [🐼 Customizing RLHF training pipeline via DeepSpeed-Chat’s APIs](#-customizing-your-own-rlhf-training-pipeline-using-deepspeed-chats-rlhf-apis)
-   - [🐼 Serving Your Model: Plug-in and Test!](#-serving-plug-in-your-final-model-trained-by-deepspeed-chat-and-test-it-out)    
+   - [🐼 Serving Your Model: Plug-in and Test!](#-serving-plug-in-your-final-model-trained-by-deepspeed-chat-and-test-it-out)  
 - [🔥 Training Performance Evaluation 🔥](#-training-performance-evaluation-)
 - [😽 Supported Models 😽](#-supported-models-)
 - [⚓ Documentation and Tutorial ⚓](#-documentation-and-tutorial-)
@@ -54,20 +54,20 @@ A fast, affordable, scalable and open system framework for enabling end-to-end R
 
 <!-- markdown-toc end -->
 
-## 📰 Latest News 📰 
+## 📰 Latest News 📰
 
 -[April 11th, 2023] Release of DeepSpeed-Chat, try it today! Check out our [blog for more details](https://github.com/microsoft/DeepSpeed/tree/master/blogs/deepspeed-chat).
 
 
 ## 🚀 What is DeepSpeed Chat 🚀
 
-<div align="center"> 
+<div align="center">
 
 https://user-images.githubusercontent.com/124002815/230290966-a78ea171-ab65-4fcc-b91e-67c7c4403497.mp4
 
 </div>
 
-In the spirit of democratizing ChatGPT-style models and their capabilities, DeepSpeed is proud to introduce a general system framework for enabling an end-to-end training experience for ChatGPT-like models, named ***DeepSpeed Chat***. It can automatically take your favorite pre-trained large language models though an OpenAI InstructGPT style three stages to produce your very own high-quality ChatGPT-style model. DeepSpeed Chat makes training for high-quality ChatGPT-style models easy, fast, affordable and scalable. 
+In the spirit of democratizing ChatGPT-style models and their capabilities, DeepSpeed is proud to introduce a general system framework for enabling an end-to-end training experience for ChatGPT-like models, named ***DeepSpeed Chat***. It can automatically take your favorite pre-trained large language models though an OpenAI InstructGPT style three stages to produce your very own high-quality ChatGPT-style model. DeepSpeed Chat makes training for high-quality ChatGPT-style models easy, fast, affordable and scalable.
 
 With just one click, you can train, generate and serve a 1.3 billion parameter ChatGPT model within 1.36 hours on a single consumer-grade NVIDIA A6000 GPU with 48GB memory. On a single DGX node with 8 NVIDIA A100-40G GPUs, DeepSpeed-Chat enables training for a 13 billion parameter ChatGPT model in 13.6 hours. On multi-GPU multi-node systems (cloud scenarios),i.e., 8 DGX nodes with 8 NVIDIA A100 GPUs/node, DeepSpeed-Chat can train a 66 billion parameter ChatGPT model under 9 hours. Finally, it enables 15X faster training over the existing RLHF systems, and can handle training of ChatGPT-like models with over 200 billion parameters: another impossible feat with the existing systems. For the full range of discussion on various model sizes and low training cost enabled by DeepSpeed-Chat, please refer to the [Release Blog](https://github.com/microsoft/DeepSpeed/tree/master/blogs/deepspeed-chat) and [Training Performance Evaluation](#-training-performance-evaluation-).  
 
@@ -83,7 +83,7 @@ Beyond this release, DeepSpeed system has been proudly serving as the system bac
 
 DeepSpeed Chat is evolving fast to accommodate the increasing demand for system-level acceleration support for training/finetuning as well as serving emerging models. Please stay tuned with our upcoming milestones at [Roadmap](#-deepspeed-chats-roadmap-).
 
-A summary of DeepSpeed Chat includes: 
+A summary of DeepSpeed Chat includes:
 
 + **DeepSpeed Chat**: a complete end-to-end three-stage OpenAI InstructGPT training strategy with Reinforcement Learning Human Feedback (RLHF), to generate high-quality ChatGPT-style models from users’ favorite pre-trained large language model checkpoints;
 + **DeepSpeed Hybrid Engine**: A new system support for fast, affordable and scalable RLHF training at All Scales. It is built upon your favorite DeepSpeed's system capability such as ZeRO technologies and DeepSpeed-Inference;
@@ -93,10 +93,10 @@ A summary of DeepSpeed Chat includes:
 Please check out our [Blog Release]([url](https://github.com/microsoft/DeepSpeed/tree/master/blogs/deepspeed-chat)) and [Documentation and Tutorial](#-documentation-and-tutorial-) for more details on our training methodology and new system technologies.
 
 
-## ☕ Quick Start ☕ 
+## ☕ Quick Start ☕
 
 
-### 🐼 Installation 
+### 🐼 Installation
 
 
 ```bash
@@ -119,7 +119,7 @@ pip install -r requirements.txt
 If you only have around **1-2 hour** for coffee or lunch break, you can also try to train a small/toy model with DeepSpeed-Chat. For example, we prepared a training example for a **1.3B** model with a single dataset to test our framework on your consumer-grade GPUs. The best part is that you will have your model checkpoint ready to play with when you are back from your lunch break!
 
   ```bash
-  python train.py --actor-model facebook/opt-1.3b --reward-model facebook/opt-350m --num-gpus 1 
+  python train.py --actor-model facebook/opt-1.3b --reward-model facebook/opt-350m --num-gpus 1
   ```
 
   See the following table for the E2E time breakdown for training a 1.3 billion parameter ChatGPT model via DeepSpeed-Chat on a single commodity NVIDIA A6000 GPU with 48GB memory.
@@ -127,19 +127,19 @@ If you only have around **1-2 hour** for coffee or lunch break, you can also try
   | Model Size (A6000-48G)            | Step 1  | Step 2  | Step 3 | Total  |
   | --------------------------------- | ------- | ------- | ------ | ------ |
   | Actor: OPT-1.3B  Reward: OPT-350M | 2900 Sec | 670 Sec | 1.2hr | 2.2hr |
-  
+
  </p></details>
- 
- 
+
+
 
 &nbsp;&nbsp;**:green_heart: DeepSpeed-Chat’s RLHF Example 2: Half Day Training on a Single Commodity GPU Node for a 13B ChatGPT Model**
 
 <details><summary> Expand </summary><p>
-  
+
 If you only have around **half a day** and only a single server node, we suggest to use an example of pretrained **OPT-13B** as the actor model and OPT-350M as the reward model in the following single script to generate a final 13B ChatGPT-style model:
 
   ```bash
-  python train.py --actor-model facebook/opt-13b --reward-model facebook/opt-350m --num-gpus 8 
+  python train.py --actor-model facebook/opt-13b --reward-model facebook/opt-350m --num-gpus 8
   ```
 
   See the following table for the E2E time breakdown for training a 13 billion parameter ChatGPT model via DeepSpeed-Chat on a single DGX node with 8 NVIDIA A100-40G GPUs.
@@ -147,7 +147,7 @@ If you only have around **half a day** and only a single server node, we suggest
   | Model Size (A100-40G)          | Step 1 | Step 2 | Step 3 | Total  |
   | ------------------------------- | ------ | ------ | ------ | ------ |
   | Actor: OPT-13B Reward: OPT-350M | 2.5hr  | 0.25hr | 10.8hr | 13.6hr |
-  
+
 </p></details>
 
 
@@ -158,7 +158,7 @@ If you only have around **half a day** and only a single server node, we suggest
 Want to try different model sizes and configurations? You got it! With DeepSpeed-Chat, users can easily do that. For example, if you have access to multi-nodes cluster or cloud resources and prefer to train a larger and higher-quality model for your research or business, you can simply use a similar script with your desired model sizes, e.g., **66B** and GPU counts=64:
 
   ```bash
-  python train.py --actor-model facebook/opt-66b --reward-model facebook/opt-350m --num-gpus 64 
+  python train.py --actor-model facebook/opt-66b --reward-model facebook/opt-350m --num-gpus 64
   ```
 
   See the following table for E2E time breakdown for training a 66 billion parameter ChatGPT model via DeepSpeed-Chat on 8 DGX nodes with 8 NVIDIA A100-80G GPUs/node.
@@ -167,7 +167,7 @@ Want to try different model sizes and configurations? You got it! With DeepSpeed
   | -------------------------------- | ------ | ------ | ------ | ----- |
   | Actor: OPT-66B  Reward: OPT-350M | 82mins | 5mins  | 7.5hr  | 9hr   |
  </p></details>
- 
+
  For your detailed budgeting for training a wide spectrum of model sizes on potentially avlaiable computing resources (e.g., Microsoft Azure), please visit [Training Performance Evaluation](#-training-performance-evaluation-).
 
 ### 🐼 Demonstration: Individual Step Fine-Tuning
@@ -285,9 +285,9 @@ python chat.py --path  ${PATH-to-your-actor-model}
 
 ## 🔥 Training Performance Evaluation 🔥
 
-### 🐲 Superior Model Scale and Low Training Cost 
+### 🐲 Superior Model Scale and Low Training Cost
 
-A comprehensive view of the scale and end-to-end training times enabled by DeepSpeed-RLHF system are presented in Table 1. It also demonstrates the most cost-effective way to train models in Azure Cloud along with the associated cost. 
+A comprehensive view of the scale and end-to-end training times enabled by DeepSpeed-RLHF system are presented in Table 1. It also demonstrates the most cost-effective way to train models in Azure Cloud along with the associated cost.
 
 
 | GPU SKUs      | OPT-1.3B      | OPT-6.7B       | OPT-13.2B       | OPT-30B       | OPT-66B           | Bloom-175B      |
@@ -326,7 +326,7 @@ Figure 2: Step 3 throughput comparison against two other system frameworks (Colo
 
 &nbsp;&nbsp;***(II) Single-Node Multi-GPU Model Scale and Throughput Comparision***
 
-On multi-GPUs of a single node, DeepSpeed-Chat enables **6-19X** speedup over CAI-Coati and **1.4-10.5X** speedup over HF-DDP (Figure 3) with respect to system throughput.   
+On multi-GPUs of a single node, DeepSpeed-Chat enables **6-19X** speedup over CAI-Coati and **1.4-10.5X** speedup over HF-DDP (Figure 3) with respect to system throughput.  
 
 <p align="center">
 
@@ -337,49 +337,49 @@ Figure 3. End-to-end training throughput comparison for step 3 of the training p
 
 &nbsp;&nbsp;***(III) Superior Generation Phase Acceleration in Step3***
 
-One of the key reasons that result in Figure 3 is our Hyrbid Engine's superior generation phase acceleration, shown below. 
+One of the key reasons that result in Figure 3 is our Hyrbid Engine's superior generation phase acceleration, shown below.
 
 <p align="center">
 
 <img src="assets/image/1.3B-breakdown.png" alt="democratization"/>
 
-Figure 4. Superior generation phase acceleration from DeepSpeed Chat’s Hybrid Engine: A time/sequence breakdown for training OPT-1.3B actor model + OPT-350M reward model on a single DGX node with 8 A100-40G GPUs. 
+Figure 4. Superior generation phase acceleration from DeepSpeed Chat’s Hybrid Engine: A time/sequence breakdown for training OPT-1.3B actor model + OPT-350M reward model on a single DGX node with 8 A100-40G GPUs.
 
 </p>
 
 For other detailed results and in-depth analysis, including effective throughput and scalability of DeepSpeed-Chat, please refer to our [Blog Post](url).
 
-## 😽 Supported Models 😽 
+## 😽 Supported Models 😽
 
 
 
 Currently, we support the following model families. We will continue to grow over time to including emerging models for ChatGPT-style training! See [Roadmap](#-deepspeed-chats-roadmap-) for more details.
 
-model family | size range 
------- | ------ 
-[opt](https://huggingface.co/models?other=opt) | 0.1B - 66B 
-[bloom](https://huggingface.co/models?other=bloom) | 0.3B - 176B 
-[gpt\_neox](https://huggingface.co/models?other=gpt_neox) | 1.3B - 20B 
-[gptj](https://huggingface.co/models?other=gptj) | 1.4B - 6B 
-[gpt\_neo](https://huggingface.co/models?other=gpt_neo) | 0.1B - 2.7B 
-[gpt2](https://huggingface.co/models?other=gpt2) | 0.3B - 1.5B 
-[codegen](https://huggingface.co/Salesforce/codegen-16B-multi) | 0.35b - 16B 
+model family | size range
+------ | ------
+[opt](https://huggingface.co/models?other=opt) | 0.1B - 66B
+[bloom](https://huggingface.co/models?other=bloom) | 0.3B - 176B
+[gpt\_neox](https://huggingface.co/models?other=gpt_neox) | 1.3B - 20B
+[gptj](https://huggingface.co/models?other=gptj) | 1.4B - 6B
+[gpt\_neo](https://huggingface.co/models?other=gpt_neo) | 0.1B - 2.7B
+[gpt2](https://huggingface.co/models?other=gpt2) | 0.3B - 1.5B
+[codegen](https://huggingface.co/Salesforce/codegen-16B-multi) | 0.35b - 16B
 
 * All performance and accuracy tests have been performed using the OPT model family only. For other models, please see our training_scripts folder on how to change model families.
 
 ## ⚓ Documentation and Tutorial ⚓
 
-For more APIs, example scripts, and evaluation results, please refer to 
+For more APIs, example scripts, and evaluation results, please refer to
   - [**Step1: Supervised Fine-Tuning (SFT)**](./training/step1_supervised_finetuning/README.md)
   - [**Step2: Reward Model Fine-Tuning**](./training/step2_reward_model_finetuning/README.md)
   - [**Step3: Reinforcement Learning Human Feedback (RLHF)**](./training/step3_rlhf_finetuning/README.md)
 
 
-## 🌱 DeepSpeed Chat's Roadmap 🌱 
+## 🌱 DeepSpeed Chat's Roadmap 🌱
 
 
 Our future plan includes but not limited to :
-- [ ] System support and finetuning for LLaMA 
+- [ ] System support and finetuning for LLaMA
 - [ ] ZeRO-Offload (CPU/NVMe) is currently not supported but coming soon
 - [ ] Generalizing DeepSpeed-RLHF abstraction and system support for a wide range of RL algorithms/paradigms
 - [ ] Auto-tuning of system optimizations
@@ -404,13 +404,3 @@ We thank the following papers and open-source repositories:
     [5] CarperAI, https://github.com/CarperAI/trlx
     [6] lvwerra/trl: Train transformer language models with reinforcement learning. (github.com)
     [7] pg-is-all-you-need/02.PPO.ipynb at master · MrSyee/pg-is-all-you-need (github.com)
-
-
-
-
-
-
-
-
-
-

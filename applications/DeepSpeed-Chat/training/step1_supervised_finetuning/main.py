@@ -53,7 +53,9 @@ def parse_args():
         '--data_output_path',
         type=str,
         default='/tmp/data_files/',
-        help='Where to store the data-related files such as shuffle index. This needs to be on a local storage of a node (not on a shared storage)')
+        help=
+        'Where to store the data-related files such as shuffle index. This needs to be on a local storage of a node (not on a shared storage)'
+    )
     parser.add_argument(
         "--model_name_or_path",
         type=str,
@@ -128,10 +130,9 @@ def parse_args():
                         type=int,
                         default=-1,
                         help="local_rank for distributed training on gpus")
-    parser.add_argument(
-        '--gradient_checkpointing',
-        action='store_true',
-        help='Enable HF gradient checkpointing for model.')    
+    parser.add_argument('--gradient_checkpointing',
+                        action='store_true',
+                        help='Enable HF gradient checkpointing for model.')
     # deepspeed features
     parser.add_argument('--offload',
                         action='store_true',
@@ -191,7 +192,7 @@ def main():
     set_random_seed(args.seed)
 
     assert not args.offload, "zero-offload is not currently supported but coming soon!"
-    
+
     torch.distributed.barrier()
 
     tokenizer = AutoTokenizer.from_pretrained(args.model_name_or_path,
