@@ -56,8 +56,7 @@ A fast, affordable, scalable and open system framework for enabling end-to-end R
 
 ## 📰 Latest News 📰 
 
--[April 10th, 2023] Release of DeepSpeed-Chat V1.0. Try it today! Check out our Microsoft [english release blog](url) and [Medium release post](url)! 
-
+-[April 10th, 2023] Release of DeepSpeed-Chat, try it today! Check out our [blog for more details](url).
 
 
 ## 🚀 What is DeepSpeed Chat 🚀
@@ -72,7 +71,7 @@ In the spirit of democratizing ChatGPT-style models and their capabilities, Deep
 
 With just one click, you can train, generate and serve a 1.3 billion parameter ChatGPT model within 1.36 hours on a single consumer-grade NVIDIA A6000 GPU with 48GB memory. On a single DGX node with 8 NVIDIA A100-40G GPUs, DeepSpeed-Chat enables training for a 13 billion parameter ChatGPT model in 13.6 hours. On multi-GPU multi-node systems (cloud scenarios),i.e., 8 DGX nodes with 8 NVIDIA A100 GPUs/node, DeepSpeed-Chat can train a 66 billion parameter ChatGPT model under 9 hours. Finally, it enables 15X faster training over the existing RLHF systems, and can handle training of ChatGPT-like models with over 200 billion parameters: another impossible feat with the existing systems. For the full range of discussion on various model sizes and low training cost enabled by DeepSpeed-Chat, please refer to the [Release Blog](https://github.com/microsoft/DeepSpeed/tree/master/blogs/deepspeed-chat) and [Training Performance Evaluation](#-training-performance-evaluation-).  
 
-Beyond this release, DeepSpeed system has been proudly serving as the system backend for accelerating a range of on-going efforts for fast training/fine-tuning Chat-Style models (e.g., LLaMA). The following are some of the OOS examples that are powered by DeepSpeed:
+Beyond this release, DeepSpeed system has been proudly serving as the system backend for accelerating a range of on-going efforts for fast training/fine-tuning Chat-Style models (e.g., LLaMA). The following are some of the open-source examples that are powered by DeepSpeed:
 
 - [Databricks Dolly](https://github.com/databrickslabs/dolly)
 - [LMFlow](https://github.com/OptimalScale/LMFlow)
@@ -84,7 +83,7 @@ Beyond this release, DeepSpeed system has been proudly serving as the system bac
 
 DeepSpeed Chat is evolving fast to accommodate the increasing demand for system-level acceleration support for training/finetuning as well as serving emerging models. Please stay tuned with our upcoming milestones at [Roadmap](#-deepspeed-chats-roadmap-).
 
-A summary of V1.0 DeepSpeed Chat release includes: 
+A summary of DeepSpeed Chat includes: 
 
 + **DeepSpeed Chat**: a complete end-to-end three-stage OpenAI InstructGPT training strategy with Reinforcement Learning Human Feedback (RLHF), to generate high-quality ChatGPT-style models from users’ favorite pre-trained large language model checkpoints;
 + **DeepSpeed Hybrid Engine**: A new system support for fast, affordable and scalable RLHF training at All Scales. It is built upon your favorite DeepSpeed's system capability such as ZeRO technologies and DeepSpeed-Inference;
@@ -101,7 +100,10 @@ Please check out our [Blog Release]([url](https://github.com/microsoft/DeepSpeed
 
 
 ```bash
-pip install deepspeed
+git clone https://github.com/microsoft/DeepSpeed.git
+cd DeepSpeed
+pip install .
+
 git clone https://github.com/microsoft/DeepSpeedExamples.git
 cd DeepSpeedExamples/applications/DeepSpeed-Chat/
 pip install -r requirements.txt
@@ -180,8 +182,6 @@ The train.py script has an easy-to-use command-line interface and can be launche
 # Move into the first step of the pipeline
 cd training/step1_supervised_finetuning/
 
-# Feel free to modify the ds_config.py and the model.py to change configurations
-
 # Run the training script
 bash training_scripts/single_gpu/run_1.3b.sh
 
@@ -198,8 +198,6 @@ bash evaluation_scripts/run_prompt.sh
 ```bash
 # Move into the second step of the pipeline
 cd training/step2_reward_model_finetuning
-
-# Feel free to modify the ds_config.py and the model.py to change configurations
 
 # Run the training script
 bash training_scripts/run_350m.sh
@@ -228,8 +226,6 @@ As the most complex step of the entire 3-step InstructGPT pipeline, DeepSpeed Ch
 ```bash
 # Move into the final step of the pipeline
 cd training/step3_rlhf_finetuning/
-
-# Feel free to modify the ds_config.py and the model.py to change configurations
 
 # Run the training script
 bash training_scripts/single_gpu/run_1.3b.sh
@@ -384,8 +380,9 @@ For more APIs, example scripts, and evaluation results, please refer to
 
 Our future plan includes but not limited to :
 - [ ] System support and finetuning for LLaMA 
+- [ ] ZeRO-Offload (CPU/NVMe) is currently not supported but coming soon
 - [ ] Generalizing DeepSpeed-RLHF abstraction and system support for a wide range of RL algorithms/paradigms
-- [ ] Investigating the RLHF training instability
+- [ ] Auto-tuning of system optimizations
 
 ## 💬 DeepSpeed Chat and DeepSpeed Community 💬
 
