@@ -3,8 +3,15 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # DeepSpeed Team
-OUTPUT_PATH=./output
-mkdir -p $OUTPUT_PATH
+OUTPUT=$1
+ZERO_STAGE=$2
+if [ "$OUTPUT" == "" ]; then
+    OUTPUT=./output
+fi
+if [ "$ZERO_STAGE" == "" ]; then
+    ZERO_STAGE=3
+fi
+mkdir -p $OUTPUT
 
 deepspeed main.py \
    --data_path Dahoas/rm-static Dahoas/full-hh-rlhf Dahoas/synthetic-instruct-gptj-pairwise yitingxie/rlhf-reward-datasets openai/webgpt_comparisons stanfordnlp/SHP \
@@ -21,9 +28,9 @@ deepspeed main.py \
    --num_warmup_steps 0 \
    --seed 1234 \
    --gradient_checkpointing \
-   --zero_stage 3 \
+   --zero_stage $ZERO_STAGE \
    --lora_dim 128 \
    --lora_module_name decoder.layers. \
    --deepspeed \
-   --output_dir $OUTPUT_PATH \
-   &> $OUTPUT_PATH/training.log
+   --output_dir $OUTPUT \
+   &> $OUTPUT/training.log

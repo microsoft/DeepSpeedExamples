@@ -3,22 +3,26 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # DeepSpeed Team
-
-
-ACTOR_ZERO_STAGE="--actor_zero_stage 2"
-CRITIC_ZERO_STAGE="--critic_zero_stage 2"
-ACTOR_MODEL_PATH= # Provide the ckpt path of the actor model
-CRITIC_MODEL_PATH= # Provide the ckpt path of the critic model
-
-OUTPUT="./output"
+ACTOR_MODEL_PATH=$1
+CRITIC_MODEL_PATH=$2
+ACTOR_ZERO_STAGE=$3
+CRITIC_ZERO_STAGE=$4
+OUTPUT=$5
+if [ "$OUTPUT" == "" ]; then
+    OUTPUT=./output
+fi
+if [ "$ACTOR_ZERO_STAGE" == "" ]; then
+    ACTOR_ZERO_STAGE=2
+fi
+if [ "$CRITIC_ZERO_STAGE" == "" ]; then
+    CRITIC_ZERO_STAGE=2
+fi
+mkdir -p $OUTPUT
 
 Num_Padding_at_Beginning=1 # this is model related
 
 Actor_Lr=9.65e-6
 Critic_Lr=5e-6
-
-
-mkdir -p $OUTPUT
 
 deepspeed --master_port 12346 main.py \
    --data_path Dahoas/rm-static Dahoas/full-hh-rlhf Dahoas/synthetic-instruct-gptj-pairwise yitingxie/rlhf-reward-datasets openai/webgpt_comparisons stanfordnlp/SHP \
@@ -42,7 +46,7 @@ deepspeed --master_port 12346 main.py \
    --num_warmup_steps 100 \
    --deepspeed --seed 1234 \
    --enable_hybrid_engine \
-   ${ACTOR_ZERO_STAGE} \
-   ${CRITIC_ZERO_STAGE} \
+   --actor_zero_stage $ACTOR_ZERO_STAGE \
+   --critic_zero_stage $CRITIC_ZERO_STAGE \
    --output_dir $OUTPUT \
     &> $OUTPUT/training.log
