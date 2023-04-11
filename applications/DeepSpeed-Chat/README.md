@@ -374,9 +374,9 @@ model family | size range
 ## ⚓ Documentation and Tutorial ⚓
 
 For more APIs, example scripts, and evaluation results, please refer to 
-  - [**Step1: Supervised Fine-Tuning (SFT)**](./step1_supervised_finetuning/README.md)
-  - [**Step2: Reward Model Fine-Tuning**](./step2_reward_model_finetuning/README.md)
-  - [**Step3: Reinforcement Learning Human Feedback (RLHF)**](./step3_rlhf_finetuning/README.md)
+  - [**Step1: Supervised Fine-Tuning (SFT)**](./training/step1_supervised_finetuning/README.md)
+  - [**Step2: Reward Model Fine-Tuning**](./training/step2_reward_model_finetuning/README.md)
+  - [**Step3: Reinforcement Learning Human Feedback (RLHF)**](./training/step3_rlhf_finetuning/README.md)
 
 
 ## 🌱 DeepSpeed Chat's Roadmap 🌱 
