@@ -1,5 +1,5 @@
 datasets>=2.8.0
-sentencepiece=>=0.1.97
+sentencepiece>=0.1.97
 protobuf==3.20.3
 accelerate>=0.15.0
 torch>=1.12.0
