@@ -243,7 +243,8 @@ def create_prompt_dataset(local_rank,
                           seed,
                           tokenizer,
                           max_seq_len,
-                          end_of_conversation_token="<|endoftext|>"):
+                          end_of_conversation_token="<|endoftext|>", 
+                          sft_only_data_path=[]):
     """
     Creates the prompt dataset
     """
@@ -286,6 +287,33 @@ def create_prompt_dataset(local_rank,
             eval_dataset = ConcatDataset(eval_datasets)
             shuffle_idx = get_shuffle_idx(seed, eval_size)
             eval_dataset = Subset(eval_dataset, shuffle_idx.tolist())
+
+        # Append the SFT-only dataset if it exists, and current phase is 1(SFT).
+        if train_phase == 1 and sft_only_data_path:
+            sft_train_datasets = []
+            sft_eval_datasets = []
+            sft_train_size = 0
+            sft_eval_size = 0
+            for sft_path in sft_only_data_path:
+                sft_train_dataset, sft_eval_dataset = create_dataset(
+                    local_rank, sft_path, "10,0,0", output_path, train_phase,
+                    seed, tokenizer, end_of_conversation_token, max_seq_len)
+                sft_train_datasets.append(sft_train_dataset)
+                sft_eval_datasets.append(sft_eval_dataset)
+                sft_train_size += len(sft_train_dataset)
+                sft_eval_size += len(sft_eval_datasets)
+            if sft_train_datasets:  # Check if sft_train_datasets is not empty
+                sft_train_dataset = ConcatDataset(sft_train_datasets)
+                shuffle_idx = get_shuffle_idx(seed, sft_train_size)
+                sft_train_dataset = Subset(sft_train_dataset, shuffle_idx.tolist())
+                train_dataset = ConcatDataset([train_dataset, sft_train_dataset])
+            if sft_eval_datasets:  # Check if sft_eval_datasets is not empty
+                sft_eval_dataset = ConcatDataset(sft_eval_datasets)
+                shuffle_idx = get_shuffle_idx(seed, sft_eval_size) 
+                sft_eval_dataset = Subset(sft_eval_dataset, shuffle_idx.tolist())
+                eval_dataset = ConcatDataset([eval_dataset, sft_eval_dataset])
+
+
         if local_rank <= 0:
             torch.save(train_dataset, train_fname)
             torch.save(eval_dataset, eval_fname)
