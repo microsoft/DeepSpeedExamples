@@ -40,6 +40,7 @@ step_dirs = {
     3: "training/step3_rlhf_finetuning",
 }
 model_type = {1: "actor", 2: "reward", 3: "step3"}
+dse_url = "https://github.com/microsoft/DeepSpeedExamples/tree/master/applications/DeepSpeed-Chat/"
 
 
 def parse_args():
@@ -165,13 +166,23 @@ def get_cmd(args, step_num):
     return cmd
 
 
-def launch_cmd(cmd, step_num):
+def launch_cmd(args, step_num, cmd):
     working_dir = step_dirs[step_num]
+    print(f"Running:\n{cmd}")
     p = subprocess.Popen(cmd, cwd=working_dir, shell=True)
     p.wait()
     if p.returncode != 0:
-        raise RuntimeError(
-            f"Step {step_num} exited with non-zero status {p.returncode}")
+        raise RuntimeError('\n\n'.join((
+            f"Step {step_num} exited with non-zero status {p.returncode}",
+            f"Launch command: {cmd}",
+            f"Log output: {os.path.join(get_output_dir(args, step_num), 'training.log')}",
+            f"Please see our tutorial at {dse_url}{step_dirs[step_num]}",
+            "Please check that you have installed our requirements: `pip install -r requirements.txt`",
+            f"If you are seeing an OOM error, try modifying {get_script(args, step_num)}:",
+            "  - Reduce `--per_device_*_batch_size`",
+            "  - Increase `--zero_stage {0,1,2,3}` on multi-gpu setups",
+            "  - Enable `--gradient_checkpointing` or `--only_optimizer_lora`"
+        )))
 
 
 def main(args):
@@ -181,7 +192,7 @@ def main(args):
         step_start_time = time.time()
 
         cmd = get_cmd(args, step_num)
-        launch_cmd(cmd, step_num)
+        launch_cmd(args, step_num, cmd)
 
         step_time = int(time.time() - start_time)
         time_str = str(datetime.timedelta(seconds=step_time))
