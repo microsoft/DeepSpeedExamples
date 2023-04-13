@@ -40,16 +40,6 @@ step_dirs = {
     3: "training/step3_rlhf_finetuning",
 }
 model_type = {1: "actor", 2: "reward", 3: "step3"}
-default_zero_stage = {
-    "single_node": {
-        "1.3b": 2,
-        "6.7b": 3,
-        "13b": 3
-    },
-    "multi_node": {
-        "66b": 3
-    },
-}
 
 
 def parse_args():
@@ -97,10 +87,10 @@ def parse_args():
         help="Directory for output of each step",
     )
     parser.add_argument(
-        "--num-gpus",
-        type=int,
-        default=1,
-        choices=(1, 8, 64),
+        "--deployment-type",
+        type=str,
+        default="single_gpu",
+        choices=("single_gpu", "single_node", "multi_node"),
         help="Number of GPUs to run the actor/reward models on",
     )
     args = parser.parse_args()
@@ -110,15 +100,6 @@ def parse_args():
             "Non-default zero stages may result in OOM errors or worse performance."
         )
 
-    if args.num_gpus == 1:
-        args.script_type = "single_gpu"
-    elif args.num_gpus == 8:
-        args.script_type = "single_node"
-    elif args.num_gpus == 64:
-        args.script_type = "multi_node"
-    else:
-        raise NotImplementedError(
-            f"{args.num_gpus} GPUs not supported by this script")
     return args
 
 
@@ -146,7 +127,7 @@ def get_script(args, step_num):
         os.getcwd(),
         step_dirs[step_num],
         "training_scripts",
-        args.script_type,
+        args.deployment_type,
         f"run_{model_size}.sh",
     )
     assert os.path.isfile(
