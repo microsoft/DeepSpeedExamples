@@ -99,9 +99,7 @@ Please check out our [Blog Release](https://github.com/microsoft/DeepSpeed/tree/
 
 
 ```bash
-git clone https://github.com/microsoft/DeepSpeed.git
-cd DeepSpeed
-pip install .
+pip install deepspeed>=0.9.0
 
 git clone https://github.com/microsoft/DeepSpeedExamples.git
 cd DeepSpeedExamples/applications/DeepSpeed-Chat/
@@ -167,7 +165,7 @@ Want to try different model sizes and configurations? You got it! With DeepSpeed
   | Actor: OPT-66B  Reward: OPT-350M | 82mins | 5mins  | 7.5hr  | 9hr   |
  </p></details>
 
- For your detailed budgeting for training a wide spectrum of model sizes on potentially avlaiable computing resources (e.g., Microsoft Azure), please visit [Training Performance Evaluation](#-training-performance-evaluation-).
+ For your detailed budgeting for training a wide spectrum of model sizes on potentially available computing resources (e.g., Microsoft Azure), please visit [Training Performance Evaluation](#-training-performance-evaluation-).
 
 ### 🐼 Demonstration: Individual Step Fine-Tuning
 
