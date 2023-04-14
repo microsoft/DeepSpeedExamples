@@ -49,10 +49,11 @@ def parse_args():
                         'phase 1, 2, and 3 data. For example the split `2,4,4`'
                         'will use 60% of data for phase 1, 20% for phase 2'
                         'and 20% for phase 3.')
-    parser.add_argument('--sft_only_data_path', 
-                        nargs='*', 
-                        default=[], 
-                        help='Path to the dataset for only using in SFT phase.')
+    parser.add_argument(
+        '--sft_only_data_path',
+        nargs='*',
+        default=[],
+        help='Path to the dataset for only using in SFT phase.')
     parser.add_argument(
         '--data_output_path',
         type=str,
@@ -215,9 +216,15 @@ def main():
     # Prepare the data
     train_phase = 1
     train_dataset, eval_dataset = create_prompt_dataset(
-        args.local_rank, args.data_path, args.data_split,
-        args.data_output_path, train_phase, args.seed, tokenizer,
-        args.max_seq_len, sft_only_data_path=args.sft_only_data_path)
+        args.local_rank,
+        args.data_path,
+        args.data_split,
+        args.data_output_path,
+        train_phase,
+        args.seed,
+        tokenizer,
+        args.max_seq_len,
+        sft_only_data_path=args.sft_only_data_path)
 
     # DataLoaders creation:
     if args.local_rank == -1:

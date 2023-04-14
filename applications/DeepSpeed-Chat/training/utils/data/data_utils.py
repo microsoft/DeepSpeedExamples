@@ -314,7 +314,8 @@ def create_prompt_dataset(local_rank,
                 sft_eval_size += len(sft_eval_dataset)
             if sft_train_datasets:  # Check if sft_train_datasets is not empty
                 sft_train_dataset = ConcatDataset(sft_train_datasets)
-                train_dataset = ConcatDataset([train_dataset, sft_train_dataset])
+                train_dataset = ConcatDataset(
+                    [train_dataset, sft_train_dataset])
                 shuffle_idx = get_shuffle_idx(seed, len(train_dataset))
                 train_dataset = Subset(train_dataset, shuffle_idx.tolist())
             if sft_eval_datasets:  # Check if sft_eval_datasets is not empty
