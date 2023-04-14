@@ -6,7 +6,7 @@ import argparse
 import logging
 import torch
 import sys
-import os 
+import os
 
 from transformers import (
     AutoConfig,
@@ -79,7 +79,6 @@ def parse_args():
     args = parser.parse_args()
 
     return args
-
 
 
 def generate(model,
@@ -202,10 +201,12 @@ def main():
     tokenizer = AutoTokenizer.from_pretrained(args.model_name_or_path_baseline,
                                               fast_tokenizer=True)
 
-    model_baseline = create_hf_model(AutoModelForCausalLM, args.model_name_or_path_baseline,
-                               tokenizer, None)
-    model_fintuned = create_hf_model(AutoModelForCausalLM, args.model_name_or_path_finetune,
-                               tokenizer, None)
+    model_baseline = create_hf_model(AutoModelForCausalLM,
+                                     args.model_name_or_path_baseline,
+                                     tokenizer, None)
+    model_fintuned = create_hf_model(AutoModelForCausalLM,
+                                     args.model_name_or_path_finetune,
+                                     tokenizer, None)
 
     model_baseline.to(device)
     model_fintuned.to(device)
