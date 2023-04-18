@@ -97,7 +97,7 @@ for i in range(args.trials):
     responses.append(r)
     times.append(end - start)  # / (args.max_tokens - 3))
     if args.deepspeed:
-        mtimes.append(sum(pipe.model.model_times()))
+        mtimes.append(sum(pipe.model.model_times()) / 1000)
 
 if args.local_rank == 0:
     print_latency(times, "(e2e) latency")
