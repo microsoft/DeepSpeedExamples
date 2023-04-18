@@ -77,6 +77,7 @@ Beyond this release, DeepSpeed system has been proudly serving as the system bac
 - [LMFlow](https://github.com/OptimalScale/LMFlow)
 - [CarperAI-TRLX](https://github.com/CarperAI/trlx)
 - [Huggingface-PEFT](https://github.com/huggingface/peft)
+- [BELLE](https://github.com/LianjiaTech/BELLE)
 
 
 ## 🧨 Capabilities 🧨
