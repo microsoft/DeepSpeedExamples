@@ -171,6 +171,8 @@ class DeepSpeedPPOTrainer():
                                         action_mask[:, start:])
         self.actor_model.backward(actor_loss)
         self.actor_model.step()
+        self.actor_model.empty_partition_cache()
+
         value = self.critic_model.forward_value(**batch,
                                                 return_value_only=True,
                                                 use_cache=False)[:, :-1]
@@ -179,6 +181,7 @@ class DeepSpeedPPOTrainer():
                                           returns, action_mask[:, start:])
         self.critic_model.backward(critic_loss)
         self.critic_model.step()
+        self.critic_model.empty_partition_cache()
 
         return actor_loss, critic_loss
 
@@ -267,5 +270,6 @@ class DeepSpeedPPOTrainerUnsupervised(DeepSpeedPPOTrainer):
         loss = outputs.loss
         self.actor_model.backward(unsup_coef * loss)
         self.actor_model.step()
+        self.actor_model.empty_partition_cache()
 
         return loss
