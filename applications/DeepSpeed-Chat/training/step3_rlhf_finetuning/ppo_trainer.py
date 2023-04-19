@@ -71,8 +71,7 @@ class DeepSpeedPPOTrainer():
 
         with torch.no_grad():
             seq = self.actor_model.module.generate(prompts,
-                                                   max_length=max_min_length,
-                                                   min_length=max_min_length)
+                                                   max_length=max_min_length)
 
         # Filter out seq with no asnwers (or very short). This happens when users directly use the pre-training ckpt without supervised finetuning
         # NOTE: this will causes each GPU has different number of examples
