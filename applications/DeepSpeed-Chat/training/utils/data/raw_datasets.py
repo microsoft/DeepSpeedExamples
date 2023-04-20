@@ -642,6 +642,43 @@ class LmqgQgjaquadDataset(PromptRawDataset):
         )
         return None
 
+# Pleisto Dataset
+class PleistoYurenDataset(PromptRawDataset):
+
+    def __init__(self, output_path, seed, local_rank):
+        super().__init__(output_path, seed, local_rank)
+        self.dataset_name = "pleisto/yuren"
+        self.dataset_name_clean = "pleisto_yuren"
+        self.raw_datasets = load_dataset("pleisto/yuren")
+
+    def get_train_data(self):
+        return self.raw_datasets["train"]
+    
+    def get_eval_data(self):
+        return self.raw_datasets["validation"]
+    
+    def get_prompt(self, sample):
+        pos = sample['input'].find('[|AI|]')
+        return sample['input'][:pos+6]
+    
+    def get_chosen(self, sample):
+        pos = sample['input'].find('[|AI|]')
+        return sample['input'][pos:]
+    
+    def get_prompt_and_chosen(self, sample):
+        return sample['input']
+    
+    def get_rejected(self, sample):
+        print(
+            f"Warning: dataset {self.dataset_name} does not include rejected response."
+        )
+        return None
+    
+    def get_prompt_and_rejected(self, sample):
+        print(
+            f"Warning: dataset {self.dataset_name} does not include rejected response."
+        )
+        return None
 
 # Japanese dataset
 class LmqgQagjaquadDataset(PromptRawDataset):
