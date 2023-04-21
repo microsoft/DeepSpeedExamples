@@ -3,13 +3,13 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # DeepSpeed Team
-ACTOR_MODEL_PATH=/home/zheweiyao/chatgpt_post_release/DeepSpeedExamples/applications/DeepSpeed-Chat/training/step1_supervised_finetuning/output_fourDatasets_NoWeightDecay_withDropout
-CRITIC_MODEL_PATH=/home/zheweiyao/chatgpt_post_release/DeepSpeedExamples/applications/DeepSpeed-Chat/training/step2_reward_model_finetuning/output_fourDatasets
+ACTOR_MODEL_PATH=$1
+CRITIC_MODEL_PATH=$2
 ACTOR_ZERO_STAGE=$3
 CRITIC_ZERO_STAGE=$4
 OUTPUT=$5
 if [ "$OUTPUT" == "" ]; then
-    OUTPUT=./output_critic_dropout
+    OUTPUT=./output
 fi
 if [ "$ACTOR_ZERO_STAGE" == "" ]; then
     ACTOR_ZERO_STAGE=2
