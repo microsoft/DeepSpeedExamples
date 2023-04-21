@@ -72,7 +72,7 @@ def print_perf_stats(latency_set, config, warmup=3):
         avg = sum(latency_set) / count
         avg = avg/args.batch_size
         num_layers = getattr(config, "num_layers", config.num_hidden_layers)
-        num_parameters = num_layers * config.hidden_size * config.hidden_size * 12
+        num_parameters = 11 * 1e9 #num_layers * config.hidden_size * config.hidden_size * 12
         if args.dtype == "float16":
             num_bytes = 2
         elif args.dtype == "float32":
@@ -139,7 +139,7 @@ for i in range(iters):
     times.append(end - start)
 
 if not torch.distributed.is_initialized() or torch.distributed.get_rank() == 0:
-    for i, o in zip(inputs, outputs):
-        print(f"\nin={i}\nout={o}\n{'-'*60}")
+    #for i, o in zip(inputs, outputs):
+    #    print(f"\nin={i}\nout={o}\n{'-'*60}")
     if args.test_performance:
-        print_perf_stats(map(lambda t: t / average_num_tokens, times), pipe.model.config)
+        print_perf_stats(map(lambda t: t / average_num_tokens * args.batch_size, times), pipe.model.config)

@@ -4,6 +4,7 @@ import deepspeed
 import math
 import os
 import torch
+from torch.profiler import profile, record_function, ProfilerActivity
 import time
 from utils import DSPipeline
 from deepspeed.runtime.utils import see_memory_usage
@@ -44,6 +45,8 @@ def print_perf_stats(latency_set, config, warmup=3):
             num_bytes = 4
         else:
             num_bytes = 1
+        print(num_parameters)
+        print(num_bytes)
         print("Avg Per Token Latency: {0:8.2f} ms".format(avg * 1000))
         print("Avg BW: {0:8.2f} GB/s".format(1/avg * num_parameters * num_bytes / 1e9))
         print("Avg flops: {0:8.2f} TFlops/s".format(1/avg * num_parameters * num_bytes * args.batch_size / 1e12))
@@ -69,7 +72,7 @@ if args.use_meta_tensor:
     ds_kwargs = dict(base_dir=pipe.repo_root, checkpoint=pipe.checkpoints_json)
 else:
     ds_kwargs = dict()
-
+#print(pipe.model)
 if args.ds_inference:
     pipe.model = deepspeed.init_inference(pipe.model,
                                     dtype=data_type,
@@ -85,7 +88,10 @@ if local_rank == 0:
 
 
 input_sentences = [
-         "DeepSpeed is a machine learning framework",
+         "DeepSpeed is a machine learning framework for deep neural network research that has gained widespread use among researchers ie pyDeepSpeed especially in recent years \
+         While not the first such package for deep learning in R as many of us are familiar DeepSpeed has been around in some form since as early as 20142Fn2ref-type=nnThe recent \
+         well-organized community of contributors who are responsive knowledgeable and helpfulnnIf you have a question about the use of DeepSpeed the process for submitting a good ",
+         "DeepSpeed is a machine learning framework ",
          "He is working on",
          "He has a",
          "He got all",
@@ -106,17 +112,21 @@ times = []
 for i in range(iters):
     torch.cuda.synchronize()
     start = time.time()
-    outputs = pipe(inputs,
-            num_tokens=args.max_new_tokens,
-            do_sample=(not args.greedy))
+    with profile(activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA], record_shapes=True) as prof:
+        with record_function("model_inference"):
+            outputs = pipe(inputs,
+                    num_tokens=args.max_new_tokens,
+                    do_sample=(not args.greedy))
     torch.cuda.synchronize()
     end = time.time()
     times.append(end - start)
 print(f"generation time is {times[1]} sec")
 
+print(prof.key_averages().table(sort_by="cuda_time_total"))#, row_limit=20))
+
 if args.local_rank == 0:
-    for i, o in zip(inputs, outputs):
-        print(f"\nin={i}\nout={o}\n{'-'*60}")
+    # for i, o in zip(inputs, outputs):
+    #     print(f"\nin={i}\nout={o}\n{'-'*60}")
     if args.test_performance:
-        print_perf_stats(map(lambda t: t / args.max_new_tokens, times), pipe.model.config)
+        print_perf_stats(map(lambda t: t / (args.max_new_tokens*args.batch_size), times), pipe.model.config)
 
