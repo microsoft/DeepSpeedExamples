@@ -43,6 +43,11 @@ def gather_log_probs(logits, labels):
     return log_probs_labels.squeeze(-1)
 
 
+def assert_empty_partition_cache(model, tag):
+    avail_or_inflight_params = [p.ds_id for p in model.parameters() if hasattr(p, 'ds_id') and p.ds_status != ZeroParamStatus.NOT_AVAILABLE]
+    assert len(avail_or_inflight_params) == 0, \
+        f'{tag} empty_partition_cache failed to evict all params: remaining = {avail_or_inflight_params}'
+
 class DeepSpeedPPOTrainer():
 
     def __init__(self, rlhf_engine, args):
@@ -68,7 +73,8 @@ class DeepSpeedPPOTrainer():
     def _generate_sequence(self, prompts):
 
         max_min_length = self.max_answer_seq_len + prompts.shape[1]
-
+        self.actor_model.empty_partition_cache()
+        assert_empty_partition_cache(self.actor_model, 'actor_model before generate')
         with torch.no_grad():
             seq = self.actor_model.module.generate(prompts,
                                                    max_length=max_min_length,
@@ -172,6 +178,7 @@ class DeepSpeedPPOTrainer():
         self.actor_model.backward(actor_loss)
         self.actor_model.step()
         self.actor_model.empty_partition_cache()
+        assert_empty_partition_cache(self.actor_model, 'actor_model after rlhf step')
 
         value = self.critic_model.forward_value(**batch,
                                                 return_value_only=True,
@@ -182,6 +189,7 @@ class DeepSpeedPPOTrainer():
         self.critic_model.backward(critic_loss)
         self.critic_model.step()
         self.critic_model.empty_partition_cache()
+        assert_empty_partition_cache(self.critic_model, 'critic_model after rlhf step')
 
         return actor_loss, critic_loss
 
@@ -271,5 +279,6 @@ class DeepSpeedPPOTrainerUnsupervised(DeepSpeedPPOTrainer):
         self.actor_model.backward(unsup_coef * loss)
         self.actor_model.step()
         self.actor_model.empty_partition_cache()
+        assert_empty_partition_cache(self.actor_model, 'actor_model after unsuper_step')
 
         return loss
