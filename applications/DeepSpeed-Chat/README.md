@@ -198,7 +198,7 @@ bash evaluation_scripts/run_prompt.sh
 cd training/step2_reward_model_finetuning
 
 # Run the training script
-bash training_scripts/run_350m.sh
+bash training_scripts/single_gpu/run_350m.sh
 
 # Evaluate the model
 bash evaluation_scripts/run_eval.sh
@@ -374,7 +374,7 @@ For more APIs, example scripts, and evaluation results, please refer to
   - [**Step1: Supervised Fine-Tuning (SFT)**](./training/step1_supervised_finetuning/README.md)
   - [**Step2: Reward Model Fine-Tuning**](./training/step2_reward_model_finetuning/README.md)
   - [**Step3: Reinforcement Learning Human Feedback (RLHF)**](./training/step3_rlhf_finetuning/README.md)
-
+  - [**Training Details Explanation**](./training/README.md)
 
 ## 🌱 DeepSpeed Chat's Roadmap 🌱
 
