@@ -161,6 +161,9 @@ def parse_args():
     parser.add_argument('--only_optimize_lora',
                         action='store_true',
                         help='Only optimize the LoRA parameters.')
+    parser.add_argument('--bf16',
+                        action='store_true',
+                        help='Use bf16.')
     parser = deepspeed.add_config_arguments(parser)
     args = parser.parse_args()
 
@@ -188,7 +191,8 @@ def main():
     args.global_rank = torch.distributed.get_rank()
 
     ds_config = get_train_ds_config(offload=args.offload,
-                                    stage=args.zero_stage)
+                                    stage=args.zero_stage,
+                                    bf16=args.bf16)
     ds_config[
         'train_micro_batch_size_per_gpu'] = args.per_device_train_batch_size
     ds_config[

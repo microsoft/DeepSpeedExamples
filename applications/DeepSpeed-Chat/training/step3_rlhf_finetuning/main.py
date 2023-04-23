@@ -285,6 +285,9 @@ def parse_args():
     parser.add_argument('--enable_ema',
                         action='store_true',
                         help='Enable EMA checkpoint for the model.')
+    parser.add_argument('--bf16',
+                        action='store_true',
+                        help='Use bf16.')
 
     parser = deepspeed.add_config_arguments(parser)
     args = parser.parse_args()

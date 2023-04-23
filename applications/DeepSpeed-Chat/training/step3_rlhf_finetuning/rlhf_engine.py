@@ -74,7 +74,8 @@ class DeepSpeedRLHFEngine():
             pin_parameters=(not self.args.unpin_actor_parameters),
             tp_gather_partition_size=self.args.tp_gather_partition_size,
             max_out_tokens=self.args.max_prompt_seq_len +
-            self.args.max_answer_seq_len)
+            self.args.max_answer_seq_len,
+            bf16=self.args.bf16)
         ds_config[
             'train_micro_batch_size_per_gpu'] = self.args.per_device_mini_train_batch_size
         #TODO(jeff): we should probably set grad accumlation steps here as well for clarity
@@ -133,7 +134,8 @@ class DeepSpeedRLHFEngine():
             # If actor is ZeRO-3 then we use it for everything, otherwise assume we have enough memory for ref model
             zero_stage = 0
         ds_config = get_eval_ds_config(self.args.offload_reference_model,
-                                       zero_stage)
+                                       zero_stage,
+                                       bf16=self.args.bf16)
         ds_config[
             'train_micro_batch_size_per_gpu'] = self.args.per_device_mini_train_batch_size
         #TODO(jeff): we should probably set grad accumlation steps here as well for clarity
@@ -159,7 +161,8 @@ class DeepSpeedRLHFEngine():
             # If actor is ZeRO-3 then we use it for everything, otherwise assume we have enough memory
             zero_stage = 0
         ds_config = get_eval_ds_config(self.args.offload_reference_model,
-                                       zero_stage)
+                                       zero_stage,
+                                       bf16=self.args.bf16)
         ds_config[
             'train_micro_batch_size_per_gpu'] = self.args.per_device_mini_train_batch_size
         #TODO(jeff): we should probably set grad accumlation steps here as well for clarity
@@ -184,7 +187,8 @@ class DeepSpeedRLHFEngine():
     def _init_critic(self, critic_model_name_or_path):
         stime = log_init("Critic")
         ds_config = get_train_ds_config(offload=self.args.offload,
-                                        stage=self.args.critic_zero_stage)
+                                        stage=self.args.critic_zero_stage,
+                                        bf16=self.args.bf16)
         ds_config[
             'train_micro_batch_size_per_gpu'] = self.args.per_device_mini_train_batch_size
         #TODO(jeff): we should probably set grad accumlation steps here as well for clarity
@@ -194,7 +198,7 @@ class DeepSpeedRLHFEngine():
 
         #TODO(jeff): should not be needed, we should be able to use ds_config above
         #TODO(jeff): it means we never create the critic w. zero.init context if we are using ZeRO-3
-        ds_eval_config = get_eval_ds_config(offload=False, stage=0)
+        ds_eval_config = get_eval_ds_config(offload=False, stage=0, bf16=self.args.bf16)
 
         # Model
         critic_model = create_critic_model(
@@ -247,7 +251,8 @@ class DeepSpeedRLHFEngine():
             zero_stage = 0
 
         ds_config = get_eval_ds_config(offload=self.args.offload,
-                                       stage=zero_stage)
+                                       stage=zero_stage,
+                                       bf16=self.args.bf16)
         ds_config[
             'train_micro_batch_size_per_gpu'] = self.args.per_device_mini_train_batch_size
         ds_config[
@@ -256,7 +261,7 @@ class DeepSpeedRLHFEngine():
 
         #TODO(jeff): should not be needed, we should be able to use ds_config above
         #TODO(jeff): it means we never create the critic w. zero.init context if we are using ZeRO-3
-        ds_eval_config = get_eval_ds_config(offload=False, stage=0)
+        ds_eval_config = get_eval_ds_config(offload=False, stage=0, bf16=self.args.bf16)
 
         # Model
         reward_model = create_critic_model(

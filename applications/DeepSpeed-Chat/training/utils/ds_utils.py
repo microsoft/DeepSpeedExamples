@@ -13,7 +13,8 @@ def get_train_ds_config(offload,
                         release_inference_cache=False,
                         pin_parameters=True,
                         tp_gather_partition_size=8,
-                        max_out_tokens=512):
+                        max_out_tokens=512,
+                        bf16=False):
 
     device = "cpu" if offload else "none"
     zero_opt_dict = {
@@ -35,8 +36,11 @@ def get_train_ds_config(offload,
         "steps_per_print": 10,
         "zero_optimization": zero_opt_dict,
         "fp16": {
-            "enabled": True,
+            "enabled": not bf16,
             "loss_scale_window": 100
+        },
+        "bfloat16": {
+            "enabled": bf16,
         },
         "gradient_clipping": 1.0,
         "prescale_gradients": False,
@@ -52,7 +56,7 @@ def get_train_ds_config(offload,
     }
 
 
-def get_eval_ds_config(offload, stage=0):
+def get_eval_ds_config(offload, stage=0, bf16=False):
     device = "cpu" if offload else "none"
     zero_opt_dict = {
         "stage": stage,
@@ -68,7 +72,10 @@ def get_eval_ds_config(offload, stage=0):
         "steps_per_print": 10,
         "zero_optimization": zero_opt_dict,
         "fp16": {
-            "enabled": True
+            "enabled": not bf16,
+        },
+        "bfloat16": {
+            "enabled": bf16,
         },
         "gradient_clipping": 1.0,
         "prescale_gradients": False,
