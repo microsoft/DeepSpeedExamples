@@ -17,44 +17,45 @@ from . import raw_datasets
 
 
 def get_raw_dataset(dataset_name, output_path, seed, local_rank):
-    if dataset_name == "Dahoas/rm-static":
-        return raw_datasets.DahoasRmstaticDataset(output_path, seed,
-                                                  local_rank)
-    elif dataset_name == "Dahoas/full-hh-rlhf":
-        return raw_datasets.DahoasFullhhrlhfDataset(output_path, seed,
-                                                    local_rank)
-    elif dataset_name == "Dahoas/synthetic-instruct-gptj-pairwise":
+    dn = None
+    if dataset_name.startswith("./"):
+        dn = dataset_name
+    if "Dahoas/rm-static" in dataset_name:
+        return raw_datasets.DahoasRmstaticDataset(output_path, seed, local_rank, dn)
+    elif "Dahoas/full-hh-rlhf" in dataset_name:
+        return raw_datasets.DahoasFullhhrlhfDataset(output_path, seed, local_rank, dn)
+    elif "Dahoas/synthetic-instruct-gptj-pairwise" in dataset_name:
         return raw_datasets.DahoasSyntheticinstructgptjpairwiseDataset(
-            output_path, seed, local_rank)
-    elif dataset_name == "yitingxie/rlhf-reward-datasets":
+            output_path, seed, local_rank, dn)
+    elif "yitingxie/rlhf-reward-datasets" in dataset_name:
         return raw_datasets.YitingxieRlhfrewarddatasetsDataset(
-            output_path, seed, local_rank)
-    elif dataset_name == "openai/webgpt_comparisons":
+            output_path, seed, local_rank, dn)
+    elif "openai/webgpt_comparisons" in dataset_name:
         return raw_datasets.OpenaiWebgptcomparisonsDataset(
-            output_path, seed, local_rank)
-    elif dataset_name == "stanfordnlp/SHP":
+            output_path, seed, local_rank, dn)
+    elif "stanfordnlp/SHP" in dataset_name:
         return raw_datasets.StanfordnlpSHPDataset(output_path, seed,
-                                                  local_rank)
-    elif dataset_name == "wangrui6/Zhihu-KOL":
+                                                  local_rank, dn)
+    elif "wangrui6/Zhihu-KOL" in dataset_name:
         return raw_datasets.Wangrui6ZhihuKOLDataset(output_path, seed,
-                                                    local_rank)
-    elif dataset_name == "Cohere/miracl-zh-queries-22-12":
+                                                    local_rank, dn)
+    elif "Cohere/miracl-zh-queries-22-12" in dataset_name:
         return raw_datasets.CohereMiraclzhqueries2212Dataset(
-            output_path, seed, local_rank)
-    elif dataset_name == "Hello-SimpleAI/HC3-Chinese":
+            output_path, seed, local_rank, dn)
+    elif "Hello-SimpleAI/HC3-Chinese" in dataset_name:
         return raw_datasets.HelloSimpleAIHC3ChineseDataset(
-            output_path, seed, local_rank)
-    elif dataset_name == "mkqa-Chinese":
-        return raw_datasets.MkqaChineseDataset(output_path, seed, local_rank)
-    elif dataset_name == "mkqa-Japanese":
-        return raw_datasets.MkqaJapaneseDataset(output_path, seed, local_rank)
-    elif dataset_name == "Cohere/miracl-ja-queries-22-12":
+            output_path, seed, local_rank, dn)
+    elif "mkqa-Chinese" in dataset_name:
+        return raw_datasets.MkqaChineseDataset(output_path, seed, local_rank, dn)
+    elif "mkqa-Japanese" in dataset_name:
+        return raw_datasets.MkqaJapaneseDataset(output_path, seed, local_rank, dn)
+    elif "Cohere/miracl-ja-queries-22-12" in dataset_name:
         return raw_datasets.CohereMiracljaqueries2212Dataset(
-            output_path, seed, local_rank)
-    elif dataset_name == "lmqg/qg_jaquad":
-        return raw_datasets.LmqgQgjaquadDataset(output_path, seed, local_rank)
-    elif dataset_name == "lmqg/qag_jaquad":
-        return raw_datasets.LmqgQagjaquadDataset(output_path, seed, local_rank)
+            output_path, seed, local_rank, dn)
+    elif "lmqg/qg_jaquad" in dataset_name:
+        return raw_datasets.LmqgQgjaquadDataset(output_path, seed, local_rank, dn)
+    elif "lmqg/qag_jaquad" in dataset_name:
+        return raw_datasets.LmqgQagjaquadDataset(output_path, seed, local_rank, dn)
     else:
         raise RuntimeError(
             f"We do not have configs for dataset {dataset_name}, but you can add it by yourself in raw_datasets.py."
