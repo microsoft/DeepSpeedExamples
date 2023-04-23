@@ -217,7 +217,7 @@ Figure 1: The illustration of DeepSpeed Chat’s RLHF training pipeline with opt
 
 </p>
 
-As the most complex step of the entire 3-step InstructGPT pipeline, DeepSpeed Chat's ***Hyrbid Engine*** has enabled sufficient acceleration to aovid large training time (cost) implications. Refer to [Step3: Reinforcement Learning Human Feedback (RLHF)](./training/step3_rlhf_finetuning) for more information. If you already have your fine-tuned actor and reward model checkpoints, you can simply run the following scripts to enable the PPO training.
+As the most complex step of the entire 3-step InstructGPT pipeline, DeepSpeed Chat's ***Hybrid Engine*** has enabled sufficient acceleration to aovid large training time (cost) implications. Refer to [Step3: Reinforcement Learning Human Feedback (RLHF)](./training/step3_rlhf_finetuning) for more information. If you already have your fine-tuned actor and reward model checkpoints, you can simply run the following scripts to enable the PPO training.
 
 <details><summary> Expand </summary><p>
 
