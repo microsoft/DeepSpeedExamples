@@ -46,7 +46,7 @@ def parse_args():
                         type=str,
                         default='6,2,2',
                         help='Comma-separated list of proportions for training'
-                        'phase 1, 2, and 3 data. For example the split `2,4,4`'
+                        'phase 1, 2, and 3 data. For example the split `6,2,2`'
                         'will use 60% of data for phase 1, 20% for phase 2'
                         'and 20% for phase 3.')
     parser.add_argument(
@@ -169,7 +169,7 @@ def parse_args():
     if args.gradient_checkpointing and args.lora_dim > 0:
         assert (
             not args.only_optimize_lora
-        ), "--gradient_checkpointing and --only_optimizer_lora cannot be enabled at the same time."
+        ), "--gradient_checkpointing and --only_optimize_lora cannot be enabled at the same time."
 
     return args
 
