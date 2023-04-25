@@ -51,7 +51,6 @@ class DahoasRmstaticDataset(PromptRawDataset):
         self.dataset_name = "Dahoas/rm-static"
         self.dataset_name_clean = "Dahoas_rm_static"
 
-
     def get_train_data(self):
         return self.raw_datasets["train"]
 
@@ -112,7 +111,6 @@ class DahoasSyntheticinstructgptjpairwiseDataset(PromptRawDataset):
         self.dataset_name = "Dahoas/synthetic-instruct-gptj-pairwise"
         self.dataset_name_clean = "Dahoas_synthetic_instruct_gptj_pairwise"
 
-
     def get_train_data(self):
         from .data_utils import get_raw_dataset_split_index
         dataset = self.raw_datasets["train"]
@@ -158,7 +156,6 @@ class YitingxieRlhfrewarddatasetsDataset(PromptRawDataset):
         self.dataset_name = "yitingxie/rlhf-reward-datasets"
         self.dataset_name_clean = "yitingxie_rlhf_reward_datasets"
 
-
     def get_train_data(self):
         return self.raw_datasets["train"]
 
@@ -188,7 +185,6 @@ class OpenaiWebgptcomparisonsDataset(PromptRawDataset):
         super().__init__(output_path, seed, local_rank, dataset_name)
         self.dataset_name = "openai/webgpt_comparisons"
         self.dataset_name_clean = "openai_webgpt_comparisons"
-
 
     def get_train_data(self):
         from .data_utils import get_raw_dataset_split_index
@@ -263,7 +259,6 @@ class StanfordnlpSHPDataset(PromptRawDataset):
         self.dataset_name = "stanfordnlp/SHP"
         self.dataset_name_clean = "stanfordnlp_SHP"
 
-
     def get_train_data(self):
         return self.raw_datasets["train"]
 
@@ -309,7 +304,6 @@ class Wangrui6ZhihuKOLDataset(PromptRawDataset):
         super().__init__(output_path, seed, local_rank, dataset_name)
         self.dataset_name = "wangrui6/Zhihu-KOL"
         self.dataset_name_clean = "wangrui6_Zhihu_KOL"
-
 
     def get_train_data(self):
         from .data_utils import get_raw_dataset_split_index
@@ -368,7 +362,6 @@ class CohereMiraclzhqueries2212Dataset(PromptRawDataset):
         self.dataset_name = "Cohere/miracl-zh-queries-22-12"
         self.dataset_name_clean = "Cohere_miracl_zh_queries_22_12"
 
-
     def get_train_data(self):
         return self.raw_datasets["train"]
 
@@ -400,7 +393,6 @@ class HelloSimpleAIHC3ChineseDataset(PromptRawDataset):
         super().__init__(output_path, seed, local_rank, dataset_name)
         self.dataset_name = "Hello-SimpleAI/HC3-Chinese"
         self.dataset_name_clean = "Hello_SimpleAI_HC3_Chinese"
-
 
     def get_train_data(self):
         from .data_utils import get_raw_dataset_split_index
@@ -460,7 +452,6 @@ class MkqaChineseDataset(PromptRawDataset):
         self.dataset_name = "mkqa-Chinese"
         self.dataset_name_clean = "mkqa"
 
-
     def get_train_data(self):
         from .data_utils import get_raw_dataset_split_index
         dataset = self.raw_datasets["train"]
@@ -519,7 +510,6 @@ class MkqaJapaneseDataset(PromptRawDataset):
         super().__init__(output_path, seed, local_rank, dataset_name)
         self.dataset_name = "mkqa-Japanese"
         self.dataset_name_clean = "mkqa"
-
 
     def get_train_data(self):
         from .data_utils import get_raw_dataset_split_index
