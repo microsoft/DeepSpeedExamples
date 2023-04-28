@@ -39,7 +39,7 @@ import sys
 sys.path.append(
     os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
 from utils.data.data_utils import create_prompt_dataset, MiniDataset, DataCollatorRLHF, get_unsupervised_data
-from utils.utils import print_rank_0, to_device, save_hf_format, set_random_seed, get_all_reduce_mean, moving_average, save_zero_three_model
+from utils.utils import print_rank_0, to_device, save_hf_format, set_random_seed, get_all_reduce_mean, moving_average, save_zero_three_model, load_hf_tokenizer
 from utils.module.lora import convert_lora_to_linear_layer
 
 
@@ -380,8 +380,7 @@ def main():
     torch.distributed.barrier()
 
     # create common tokenizer based on actor model
-    tokenizer = AutoTokenizer.from_pretrained(args.actor_model_name_or_path,
-                                              fast_tokenizer=True)
+    tokenizer = load_hf_tokenizer(args.actor_model_name_or_path, fast_tokenizer=True)
     tokenizer.pad_token = tokenizer.eos_token
 
     prompt_train_dataloader, unsupervised_train_dataloader, num_total_iters = create_datasets(
