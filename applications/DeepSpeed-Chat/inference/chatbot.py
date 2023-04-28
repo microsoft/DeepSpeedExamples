@@ -9,7 +9,7 @@ import logging
 import transformers  # noqa: F401
 import os
 import json
-from transformers import pipeline, set_seed 
+from transformers import pipeline, set_seed
 from transformers import AutoConfig, OPTForCausalLM, AutoTokenizer
 
 
@@ -35,7 +35,8 @@ def get_generator(path):
         if os.path.exists(model_json):
             model_json_file = json.load(open(model_json))
             model_name = model_json_file["_name_or_path"]
-            tokenizer = AutoTokenizer.from_pretrained(model_name, fast_tokenizer=True)
+            tokenizer = AutoTokenizer.from_pretrained(model_name,
+                                                      fast_tokenizer=True)
     else:
         tokenizer = AutoTokenizer.from_pretrained(path, fast_tokenizer=True)
 

@@ -14,7 +14,6 @@ from torch.utils.data.distributed import DistributedSampler
 
 from transformers import (
     AutoModelForCausalLM,
-    AutoTokenizer,
     SchedulerType,
     default_data_collator,
     get_scheduler,
@@ -205,7 +204,7 @@ def main():
 
     tokenizer = load_hf_tokenizer(args.model_name_or_path, fast_tokenizer=True)
     tokenizer.pad_token = tokenizer.eos_token
-    
+
     model = create_hf_model(AutoModelForCausalLM,
                             args.model_name_or_path,
                             tokenizer,

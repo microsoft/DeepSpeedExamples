@@ -41,6 +41,7 @@ class MovingAverage:
 
         return self.mean
 
+
 def load_hf_tokenizer(model_name_or_path, fast_tokenizer=True):
     if os.path.exists(model_name_or_path):
         # Locally tokenizer loading has some issue, so we need to force download
@@ -48,10 +49,13 @@ def load_hf_tokenizer(model_name_or_path, fast_tokenizer=True):
         if os.path.exists(model_json):
             model_json_file = json.load(open(model_json))
             model_name = model_json_file["_name_or_path"]
-            tokenizer = AutoTokenizer.from_pretrained(model_name, fast_tokenizer=True)
+            tokenizer = AutoTokenizer.from_pretrained(model_name,
+                                                      fast_tokenizer=True)
     else:
-        tokenizer = AutoTokenizer.from_pretrained(model_name_or_path, fast_tokenizer=True)
+        tokenizer = AutoTokenizer.from_pretrained(model_name_or_path,
+                                                  fast_tokenizer=True)
     return tokenizer
+
 
 def save_hf_format(model, tokenizer, args, sub_folder=""):
     # used to save huggingface format, so we can use it for hf.from_pretrained

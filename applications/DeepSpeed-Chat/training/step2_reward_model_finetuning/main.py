@@ -13,7 +13,6 @@ from torch.utils.data import DataLoader, RandomSampler, SequentialSampler
 from torch.utils.data.distributed import DistributedSampler
 
 from transformers import (
-    AutoTokenizer,
     SchedulerType,
     get_scheduler,
 )

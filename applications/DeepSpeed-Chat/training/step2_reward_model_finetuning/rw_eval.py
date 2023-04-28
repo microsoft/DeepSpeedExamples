@@ -7,7 +7,6 @@ import argparse
 import os
 import torch
 
-from transformers import AutoTokenizer
 import sys
 
 sys.path.append(
@@ -15,6 +14,7 @@ sys.path.append(
 from utils.model.model_utils import create_critic_model
 from utils.utils import to_device
 from utils.utils import load_hf_tokenizer
+
 
 def parse_args():
     parser = argparse.ArgumentParser(

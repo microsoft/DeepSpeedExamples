@@ -24,7 +24,6 @@ from torch.utils.data import DataLoader, RandomSampler
 from torch.utils.data.distributed import DistributedSampler
 
 from transformers import (
-    AutoTokenizer,
     SchedulerType,
     default_data_collator,
 )
@@ -380,7 +379,8 @@ def main():
     torch.distributed.barrier()
 
     # create common tokenizer based on actor model
-    tokenizer = load_hf_tokenizer(args.actor_model_name_or_path, fast_tokenizer=True)
+    tokenizer = load_hf_tokenizer(args.actor_model_name_or_path,
+                                  fast_tokenizer=True)
     tokenizer.pad_token = tokenizer.eos_token
 
     prompt_train_dataloader, unsupervised_train_dataloader, num_total_iters = create_datasets(
