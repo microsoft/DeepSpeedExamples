@@ -6,7 +6,8 @@ import os
 import torch
 import random
 import numpy as np
-from transformers import set_seed
+from transformers import set_seed, AutoTokenizer
+import json
 import deepspeed
 from deepspeed.runtime.zero.partition_parameters import ZeroParamStatus
 
@@ -41,14 +42,28 @@ class MovingAverage:
         return self.mean
 
 
+def load_hf_tokenizer(model_name_or_path, fast_tokenizer=True):
+    if os.path.exists(model_name_or_path):
+        # Locally tokenizer loading has some issue, so we need to force download
+        model_json = os.path.join(model_name_or_path, "config.json")
+        if os.path.exists(model_json):
+            model_json_file = json.load(open(model_json))
+            model_name = model_json_file["_name_or_path"]
+            tokenizer = AutoTokenizer.from_pretrained(model_name,
+                                                      fast_tokenizer=True)
+    else:
+        tokenizer = AutoTokenizer.from_pretrained(model_name_or_path,
+                                                  fast_tokenizer=True)
+    return tokenizer
+
+
 def save_hf_format(model, tokenizer, args, sub_folder=""):
     # used to save huggingface format, so we can use it for hf.from_pretrained
     model_to_save = model.module if hasattr(model, 'module') else model
     CONFIG_NAME = "config.json"
     WEIGHTS_NAME = "pytorch_model.bin"
     output_dir = os.path.join(args.output_dir, sub_folder)
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
+    os.makedirs(output_dir, exist_ok=True)
     output_model_file = os.path.join(output_dir, WEIGHTS_NAME)
     output_config_file = os.path.join(output_dir, CONFIG_NAME)
     save_dict = model_to_save.state_dict()

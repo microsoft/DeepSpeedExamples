@@ -43,6 +43,7 @@ A fast, affordable, scalable and open system framework for enabling end-to-end R
     - [🕐 Step 1 - Supervised Fine-Tuning](#-step-1---supervised-fine-tuning)
     - [🕑 Step 2 - Reward Model](#-step-2---reward-model)
     - [🕒 Step 3 - Reinforcement Learning with Human Feedback](#-step-3---reinforcement-learning-with-human-feedback)
+   - [🐼 Adding and using your own datasets in DeepSpeed-Chat](#-adding-and-using-your-own-datasets-in-deepspeed-chat)
    - [🐼 Customizing RLHF training pipeline via DeepSpeed-Chat’s APIs](#-customizing-your-own-rlhf-training-pipeline-using-deepspeed-chats-rlhf-apis)
    - [🐼 Serving Your Model: Plug-in and Test!](#-serving-plug-in-your-final-model-trained-by-deepspeed-chat-and-test-it-out)  
 - [🔥 Training Performance Evaluation 🔥](#-training-performance-evaluation-)
@@ -99,9 +100,7 @@ Please check out our [Blog Release](https://github.com/microsoft/DeepSpeed/tree/
 
 
 ```bash
-git clone https://github.com/microsoft/DeepSpeed.git
-cd DeepSpeed
-pip install .
+pip install deepspeed>=0.9.0
 
 git clone https://github.com/microsoft/DeepSpeedExamples.git
 cd DeepSpeedExamples/applications/DeepSpeed-Chat/
@@ -118,7 +117,7 @@ pip install -r requirements.txt
 If you only have around **1-2 hour** for coffee or lunch break, you can also try to train a small/toy model with DeepSpeed-Chat. For example, we prepared a training example for a **1.3B** model with a single dataset to test our framework on your consumer-grade GPUs. The best part is that you will have your model checkpoint ready to play with when you are back from your lunch break!
 
   ```bash
-  python train.py --actor-model facebook/opt-1.3b --reward-model facebook/opt-350m --num-gpus 1
+  python train.py --actor-model facebook/opt-1.3b --reward-model facebook/opt-350m --deployment-type single_gpu
   ```
 
   See the following table for the E2E time breakdown for training a 1.3 billion parameter ChatGPT model via DeepSpeed-Chat on a single commodity NVIDIA A6000 GPU with 48GB memory.
@@ -138,7 +137,7 @@ If you only have around **1-2 hour** for coffee or lunch break, you can also try
 If you only have around **half a day** and only a single server node, we suggest to use an example of pretrained **OPT-13B** as the actor model and OPT-350M as the reward model in the following single script to generate a final 13B ChatGPT-style model:
 
   ```bash
-  python train.py --actor-model facebook/opt-13b --reward-model facebook/opt-350m --num-gpus 8
+  python train.py --actor-model facebook/opt-13b --reward-model facebook/opt-350m --deployment-type single_node
   ```
 
   See the following table for the E2E time breakdown for training a 13 billion parameter ChatGPT model via DeepSpeed-Chat on a single DGX node with 8 NVIDIA A100-40G GPUs.
@@ -157,7 +156,7 @@ If you only have around **half a day** and only a single server node, we suggest
 Want to try different model sizes and configurations? You got it! With DeepSpeed-Chat, users can easily do that. For example, if you have access to multi-nodes cluster or cloud resources and prefer to train a larger and higher-quality model for your research or business, you can simply use a similar script with your desired model sizes, e.g., **66B** and GPU counts=64:
 
   ```bash
-  python train.py --actor-model facebook/opt-66b --reward-model facebook/opt-350m --num-gpus 64
+  python train.py --actor-model facebook/opt-66b --reward-model facebook/opt-350m --deployment-type multi_node
   ```
 
   See the following table for E2E time breakdown for training a 66 billion parameter ChatGPT model via DeepSpeed-Chat on 8 DGX nodes with 8 NVIDIA A100-80G GPUs/node.
@@ -167,7 +166,7 @@ Want to try different model sizes and configurations? You got it! With DeepSpeed
   | Actor: OPT-66B  Reward: OPT-350M | 82mins | 5mins  | 7.5hr  | 9hr   |
  </p></details>
 
- For your detailed budgeting for training a wide spectrum of model sizes on potentially avlaiable computing resources (e.g., Microsoft Azure), please visit [Training Performance Evaluation](#-training-performance-evaluation-).
+ For your detailed budgeting for training a wide spectrum of model sizes on potentially available computing resources (e.g., Microsoft Azure), please visit [Training Performance Evaluation](#-training-performance-evaluation-).
 
 ### 🐼 Demonstration: Individual Step Fine-Tuning
 
@@ -199,7 +198,7 @@ bash evaluation_scripts/run_prompt.sh
 cd training/step2_reward_model_finetuning
 
 # Run the training script
-bash training_scripts/run_350m.sh
+bash training_scripts/single_gpu/run_350m.sh
 
 # Evaluate the model
 bash evaluation_scripts/run_eval.sh
@@ -218,7 +217,7 @@ Figure 1: The illustration of DeepSpeed Chat’s RLHF training pipeline with opt
 
 </p>
 
-As the most complex step of the entire 3-step InstructGPT pipeline, DeepSpeed Chat's ***Hyrbid Engine*** has enabled sufficient acceleration to aovid large training time (cost) implications. Refer to [Step3: Reinforcement Learning Human Feedback (RLHF)](./training/step3_rlhf_finetuning) for more information. If you already have your fine-tuned actor and reward model checkpoints, you can simply run the following scripts to enable the PPO training.
+As the most complex step of the entire 3-step InstructGPT pipeline, DeepSpeed Chat's ***Hybrid Engine*** has enabled sufficient acceleration to avoid large training time (cost) implications. Refer to [Step3: Reinforcement Learning Human Feedback (RLHF)](./training/step3_rlhf_finetuning) for more information. If you already have your fine-tuned actor and reward model checkpoints, you can simply run the following scripts to enable the PPO training.
 
 <details><summary> Expand </summary><p>
 
@@ -232,9 +231,13 @@ bash training_scripts/single_gpu/run_1.3b.sh
 </p></details>
 
 
+### 🐼 Adding and using your own datasets in DeepSpeed-Chat
+In addition to the datasets used in our example scripts, you can also add and use your own datasets. To do so, first you need to add a new Class in [training/utils/data/raw_datasets.py](https://github.com/microsoft/DeepSpeedExamples/blob/master/applications/DeepSpeed-Chat/training/utils/data/raw_datasets.py) to define the format when using your data. You need to make sure to follow the APIs and format defined in the PromptRawDataset class to ensure a consistent data format that DeepSpeed-Chat relies on. You can look at the existing classes to learn how to do so.
 
+Second, you need to add an if condition in function get_raw_dataset in [training/utils/data/data_utils.py](https://github.com/microsoft/DeepSpeedExamples/blob/master/applications/DeepSpeed-Chat/training/utils/data/data_utils.py) corresponding to your new dataset. The dataset_name string in the if condition should be the dataset name you will provide as a arg for the training scripts. Last, you need to add your new dataset's dataset_name into your "--data_path" arg in your training scripts.  
+If you have downloaded huggingface datasets manually, you can add your local path into "--data_path", such as "--data_path ./relative/Dahoas/rm-static" and "--data_path /absolute/Dahoas/rm-static". Remeber you should not make `data/` in your local path, it may cause an exception to `load_dataset`.
 
-
+One thing to note that some datasets may only have one response instead of two responses. For those datasets, you can only use them in step 1. And in such case, you should add the dataset_name as part of the "--sft_only_data_path" arg instead of the "--data_path" arg. One thing to note is that: If you plan to only do step 1 SFT, adding more single-response datasets is definitely beneficial. However, if you do plan to do steps 2 and 3, then adding too many single-response datasets during SFT could backfire: these data could be different from the data used for steps 2/3, generating different distributions which could cause training instability/worse model quality during step 2/3. That is part of the reason why we focused on trying the datasets with two responses and the preference, and always split a dataset into all 3 steps.
 
 ### 🐼 Customizing your own RLHF training pipeline using DeepSpeed-Chat’s RLHF APIs
 
@@ -289,7 +292,7 @@ python chat.py --path  ${PATH-to-your-actor-model}
 A comprehensive view of the scale and end-to-end training times enabled by DeepSpeed-RLHF system are presented in Table 1. It also demonstrates the most cost-effective way to train models in Azure Cloud along with the associated cost.
 
 
-| GPU SKUs      | OPT-1.3B      | OPT-6.7B       | OPT-13.2B       | OPT-30B       | OPT-66B           | Bloom-175B      |
+| GPU SKUs      | OPT-1.3B      | OPT-6.7B       | OPT-13.2B       | OPT-30B       | OPT-66B           | OPT-175B      |
 |---------------|---------------|----------------|-----------------|---------------|-------------------|-----------------|
 | 1x V100 32G   | 1.8 days      |                |                 |               |                   |                 |
 | 1x A6000 48G  | 1.1 days      | 5.6 days       |                 |               |                   |                 |
@@ -312,7 +315,7 @@ The numbers in the table above are for Stage 3 of the training and based on actu
 
 ### 🐲 Throughput and Model Size Scalability Comparisons with Existing RLHF Systems
 
-&nbsp;&nbsp;***(I) Single-GPU's Model Scale and Throughput Comparision***
+&nbsp;&nbsp;***(I) Single-GPU's Model Scale and Throughput Comparison***
 
 &nbsp;&nbsp;With over an order of magnitude higher throughput, DeepSpeed-Chat unlocks the ability to train significantly larger actor models under the same latency budget or train models of similar size at much lower cost, compared to the existing systems like Colossal-AI or HuggingFace-DDP. For example, on a single GPU, DeepSpeed enables over **10X** throughput improvement for RLHF training on a single GPU. While both CAI-Coati and HF-DDP can run a max model size of 1.3B, DeepSpeed can run 6.5B model on the same hardware, **5x** higher.  
 
@@ -323,7 +326,7 @@ Figure 2: Step 3 throughput comparison against two other system frameworks (Colo
 
 </p>
 
-&nbsp;&nbsp;***(II) Single-Node Multi-GPU Model Scale and Throughput Comparision***
+&nbsp;&nbsp;***(II) Single-Node Multi-GPU Model Scale and Throughput Comparison***
 
 On multi-GPUs of a single node, DeepSpeed-Chat enables **6-19X** speedup over CAI-Coati and **1.4-10.5X** speedup over HF-DDP (Figure 3) with respect to system throughput.  
 
@@ -336,7 +339,7 @@ Figure 3. End-to-end training throughput comparison for step 3 of the training p
 
 &nbsp;&nbsp;***(III) Superior Generation Phase Acceleration in Step3***
 
-One of the key reasons that result in Figure 3 is our Hyrbid Engine's superior generation phase acceleration, shown below.
+One of the key reasons that result in Figure 3 is our Hybrid Engine's superior generation phase acceleration, shown below.
 
 <p align="center">
 
@@ -372,7 +375,7 @@ For more APIs, example scripts, and evaluation results, please refer to
   - [**Step1: Supervised Fine-Tuning (SFT)**](./training/step1_supervised_finetuning/README.md)
   - [**Step2: Reward Model Fine-Tuning**](./training/step2_reward_model_finetuning/README.md)
   - [**Step3: Reinforcement Learning Human Feedback (RLHF)**](./training/step3_rlhf_finetuning/README.md)
-
+  - [**Training Details Explanation**](./training/README.md)
 
 ## 🌱 DeepSpeed Chat's Roadmap 🌱
 

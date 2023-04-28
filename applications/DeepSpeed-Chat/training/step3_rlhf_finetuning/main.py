@@ -24,7 +24,6 @@ from torch.utils.data import DataLoader, RandomSampler
 from torch.utils.data.distributed import DistributedSampler
 
 from transformers import (
-    AutoTokenizer,
     SchedulerType,
     default_data_collator,
 )
@@ -39,7 +38,7 @@ import sys
 sys.path.append(
     os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
 from utils.data.data_utils import create_prompt_dataset, MiniDataset, DataCollatorRLHF, get_unsupervised_data
-from utils.utils import print_rank_0, to_device, save_hf_format, set_random_seed, get_all_reduce_mean, moving_average, save_zero_three_model
+from utils.utils import print_rank_0, to_device, save_hf_format, set_random_seed, get_all_reduce_mean, moving_average, save_zero_three_model, load_hf_tokenizer
 from utils.module.lora import convert_lora_to_linear_layer
 
 
@@ -57,7 +56,7 @@ def parse_args():
     parser.add_argument(
         '--data_split',
         type=str,
-        default='6,2,2',
+        default='2,4,4',
         help=
         'Comma-separated list of proportions for training phase 1, 2, and 3 data. For example the split `2,4,4` '
         'will use 60% of data for phase 1, 20% for phase 2 and 20% for phase 3.'
@@ -149,11 +148,11 @@ def parse_args():
     )
     parser.add_argument("--actor_weight_decay",
                         type=float,
-                        default=0.1,
+                        default=0.,
                         help="Weight decay to use.")
     parser.add_argument("--critic_weight_decay",
                         type=float,
-                        default=0.1,
+                        default=0.,
                         help="Weight decay to use.")
     parser.add_argument("--num_train_epochs",
                         type=int,
@@ -256,6 +255,12 @@ def parse_args():
         '--critic_gradient_checkpointing',
         action='store_true',
         help='Enable HF gradient checkpointing for Critic model.')
+    parser.add_argument('--disable_actor_dropout',
+                        action='store_true',
+                        help='Disable the dropout of the actor model.')
+    parser.add_argument('--disable_critic_dropout',
+                        action='store_true',
+                        help='Disable the dropout of the critical model.')
     ## LoRA for efficient training setting
     parser.add_argument("--actor_lora_dim",
                         type=int,
@@ -290,7 +295,7 @@ def parse_args():
                                              and args.critic_lora_dim > 0):
         assert (
             not args.only_optimize_lora
-        ), "--{actor,critic}_gradient_checkpointing and --only_optimizer_lora cannot be enabled at the same time."
+        ), "--{actor,critic}_gradient_checkpointing and --only_optimize_lora cannot be enabled at the same time."
 
     if args.inference_tp_size > 1:
         assert (
@@ -374,8 +379,8 @@ def main():
     torch.distributed.barrier()
 
     # create common tokenizer based on actor model
-    tokenizer = AutoTokenizer.from_pretrained(args.actor_model_name_or_path,
-                                              fast_tokenizer=True)
+    tokenizer = load_hf_tokenizer(args.actor_model_name_or_path,
+                                  fast_tokenizer=True)
     tokenizer.pad_token = tokenizer.eos_token
 
     prompt_train_dataloader, unsupervised_train_dataloader, num_total_iters = create_datasets(
@@ -427,7 +432,7 @@ def main():
 
             if exp_dataset is not None:
                 inner_iter = 0
-                critic_loss, actor_loss, unsuper_loss = 0, 0, 0
+                actor_loss_sum, critic_loss_sum, unsup_loss_sum = 0, 0, 0
                 average_reward = 0
 
                 if args.actor_gradient_checkpointing:
@@ -437,14 +442,14 @@ def main():
                     for i, (exp_data, unsup_data) in enumerate(
                             zip(exp_dataset, unsup_dataset)):
                         actor_loss, critic_loss = trainer.train_rlhf(exp_data)
-                        critic_loss += actor_loss.item()
-                        actor_loss += critic_loss.item()
+                        actor_loss_sum += actor_loss.item()
+                        critic_loss_sum += critic_loss.item()
                         average_reward += exp_data["rewards"].mean()
 
                         if unsupervised_training_enabled:
                             unsup_loss = trainer.train_unsupervised(
                                 unsup_data, args.unsup_coef)
-                            unsuper_loss += unsup_loss.item()
+                            unsup_loss_sum += unsup_loss.item()
 
                         inner_iter += 1
                         if args.enable_ema:
@@ -456,7 +461,7 @@ def main():
                     random.shuffle(unsup_dataset)
 
                 print_rank_0(
-                    f'epoch: {epoch}|step: {step}|ppo_ep: {ppo_ep+1}|act_loss: {actor_loss/inner_iter}|cri_loss: {critic_loss/inner_iter}|unsuper_loss: {unsuper_loss/inner_iter}',
+                    f'epoch: {epoch}|step: {step}|ppo_ep: {ppo_ep+1}|act_loss: {actor_loss_sum/inner_iter}|cri_loss: {critic_loss_sum/inner_iter}|unsuper_loss: {unsup_loss_sum/inner_iter}',
                     args.global_rank)
                 average_reward = get_all_reduce_mean(average_reward).item()
                 print_rank_0(
