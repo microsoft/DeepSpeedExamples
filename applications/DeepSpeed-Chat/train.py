@@ -194,7 +194,7 @@ def main(args):
         cmd = get_cmd(args, step_num)
         launch_cmd(args, step_num, cmd)
 
-        step_time = int(time.time() - start_time)
+        step_time = int(time.time() - step_start_time)
         time_str = str(datetime.timedelta(seconds=step_time))
         print(f"---=== Finished Step {step_num} in {time_str} ===---")
 
