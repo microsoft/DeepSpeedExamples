@@ -65,12 +65,13 @@ class DeepSpeedPPOTrainer():
         self.gamma = 1.0
         self.lam = 0.95
 
-    def _generate_sequence(self, prompts):
+    def _generate_sequence(self, prompts, attention_mask):
 
         max_min_length = self.max_answer_seq_len + prompts.shape[1]
 
         with torch.no_grad():
             seq = self.actor_model.module.generate(prompts,
+                                                   attention_mask=attention_mask,
                                                    max_length=max_min_length,
                                                    min_length=max_min_length)
 
@@ -92,9 +93,9 @@ class DeepSpeedPPOTrainer():
 
         return out_seq
 
-    def generate_experience(self, prompts):
+    def generate_experience(self, prompts, attention_mask):
         self.eval()
-        seq = self._generate_sequence(prompts)
+        seq = self._generate_sequence(prompts, attention_mask)
         self.train()
 
         pad_token_id = self.tokenizer.pad_token_id
