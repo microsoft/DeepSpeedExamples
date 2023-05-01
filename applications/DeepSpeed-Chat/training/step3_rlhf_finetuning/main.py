@@ -41,6 +41,7 @@ sys.path.append(
 from utils.data.data_utils import create_prompt_dataset, MiniDataset, DataCollatorRLHF, get_unsupervised_data
 from utils.utils import print_rank_0, to_device, save_hf_format, set_random_seed, get_all_reduce_mean, moving_average, save_zero_three_model
 from utils.module.lora import convert_lora_to_linear_layer
+from utils.feature_selection import feature_selection
 
 
 def parse_args():
@@ -372,6 +373,8 @@ def main():
     # If passed along, set the training seed now.
     set_random_seed(args.seed)
     torch.distributed.barrier()
+
+    feature_selection_step3(args)
 
     # create common tokenizer based on actor model
     tokenizer = AutoTokenizer.from_pretrained(args.actor_model_name_or_path,

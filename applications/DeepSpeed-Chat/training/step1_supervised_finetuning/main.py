@@ -30,6 +30,7 @@ from utils.utils import print_rank_0, to_device, save_hf_format, set_random_seed
 from utils.ds_utils import get_train_ds_config
 from utils.module.lora import convert_linear_layer_to_lora, convert_lora_to_linear_layer, only_optimize_lora_parameters
 from utils.model.model_utils import create_hf_model
+from utils.feature_selection import feature_selection
 
 
 def parse_args():
@@ -142,10 +143,12 @@ def parse_args():
     parser.add_argument('--offload',
                         action='store_true',
                         help='Enable ZeRO Offload techniques.')
+    
+    #TODO(Cheng): address type mismatch between int/string for auto
     parser.add_argument(
         '--zero_stage',
         type=int,
-        default=0,
+        default="auto",
         help='ZeRO optimization stage for Actor model (and clones).')
     ## LoRA for efficient training setting
     parser.add_argument("--lora_dim",
@@ -197,21 +200,29 @@ def main():
     set_random_seed(args.seed)
 
     assert not args.offload, "zero-offload is not currently supported but coming soon!"
-
+    
+    feature_selection(args=args, model_class=AutoModelForCausalLM)
     torch.distributed.barrier()
+    # exit()
 
     tokenizer = AutoTokenizer.from_pretrained(args.model_name_or_path,
                                               fast_tokenizer=True)
     tokenizer.pad_token = tokenizer.eos_token
 
+    deepspeed.runtime.utils.see_memory_usage('**** pre-model creation ****', force=True)
+
     model = create_hf_model(AutoModelForCausalLM, args.model_name_or_path,
-                            tokenizer, ds_config)
+                            tokenizer, ds_config, rlhf_training=True)
 
     if args.lora_dim > 0:
         model = convert_linear_layer_to_lora(model, args.lora_module_name,
                                              args.lora_dim)
         if args.only_optimize_lora:
             model = only_optimize_lora_parameters(model)
+
+    deepspeed.runtime.utils.see_memory_usage('**** post-model creation ****', force=True)
+    #import pdb
+    #pdb.set_trace()
 
     # Prepare the data
     train_phase = 1
@@ -248,7 +259,7 @@ def main():
         for step, batch in enumerate(eval_dataloader):
             batch = to_device(batch, device)
             with torch.no_grad():
-                outputs = model(**batch)
+                outputs = model(**batch, use_cache=False)
 
             loss = outputs.loss
             losses += loss.float()
@@ -263,6 +274,7 @@ def main():
             pass
         return perplexity
 
+    deepspeed.runtime.utils.see_memory_usage('**** pre-optim-creation ****', force=True)
     # Split weights in two groups, one with weight decay and the other not.
     optimizer_grouped_parameters = get_optimizer_grouped_parameters(
         model, args.weight_decay)
@@ -289,16 +301,19 @@ def main():
         lr_scheduler=lr_scheduler,
         dist_init_required=True)
 
+    deepspeed.runtime.utils.see_memory_usage('**** post DS-init ****', force=True)
+
     if args.gradient_checkpointing:
         model.gradient_checkpointing_enable()
+
 
     # Train!
     print_rank_0("***** Running training *****", args.global_rank)
     print_rank_0(
         f"***** Evaluating perplexity, Epoch {0}/{args.num_train_epochs} *****",
         args.global_rank)
-    perplexity = evaluation(model, eval_dataloader)
-    print_rank_0(f"ppl: {perplexity}", args.global_rank)
+    # perplexity = evaluation(model, eval_dataloader)
+    # print_rank_0(f"ppl: {perplexity}", args.global_rank)
 
     for epoch in range(args.num_train_epochs):
         print_rank_0(
@@ -307,10 +322,18 @@ def main():
         model.train()
         for step, batch in enumerate(train_dataloader):
             batch = to_device(batch, device)
+            deepspeed.runtime.utils.see_memory_usage(f'**** pre-fwd ({step}) ****', force=True)
             outputs = model(**batch, use_cache=False)
+            deepspeed.runtime.utils.see_memory_usage(f'**** post-fwd ({step}) ****', force=True)
             loss = outputs.loss
             model.backward(loss)
+
+            deepspeed.runtime.utils.see_memory_usage(f'**** post-bwd ({step}) ****', force=True)
             model.step()
+            deepspeed.runtime.utils.see_memory_usage(f'**** post-step ({step}) ****', force=True)
+
+            if step == 2:
+                exit()
 
         # Evaluate perplexity on the validation set.
         print_rank_0(

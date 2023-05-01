@@ -58,6 +58,7 @@ class DeepSpeedRLHFEngine():
             critic_model_name_or_path=critic_model_name_or_path)
         self.reward = self._init_reward(
             critic_model_name_or_path=critic_model_name_or_path)
+        
         if self.args.critic_gradient_checkpointing:
             self.critic.gradient_checkpointing_enable()
 
