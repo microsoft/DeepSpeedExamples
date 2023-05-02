@@ -67,13 +67,12 @@ class DeepSpeedPPOTrainer():
 
     def _generate_sequence(self, prompts, mask):
 
-        max_min_length = self.max_answer_seq_len + prompts.shape[1]
+        max_length = self.max_answer_seq_len + prompts.shape[1]
 
         with torch.no_grad():
             seq = self.actor_model.module.generate(prompts,
                                                    attention_mask=mask,
-                                                   max_length=max_min_length,
-                                                   min_length=max_min_length)
+                                                   max_length=max_length)
 
         # Filter out seq with no answers (or very short). This happens when users directly use the pre-training ckpt without supervised finetuning
         # NOTE: this will causes each GPU has different number of examples
