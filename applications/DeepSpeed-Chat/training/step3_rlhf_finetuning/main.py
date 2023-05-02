@@ -421,14 +421,9 @@ def main():
             else:
                 unsup_dataset = unsup_mini_dataset.add(
                     [[None] * args.per_device_train_batch_size])
-            prompts = batch_prompt['prompt']
-            prompt_att_mask = batch_prompt['prompt_att_mask']
-            length = prompts.size(-1)
-            if length > args.max_prompt_seq_len:
-                prompts = prompts[:, length - args.max_prompt_seq_len:]
-                raise ValueError("Prompt length is too long")
 
-            out = trainer.generate_experience(prompts, prompt_att_mask)
+            out = trainer.generate_experience(batch_prompt['prompt'],
+                                              batch_prompt['prompt_att_mask'])
             exp_dataset = exp_mini_dataset.add(out)
 
             if exp_dataset is not None:
