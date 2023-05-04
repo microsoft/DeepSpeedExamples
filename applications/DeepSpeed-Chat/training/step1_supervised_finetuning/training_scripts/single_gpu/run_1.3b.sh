@@ -11,14 +11,15 @@ if [ "$OUTPUT" == "" ]; then
     OUTPUT=./output
 fi
 if [ "$ZERO_STAGE" == "" ]; then
-    ZERO_STAGE=0
+    ZERO_STAGE="auto"
 fi
 mkdir -p $OUTPUT
 
-echo deepspeed --num_gpus 1 main.py \
+deepspeed --num_gpus 2 main.py \
    --model_name_or_path facebook/opt-1.3b \
    --gradient_accumulation_steps 2 \
    --lora_dim 128 \
    --zero_stage $ZERO_STAGE \
    --deepspeed \
+   --per_device_train_batch_size 32 \
    --output_dir $OUTPUT #&> $OUTPUT/training.log

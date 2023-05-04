@@ -143,11 +143,11 @@ def parse_args():
     parser.add_argument('--offload',
                         action='store_true',
                         help='Enable ZeRO Offload techniques.')
-    
+
     #TODO(Cheng): address type mismatch between int/string for auto
     parser.add_argument(
         '--zero_stage',
-        type=int,
+        type=str,
         default="auto",
         help='ZeRO optimization stage for Actor model (and clones).')
     ## LoRA for efficient training setting
@@ -188,6 +188,9 @@ def main():
 
     args.global_rank = torch.distributed.get_rank()
 
+    args = feature_selection(args=args, model_class=AutoModelForCausalLM)
+    print(f'done with feature selection, args: {args}')
+
     ds_config = get_train_ds_config(offload=args.offload,
                                     stage=args.zero_stage)
     ds_config[
@@ -196,14 +199,15 @@ def main():
         'train_batch_size'] = args.per_device_train_batch_size * torch.distributed.get_world_size(
         ) * args.gradient_accumulation_steps
 
+    see_time = True
+    ds_config['wall_clock_breakdown'] = see_time
+
     # If passed along, set the training seed now.
     set_random_seed(args.seed)
 
     assert not args.offload, "zero-offload is not currently supported but coming soon!"
-    
-    feature_selection(args=args, model_class=AutoModelForCausalLM)
+
     torch.distributed.barrier()
-    # exit()
 
     tokenizer = AutoTokenizer.from_pretrained(args.model_name_or_path,
                                               fast_tokenizer=True)
@@ -315,6 +319,8 @@ def main():
     # perplexity = evaluation(model, eval_dataloader)
     # print_rank_0(f"ppl: {perplexity}", args.global_rank)
 
+    see_memory = False
+
     for epoch in range(args.num_train_epochs):
         print_rank_0(
             f"Beginning of Epoch {epoch+1}/{args.num_train_epochs}, Total Micro Batches {len(train_dataloader)}",
@@ -322,15 +328,15 @@ def main():
         model.train()
         for step, batch in enumerate(train_dataloader):
             batch = to_device(batch, device)
-            deepspeed.runtime.utils.see_memory_usage(f'**** pre-fwd ({step}) ****', force=True)
+            deepspeed.runtime.utils.see_memory_usage(f'**** pre-fwd ({step}) ****', force=see_memory)
             outputs = model(**batch, use_cache=False)
-            deepspeed.runtime.utils.see_memory_usage(f'**** post-fwd ({step}) ****', force=True)
+            deepspeed.runtime.utils.see_memory_usage(f'**** post-fwd ({step}) ****', force=see_memory)
             loss = outputs.loss
             model.backward(loss)
 
-            deepspeed.runtime.utils.see_memory_usage(f'**** post-bwd ({step}) ****', force=True)
+            deepspeed.runtime.utils.see_memory_usage(f'**** post-bwd ({step}) ****', force=see_memory)
             model.step()
-            deepspeed.runtime.utils.see_memory_usage(f'**** post-step ({step}) ****', force=True)
+            deepspeed.runtime.utils.see_memory_usage(f'**** post-step ({step}) ****', force=see_memory)
 
             if step == 2:
                 exit()
