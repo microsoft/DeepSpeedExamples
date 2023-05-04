@@ -58,7 +58,7 @@ def feature_selection(args, model_class):
     mem_per_gpu = torch.cuda.get_device_properties(0).total_memory / GB
 
     # model weights (fp16) + gradients (fp16) + optimizer states (fp16/fp32)
-    z0_model_states_mem_required = (nparams * 2 + trainable_params * 2 + trainable_params * 12) / GB
+    z0_model_states_mem_required = (nparams * 2 + trainable_params * 2 + trainable_params * 16) / GB
     print0(f'[ZeRO=0] Total model/optim states required: {z0_model_states_mem_required} GB')
 
     z1_model_states_mem_required = nparams * 2 # model weights
@@ -125,7 +125,10 @@ def feature_selection(args, model_class):
     if args.zero_stage == "auto":
         if z0_model_states_mem_required + activation_mem_required < mem_per_gpu:
             args.zero_stage = 0
-        if z1_model_states_mem_required + activation_mem_required < mem_per_gpu:
+        elif z0_model_states_mem_required + activation_mem_required_gc < mem_per_gpu:
+            args.zero_stage = 0
+            args.gradient_checkpointing = True
+        elif z1_model_states_mem_required + activation_mem_required < mem_per_gpu:
             args.zero_stage = 1
         elif z1_model_states_mem_required + activation_mem_required_gc < mem_per_gpu:
             args.zero_stage = 1
