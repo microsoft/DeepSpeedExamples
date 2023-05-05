@@ -108,7 +108,9 @@ class DSPipeline():
 
         self.model.cuda().to(self.device)
 
-        outputs = self.model.generate(**input_tokens, **generate_kwargs)
+        # NOTE: Check if Llamma can work w/ **input_tokens
+        #       'token_type_ids' kwarg not recognized in Llamma generate function
+        outputs = self.model.generate(input_tokens.input_ids, **generate_kwargs)
         outputs = self.tokenizer.batch_decode(outputs, skip_special_tokens=True)
 
         return outputs
