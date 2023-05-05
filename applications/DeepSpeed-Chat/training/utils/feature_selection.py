@@ -64,7 +64,7 @@ def feature_selection_step3(args, model_class=AutoModelForCausalLM):
                                       trainable=False,
                                       gradient_ckpt=True,
                                       dtype=torch.float)
-    
+
     # create meta reward model based on critic
     meta_reward, reward_config = _create_meta_model(args.critic_model_name_or_path, model_class)
     zero_stage = 3 if args.actor_zero_stage == 3 else 0
@@ -179,7 +179,8 @@ def feature_selection(args, model_class):
     z3_model_states_mem_required /= GB
     print0(f'[ZeRO=3] Total model/optim states required: {z3_model_states_mem_required} GB')
 
-    activation_mem_required, activation_mem_required_gc = _activation_memory_estimate(model_config, args)
+    activation_mem_required = _activation_memory_estimate(model_config, args.lora_dim, False, args.max_seq_len, args.per_device_train_batch_size)
+    activation_mem_required_gc = _activation_memory_estimate(model_config, args.lora_dim, True, args.max_seq_len, args.per_device_train_batch_size)
 
     print0(f"Estimated activation memory required without gradient checkpointing: {activation_mem_required} GB, with checkpointing: {activation_mem_required_gc} GB")
 
@@ -219,8 +220,6 @@ def feature_selection(args, model_class):
                   f"exceeds GPU memory ({z3_model_states_mem_required:.2f} + {activation_mem_required:.2f} GB > {mem_per_gpu:.2f} GB).")
             print0(f"ZeRO-1/2/3 are not suffecient, consider using more GPUs or a smaller model if possible.")
             exit()
-
-    #TODO(Cheng): auto-select if gradient checkpointing is enabled
 
     if args.zero_stage == "auto":
         if z0_model_states_mem_required + activation_mem_required < mem_per_gpu:
@@ -311,8 +310,4 @@ def _activation_memory_estimate(meta_config, lora_dim, gradient_ckpt, seq_len, b
         act_mem = seq * batch * hd * layers * (34 + 5 * ((heads * seq) / hd))
         act_mem /= scale
 
-    act_mem_gc = (seq * batch * hd * 2 * layers) / scale
-    act_mem = seq * batch * hd * layers * (34 + 5 * ((heads * seq) / hd))
-    act_mem /= scale
-
-    return act_mem + lora_activations, act_mem_gc + lora_activations
+    return act_mem + lora_activations

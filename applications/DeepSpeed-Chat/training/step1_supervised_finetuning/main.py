@@ -144,7 +144,6 @@ def parse_args():
                         action='store_true',
                         help='Enable ZeRO Offload techniques.')
 
-    #TODO(Cheng): address type mismatch between int/string for auto
     parser.add_argument(
         '--zero_stage',
         type=str,

@@ -21,5 +21,5 @@ deepspeed --num_gpus 2 main.py \
    --lora_dim 128 \
    --zero_stage $ZERO_STAGE \
    --deepspeed \
-   --per_device_train_batch_size 32 \
+   --per_device_train_batch_size 16 \
    --output_dir $OUTPUT #&> $OUTPUT/training.log
