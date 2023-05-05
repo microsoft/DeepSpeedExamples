@@ -90,9 +90,7 @@ class DeepSpeedRLHFEngine():
 
         # LoRA
         if self.args.actor_lora_dim > 0:
-            actor_model = convert_linear_layer_to_lora(
-                actor_model, self.args.actor_lora_module_name,
-                self.args.actor_lora_dim)
+            actor_model = convert_linear_layer_to_lora(model=actor_model, part_module_name=self.args.actor_lora_module_name, lora_dim=self.args.actor_lora_dim)
             if self.args.only_optimize_lora:
                 actor_model = only_optimize_lora_parameters(actor_model)
 

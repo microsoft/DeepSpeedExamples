@@ -41,7 +41,7 @@ sys.path.append(
 from utils.data.data_utils import create_prompt_dataset, MiniDataset, DataCollatorRLHF, get_unsupervised_data
 from utils.utils import print_rank_0, to_device, save_hf_format, set_random_seed, get_all_reduce_mean, moving_average, save_zero_three_model
 from utils.module.lora import convert_lora_to_linear_layer
-from utils.feature_selection import feature_selection
+from utils.feature_selection import feature_selection_step3
 
 
 def parse_args():
@@ -375,7 +375,8 @@ def main():
     torch.distributed.barrier()
 
     feature_selection_step3(args)
-
+    exit()
+    
     # create common tokenizer based on actor model
     tokenizer = AutoTokenizer.from_pretrained(args.actor_model_name_or_path,
                                               fast_tokenizer=True)
@@ -384,6 +385,8 @@ def main():
     prompt_train_dataloader, unsupervised_train_dataloader, num_total_iters = create_datasets(
         args=args, tokenizer=tokenizer, train_phase=3)
 
+    deepspeed.runtime.utils.see_memory_usage("pre rlhf engine creation", force=True)
+    
     # RLHF engine is responsible for creating models, loading checkpoints, ds-initialize models/optims/lr-schedulers
     rlhf_engine = DeepSpeedRLHFEngine(
         actor_model_name_or_path=args.actor_model_name_or_path,
@@ -393,6 +396,8 @@ def main():
         args=args)
 
     args.end_of_conversation_token = "<|endoftext|>"
+
+    deepspeed.runtime.utils.see_memory_usage("post rlhf engine creation", force=True)
 
     ppo_trainer = DeepSpeedPPOTrainerUnsupervised if unsupervised_training_enabled else DeepSpeedPPOTrainer
     trainer = ppo_trainer(rlhf_engine, args)
@@ -412,6 +417,10 @@ def main():
             args.global_rank)
         for step, (batch_prompt, batch_unsupervised) in enumerate(
                 zip(prompt_train_dataloader, unsupervised_train_dataloader)):
+            
+            if step == 4:
+                exit()
+
             batch_prompt = to_device(batch_prompt, device)
             if batch_unsupervised is not None:
                 batch_unsupervised = to_device(batch_unsupervised, device)
@@ -425,8 +434,10 @@ def main():
                 prompts = prompts[:, length - args.max_prompt_seq_len:]
                 raise ValueError("Prompt length is too long")
 
+            deepspeed.runtime.utils.see_memory_usage(f"[{step}] pre-generate experience", force=True)
             out = trainer.generate_experience(prompts)
             exp_dataset = exp_mini_dataset.add(out)
+            deepspeed.runtime.utils.see_memory_usage(f"[{step}] post-generate experience", force=True)
 
             if exp_dataset is not None:
                 inner_iter = 0
@@ -439,10 +450,12 @@ def main():
                 for ppo_ep in range(args.ppo_epochs):
                     for i, (exp_data, unsup_data) in enumerate(
                             zip(exp_dataset, unsup_dataset)):
+                        deepspeed.runtime.utils.see_memory_usage(f"[{step}] pre-train-rlhf experience", force=True)
                         actor_loss, critic_loss = trainer.train_rlhf(exp_data)
                         critic_loss += actor_loss.item()
                         actor_loss += critic_loss.item()
                         average_reward += exp_data["rewards"].mean()
+                        deepspeed.runtime.utils.see_memory_usage(f"[{step}] post-train-rlhf experience", force=True)
 
                         if unsupervised_training_enabled:
                             unsup_loss = trainer.train_unsupervised(

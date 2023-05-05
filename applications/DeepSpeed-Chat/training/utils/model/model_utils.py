@@ -11,6 +11,7 @@ from transformers import (
 )
 
 from transformers.deepspeed import HfDeepSpeedConfig
+from huggingface_hub import snapshot_download
 
 from .reward_model import RewardModel
 
@@ -62,10 +63,16 @@ def create_critic_model(model_name_or_path,
 
     if rlhf_training:
         # critic model needs to load the weight here
-        model_ckpt_path = os.path.join(model_name_or_path, 'pytorch_model.bin')
-        assert os.path.exists(
-            model_ckpt_path
-        ), f"Cannot find model checkpoint at {model_ckpt_path}"
+        if os.path.isdir(model_name_or_path):
+            model_ckpt_path = os.path.join(model_name_or_path, 'pytorch_model.bin')
+            assert os.path.exists(
+                model_ckpt_path
+            ), f"Cannot find model checkpoint at {model_ckpt_path}"
+        else:
+            model_ckpt_path = snapshot_download(model_name_or_path)
+            model_ckpt_path = os.path.join(model_ckpt_path, 'pytorch_model.bin')
+            print(f"***************** {model_ckpt_path} *****************")
+
         critic_model.load_state_dict(
             torch.load(model_ckpt_path, map_location='cpu'))
 

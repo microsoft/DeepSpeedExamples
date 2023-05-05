@@ -23,12 +23,15 @@ Num_Padding_at_Beginning=1 # this is model related
 
 Actor_Lr=9.65e-6
 Critic_Lr=5e-6
+#$CRITIC_MODEL_PATH \
+#$ACTOR_MODEL_PATH \
+# Dahoas/full-hh-rlhf Dahoas/synthetic-instruct-gptj-pairwise yitingxie/rlhf-reward-datasets openai/webgpt_comparisons stanfordnlp/SHP \
 
-deepspeed --master_port 12346 main.py \
-   --data_path Dahoas/rm-static Dahoas/full-hh-rlhf Dahoas/synthetic-instruct-gptj-pairwise yitingxie/rlhf-reward-datasets openai/webgpt_comparisons stanfordnlp/SHP \
+deepspeed main.py \
+   --data_path Dahoas/rm-static \
    --data_split 2,4,4 \
-   --actor_model_name_or_path $ACTOR_MODEL_PATH \
-   --critic_model_name_or_path $CRITIC_MODEL_PATH \
+   --actor_model_name_or_path facebook/opt-13b \
+   --critic_model_name_or_path AdamG012/chat-opt-350m-reward-deepspeed \
    --num_padding_at_beginning 1 \
    --per_device_train_batch_size 4 \
    --per_device_mini_train_batch_size 4 \
@@ -49,4 +52,4 @@ deepspeed --master_port 12346 main.py \
    --actor_zero_stage $ACTOR_ZERO_STAGE \
    --critic_zero_stage $CRITIC_ZERO_STAGE \
    --output_dir $OUTPUT \
-    &> $OUTPUT/training.log
+   # &> $OUTPUT/training.log

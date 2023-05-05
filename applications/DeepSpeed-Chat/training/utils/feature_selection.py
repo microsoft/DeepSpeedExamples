@@ -1,7 +1,7 @@
 import torch
 
 from deepspeed.utils import OnDevice
-from transformers import AutoConfig
+from transformers import AutoConfig, AutoModelForCausalLM
 
 from utils.module.lora import convert_linear_layer_to_lora, only_optimize_lora_parameters
 
@@ -11,23 +11,123 @@ def print0(msg):
         print(msg)
 
 
-def feature_selection_step3(args, actor, critic):
-
+def feature_selection_step3(args, model_class=AutoModelForCausalLM):
     # create meta actor (trainable)
-
-    # if args.lora_dim > 0:
-        # apply lora to meta actor
+    meta_actor, actor_config = _create_meta_model(args.actor_model_name_or_path, model_class)
+    if args.actor_lora_dim > 0:
+        meta_actor = _apply_lora(meta_actor, args, args.actor_lora_dim, args.actor_lora_module_name)
+    actor_memory = _memory_overhead(meta_model=meta_actor,
+                                    meta_config=actor_config,
+                                    zero_stage=args.actor_zero_stage,
+                                    seq_len=args.max_prompt_seq_len,
+                                    batch_size=args.per_device_train_batch_size,
+                                    gradient_ckpt=args.actor_gradient_checkpointing,
+                                    lora_dim=args.actor_lora_dim)
 
     # create meta critic (trainable)
+    meta_critic, critic_config = _create_meta_model(args.critic_model_name_or_path, model_class)
+    if args.critic_lora_dim > 0:
+        meta_actor = _apply_lora(meta_actor, args, args.critic_lora_dim, args.critic_lora_module_name)
+    critic_memory = _memory_overhead(meta_model=meta_critic,
+                                     meta_config=critic_config,
+                                     zero_stage=args.critic_zero_stage,
+                                     seq_len=args.max_prompt_seq_len,
+                                     batch_size=args.per_device_train_batch_size,
+                                     gradient_ckpt=args.critic_gradient_checkpointing,
+                                     lora_dim=args.critic_lora_dim)
 
-    # create meta reference model based on actor
+    # meta reference model based on actor
+    meta_ref, ref_config = _create_meta_model(args.actor_model_name_or_path, model_class)
+    zero_stage = 3 if args.actor_zero_stage == 3 else 0
+    ref_memory = 0
+    if not args.offload_reference_model:
+        ref_memory = _memory_overhead(meta_model=meta_ref,
+                                      meta_config=ref_config,
+                                      zero_stage=zero_stage,
+                                      seq_len=args.max_prompt_seq_len,
+                                      batch_size=args.per_device_train_batch_size,
+                                      gradient_ckpt=True,
+                                      trainable=False)
+    else:
+        # TODO(Cheng/Jeff): this uses zero-inference, what will the memory overhead be in this case?
+        # this might be the overhead of a single model layer?
+        ref_memory = 0
 
-    # if args.enable_ema:
-
-        # create meta ema model based on actor
-
+    # meta ema model based on reference model
+    ema_memory = 0
+    if args.enable_ema:
+        ema_memory = _memory_overhead(meta_model=meta_ref,
+                                      meta_config=ref_config,
+                                      zero_stage=zero_stage,
+                                      seq_len=args.max_prompt_seq_len,
+                                      batch_size=args.per_device_train_batch_size,
+                                      trainable=False,
+                                      gradient_ckpt=True,
+                                      dtype=torch.float)
+    
     # create meta reward model based on critic
-    pass
+    meta_reward, reward_config = _create_meta_model(args.critic_model_name_or_path, model_class)
+    zero_stage = 3 if args.actor_zero_stage == 3 else 0
+    reward_memory = _memory_overhead(meta_model=meta_reward,
+                                     meta_config=reward_config,
+                                     zero_stage=zero_stage,
+                                     seq_len=args.max_prompt_seq_len,
+                                     batch_size=args.per_device_train_batch_size,
+                                     gradient_ckpt=True,
+                                     trainable=False)
+
+    # TODO(Cheng/Jeff): add memory overhead for KV-cache overhead
+    # https://github.com/microsoft/DeepSpeed/blob/d10b8ca011b18eba3a6ca56f4208a732d7fbb744/csrc/transformer/inference/includes/inference_context.h#L116-L152
+
+    print0("-----------------------------------------")
+    print0(f"** Total actor memory: {actor_memory:.2f} GB")
+    print0(f"** Total critic memory: {critic_memory:.2f} GB")
+    print0(f"** Total reference memory: {ref_memory:.2f} GB")
+    print0(f"** Total ema memory: {ema_memory:.2f} GB")
+    print0(f"** Total reward memory: {reward_memory:.2f} GB")
+    print0("-----------------------------------------")
+    total_memory = actor_memory + critic_memory + ref_memory + ema_memory + reward_memory
+    print0(f"*** Total memory required: {total_memory:.2f} GB")
+    print0("-----------------------------------------")
+
+
+def _memory_overhead(meta_model, meta_config, zero_stage, seq_len, batch_size, gradient_ckpt=False, lora_dim=0, trainable=True, dtype=torch.half):
+    GB = 1024 ** 3
+    world_size = torch.distributed.get_world_size()
+    psize = 2 if (dtype == torch.half or dtype == torch.bfloat16) else 4
+
+    trainable_params = sum([p.numel() if p.requires_grad else 0 for p in meta_model.parameters()])
+    frozen_params = sum([p.numel() if not p.requires_grad else 0 for p in meta_model.parameters()])
+    total_params = trainable_params + frozen_params
+
+    activation_mem_required = _activation_memory_estimate(meta_config, lora_dim, gradient_ckpt, seq_len, batch_size)
+
+    if not trainable:
+        model_memory = (total_params * psize) / GB
+        return  model_memory + activation_mem_required
+    assert dtype != torch.float, "currently do not support fp32 trainable models"
+
+    mem_per_gpu = 0
+    if zero_stage == 0:
+        mem_per_gpu = (total_params * 2 + trainable_params * 2 + trainable_params * 16) / GB
+    elif zero_stage == 1:
+        mem_per_gpu = total_params * 2 # model weights
+        mem_per_gpu += trainable_params * 2 # model grads
+        mem_per_gpu += (trainable_params * (12 + 4)) / world_size # sharded optim states + fp32 sharded grads
+        mem_per_gpu /= GB
+    elif zero_stage == 2:
+        mem_per_gpu = total_params * 2 # model weights
+        mem_per_gpu += (trainable_params * 2) / world_size # model grads are sharded
+        mem_per_gpu += (trainable_params * (12 + 4)) / world_size # sharded optim states + fp32 sharded grads
+        mem_per_gpu /= GB
+    elif zero_stage == 3:
+        mem_per_gpu = (total_params * 2) / world_size # model weights are sharded
+        mem_per_gpu += (trainable_params * 2) / world_size # model grads are sharded
+        mem_per_gpu += (trainable_params * (12 + 4)) / world_size # sharded optim states + fp32 sharded grads
+        mem_per_gpu /= GB
+
+    return mem_per_gpu + activation_mem_required
+
 
 def feature_selection(args, model_class):
     meta_model, model_config = _create_meta_model(args.model_name_or_path, model_class)
@@ -35,7 +135,7 @@ def feature_selection(args, model_class):
     print0(f"[pre-lora] num params: {nparams}")
 
     if args.lora_dim > 0:
-        meta_model = _apply_lora(meta_model, args)
+        meta_model = _apply_lora(meta_model, args, args.lora_dim, args.lora_module_name)
 
     nparams = sum([p.numel() for p in meta_model.parameters()])
     print0(f"[post-lora] num params: {nparams}")
@@ -159,21 +259,20 @@ def _create_meta_model(model_name_or_path, model_class):
     return model, model_config
 
 
-def _apply_lora(meta_model, args):
-    meta_model = convert_linear_layer_to_lora(meta_model, args.lora_module_name,
-                                            args.lora_dim)
+def _apply_lora(meta_model, args, lora_dim, lora_module_name):
+    meta_model = convert_linear_layer_to_lora(meta_model, lora_module_name, lora_dim)
     if args.only_optimize_lora:
         meta_model = only_optimize_lora_parameters(meta_model)
     return meta_model
 
 
-def _activation_memory_estimate(model_config, args)->tuple:
-    layers = model_config.num_hidden_layers
-    hd = model_config.hidden_size
-    seq = args.max_seq_len
-    batch = args.per_device_train_batch_size
-    vocab = model_config.vocab_size
-    heads = model_config.num_attention_heads
+def _activation_memory_estimate(meta_config, lora_dim, gradient_ckpt, seq_len, batch_size):
+    layers = meta_config.num_hidden_layers
+    hd = meta_config.hidden_size
+    seq = seq_len
+    batch = batch_size
+    vocab = meta_config.vocab_size
+    heads = meta_config.num_attention_heads
 
     scale = 1e9
 
@@ -199,12 +298,18 @@ def _activation_memory_estimate(model_config, args)->tuple:
     # total = gemms + attn + ln + gelu + loss + lora_activations
 
     lora_activations = 0
-    if args.lora_dim > 0:
+    if lora_dim > 0:
         # num_matrix = 4 # qkv fused (eg. bloom)
         num_matrix = 6 # qkv unfused (eg. opt)
-        lora_activations = (seq * batch * args.lora_dim * layers * num_matrix * 2) / scale
+        lora_activations = (seq * batch * lora_dim * layers * num_matrix * 2) / scale
         lora_activations += gemms
-    print0(f"{lora_activations=} GB")
+    print(f"{lora_activations=} GB")
+
+    if gradient_ckpt:
+        act_mem = (seq * batch * hd * 2 * layers) / scale
+    else:
+        act_mem = seq * batch * hd * layers * (34 + 5 * ((heads * seq) / hd))
+        act_mem /= scale
 
     act_mem_gc = (seq * batch * hd * 2 * layers) / scale
     act_mem = seq * batch * hd * layers * (34 + 5 * ((heads * seq) / hd))

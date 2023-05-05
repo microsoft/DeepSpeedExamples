@@ -3,10 +3,10 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # DeepSpeed Team
-ACTOR_MODEL_PATH=$1
-CRITIC_MODEL_PATH=$2
-ACTOR_ZERO_STAGE=$3
-CRITIC_ZERO_STAGE=$4
+ACTOR_MODEL_PATH="facebook/opt-1.3b"
+CRITIC_MODEL_PATH="facebook/opt-350m" #"AdamG012/chat-opt-350m-reward-deepspeed"
+ACTOR_ZERO_STAGE=0
+CRITIC_ZERO_STAGE=0
 OUTPUT=$5
 if [ "$OUTPUT" == "" ]; then
     OUTPUT=./output
@@ -30,5 +30,6 @@ deepspeed -i localhost:0 main.py \
    --actor_lora_dim 128 \
    --enable_hybrid_engine \
    --actor_gradient_checkpointing \
-   --output_dir $OUTPUT #&> $OUTPUT/training.log
+   --output_dir $OUTPUT 
+   #&> $OUTPUT/training.log
 
