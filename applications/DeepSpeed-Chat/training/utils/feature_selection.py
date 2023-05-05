@@ -8,25 +8,26 @@ from utils.module.lora import convert_linear_layer_to_lora, only_optimize_lora_p
 
 def print0(msg):
     if torch.distributed.get_rank() == 0:
-        print(msg)    
+        print(msg)
 
 
 def feature_selection_step3(args, actor, critic):
-    
+
     # create meta actor (trainable)
 
-    if args.lora_dim > 0:
+    # if args.lora_dim > 0:
         # apply lora to meta actor
 
     # create meta critic (trainable)
 
     # create meta reference model based on actor
 
-    if args.enable_ema:
-        # create meta ema model based on actor
-    
-    # create meta reward model based on critic
+    # if args.enable_ema:
 
+        # create meta ema model based on actor
+
+    # create meta reward model based on critic
+    pass
 
 def feature_selection(args, model_class):
     meta_model, model_config = _create_meta_model(args.model_name_or_path, model_class)
@@ -57,7 +58,7 @@ def feature_selection(args, model_class):
     mem_per_gpu = torch.cuda.get_device_properties(0).total_memory / GB
 
     # model weights (fp16) + gradients (fp16) + optimizer states (fp16/fp32)
-    z0_model_states_mem_required = (nparams * 2 + trainable_params * 2 + trainable_params * 12) / GB
+    z0_model_states_mem_required = (nparams * 2 + trainable_params * 2 + trainable_params * 16) / GB
     print0(f'[ZeRO=0] Total model/optim states required: {z0_model_states_mem_required} GB')
 
     z1_model_states_mem_required = nparams * 2 # model weights
@@ -78,29 +79,38 @@ def feature_selection(args, model_class):
     z3_model_states_mem_required /= GB
     print0(f'[ZeRO=3] Total model/optim states required: {z3_model_states_mem_required} GB')
 
-    activation_mem_required = _activation_memory_estimate(model_config, args)
-    print0(f"Estimated activation memory required: {activation_mem_required} GB")
+    activation_mem_required, activation_mem_required_gc = _activation_memory_estimate(model_config, args)
+
+    print0(f"Estimated activation memory required without gradient checkpointing: {activation_mem_required} GB, with checkpointing: {activation_mem_required_gc} GB")
+
+    if args.gradient_checkpointing:
+        activation_mem_required = activation_mem_required_gc
+        print0(f"Using gradient checkpointing as intrucsted by user, activation memory required: {activation_mem_required} GB")
+
+
+    args.zero_stage = int(args.zero_stage) if args.zero_stage.isnumeric() else args.zero_stage
+    assert args.zero_stage in [0, 1, 2, 3, "auto"], f"Invalid ZeRO stage: {args.zero_stage}"
 
     if args.zero_stage == 0:
         print0(f"Total per-GPU memory required w. current config: {z0_model_states_mem_required + activation_mem_required}")
         if z0_model_states_mem_required + activation_mem_required > mem_per_gpu:
             print0(f"WARNING: Model states (model weights, gradients, optimizer states) + Activation memory "
                   f"exceeds GPU memory ({z0_model_states_mem_required:.2f} + {activation_mem_required:.2f} GB > {mem_per_gpu:.2f} GB).")
-            print0(f"Consider using ZeRO-1, ZeRO-2, or ZeRO-3.")
+            print0(f"Consider using gradient_checkpointing, ZeRO-1, ZeRO-2, or ZeRO-3.")
             exit()
     elif args.zero_stage == 1:
         print0(f"Total per-GPU memory required w. current config: {z1_model_states_mem_required + activation_mem_required}")
         if z1_model_states_mem_required + activation_mem_required > mem_per_gpu:
             print0(f"WARNING: Model states (model weights, gradients, optimizer states) + Activation memory "
                   f"exceeds GPU memory ({z1_model_states_mem_required:.2f} + {activation_mem_required:.2f} GB > {mem_per_gpu:.2f} GB).")
-            print0(f"Consider using ZeRO-2 or ZeRO-3.")
+            print0(f"Consider using gradient_checkpointing, ZeRO-2 or ZeRO-3.")
             exit()
     elif args.zero_stage == 2:
         print0(f"Total per-GPU memory required w. current config: {z2_model_states_mem_required + activation_mem_required}")
         if z2_model_states_mem_required + activation_mem_required > mem_per_gpu:
             print0(f"WARNING: Model states (model weights, gradients, optimizer states) + Activation memory "
                   f"exceeds GPU memory ({z2_model_states_mem_required:.2f} + {activation_mem_required:.2f} GB > {mem_per_gpu:.2f} GB).")
-            print0(f"Consider using ZeRO-3.")
+            print0(f"Consider using gradient_checkpointing, ZeRO-3.")
             exit()
     elif args.zero_stage == 3:
         print0(f"Total per-GPU memory required w. current config: {z3_model_states_mem_required + activation_mem_required}")
@@ -115,16 +125,30 @@ def feature_selection(args, model_class):
     if args.zero_stage == "auto":
         if z0_model_states_mem_required + activation_mem_required < mem_per_gpu:
             args.zero_stage = 0
-        if z1_model_states_mem_required + activation_mem_required < mem_per_gpu:
+        elif z0_model_states_mem_required + activation_mem_required_gc < mem_per_gpu:
+            args.zero_stage = 0
+            args.gradient_checkpointing = True
+        elif z1_model_states_mem_required + activation_mem_required < mem_per_gpu:
             args.zero_stage = 1
+        elif z1_model_states_mem_required + activation_mem_required_gc < mem_per_gpu:
+            args.zero_stage = 1
+            args.gradient_checkpointing = True
         elif z2_model_states_mem_required + activation_mem_required < mem_per_gpu:
             args.zero_stage = 2
+        elif z2_model_states_mem_required + activation_mem_required_gc < mem_per_gpu:
+            args.zero_stage = 2
+            args.gradient_checkpointing = True
         elif z3_model_states_mem_required + activation_mem_required < mem_per_gpu:
             args.zero_stage = 3
+        elif z3_model_states_mem_required + activation_mem_required_gc < mem_per_gpu:
+            args.zero_stage = 3
+            args.gradient_checkpointing = True
         else:
             raise RuntimeError(f"Unable to fit model states + activation memory into GPU memory ({mem_per_gpu:.2f} GB). ")
-        print0(f"Auto-selecting ZeRO stage: {args.zero_stage}")
+        print0(f"Auto-selecting ZeRO stage: {args.zero_stage}" + (f" with gradient checkpointing" if args.gradient_checkpointing else " without gradient checkpointing"))
 
+    print0(f"Using ZeRO stage: {args.zero_stage}" + (f" with gradient checkpointing" if args.gradient_checkpointing else " without gradient checkpointing"))
+    return args
 
 def _create_meta_model(model_name_or_path, model_class):
     model_config = AutoConfig.from_pretrained(model_name_or_path)
@@ -143,7 +167,7 @@ def _apply_lora(meta_model, args):
     return meta_model
 
 
-def _activation_memory_estimate(model_config, args):
+def _activation_memory_estimate(model_config, args)->tuple:
     layers = model_config.num_hidden_layers
     hd = model_config.hidden_size
     seq = args.max_seq_len
@@ -155,23 +179,23 @@ def _activation_memory_estimate(model_config, args):
 
     # =9*I18*I19*I20*I17*2/1000000000
     gemms = 9 * hd * seq * batch * layers * 2 / scale
-    # print(f"{gemms=} GB")
+    # print0(f"{gemms=} GB")
 
     # =2*I20*I19*I19*I22*I17*2/1000000000
     attn = 2 * batch * seq * seq * heads * layers * 2 / scale
-    # print(f"{attn=} GB")
+    # print0(f"{attn=} GB")
 
     # =2*I19*I20*I18*I17*2/1000000000
     ln = 2 * seq * batch * hd * layers * 2 / scale
-    # print(f"{ln=} GB")
+    # print0(f"{ln=} GB")
 
     # =4*I18*I20*I19*I17*2/1000000000
     gelu = 4 * hd * batch * seq * layers * 2 / scale
-    # print(f"{gelu=} GB")
+    # print0(f"{gelu=} GB")
 
     # =2 *I20*I19*I21*2/1000000000
     loss = 2 * batch * seq * vocab * 2 / scale
-    # print(f"{loss=} GB")
+    # print0(f"{loss=} GB")
     # total = gemms + attn + ln + gelu + loss + lora_activations
 
     lora_activations = 0
@@ -180,13 +204,10 @@ def _activation_memory_estimate(model_config, args):
         num_matrix = 6 # qkv unfused (eg. opt)
         lora_activations = (seq * batch * args.lora_dim * layers * num_matrix * 2) / scale
         lora_activations += gemms
-    print(f"{lora_activations=} GB")
+    print0(f"{lora_activations=} GB")
 
-    if args.gradient_checkpointing:
-        act_mem = (seq * batch * hd * 2 * layers) / scale
-    else:
-        act_mem = seq * batch * hd * layers * (34 + 5 * ((heads * seq) / hd))
-        act_mem /= scale
+    act_mem_gc = (seq * batch * hd * 2 * layers) / scale
+    act_mem = seq * batch * hd * layers * (34 + 5 * ((heads * seq) / hd))
+    act_mem /= scale
 
-    return act_mem + lora_activations
-
+    return act_mem + lora_activations, act_mem_gc + lora_activations
