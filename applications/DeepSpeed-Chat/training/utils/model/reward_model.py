@@ -34,21 +34,22 @@ class RewardModel(nn.Module):
     def gradient_checkpointing_disable(self):
         self.rwtranrsformer.gradient_checkpointing_disable()
 
-    def forward(self,
-                input_ids=None,
-                past_key_values=None,
-                attention_mask=None,
-                position_ids=None,
-                head_mask=None,
-                inputs_embeds=None,
-                use_cache=False):
+    def forward(
+            self,
+            input_ids=None,
+            past_key_values=None,
+            attention_mask=None,
+            position_ids=None,
+            # head_mask=None,
+            inputs_embeds=None,
+            use_cache=False):
         loss = None
 
         transformer_outputs = self.rwtranrsformer(
             input_ids,
             past_key_values=past_key_values,
             attention_mask=attention_mask,
-            head_mask=head_mask,
+            # head_mask=head_mask,
             inputs_embeds=inputs_embeds,
             use_cache=use_cache)
 
@@ -111,22 +112,23 @@ class RewardModel(nn.Module):
             "rejected_mean_scores": rejected_mean_scores,
         }
 
-    def forward_value(self,
-                      input_ids=None,
-                      attention_mask=None,
-                      past_key_values=None,
-                      position_ids=None,
-                      head_mask=None,
-                      inputs_embeds=None,
-                      return_value_only=False,
-                      prompt_length=0,
-                      use_cache=False):
+    def forward_value(
+            self,
+            input_ids=None,
+            attention_mask=None,
+            past_key_values=None,
+            position_ids=None,
+            #   head_mask=None,
+            inputs_embeds=None,
+            return_value_only=False,
+            prompt_length=0,
+            use_cache=False):
 
         transformer_outputs = self.rwtranrsformer(
             input_ids,
             past_key_values=past_key_values,
             attention_mask=attention_mask,
-            head_mask=head_mask,
+            # head_mask=head_mask,
             inputs_embeds=inputs_embeds,
             use_cache=use_cache)
         hidden_states = transformer_outputs[0]
