@@ -56,7 +56,7 @@ def load_hf_tokenizer(model_name_or_path, fast_tokenizer=True):
         tokenizer = AutoTokenizer.from_pretrained(model_name_or_path,
                                                   fast_tokenizer=True)
     if "llama" in model_name_or_path.lower() or "llama" in model_name.lower():
-        tokenizer.eos_token = '<\s>'  # noqa E605
+        tokenizer.eos_token = '</s>'  # noqa E605
     return tokenizer
 
 
