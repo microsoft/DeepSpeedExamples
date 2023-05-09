@@ -41,7 +41,7 @@ def get_generator(path):
     else:
         tokenizer = AutoTokenizer.from_pretrained(path, fast_tokenizer=True)
     if "llama" in path.lower() or "llama" in model_name.lower():
-        tokenizer.eos_token = '<\s>'  # noqa: W605
+        tokenizer.eos_token = '</s>'  # noqa: W605
     tokenizer.pad_token = tokenizer.eos_token
 
     model_config = AutoConfig.from_pretrained(path)

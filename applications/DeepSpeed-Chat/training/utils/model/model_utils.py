@@ -75,6 +75,7 @@ def create_critic_model(model_name_or_path,
             model_ckpt_path
         ), f"Cannot find model checkpoint at {model_ckpt_path}"
         critic_model.load_state_dict(
-            torch.load(model_ckpt_path, map_location='cpu'))
+            torch.load(model_ckpt_path, map_location='cpu'),
+            strict=False)  # llama does not save ALIBI embeddings
 
     return critic_model
