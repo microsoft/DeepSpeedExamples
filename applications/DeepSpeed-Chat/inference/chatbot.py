@@ -36,10 +36,10 @@ def get_generator(path):
         if os.path.exists(model_json):
             model_json_file = json.load(open(model_json))
             model_name = model_json_file["_name_or_path"]
-            tokenizer = AutoTokenizer.from_pretrained(model_name,
-                                                      fast_tokenizer=True)
-    else:
-        tokenizer = AutoTokenizer.from_pretrained(path, fast_tokenizer=True)
+    #         tokenizer = AutoTokenizer.from_pretrained(model_name,
+    #                                                   fast_tokenizer=True)
+    # else:
+    tokenizer = AutoTokenizer.from_pretrained(path, fast_tokenizer=True)
     if "llama" in path.lower() or "llama" in model_name.lower():
         tokenizer.eos_token = '</s>'  # noqa: W605
     tokenizer.pad_token = tokenizer.eos_token

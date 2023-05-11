@@ -50,11 +50,11 @@ def load_hf_tokenizer(model_name_or_path, fast_tokenizer=True):
         if os.path.exists(model_json):
             model_json_file = json.load(open(model_json))
             model_name = model_json_file["_name_or_path"]
-            tokenizer = AutoTokenizer.from_pretrained(model_name,
-                                                      fast_tokenizer=True)
-    else:
-        tokenizer = AutoTokenizer.from_pretrained(model_name_or_path,
-                                                  fast_tokenizer=True)
+    #         tokenizer = AutoTokenizer.from_pretrained(model_name,
+    #                                                   fast_tokenizer=True)
+    # else:
+    tokenizer = AutoTokenizer.from_pretrained(model_name_or_path,
+                                              fast_tokenizer=True)
     if "llama" in model_name_or_path.lower() or "llama" in model_name.lower():
         tokenizer.eos_token = '</s>'  # noqa E605
     return tokenizer
@@ -75,7 +75,8 @@ def save_hf_format(model, tokenizer, args, sub_folder=""):
             del save_dict[key]
     torch.save(save_dict, output_model_file)
     model_to_save.config.to_json_file(output_config_file)
-    tokenizer.save_vocabulary(output_dir)
+    # tokenizer.save_vocabulary(output_dir)
+    tokenizer.save_pretrained(output_dir)  # this will save all tokenizer files
 
 
 def set_random_seed(seed):
