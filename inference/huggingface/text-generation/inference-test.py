@@ -25,6 +25,7 @@ parser.add_argument("--use_meta_tensor", action='store_true', help="use the meta
 parser.add_argument("--use_cache", default=True, type=bool, help="use cache for generation")
 parser.add_argument("--test_performance", action='store_true', help="enable latency, bandwidth, and throughout testing")
 parser.add_argument("--local_rank", type=int, default=0, help="local rank")
+parser.add_argument("--quantize_groups", type=int, required=False, default=0, help="number of weight quantization groups to use")
 args = parser.parse_args()
 
 def print_perf_stats(latency_set, config, warmup=3):
@@ -78,6 +79,7 @@ if args.ds_inference:
                                     replace_method=args.replace_method,
                                     max_tokens=args.max_tokens,
                                     save_mp_checkpoint_path=args.save_mp_checkpoint_path,
+                                    quantize_groups=args.quantize_groups,
                                     **ds_kwargs
                                     )
 if local_rank == 0:
