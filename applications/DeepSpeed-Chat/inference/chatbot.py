@@ -10,7 +10,7 @@ import transformers  # noqa: F401
 import os
 import json
 from transformers import pipeline, set_seed
-from transformers import AutoConfig, OPTForCausalLM, AutoTokenizer
+from transformers import AutoConfig, AutoTokenizer, AutoModelForCausalLM
 
 
 def parse_args():
@@ -29,23 +29,25 @@ def parse_args():
 
 
 def get_generator(path):
+    model_name = ""
     if os.path.exists(path):
         # Locally tokenizer loading has some issue, so we need to force download
         model_json = os.path.join(path, "config.json")
         if os.path.exists(model_json):
             model_json_file = json.load(open(model_json))
             model_name = model_json_file["_name_or_path"]
-            tokenizer = AutoTokenizer.from_pretrained(model_name,
-                                                      fast_tokenizer=True)
-    else:
-        tokenizer = AutoTokenizer.from_pretrained(path, fast_tokenizer=True)
-
+    #         tokenizer = AutoTokenizer.from_pretrained(model_name,
+    #                                                   fast_tokenizer=True)
+    # else:
+    tokenizer = AutoTokenizer.from_pretrained(path, fast_tokenizer=True)
+    if "llama" in path.lower() or "llama" in model_name.lower():
+        tokenizer.eos_token = '</s>'  # noqa: W605
     tokenizer.pad_token = tokenizer.eos_token
 
     model_config = AutoConfig.from_pretrained(path)
-    model = OPTForCausalLM.from_pretrained(path,
-                                           from_tf=bool(".ckpt" in path),
-                                           config=model_config).half()
+    model = AutoModelForCausalLM.from_pretrained(path,
+                                                 from_tf=bool(".ckpt" in path),
+                                                 config=model_config).half()
 
     model.config.end_token_id = tokenizer.eos_token_id
     model.config.pad_token_id = model.config.eos_token_id
@@ -72,6 +74,7 @@ def get_model_response(generator, user_input, max_new_tokens):
 def process_response(response, num_rounds):
     output = str(response[0]["generated_text"])
     output = output.replace("<|endoftext|></s>", "")
+    output = output.replace("<|endoftext|>", "")
     all_positions = [m.start() for m in re.finditer("Human: ", output)]
     place_of_second_q = -1
     if len(all_positions) > num_rounds:
