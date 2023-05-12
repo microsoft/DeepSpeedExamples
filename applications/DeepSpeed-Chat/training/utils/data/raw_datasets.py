@@ -5,6 +5,7 @@
 from datasets import load_dataset
 from torch.utils.data import Subset
 import re
+from collections import defaultdict
 
 
 # The template prompt dataset class that all new dataset porting needs to
@@ -265,6 +266,33 @@ class StanfordnlpSHPDataset(PromptRawDataset):
     def get_eval_data(self):
         return self.raw_datasets["validation"]
 
+    def get_grouped_data(self, data):
+        data_groups = defaultdict(dict)
+        for sample in data:
+            data_groups[sample['history']][sample["human_ref_A"]] = int(
+                sample["score_A"])
+            data_groups[sample['history']][sample["human_ref_B"]] = int(
+                sample["score_B"])
+        grouped_data = []
+        for prompt in data_groups:
+            grouped_sample = {'history': prompt}
+            dict_score_response = defaultdict(list)
+            for response in data_groups[prompt]:
+                dict_score_response[data_groups[prompt][response]].append(
+                    response)
+            ranked_responses = []
+            for score in sorted(dict_score_response.keys(), reverse=True):
+                ranked_responses += dict_score_response[score]
+            grouped_sample["human_ref_ranked"] = ranked_responses
+            grouped_data.append(grouped_sample)
+        return grouped_data
+
+    def get_grouped_train_data(self):
+        return self.get_grouped_data(self.raw_datasets["train"])
+
+    def get_grouped_eval_data(self):
+        return self.get_grouped_data(self.raw_datasets["validation"])
+
     def get_prompt(self, sample):
         return " Human: " + sample['history'] + " Assistant:"
 
@@ -295,6 +323,15 @@ class StanfordnlpSHPDataset(PromptRawDataset):
         else:
             response = sample["human_ref_A"]
         return " Human: " + sample['history'] + " Assistant: " + response
+
+    def get_ranked_responses(self, sample):
+        ranked_responses = []
+        for response in sample["human_ref_ranked"]:
+            ranked_responses.append(" Assistant: " + response)
+        return ranked_responses
+
+    def get_prompt_and_ranked_responses(self, sample):
+        return self.get_prompt(sample), self.get_ranked_responses(sample)
 
 
 # Chinese dataset
