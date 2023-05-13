@@ -131,6 +131,9 @@ class PromptDataset(Dataset):
                 "labels": self.chosen_dataset[idx]["input_ids"]
             }
         elif self.train_phase == 2:
+            if len(self.reject_dataset) == 0:
+                return self.chosen_dataset[idx][0], self.chosen_dataset[idx][1]
+
             return self.chosen_dataset[idx]["input_ids"], self.chosen_dataset[idx]["attention_mask"], \
                 self.reject_dataset[idx]["input_ids"], self.reject_dataset[idx]["attention_mask"]
         elif self.train_phase == 3:
@@ -138,11 +141,18 @@ class PromptDataset(Dataset):
                 self.pad_token_id
 
 
-def create_dataset_split(current_dataset, raw_dataset, train_phase, tokenizer,
-                         end_of_conversation_token, max_seq_len):
+def create_dataset_split(current_dataset,
+                         raw_dataset,
+                         train_phase,
+                         tokenizer,
+                         end_of_conversation_token,
+                         max_seq_len,
+                         group_dataset=False):
     prompt_dataset = []
     chosen_dataset = []
     reject_dataset = []
+    if group_dataset:
+        assert train_phase == 2, "group_dataset only support train_phase=2"
     if train_phase == 1:
         for i, tmp_data in enumerate(current_dataset):
             # tokenize the text
@@ -164,30 +174,52 @@ def create_dataset_split(current_dataset, raw_dataset, train_phase, tokenizer,
     elif train_phase == 2:
         for i, tmp_data in enumerate(current_dataset):
             # tokenize the text
-            chosen_sentence = raw_dataset.get_prompt_and_chosen(
-                tmp_data)  # the accept response
-            reject_sentence = raw_dataset.get_prompt_and_rejected(
-                tmp_data)  # the accept response
-            if chosen_sentence is not None and reject_sentence is not None:
-                chosen_sentence += end_of_conversation_token  # the accept response
-                reject_sentence += end_of_conversation_token
-                chosen_token = tokenizer(chosen_sentence,
-                                         max_length=max_seq_len,
-                                         padding="max_length",
-                                         truncation=True,
-                                         return_tensors="pt")
-                reject_token = tokenizer(reject_sentence,
-                                         max_length=max_seq_len,
-                                         padding="max_length",
-                                         truncation=True,
-                                         return_tensors="pt")
-                chosen_token["input_ids"] = chosen_token["input_ids"]
-                chosen_token["attention_mask"] = chosen_token["attention_mask"]
-                chosen_dataset.append(chosen_token)
+            if group_dataset:
+                prompt, responses = raw_dataset.get_prompt_and_ranked_responses(
+                    tmp_data)
+                tmp_token_list = []
+                tmp_mask_list = []
+                for response in responses:
+                    full_sentence = prompt + response + end_of_conversation_token
+                    chosen_token = tokenizer(full_sentence,
+                                             max_length=max_seq_len,
+                                             padding="max_length",
+                                             truncation=True,
+                                             return_tensors="pt")
+                    chosen_token["input_ids"] = chosen_token["input_ids"]
+                    chosen_token["attention_mask"] = chosen_token[
+                        "attention_mask"]
+                    tmp_token_list.append(chosen_token["input_ids"])
+                    tmp_mask_list.append(chosen_token["attention_mask"])
+                chosen_dataset.append([tmp_token_list, tmp_mask_list])
 
-                reject_token["input_ids"] = reject_token["input_ids"]
-                reject_token["attention_mask"] = reject_token["attention_mask"]
-                reject_dataset.append(reject_token)
+            else:
+                chosen_sentence = raw_dataset.get_prompt_and_chosen(
+                    tmp_data)  # the accept response
+                reject_sentence = raw_dataset.get_prompt_and_rejected(
+                    tmp_data)  # the accept response
+                if chosen_sentence is not None and reject_sentence is not None:
+                    chosen_sentence += end_of_conversation_token  # the accept response
+                    reject_sentence += end_of_conversation_token
+                    chosen_token = tokenizer(chosen_sentence,
+                                             max_length=max_seq_len,
+                                             padding="max_length",
+                                             truncation=True,
+                                             return_tensors="pt")
+                    reject_token = tokenizer(reject_sentence,
+                                             max_length=max_seq_len,
+                                             padding="max_length",
+                                             truncation=True,
+                                             return_tensors="pt")
+                    chosen_token["input_ids"] = chosen_token["input_ids"]
+                    chosen_token["attention_mask"] = chosen_token[
+                        "attention_mask"]
+                    chosen_dataset.append(chosen_token)
+
+                    reject_token["input_ids"] = reject_token["input_ids"]
+                    reject_token["attention_mask"] = reject_token[
+                        "attention_mask"]
+                    reject_dataset.append(reject_token)
 
     elif train_phase == 3:
         for i, tmp_data in enumerate(current_dataset):
@@ -213,9 +245,12 @@ def create_dataset_split(current_dataset, raw_dataset, train_phase, tokenizer,
 
 def create_dataset(local_rank, dataset_name, data_split, output_path,
                    train_phase, seed, tokenizer, end_of_conversation_token,
-                   max_seq_len):
+                   max_seq_len, group_dataset):
     raw_dataset = get_raw_dataset(dataset_name, output_path, seed, local_rank)
-    train_dataset = raw_dataset.get_train_data()
+    if group_dataset:
+        train_dataset = raw_dataset.get_grouped_train_data()
+    else:
+        train_dataset = raw_dataset.get_train_data()
     train_index = get_raw_dataset_split_index(local_rank, output_path,
                                               raw_dataset.dataset_name_clean,
                                               seed, "train", data_split,
@@ -225,7 +260,7 @@ def create_dataset(local_rank, dataset_name, data_split, output_path,
     train_dataset = create_dataset_split(train_dataset, raw_dataset,
                                          train_phase, tokenizer,
                                          end_of_conversation_token,
-                                         max_seq_len)
+                                         max_seq_len, group_dataset)
 
     eval_dataset = raw_dataset.get_eval_data()
     eval_index = get_raw_dataset_split_index(local_rank, output_path,
@@ -249,7 +284,8 @@ def create_prompt_dataset(local_rank,
                           tokenizer,
                           max_seq_len,
                           end_of_conversation_token="<|endoftext|>",
-                          sft_only_data_path=[]):
+                          sft_only_data_path=[],
+                          group_dataset=False):
     """
     Creates the prompt dataset
     """
@@ -271,8 +307,16 @@ def create_prompt_dataset(local_rank,
     if local_rank <= 0 and buf_create_cache.item() != 0:
         if len(data_path) == 1:  # Single dataset.
             train_dataset, eval_dataset = create_dataset(
-                local_rank, data_path[0], data_split, output_path, train_phase,
-                seed, tokenizer, end_of_conversation_token, max_seq_len)
+                local_rank,
+                data_path[0],
+                data_split,
+                output_path,
+                train_phase,
+                seed,
+                tokenizer,
+                end_of_conversation_token,
+                max_seq_len,
+                group_dataset=group_dataset)
         else:  # Blending datasets.
             train_datasets = []
             eval_datasets = []
@@ -336,12 +380,19 @@ class DataCollatorReward:
 
     def __call__(self, data):
         batch = {}
-        batch["input_ids"] = torch.cat([f[0]
-                                        for f in data] + [f[2] for f in data],
-                                       dim=0)
-        batch["attention_mask"] = torch.cat([f[1] for f in data] +
-                                            [f[3] for f in data],
-                                            dim=0)
+        if len(data) > 1:
+            batch["input_ids"] = torch.cat([f[0] for f in data] +
+                                           [f[2] for f in data],
+                                           dim=0)
+            batch["attention_mask"] = torch.cat([f[1] for f in data] +
+                                                [f[3] for f in data],
+                                                dim=0)
+        else:
+            # print(f[0].size())
+            # import pdb; pdb.set_trace()
+            # TODO: hard coded the batch size as 1
+            batch["input_ids"] = torch.cat([f for f in data[0][0]], dim=0)
+            batch["attention_mask"] = torch.cat([f for f in data[0][1]], dim=0)
         return batch
 
 

@@ -161,6 +161,9 @@ def parse_args():
     parser.add_argument('--only_optimize_lora',
                         action='store_true',
                         help='Only optimize the LoRA parameters.')
+    parser.add_argument('--group_shp',
+                        action='store_true',
+                        help='group shp dataset into multiple answers')
     parser = deepspeed.add_config_arguments(parser)
     args = parser.parse_args()
 
@@ -169,6 +172,10 @@ def parse_args():
         assert (
             not args.only_optimize_lora
         ), "--gradient_checkpointing and --only_optimize_lora cannot be enabled at the same time."
+
+    if args.group_shp:
+        assert args.data_path[0] == "stanfordnlp/SHP" and len(
+            args.data_path) == 1, "the name is indicated why"
 
     return args
 
@@ -219,9 +226,15 @@ def main():
 
     train_phase = 2
     train_dataset, eval_dataset = create_prompt_dataset(
-        args.local_rank, args.data_path, args.data_split,
-        args.data_output_path, train_phase, args.seed, tokenizer,
-        args.max_seq_len)
+        args.local_rank,
+        args.data_path,
+        args.data_split,
+        args.data_output_path,
+        train_phase,
+        args.seed,
+        tokenizer,
+        args.max_seq_len,
+        group_dataset=args.group_shp)
 
     # DataLoaders creation:
     data_collator = DataCollatorReward()
@@ -300,13 +313,13 @@ def main():
     # Train!
     print_rank_0("***** Running training *****", args.global_rank)
 
-    print_rank_0(
-        f"***** Evaluating reward, Epoch {0}/{args.num_train_epochs} *****",
-        args.global_rank)
-    reward_score, acc = evaluation_reward(rm_model, eval_dataloader)
-    print_rank_0(
-        f"chosen_last_scores (higher is better) : {reward_score}, acc (higher is better) : {acc}",
-        args.global_rank)
+    # print_rank_0(
+    #     f"***** Evaluating reward, Epoch {0}/{args.num_train_epochs} *****",
+    #     args.global_rank)
+    # reward_score, acc = evaluation_reward(rm_model, eval_dataloader)
+    # print_rank_0(
+    #     f"chosen_last_scores (higher is better) : {reward_score}, acc (higher is better) : {acc}",
+    #     args.global_rank)
 
     for epoch in range(args.num_train_epochs):
         print_rank_0(
@@ -316,7 +329,10 @@ def main():
         mean_loss = 0
         for step, batch in enumerate(train_dataloader):
             batch = to_device(batch, device)
-            outputs = rm_model(**batch, use_cache=False)
+            if args.group_shp:
+                outputs = rm_model.forward_group(**batch, use_cache=False)
+            else:
+                outputs = rm_model(**batch, use_cache=False)
             loss = outputs["loss"]
             rm_model.backward(loss)
             rm_model.step()
