@@ -6,6 +6,7 @@ from datasets import load_dataset
 from torch.utils.data import Subset
 import re
 from collections import defaultdict
+import random
 
 
 # The template prompt dataset class that all new dataset porting needs to
@@ -293,16 +294,23 @@ class StanfordnlpSHPDataset(PromptRawDataset):
         for d in grouped_data:
             if len(d['human_ref_ranked']) < truncated:
                 a += 1
-            # elif len(d['human_ref_ranked']) < 10:
-            #     b += 1
-            #     final_grouped_data.append(d)
+                # elif len(d['human_ref_ranked']) < 10:
+                #     b += 1
+                final_grouped_data.append(d)
             else:
-                if truncated == 2:
-                    d["human_ref_ranked"] = [
-                        d["human_ref_ranked"][0], d["human_ref_ranked"][-1]
-                    ]
-                else:
-                    d["human_ref_ranked"] = d["human_ref_ranked"][:truncated]
+                # if truncated == 2:
+                #     d["human_ref_ranked"] = [
+                #         d["human_ref_ranked"][0], d["human_ref_ranked"][-1]
+                #     ]
+                # else:
+                #     d["human_ref_ranked"] = d["human_ref_ranked"][:truncated]
+                A = list(range(0, len(d['human_ref_ranked'])))
+                B = random.sample(A, truncated)
+                B.sort()
+                tmp_list = []
+                for i in B:
+                    tmp_list.append(d['human_ref_ranked'][i])
+                d["human_ref_ranked"] = tmp_list
                 final_grouped_data.append(d)
                 c += 1
         print(a, b, c)

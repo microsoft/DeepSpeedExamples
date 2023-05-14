@@ -179,7 +179,7 @@ class RewardModel(nn.Module):
                 r_truncated_reward = rewards[j][divergence_ind:end_ind]
                 loss += -torch.nn.functional.logsigmoid(
                     c_truncated_reward - r_truncated_reward).mean()
-
+        loss = loss / (bs * (bs - 1) / 2.)
         loss = loss / bs
         chosen_mean_scores = torch.stack([torch.ones(1)
                                           for i in range(2)]).to(loss.device)
