@@ -12,9 +12,10 @@ if [ "$ZERO_STAGE" == "" ]; then
     ZERO_STAGE=2
 fi
 mkdir -p $OUTPUT
+#Dahoas/full-hh-rlhf Dahoas/synthetic-instruct-gptj-pairwise yitingxie/rlhf-reward-datasets \
 
 deepspeed main.py \
-   --data_path Dahoas/rm-static Dahoas/full-hh-rlhf Dahoas/synthetic-instruct-gptj-pairwise yitingxie/rlhf-reward-datasets \
+   --data_path Dahoas/rm-static \
    --data_split 2,4,4 \
    --model_name_or_path facebook/opt-1.3b \
    --per_device_train_batch_size 8 \
@@ -30,4 +31,4 @@ deepspeed main.py \
    --zero_stage $ZERO_STAGE \
    --deepspeed \
    --output_dir $OUTPUT \
-   &> $OUTPUT/training.log
+   &> $OUTPUT/training_wHE.log

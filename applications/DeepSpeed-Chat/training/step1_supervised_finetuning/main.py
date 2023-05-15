@@ -188,7 +188,7 @@ def main():
     args.global_rank = torch.distributed.get_rank()
 
     ds_config = get_train_ds_config(offload=args.offload,
-                                    stage=args.zero_stage)
+                                    stage=args.zero_stage, enable_hybrid_engine=False)
     ds_config[
         'train_micro_batch_size_per_gpu'] = args.per_device_train_batch_size
     ds_config[
@@ -301,8 +301,10 @@ def main():
     print_rank_0(
         f"***** Evaluating perplexity, Epoch {0}/{args.num_train_epochs} *****",
         args.global_rank)
-    perplexity = evaluation(model, eval_dataloader)
-    print_rank_0(f"ppl: {perplexity}", args.global_rank)
+    #perplexity = evaluation(model, eval_dataloader)
+    #print_rank_0(f"ppl: {perplexity}", args.global_rank)
+
+    model.eval()
 
     for epoch in range(args.num_train_epochs):
         print_rank_0(
@@ -310,11 +312,15 @@ def main():
             args.global_rank)
         model.train()
         for step, batch in enumerate(train_dataloader):
+            if step == 100:
+                break
             batch = to_device(batch, device)
             outputs = model(**batch, use_cache=False)
             loss = outputs.loss
+            print_rank_0(f"{step=}, loss={loss.item()}", args.global_rank)
             model.backward(loss)
             model.step()
+        exit()
 
         # Evaluate perplexity on the validation set.
         print_rank_0(
