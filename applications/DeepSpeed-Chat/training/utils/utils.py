@@ -57,6 +57,7 @@ def load_hf_tokenizer(model_name_or_path, fast_tokenizer=True):
                                               fast_tokenizer=True)
     if "llama" in model_name_or_path.lower() or "llama" in model_name.lower():
         tokenizer.eos_token = '</s>'  # noqa E605
+        tokenizer.bos_token = '<s>'
     return tokenizer
 
 
