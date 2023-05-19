@@ -137,9 +137,10 @@ def parse_args():
         '--gradient_checkpointing',
         action='store_true',
         help='Enable HF gradient checkpointing for Actor model.')
-    parser.add_argument('--disable_dropout',
-                        action='store_true',
-                        help='Disable the dropout of the model.')
+    parser.add_argument('--dropout',
+                        type=float,
+                        default=0.1,
+                        help='make the dropout of the model by default 0.1.')
     # deepspeed features
     parser.add_argument('--offload',
                         action='store_true',
@@ -208,7 +209,7 @@ def main():
                                    tokenizer,
                                    ds_config,
                                    args.num_padding_at_beginning,
-                                   disable_dropout=args.disable_dropout)
+                                   dropout=args.dropout)
 
     if args.lora_dim > 0:
         rm_model = convert_linear_layer_to_lora(rm_model,
