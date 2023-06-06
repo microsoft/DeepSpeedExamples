@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # DeepSpeed Team
+from utils.utils import print_rank_0
 import torch
 import torch.nn.functional as F
 import sys
@@ -11,8 +12,6 @@ from deepspeed.runtime.zero.partition_parameters import ZeroParamStatus
 
 sys.path.append(
     os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
-
-from utils.utils import print_rank_0
 
 
 def print_all_ranks(tag, value, rank):
@@ -45,8 +44,9 @@ def gather_log_probs(logits, labels):
 
 class DeepSpeedPPOTrainer():
 
-    def __init__(self, rlhf_engine, args):
+    def __init__(self, rlhf_engine, critic_tokenizer, args):
         self.rlhf_engine = rlhf_engine
+        self.critic_tokenizer = self.rlhf_engine.critic_tokenizer
         self.actor_model = self.rlhf_engine.actor
         self.critic_model = self.rlhf_engine.critic
         self.ref_model = self.rlhf_engine.ref
@@ -104,12 +104,18 @@ class DeepSpeedPPOTrainer():
         with torch.no_grad():
             output = self.actor_model(seq, attention_mask=attention_mask)
             output_ref = self.ref_model(seq, attention_mask=attention_mask)
+            seq_for_critic = self.tokenizer.batch_decode(seq,
+                                                         skip_special_tokens=False,
+                                                         clean_up_tokenization_spaces=False)
+            seq_for_critic = self.critic_tokenizer.batch_encode(seq_for_critic,
+                                                                skip_special_tokens=False,
+                                                                clean_up_tokenization_spaces=False)
             reward_score = self.reward_model.forward_value(
-                seq, attention_mask,
+                seq_for_critic, attention_mask,
                 prompt_length=self.prompt_length)['chosen_end_scores'].detach(
-                )
+            )
             values = self.critic_model.forward_value(
-                seq, attention_mask, return_value_only=True).detach()[:, :-1]
+                seq_for_critic, attention_mask, return_value_only=True).detach()[:, :-1]
 
         logits = output.logits
         logits_ref = output_ref.logits
@@ -142,7 +148,7 @@ class DeepSpeedPPOTrainer():
 
     def train_rlhf(self, inputs):
         # train the rlhf mode here
-        ### process the old outputs
+        # process the old outputs
         prompts = inputs['prompts']
         log_probs = inputs['logprobs']
         ref_log_probs = inputs['ref_logprobs']
@@ -162,7 +168,7 @@ class DeepSpeedPPOTrainer():
             advantages, returns = self.get_advantages_and_returns(
                 old_values, old_rewards, start)
 
-        ### process the new outputs
+        # process the new outputs
         batch = {'input_ids': seq, "attention_mask": attention_mask}
         actor_prob = self.actor_model(**batch, use_cache=False).logits
         actor_log_prob = gather_log_probs(actor_prob[:, :-1, :], seq[:, 1:])
@@ -183,7 +189,7 @@ class DeepSpeedPPOTrainer():
         return actor_loss, critic_loss
 
     def actor_loss_fn(self, logprobs, old_logprobs, advantages, mask):
-        ## policy gradient loss
+        # policy gradient loss
         log_ratio = (logprobs - old_logprobs) * mask
         ratio = torch.exp(log_ratio)
         pg_loss1 = -advantages * ratio
@@ -193,7 +199,7 @@ class DeepSpeedPPOTrainer():
         return pg_loss
 
     def critic_loss_fn(self, values, old_values, returns, mask):
-        ## value loss
+        # value loss
         values_clipped = torch.clamp(
             values,
             old_values - self.cliprange_value,
