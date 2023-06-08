@@ -67,7 +67,8 @@ def run_benchmark(args, pipe, query=None, seq_len=None, use_triton=False, ds_run
                                                     replace_with_kernel_inject=args.kernel_inject,
                                                     replace_method='auto',
                                                     enable_cuda_graph=args.graphs,
-                                                    use_triton=use_triton)
+                                                    use_triton=use_triton,
+                                                    triton_autotune=True)
     else:
         if ds_run:
             pipe.model.cuda_graph_created = False
@@ -168,11 +169,13 @@ if __name__ == '__main__':
                                                 replace_method='auto',
                                                 enable_cuda_graph=args.graphs,
                                                 use_triton=args.triton,
+                                                triton_autotune=True,
                                                 max_out_tokens=pipe.tokenizer.model_max_length)
         pipe.model.profile_model_time()
 
     seq_lens = range(8,513,11)
     seq_lens = [32, 64, 128, 256, 512] + [i for i in range(8,513,31)]
+    seq_lens = [128]
     seq_lens.sort()
     e2e_times = []
     model_times = []
