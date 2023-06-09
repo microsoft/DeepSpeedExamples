@@ -14,7 +14,7 @@ from transformers.deepspeed import HfDeepSpeedConfig
 
 from .reward_model import RewardModel
 
-from hf_model.modeling_llama import LlamaForCausalLM
+from .hf_model.modeling_llama import LlamaForCausalLM
 
 def create_hf_model(model_class,
                     model_name_or_path,
