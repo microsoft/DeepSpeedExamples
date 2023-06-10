@@ -14,6 +14,7 @@ from transformers.deepspeed import HfDeepSpeedConfig
 
 from .reward_model import RewardModel
 
+from .hf_model.modeling_llama import LlamaForCausalLM
 
 def create_hf_model(model_class,
                     model_name_or_path,
@@ -36,11 +37,18 @@ def create_hf_model(model_class,
         # the weight loading is handled by create critic model
         model = model_class.from_config(model_config)
     else:
-        model = model_class.from_pretrained(
-            model_name_or_path,
-            from_tf=bool(".ckpt" in model_name_or_path),
-            config=model_config,
-            cache_dir=f'/tmp/hf_cache/')
+        if 'llama' in model_name_or_path:
+            model =  LlamaForCausalLM.from_pretrained(
+                model_name_or_path,
+                from_tf=bool(".ckpt" in model_name_or_path),
+                config=model_config,
+                cache_dir=f'/tmp/hf_cache/')
+        else:
+            model = model_class.from_pretrained(
+                model_name_or_path,
+                from_tf=bool(".ckpt" in model_name_or_path),
+                config=model_config,
+                cache_dir=f'/tmp/hf_cache/')
 
     model.config.end_token_id = tokenizer.eos_token_id
     model.config.pad_token_id = model.config.eos_token_id

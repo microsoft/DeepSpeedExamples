@@ -12,11 +12,11 @@ if [ "$ZERO_STAGE" == "" ]; then
     ZERO_STAGE=3
 fi
 mkdir -p $OUTPUT
-
+###--model_name_or_path huggyllama/llama-7b \
 deepspeed main.py \
    --data_path Dahoas/rm-static Dahoas/full-hh-rlhf \
-   --data_split 10,0,0 \
-   --model_name_or_path decapoda-research/llama-65b-hf \
+   --data_split 2,4,4 \
+   --model_name_or_path huggyllama/llama-65b \
    --per_device_train_batch_size 4 \
    --per_device_eval_batch_size 4 \
    --max_seq_len 512 \
