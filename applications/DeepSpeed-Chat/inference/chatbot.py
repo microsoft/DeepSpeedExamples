@@ -10,7 +10,7 @@ import transformers  # noqa: F401
 import os
 import json
 from transformers import pipeline, set_seed
-from transformers import AutoConfig, OPTForCausalLM, AutoTokenizer
+from transformers import AutoConfig, OPTForCausalLM, AutoTokenizer, BloomForCausalLM
 
 
 def parse_args():
@@ -43,9 +43,17 @@ def get_generator(path):
     tokenizer.pad_token = tokenizer.eos_token
 
     model_config = AutoConfig.from_pretrained(path)
-    model = OPTForCausalLM.from_pretrained(path,
-                                           from_tf=bool(".ckpt" in path),
-                                           config=model_config).half()
+    if 'bloom' in path:
+        model = BloomForCausalLM.from_pretrained(path,
+                                            from_tf=bool(".ckpt" in path),
+                                            config=model_config).half()
+    else:
+        model = OPTForCausalLM.from_pretrained(path,
+                                            from_tf=bool(".ckpt" in path),
+                                            config=model_config).half()
+    # model = OPTForCausalLM.from_pretrained(path,
+    #                                        from_tf=bool(".ckpt" in path),
+    #                                        config=model_config).half()
 
     model.config.end_token_id = tokenizer.eos_token_id
     model.config.pad_token_id = model.config.eos_token_id

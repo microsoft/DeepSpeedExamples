@@ -6,6 +6,7 @@ from datasets import load_dataset
 from torch.utils.data import Subset
 import re
 
+CustomDatasets = ['custom/phoenix_v1']
 
 # The template prompt dataset class that all new dataset porting needs to
 # follow in order to have a unified API and unified data format.
@@ -15,7 +16,8 @@ class PromptRawDataset(object):
         self.output_path = output_path
         self.seed = seed
         self.local_rank = local_rank
-        self.raw_datasets = load_dataset(dataset_name)
+        if dataset_name not in CustomDatasets:
+            self.raw_datasets = load_dataset(dataset_name)
 
     def get_train_data(self):
         return
@@ -704,6 +706,85 @@ class LmqgQagjaquadDataset(PromptRawDataset):
     def get_prompt_and_chosen(self, sample):
         return " Human: " + sample['questions'][0] + " Assistant: " + sample[
             'paragraph']
+
+    def get_prompt_and_rejected(self, sample):
+        print(
+            f"Warning: dataset {self.dataset_name} does not include rejected response."
+        )
+        return None
+
+
+
+# LLMZoo dataset
+class CustomPhoenixv1Dataset(PromptRawDataset):
+
+    def __init__(self, output_path, seed, local_rank, dataset_name):
+        super().__init__(output_path, seed, local_rank, dataset_name)
+        self.dataset_name = "custom/phoenix_v1"
+        self.dataset_name_clean = "custom_phoenix_v1"
+        
+        raw_data = load_dataset(path='/home/vrlab/AI for cryo/phoenix-sft-data-v1/', data_files='data.json')
+        self.raw_datasets = raw_data.map(self.process_data)
+
+    def process_data(self, raw_data):
+        custom_data = {}
+        custom_data['id'] = raw_data['id']
+
+        if len(raw_data['conversations']) == 2: # Only use the data with both human and gpt response
+            custom_data['from_human'] = raw_data['conversations'][0]['value']
+            custom_data['from_gpt'] = raw_data['conversations'][1]['value']
+            assert raw_data['conversations'][0]['from'] == 'human' and raw_data['conversations'][1]['from'] == 'gpt'
+
+        else:
+            # all None
+            custom_data['from_human'] = None
+            custom_data['from_gpt'] = None
+
+        return custom_data
+
+
+
+    def get_train_data(self):
+        from .data_utils import get_raw_dataset_split_index
+        dataset = self.raw_datasets["train"]
+        index = get_raw_dataset_split_index(self.local_rank, self.output_path,
+                                            self.dataset_name_clean,
+                                            self.seed, "train_eval", "9,1", 0,
+                                            len(dataset))
+        dataset = Subset(dataset, index)
+        return dataset
+
+    def get_eval_data(self):
+        from .data_utils import get_raw_dataset_split_index
+        dataset = self.raw_datasets["train"]
+        index = get_raw_dataset_split_index(self.local_rank, self.output_path,
+                                            self.dataset_name_clean,
+                                            self.seed, "train_eval", "9,1", 1,
+                                            len(dataset))
+        dataset = Subset(dataset, index)
+        return dataset
+
+    def get_prompt(self, sample):
+        if sample['from_human'] is not None:
+            return " Human: " + sample['from_human'] + " Assistant:"
+        return None
+
+    def get_chosen(self, sample):
+        if sample['from_gpt'] is not None:
+            return " " + sample['from_gpt']
+        return None
+
+    def get_rejected(self, sample):
+        print(
+            f"Warning: dataset {self.dataset_name} does not include rejected response."
+        )
+        return None
+
+    def get_prompt_and_chosen(self, sample):
+        if sample['from_human'] is not None and sample['from_gpt'] is not None:
+            return " Human: " + sample[
+                'from_human'] + " Assistant: " + sample['from_gpt']
+        return None
 
     def get_prompt_and_rejected(self, sample):
         print(
