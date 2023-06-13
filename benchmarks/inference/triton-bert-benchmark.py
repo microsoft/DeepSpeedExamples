@@ -173,9 +173,9 @@ if __name__ == '__main__':
                                                 max_out_tokens=pipe.tokenizer.model_max_length)
         pipe.model.profile_model_time()
 
-    seq_lens = range(8,513,11)
-    seq_lens = [32, 64, 128, 256, 512] + [i for i in range(8,513,31)]
-    seq_lens = [128]
+    seq_lens =  [i for i in range(8,513,2)]
+    # seq_lens = [32, 64, 128, 256, 512] + [i for i in range(8,513,17)]
+    # seq_lens = [128]
     seq_lens.sort()
     e2e_times = []
     model_times = []
