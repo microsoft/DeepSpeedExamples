@@ -2,8 +2,23 @@ import deepspeed
 import torch
 import os
 from local_pipeline_stable_diffusion import StableDiffusionPipeline
+import argparse
 
-prompt = "a dog on a rocket"
+# In this example the SD inference pipeline is optimized based on recommendations in the research paper
+# titled "Selective Guidance: Are All the Denoising Steps of Guided Diffusion Important?"(https://arxiv.org/abs/2305.09847).
+# In this method, the last iterations of the denoising loop are optimized by simplifying the noise computation. In the guided diffusion
+# process of the SD pipeline, the computed noise consists of two components: conditional noise and unconditional noise.
+# However, including both components of noise doubles the computational requirements for running the denoising loop.
+# To address this issue, the optimized iterations in this approach eliminate the unconditional noise, thereby reducing the
+# compute cost associated with the generation process.
+# The user has the flexibility to choose the percentage of iterations they want to optimize (opt_percentage). As well as
+# setting the prompt and the guidance_scale.
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--prompt', type=str, default='A dog on a rocket', help='path to dataset (default: imagenet)')
+parser.add_argument('--guidance_scale', type=float, default=7.5, help='Guidance Scale')
+parser.add_argument('--opt_percentage', type=int, default=0, help='The percentage of the last iterations to be optimized')
+args = parser.parse_args()
 
 model = "prompthero/midjourney-v4-diffusion"
 local_rank = int(os.getenv("LOCAL_RANK", "0"))
@@ -16,7 +31,7 @@ pipe = pipe.to(device)
 
 seed = 0xABEDABE7
 generator.manual_seed(seed)
-baseline_image = pipe(prompt, guidance_scale=7.5, generator=generator, optimized_iterations=0).images[0]
+baseline_image = pipe(args.prompt, guidance_scale=args.guidance_scale, generator=generator, opt_percentage=0).images[0]
 baseline_image.save(f"baseline.png")
 
 
@@ -31,5 +46,5 @@ pipe = deepspeed.init_inference(
     )
 
 generator.manual_seed(seed)
-deepspeed_image = pipe(prompt, guidance_scale=7.5, generator=generator, optimized_iterations=0.20).images[0]
+deepspeed_image = pipe(args.prompt, guidance_scale=args.guidance_scale, generator=generator, opt_percentage=args.opt_percentage).images[0]
 deepspeed_image.save(f"deepspeed.png")
