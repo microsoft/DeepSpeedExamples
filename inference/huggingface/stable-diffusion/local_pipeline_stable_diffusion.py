@@ -14,7 +14,6 @@
 
 import inspect
 from typing import Any, Callable, Dict, List, Optional, Union
-
 import torch
 from packaging import version
 from transformers import CLIPFeatureExtractor, CLIPTextModel, CLIPTokenizer
@@ -530,7 +529,7 @@ class StableDiffusionPipeline(DiffusionPipeline):
         width: Optional[int] = None,
         num_inference_steps: int = 50,
         guidance_scale: float = 7.5,
-        optimized_iterations: float = 0,
+        opt_percentage: int = 0,
         negative_prompt: Optional[Union[str, List[str]]] = None,
         num_images_per_prompt: Optional[int] = 1,
         eta: float = 0.0,
@@ -616,7 +615,7 @@ class StableDiffusionPipeline(DiffusionPipeline):
         # 0. Default height and width to unet
         height = height or self.unet.config.sample_size * self.vae_scale_factor
         width = width or self.unet.config.sample_size * self.vae_scale_factor
-        
+
         # 1. Check inputs. Raise error if not correct
         self.check_inputs(
             prompt, height, width, callback_steps, negative_prompt, prompt_embeds, negative_prompt_embeds
@@ -669,7 +668,7 @@ class StableDiffusionPipeline(DiffusionPipeline):
 
         # 7. Denoising loop
         max_iter = len(timesteps)
-        start_opt_iter = max_iter * (1 - optimized_iterations)
+        start_opt_iter = round(max_iter * (1 - opt_percentage / 100.0))
         num_warmup_steps = len(timesteps) - num_inference_steps * self.scheduler.order
         _ , prompt_embeds_text = prompt_embeds.chunk(2)
         with self.progress_bar(total=num_inference_steps) as progress_bar:
@@ -681,7 +680,7 @@ class StableDiffusionPipeline(DiffusionPipeline):
                 # perform guidance
                 if do_classifier_free_guidance:
                     # Apply optimization
-                    if i > start_opt_iter:
+                    if i >= start_opt_iter:
                         # Compute only the conditional noise
                         noise_pred = self.unet(latents, t, encoder_hidden_states=prompt_embeds_text).sample
                     # No optimization
