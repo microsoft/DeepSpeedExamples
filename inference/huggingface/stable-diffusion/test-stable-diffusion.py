@@ -15,7 +15,7 @@ import argparse
 # setting the prompt and the guidance_scale.
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--prompt', type=str, default='A dog on a rocket', help='path to dataset (default: imagenet)')
+parser.add_argument('--prompt', type=str, default='A dog on a rocket', help='The prompt to use in creating the image')
 parser.add_argument('--guidance_scale', type=float, default=7.5, help='Guidance Scale')
 parser.add_argument('--opt_percentage', type=int, default=0, help='The percentage of the last iterations to be optimized')
 args = parser.parse_args()
