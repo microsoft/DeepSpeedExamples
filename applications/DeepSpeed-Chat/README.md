@@ -260,6 +260,12 @@ If you have your own dataset in local files, you can also use it by following th
 
 What is more, when you use your own dataset files and modify some data in them, pay attention to the parameter "reload" of ***create_prompt_dataset*** function. You should pass a True value to it or the cache files will not refresh.
 
+If you have your own dataset in local files, you can also use it by following these rules:
+* Put your train data and evaluation data in applications/DeepSpeed-Chat/data/ with name train.json and eval.json.
+* The json data in file should be a single list with each item like ***{"prompt":"\n\nHuman:aaa.\n\nAssistant:\n\n","chosen":"bbb","rejected":"ccc"}***.
+
+What is more, when you use your own dataset files and modified some data in them, pay attention to the parameter "reload" of ***create_prompt_dataset*** function. You should pass a True value to it or the cache files will not refresh.
+
 ### 🐼 Customizing your own RLHF training pipeline using DeepSpeed-Chat’s RLHF APIs
 
 DeepSpeed-Chat allows users to build their very own RLHF training pipeline using our flexible APIs shown below, which users can use to reconstruct their own RLHF training strategy. This enables a general interface and backend for creating a wide range of RLHF algorithms for research exploration.
