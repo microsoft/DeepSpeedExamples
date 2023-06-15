@@ -38,8 +38,9 @@ class DSPipeline():
         # the Deepspeed team made these so it's super fast to load (~1 minute), rather than wait 10-20min loading time.
         self.tp_presharded_models = ["microsoft/bloom-deepspeed-inference-int8", "microsoft/bloom-deepspeed-inference-fp16"]
 
-        self.tokenizer = AutoTokenizer.from_pretrained(model_name, padding_side="left")
-        self.tokenizer.pad_token = self.tokenizer.eos_token
+        #self.tokenizer = AutoTokenizer.from_pretrained(model_name, padding_side="left")
+        self.tokenizer = AutoTokenizer.from_pretrained(model_name, fast_tokenizer=True)
+        #self.tokenizer.pad_token = self.tokenizer.eos_token
 
         if (is_meta):
             '''When meta tensors enabled, use checkpoints'''
@@ -103,20 +104,40 @@ class DSPipeline():
                          num_tokens=100,
                          do_sample=False):
         generate_kwargs = dict(max_new_tokens=num_tokens, do_sample=do_sample)
+        #generate_kwargs = dict(min_length=200, max_length=300, do_sample=do_sample)
 
-        input_tokens = self.tokenizer.batch_encode_plus(inputs, return_tensors="pt", padding=True)
+        #input_tokens = self.tokenizer.batch_encode_plus(inputs, return_tensors="pt", padding=True)
+        #input_tokens = self.tokenizer.batch_encode_plus(inputs, return_tensors="pt")
+        inputs = ['</s>' + inputs[0]] # Add prefix as is done in HF pipeline
+        input_tokens = self.tokenizer(inputs, padding=False, add_special_tokens=False, return_tensors="pt")
+
+        # DS      input_tokens = tensor([[49138,    29, 15698,   970,    32,   171, 19265,  1504, 11633]])
+        # HF (lekurile) inputs = tensor([[49138,    29, 15698,   970,    32,   171, 19265,  1504, 11633]])
+
+        #import pdb; pdb.set_trace()
+
         for t in input_tokens:
             if torch.is_tensor(input_tokens[t]):
                 input_tokens[t] = input_tokens[t].to(self.device)
 
         self.model.cuda().to(self.device)
 
+        print(f"input_ds = {input_tokens['input_ids']}")
+        print(f"attention_mask = {input_tokens['attention_mask']}")
+        print(f"generate_kwargs = {generate_kwargs}")
+
         if isinstance(self.tokenizer, LlamaTokenizerFast):
             # NOTE: Check if Llamma can work w/ **input_tokens
             #       'token_type_ids' kwarg not recognized in Llamma generate function
             outputs = self.model.generate(input_tokens.input_ids, **generate_kwargs)
         else:
-            outputs = self.model.generate(**input_tokens, **generate_kwargs)
+            #outputs = self.model.generate(**input_tokens, **generate_kwargs)
+            outputs = self.model.generate(input_ids=input_tokens['input_ids'], attention_mask=input_tokens['attention_mask'], **generate_kwargs)
+
+        print(f"outputs = {outputs}")
+
+        #import pdb; pdb.set_trace()
+
         outputs = self.tokenizer.batch_decode(outputs, skip_special_tokens=True)
 
         return outputs

@@ -19,12 +19,13 @@ parser.add_argument("--ds_inference", action='store_true', help="enable ds-infer
 parser.add_argument("--use_kernel", action='store_true', help="enable kernel-injection")
 parser.add_argument("--replace_method", required=False, default='', type=str, help="replace method['', 'auto']")
 parser.add_argument("--max_tokens", default=1024, type=int, help="maximum tokens used for the text-generation KV-cache")
-parser.add_argument("--max_new_tokens", default=50, type=int, help="maximum new tokens to generate")
+parser.add_argument("--max_new_tokens", default=300, type=int, help="maximum new tokens to generate")
 parser.add_argument("--greedy", action='store_true', help="greedy generation mode")
 parser.add_argument("--use_meta_tensor", action='store_true', help="use the meta tensors to initialize model")
 parser.add_argument("--use_cache", default=True, type=bool, help="use cache for generation")
 parser.add_argument("--test_performance", action='store_true', help="enable latency, bandwidth, and throughout testing")
 parser.add_argument("--local_rank", type=int, default=0, help="local rank")
+parser.add_argument("--use_hf_pipe", action='store_true', help="use huggingface pipeline instead of DSPipeline")
 args = parser.parse_args()
 
 def print_perf_stats(latency_set, config, warmup=3):
@@ -57,11 +58,23 @@ if local_rank == 0:
     see_memory_usage("before init", True)
 
 t0 = time.time()
-pipe = DSPipeline(model_name=args.name,
-                  dtype=data_type,
-                  is_meta=args.use_meta_tensor,
-                  device=args.local_rank,
-                  checkpoint_path=args.checkpoint_path)
+
+if args.use_hf_pipe:
+    from transformers import AutoTokenizer, AutoModelForCausalLM
+    from transformers import pipeline
+
+    tokenizer = AutoTokenizer.from_pretrained(args.name)
+    model = AutoModelForCausalLM.from_pretrained(args.name)
+    model.half()
+
+    pipe = pipeline('text-generation', model=model, tokenizer=tokenizer, torch_dtype=args.dtype, device=0)
+else:
+    pipe = DSPipeline(model_name=args.name,
+                      dtype=data_type,
+                      is_meta=args.use_meta_tensor,
+                      device=args.local_rank,
+                      checkpoint_path=args.checkpoint_path)
+
 if local_rank == 0:
     print(f"initialization time: {(time.time()-t0) * 1000}ms")
     see_memory_usage("after init", True)
@@ -80,12 +93,17 @@ if args.ds_inference:
                                     save_mp_checkpoint_path=args.save_mp_checkpoint_path,
                                     **ds_kwargs
                                     )
+#import pdb; pdb.set_trace()
 if local_rank == 0:
     see_memory_usage("after init_inference", True)
 
+#         "Being a professional athlete",
 
 input_sentences = [
-         "DeepSpeed is a machine learning framework",
+         #"The process of producing a documentary film",
+         #"A magical creature living in a hidden forest",
+         #"Microsoft is in Washington",
+         "There are many exotic travel destinations",
          "He is working on",
          "He has a",
          "He got all",
@@ -106,9 +124,14 @@ times = []
 for i in range(iters):
     torch.cuda.synchronize()
     start = time.time()
-    outputs = pipe(inputs,
-            num_tokens=args.max_new_tokens,
-            do_sample=(not args.greedy))
+    if args.use_hf_pipe:
+        outputs = pipe(inputs,
+                max_new_tokens=args.max_new_tokens,
+                do_sample=(not args.greedy))
+    else:
+        outputs = pipe(inputs,
+                num_tokens=args.max_new_tokens,
+                do_sample=(not args.greedy))
     torch.cuda.synchronize()
     end = time.time()
     times.append(end - start)
