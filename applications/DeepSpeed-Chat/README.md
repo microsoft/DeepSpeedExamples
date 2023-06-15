@@ -261,6 +261,7 @@ If you have your own dataset in local files, you can also use it by following th
 What is more, when you use your own dataset files and modify some data in them, pay attention to the parameter "reload" of ***create_prompt_dataset*** function. You should pass a True value to it or the cache files will not refresh.
 
 If you have your own dataset in local files, you can also use it by following these rules:
+* Use "local/jsonfile" as the dataset name.
 * Put your train data and evaluation data in applications/DeepSpeed-Chat/data/ with name train.json and eval.json.
 * The json data in file should be a single list with each item like ***{"prompt":"\n\nHuman:aaa.\n\nAssistant:\n\n","chosen":"bbb","rejected":"ccc"}***.
 
