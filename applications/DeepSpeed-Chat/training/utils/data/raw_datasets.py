@@ -379,15 +379,13 @@ class LocalJsonFileDataset(PromptRawDataset):
         return None
 
     def get_prompt_and_chosen(self, sample):
-        if sample['prompt'] is not None and sample['prompt'] is not None:
-            return " Human: " + sample[
-                'prompt'] + " Assistant: " + sample['chosen']
+        if sample['prompt'] is not None and sample['chosen'] is not None:
+            return " " + sample['prompt'] + " " + sample['chosen']
         return None
 
     def get_prompt_and_rejected(self, sample):
-        if sample['prompt'] is not None and sample['prompt'] is not None:
-            return " Human: " + sample[
-                'prompt'] + " Assistant: " + sample['rejected']
+        if sample['prompt'] is not None and sample['rejected'] is not None:
+            return " " + sample['prompt'] + " " + sample['rejected']
         return None
 
 # Chinese dataset
