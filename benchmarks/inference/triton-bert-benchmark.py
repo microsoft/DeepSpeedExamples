@@ -173,7 +173,8 @@ if __name__ == '__main__':
                                                 max_out_tokens=pipe.tokenizer.model_max_length)
         pipe.model.profile_model_time()
 
-    seq_lens =  [i for i in range(8,513,2)]
+    seq_lens =  [i for i in range(8,513,1)]
+    #seq_lens =  [i for i in range(8,129,1)]
     # seq_lens = [32, 64, 128, 256, 512] + [i for i in range(8,513,17)]
     # seq_lens = [128]
     seq_lens.sort()
@@ -183,10 +184,32 @@ if __name__ == '__main__':
         e2e_latency, model_latency = run_benchmark(args, pipe=pipe, query=None, seq_len=seq_len, use_triton=args.triton, ds_run=args.deepspeed, task=args.task)
         e2e_times.append(e2e_latency)
         model_times.append(model_latency)
-    plot_lines([e2e_times, model_times], seq_lens, ["e2e latency", "model_latency"], ylabel='avg ms', filename='triton-bert-bench.png')
+    #plot_lines([e2e_times, model_times], seq_lens, ["e2e latency", "model_latency"], ylabel='avg ms', filename='triton-bert-bench.png')
 
     print("sequence length, e2e latency, model_latency")
     for i, t in enumerate(e2e_times):
         print(f"{seq_lens[i]}, {t}, {model_times[i]}")
 
+    import numpy as np
+    avg_latency = []
+    start=0
+    step=1
+    steady_bin_size=64
+    init_bin_size=(steady_bin_size-seq_lens[0])
+    print("min-seq-len, max-seq-len, avg-latency(ms)")
+    bins = range(int(np.ceil(len(seq_lens)/steady_bin_size)))
+    for i in bins:
+        if i == 0:
+            bin_size = init_bin_size
+            sidx = start 
+            eidx = start + (i+1)*bin_size 
+        else:
+            bin_size = steady_bin_size
+            sidx = eidx
+            eidx = sidx + bin_size + (1 if i == len(bins) - 1 else 0)
+        l = model_times[sidx:eidx]
+        idx = seq_lens[sidx:eidx]
+        #idx = seq_lens[start  + (i)*bin_size: start + (i+1)*bin_size]
+        print(f"{idx[0]}, {idx[-1]}, {np.mean(l)}")
+    
 
