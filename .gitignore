@@ -13,6 +13,7 @@ build/
 develop-eggs/
 dist/
 downloads/
+applications/DeepSpeed-Chat/data
 eggs/
 .eggs/
 lib/

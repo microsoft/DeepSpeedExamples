@@ -66,9 +66,9 @@ def get_raw_dataset(dataset_name, output_path, seed, local_rank):
                                                  dataset_name)
     elif "local/jsonfile" in dataset_name:
         chat_path = os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir, os.path.pardir, os.path.pardir))
-        if not os.path.isfile(chat_path + '/data/train.json'):
+        if not (os.path.isfile(chat_path + '/data/train.json') or os.path.isfile(chat_path + '/data/eval.json')):
             raise RuntimeError(
-                f"Please check both the train.json and eval.json files in the applications/DeepSpeed-Chat/data directory"
+                f"Please check both the train.json and eval.json files in your applications/DeepSpeed-Chat/data directory"
             )
         return raw_datasets.LocalJsonFileDataset(output_path, seed, local_rank,
                                                  dataset_name, chat_path)
@@ -92,7 +92,7 @@ def get_raw_dataset_split_index(local_rank, output_path, dataset_name, seed,
                                 split_name, data_split, split_index,
                                 data_size):
     index_file_name = f"{output_path}/{dataset_name}_seed{seed}_{split_name}_{data_split}_{split_index}.npy"
-    # reindex each time since json file is more likely get modified
+    # reindex each time when using local jsonfile since it's more likely to get modified
     if (not os.path.isfile(index_file_name)) or (dataset_name == 'jsonfile'):
         splits = [float(s) for s in data_split.split(',')]
         splits_sum = sum(splits)
