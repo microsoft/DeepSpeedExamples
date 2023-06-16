@@ -341,7 +341,6 @@ class PvduySharegptalpacaoavicunaformatDataset(PromptRawDataset):
         )
         return None
 
-# Chinese dataset
 class LocalJsonFileDataset(PromptRawDataset):
     def __init__(self, output_path, seed, local_rank, dataset_name, chat_path):
         super().__init__(output_path, seed, local_rank, dataset_name)
