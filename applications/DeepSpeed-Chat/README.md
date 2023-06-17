@@ -242,7 +242,7 @@ One thing to note that some datasets may only have one response instead of two r
 If you have your own dataset in local files, you can also use it by following these rules:
 * Pass "local/jsonfile" as the dataset name to the "--data_path" argument.
 * Put your train data and evaluation data in applications/DeepSpeed-Chat/data/ with name train.json and eval.json.
-* The json data in file should be a single list with each item like ***{"prompt":"Human:I have a question.Assistant:","chosen":"Good answer.","rejected":"Bad answer."}***.
+* The json data in file should be a single list with each item like ***{"prompt": "Human: I have a question. Assistant:", "chosen": "Good answer.", "rejected": "Bad answer."}***.
 
 What is more, when you use your own dataset files and modified some data in them, pay attention to the parameter "reload" of ***create_prompt_dataset*** function. You should pass a True value to it or the cache files will not refresh.
 
