@@ -65,8 +65,11 @@ def get_raw_dataset(dataset_name, output_path, seed, local_rank):
         return raw_datasets.LmqgQagjaquadDataset(output_path, seed, local_rank,
                                                  dataset_name)
     elif "local/jsonfile" in dataset_name:
-        chat_path = os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir, os.path.pardir, os.path.pardir))
-        if not (os.path.isfile(chat_path + '/data/train.json') and os.path.isfile(chat_path + '/data/eval.json')):
+        chat_path = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), os.path.pardir,
+                         os.path.pardir, os.path.pardir))
+        if not (os.path.isfile(chat_path + '/data/train.json')
+                and os.path.isfile(chat_path + '/data/eval.json')):
             raise RuntimeError(
                 f"Please check both the train.json and eval.json files in your applications/DeepSpeed-Chat/data directory."
             )
