@@ -378,8 +378,12 @@ def main():
 
     # create common tokenizer based on actor model
     tokenizer = load_hf_tokenizer(args.actor_model_name_or_path,
-                                  fast_tokenizer=True)
+                                  fast_tokenizer=False)
     tokenizer.pad_token = tokenizer.eos_token
+
+    critic_tokenizer = load_hf_tokenizer(args.crictic_model_name_or_path,
+                                  fast_tokenizer=False)
+    critic_tokenizer.pad_token = tokenizer.eos_token
 
     prompt_train_dataloader, unsupervised_train_dataloader, num_total_iters = create_datasets(
         args=args, tokenizer=tokenizer, train_phase=3)
@@ -389,6 +393,7 @@ def main():
         actor_model_name_or_path=args.actor_model_name_or_path,
         critic_model_name_or_path=args.critic_model_name_or_path,
         tokenizer=tokenizer,
+        critic_tokenizer=critic_tokenizer,
         num_total_iters=num_total_iters,
         args=args)
 
