@@ -9,7 +9,7 @@ import json
 import deepspeed
 import torch
 from huggingface_hub import snapshot_download
-from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer, LlamaTokenizerFast
 
 class DSPipeline():
     '''
@@ -52,6 +52,9 @@ class DSPipeline():
             self.model = AutoModelForCausalLM.from_pretrained(self.model_name)
 
         self.model.eval()
+
+        if self.dtype == torch.float16:
+            self.model.half()
 
 
     def __call__(self,
@@ -108,7 +111,12 @@ class DSPipeline():
 
         self.model.cuda().to(self.device)
 
-        outputs = self.model.generate(**input_tokens, **generate_kwargs)
+        if isinstance(self.tokenizer, LlamaTokenizerFast):
+            # NOTE: Check if Llamma can work w/ **input_tokens
+            #       'token_type_ids' kwarg not recognized in Llamma generate function
+            outputs = self.model.generate(input_tokens.input_ids, **generate_kwargs)
+        else:
+            outputs = self.model.generate(**input_tokens, **generate_kwargs)
         outputs = self.tokenizer.batch_decode(outputs, skip_special_tokens=True)
 
         return outputs
