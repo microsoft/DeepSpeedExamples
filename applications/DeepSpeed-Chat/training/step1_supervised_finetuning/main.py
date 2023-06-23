@@ -345,5 +345,6 @@ def main():
                                   args.output_dir,
                                   zero_stage=args.zero_stage)
 
+
 if __name__ == "__main__":
     main()
