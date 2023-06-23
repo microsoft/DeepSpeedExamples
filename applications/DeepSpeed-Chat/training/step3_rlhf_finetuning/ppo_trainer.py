@@ -65,16 +65,17 @@ class DeepSpeedPPOTrainer():
         self.gamma = 1.0
         self.lam = 0.95
 
-    def _generate_sequence(self, prompts):
+    def _generate_sequence(self, prompts, mask):
 
         max_min_length = self.max_answer_seq_len + prompts.shape[1]
 
         with torch.no_grad():
             seq = self.actor_model.module.generate(prompts,
+                                                   attention_mask=mask,
                                                    max_length=max_min_length,
                                                    min_length=max_min_length)
 
-        # Filter out seq with no asnwers (or very short). This happens when users directly use the pre-training ckpt without supervised finetuning
+        # Filter out seq with no answers (or very short). This happens when users directly use the pre-training ckpt without supervised finetuning
         # NOTE: this will causes each GPU has different number of examples
         batch_size = seq.shape[0]
         prompt_length = prompts.shape[1]
@@ -92,9 +93,9 @@ class DeepSpeedPPOTrainer():
 
         return out_seq
 
-    def generate_experience(self, prompts):
+    def generate_experience(self, prompts, mask):
         self.eval()
-        seq = self._generate_sequence(prompts)
+        seq = self._generate_sequence(prompts, mask)
         self.train()
 
         pad_token_id = self.tokenizer.pad_token_id
@@ -164,8 +165,7 @@ class DeepSpeedPPOTrainer():
         ### process the new outputs
         batch = {'input_ids': seq, "attention_mask": attention_mask}
         actor_prob = self.actor_model(**batch, use_cache=False).logits
-        actor_log_prob = gather_log_probs(actor_prob[:, :-1, :],
-                                          inputs['input_ids'][:, 1:])
+        actor_log_prob = gather_log_probs(actor_prob[:, :-1, :], seq[:, 1:])
         actor_loss = self.actor_loss_fn(actor_log_prob[:, start:],
                                         log_probs[:, start:], advantages,
                                         action_mask[:, start:])

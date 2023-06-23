@@ -27,7 +27,7 @@ Critic_Lr=5e-6
 #$ACTOR_MODEL_PATH \
 # Dahoas/full-hh-rlhf Dahoas/synthetic-instruct-gptj-pairwise yitingxie/rlhf-reward-datasets openai/webgpt_comparisons stanfordnlp/SHP \
 
-deepspeed main.py \
+deepspeed --master_port 12346 main.py \
    --data_path Dahoas/rm-static \
    --data_split 2,4,4 \
    --actor_model_name_or_path facebook/opt-13b \
@@ -41,15 +41,15 @@ deepspeed main.py \
    --max_prompt_seq_len 256 \
    --actor_learning_rate ${Actor_Lr} \
    --critic_learning_rate ${Critic_Lr} \
-   --actor_weight_decay 0.1 \
-   --critic_weight_decay 0.1 \
    --num_train_epochs 1 \
    --lr_scheduler_type cosine \
    --gradient_accumulation_steps 1 \
+   --disable_actor_dropout \
    --num_warmup_steps 100 \
    --deepspeed --seed 1234 \
    --enable_hybrid_engine \
    --actor_zero_stage $ACTOR_ZERO_STAGE \
    --critic_zero_stage $CRITIC_ZERO_STAGE \
+   --enable_ema \
    --output_dir $OUTPUT \
    # &> $OUTPUT/training.log

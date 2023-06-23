@@ -14,7 +14,6 @@ from torch.utils.data.distributed import DistributedSampler
 
 from transformers import (
     AutoModelForCausalLM,
-    AutoTokenizer,
     SchedulerType,
     default_data_collator,
     get_scheduler,
@@ -26,7 +25,7 @@ from deepspeed.ops.adam import DeepSpeedCPUAdam, FusedAdam
 sys.path.append(
     os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
 from utils.data.data_utils import create_prompt_dataset
-from utils.utils import print_rank_0, to_device, save_hf_format, set_random_seed, get_all_reduce_mean, get_optimizer_grouped_parameters, save_zero_three_model
+from utils.utils import print_rank_0, to_device, save_hf_format, set_random_seed, get_all_reduce_mean, get_optimizer_grouped_parameters, save_zero_three_model, load_hf_tokenizer
 from utils.ds_utils import get_train_ds_config
 from utils.module.lora import convert_linear_layer_to_lora, convert_lora_to_linear_layer, only_optimize_lora_parameters
 from utils.model.model_utils import create_hf_model
@@ -45,9 +44,9 @@ def parse_args():
                         'form: dataset1-path dataset2-path ...')
     parser.add_argument('--data_split',
                         type=str,
-                        default='6,2,2',
+                        default='2,4,4',
                         help='Comma-separated list of proportions for training'
-                        'phase 1, 2, and 3 data. For example the split `2,4,4`'
+                        'phase 1, 2, and 3 data. For example the split `6,2,2`'
                         'will use 60% of data for phase 1, 20% for phase 2'
                         'and 20% for phase 3.')
     parser.add_argument(
@@ -96,7 +95,7 @@ def parse_args():
     )
     parser.add_argument("--weight_decay",
                         type=float,
-                        default=0.1,
+                        default=0.,
                         help="Weight decay to use.")
     parser.add_argument("--num_train_epochs",
                         type=int,
@@ -139,6 +138,9 @@ def parse_args():
     parser.add_argument('--gradient_checkpointing',
                         action='store_true',
                         help='Enable HF gradient checkpointing for model.')
+    parser.add_argument('--disable_dropout',
+                        action='store_true',
+                        help='Disable the dropout of the model.')
     # deepspeed features
     parser.add_argument('--offload',
                         action='store_true',
@@ -168,7 +170,7 @@ def parse_args():
     if args.gradient_checkpointing and args.lora_dim > 0:
         assert (
             not args.only_optimize_lora
-        ), "--gradient_checkpointing and --only_optimizer_lora cannot be enabled at the same time."
+        ), "--gradient_checkpointing and --only_optimize_lora cannot be enabled at the same time."
 
     return args
 
@@ -204,18 +206,17 @@ def main():
     # If passed along, set the training seed now.
     set_random_seed(args.seed)
 
-    assert not args.offload, "zero-offload is not currently supported but coming soon!"
-
     torch.distributed.barrier()
 
-    tokenizer = AutoTokenizer.from_pretrained(args.model_name_or_path,
-                                              fast_tokenizer=True)
+    tokenizer = load_hf_tokenizer(args.model_name_or_path, fast_tokenizer=True)
     tokenizer.pad_token = tokenizer.eos_token
-
-    deepspeed.runtime.utils.see_memory_usage('**** pre-model creation ****', force=True)
-
-    model = create_hf_model(AutoModelForCausalLM, args.model_name_or_path,
-                            tokenizer, ds_config, rlhf_training=True)
+    # make sure tokenizer is right pad in our logic
+    tokenizer.padding_side = 'right'
+    model = create_hf_model(AutoModelForCausalLM,
+                            args.model_name_or_path,
+                            tokenizer,
+                            ds_config,
+                            disable_dropout=args.disable_dropout)
 
     if args.lora_dim > 0:
         model = convert_linear_layer_to_lora(model, args.lora_module_name,
@@ -239,7 +240,6 @@ def main():
         tokenizer,
         args.max_seq_len,
         sft_only_data_path=args.sft_only_data_path)
-
     # DataLoaders creation:
     if args.local_rank == -1:
         train_sampler = RandomSampler(train_dataset)
