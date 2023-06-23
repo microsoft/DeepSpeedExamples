@@ -10,20 +10,22 @@ import argparse
 from transformers import pipeline
 from deepspeed.accelerator import get_accelerator
 
-def print_latency(latency_set, title, warmup=2):
+def print_latency(latency_set, title, warmup=2, outliers=2):
     # trim warmup queries
-    print(f"print_latency: {latency_set}")
+    count = len(latency_set) - warmup - outliers
+    assert count > 0 
+
     latency_set = latency_set[warmup:]
-    count = len(latency_set)
     avg = None
     if count > 0:
         latency_set.sort()
-        print(f"print_latency: {latency_set}")
+        latency_set = latency_set[:-outliers]
         n50 = (count - 1) * 0.5 + 1
         n90 = (count - 1) * 0.9 + 1
         n95 = (count - 1) * 0.95 + 1
         n99 = (count - 1) * 0.99 + 1
         n999 = (count - 1) * 0.999 + 1
+        print(f"print_latency: {latency_set}, n90={n90}")
 
         avg = sum(latency_set) / count
         p50 = latency_set[int(n50) - 1]
@@ -174,10 +176,6 @@ if __name__ == '__main__':
         pipe.model.profile_model_time()
 
     seq_lens =  [i for i in range(8,513,1)]
-    #seq_lens =  [i for i in range(8,513,37)]
-    #seq_lens = [32, 64, 128, 256, 512] + [i for i in range(8,513,17)]
-    #seq_lens = [i for i in range(8,513,11)] + [i for i in range(32,513,32)]
-    # seq_lens = [128]
     seq_lens.sort()
     e2e_times = []
     model_times = []
@@ -210,7 +208,6 @@ if __name__ == '__main__':
             eidx = sidx + bin_size + (1 if i == len(bins) - 1 else 0)
         l = model_times[sidx:eidx]
         idx = seq_lens[sidx:eidx]
-        #idx = seq_lens[start  + (i)*bin_size: start + (i+1)*bin_size]
         print(f"{idx[0]}, {idx[-1]}, {np.mean(l)}")
     
 
