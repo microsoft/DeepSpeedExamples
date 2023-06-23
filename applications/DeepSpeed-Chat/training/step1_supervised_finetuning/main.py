@@ -200,8 +200,7 @@ def main():
         'train_batch_size'] = args.per_device_train_batch_size * torch.distributed.get_world_size(
         ) * args.gradient_accumulation_steps
 
-    see_time = True
-    ds_config['wall_clock_breakdown'] = see_time
+    ds_config['wall_clock_breakdown'] = False
 
     # If passed along, set the training seed now.
     set_random_seed(args.seed)
@@ -225,8 +224,6 @@ def main():
             model = only_optimize_lora_parameters(model)
 
     deepspeed.runtime.utils.see_memory_usage('**** post-model creation ****', force=True)
-    #import pdb
-    #pdb.set_trace()
 
     # Prepare the data
     train_phase = 1
@@ -309,16 +306,13 @@ def main():
     if args.gradient_checkpointing:
         model.gradient_checkpointing_enable()
 
-
     # Train!
     print_rank_0("***** Running training *****", args.global_rank)
     print_rank_0(
         f"***** Evaluating perplexity, Epoch {0}/{args.num_train_epochs} *****",
         args.global_rank)
-    # perplexity = evaluation(model, eval_dataloader)
-    # print_rank_0(f"ppl: {perplexity}", args.global_rank)
-
-    see_memory = False
+    perplexity = evaluation(model, eval_dataloader)
+    print_rank_0(f"ppl: {perplexity}", args.global_rank)
 
     for epoch in range(args.num_train_epochs):
         print_rank_0(
@@ -327,18 +321,10 @@ def main():
         model.train()
         for step, batch in enumerate(train_dataloader):
             batch = to_device(batch, device)
-            deepspeed.runtime.utils.see_memory_usage(f'**** pre-fwd ({step}) ****', force=see_memory)
             outputs = model(**batch, use_cache=False)
-            deepspeed.runtime.utils.see_memory_usage(f'**** post-fwd ({step}) ****', force=see_memory)
             loss = outputs.loss
             model.backward(loss)
-
-            deepspeed.runtime.utils.see_memory_usage(f'**** post-bwd ({step}) ****', force=see_memory)
             model.step()
-            deepspeed.runtime.utils.see_memory_usage(f'**** post-step ({step}) ****', force=see_memory)
-
-            if step == 2:
-                exit()
 
         # Evaluate perplexity on the validation set.
         print_rank_0(
@@ -361,7 +347,6 @@ def main():
                                   args.global_rank,
                                   args.output_dir,
                                   zero_stage=args.zero_stage)
-
 
 if __name__ == "__main__":
     main()
