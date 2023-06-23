@@ -11,7 +11,7 @@ if [ "$OUTPUT" == "" ]; then
     OUTPUT=./output
 fi
 if [ "$ZERO_STAGE" == "" ]; then
-    ZERO_STAGE="auto"
+    ZERO_STAGE=0
 fi
 mkdir -p $OUTPUT
 

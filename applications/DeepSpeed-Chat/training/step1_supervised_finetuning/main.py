@@ -259,7 +259,7 @@ def main():
         for step, batch in enumerate(eval_dataloader):
             batch = to_device(batch, device)
             with torch.no_grad():
-                outputs = model(**batch, use_cache=False)
+                outputs = model(**batch)
 
             loss = outputs.loss
             losses += loss.float()
@@ -274,7 +274,6 @@ def main():
             pass
         return perplexity
 
-    deepspeed.runtime.utils.see_memory_usage('**** pre-optim-creation ****', force=True)
     # Split weights in two groups, one with weight decay and the other not.
     optimizer_grouped_parameters = get_optimizer_grouped_parameters(
         model, args.weight_decay)
@@ -300,8 +299,6 @@ def main():
         config=ds_config,
         lr_scheduler=lr_scheduler,
         dist_init_required=True)
-
-    deepspeed.runtime.utils.see_memory_usage('**** post DS-init ****', force=True)
 
     if args.gradient_checkpointing:
         model.gradient_checkpointing_enable()
