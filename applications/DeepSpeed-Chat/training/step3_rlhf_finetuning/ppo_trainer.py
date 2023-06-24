@@ -75,6 +75,9 @@ class DeepSpeedPPOTrainer():
                                                    max_length=max_min_length,
                                                    min_length=max_min_length)
 
+        print(f"--- prompt --> {self.tokenizer.batch_decode(prompts, skip_special_tokens=True)}")
+        print(f"--- output --> {self.tokenizer.batch_decode(seq, skip_special_tokens=True)}")
+
         # Filter out seq with no answers (or very short). This happens when users directly use the pre-training ckpt without supervised finetuning
         # NOTE: this will causes each GPU has different number of examples
         batch_size = seq.shape[0]

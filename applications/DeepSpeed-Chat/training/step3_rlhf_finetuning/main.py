@@ -354,6 +354,8 @@ def create_datasets(args, tokenizer, train_phase=3):
 
 def main():
     args = parse_args()
+    print(f"args.offload = {args.offload}")
+    print(f"args.unpin_actor_parameters = {args.unpin_actor_parameters}")
 
     if args.local_rank == -1:
         device = torch.device("cuda")
@@ -469,9 +471,14 @@ def main():
                 print_rank_0(
                     "-------------------------------------------------------------------------------------",
                     args.global_rank)
+                #if step == 250:
+                #if step == 2:
+                #    break
 
             if args.actor_gradient_checkpointing:
                 rlhf_engine.actor.gradient_checkpointing_disable()
+
+        #break
 
     if args.output_dir is not None:
         print_rank_0('saving model ...')

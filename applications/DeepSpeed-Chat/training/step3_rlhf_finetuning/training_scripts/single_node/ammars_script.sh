@@ -3,15 +3,11 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # DeepSpeed Team
-ACTOR_MODEL_PATH=$1
-CRITIC_MODEL_PATH=$2
-ACTOR_ZERO_STAGE=$3
-CRITIC_ZERO_STAGE=$4
-ENABLE_HYBRID_ENGINE=$5
-OFFLOAD=$6
-UNPIN_ACTOR_PARAMETERS=$7
-BASE=$8
-OUTPUT=$9
+ACTOR_MODEL_PATH=AdamG012/chat-opt-1.3b-rlhf-actor-deepspeed
+CRITIC_MODEL_PATH=AdamG012/chat-opt-350m-reward-deepspeed
+ACTOR_ZERO_STAGE=3
+CRITIC_ZERO_STAGE=2
+OUTPUT=$5
 if [ "$OUTPUT" == "" ]; then
     OUTPUT=./output
 fi
@@ -21,36 +17,6 @@ fi
 if [ "$CRITIC_ZERO_STAGE" == "" ]; then
     CRITIC_ZERO_STAGE=2
 fi
-
-if [ "$ENABLE_HYBRID_ENGINE" == true ]; then
-    ENABLE_HYBRID_ENGINE="--enable_hybrid_engine"
-else
-    ENABLE_HYBRID_ENGINE=""
-fi
-
-if [ "$OFFLOAD" == true ]; then
-    OFFLOAD="--offload"
-else
-    OFFLOAD=""
-fi
-
-if [ "$UNPIN_ACTOR_PARAMETERS" == true ]; then
-    UNPIN_ACTOR_PARAMETERS="--unpin_actor_parameters"
-else
-    UNPIN_ACTOR_PARAMETERS=""
-fi
-
-if [ "$BASE" == '' ]; then
-	BASE="True"
-fi
-
-export BASE=${BASE}
-echo "BASE=" $BASE
-
-echo $ENABLE_HYBRID_ENGINE
-echo $OFFLOAD
-echo $UNPIN_ACTOR_PARAMETERS
-
 mkdir -p $OUTPUT
 
 Num_Padding_at_Beginning=1 # this is model related
@@ -58,8 +24,8 @@ Num_Padding_at_Beginning=1 # this is model related
 Actor_Lr=9.65e-6
 Critic_Lr=5e-6
 
-#cmd="deepspeed --num_gpus 1 --master_port 12346 main.py \
-cmd="deepspeed --master_port 12346 main.py \
+#deepspeed --num_gpus=1 --master_port 12346 main.py \
+deepspeed --num_gpus=2 --master_port 12346 main.py \
    --data_path Dahoas/rm-static \
    --data_split 2,4,4 \
    --actor_model_name_or_path $ACTOR_MODEL_PATH \
@@ -79,12 +45,11 @@ cmd="deepspeed --master_port 12346 main.py \
    --disable_actor_dropout \
    --num_warmup_steps 100 \
    --deepspeed --seed 1234 \
+   --release_inference_cache \
+   --enable_hybrid_engine
+   --unpin_actor_parameters \
    --actor_zero_stage $ACTOR_ZERO_STAGE \
    --critic_zero_stage $CRITIC_ZERO_STAGE \
    --enable_ema \
    --output_dir $OUTPUT \
-    $ENABLE_HYBRID_ENGINE $OFFLOAD $UNPIN_ACTOR_PARAMETERS"
-
-echo $cmd
-
-$cmd &> $OUTPUT/${OUTPUT}.log
+    &> $OUTPUT/training.log
