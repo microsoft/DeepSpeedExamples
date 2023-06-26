@@ -17,6 +17,7 @@ repos:
     rev: v0.32.0
     hooks:
     -   id: yapf
+        additional_dependencies: [toml]
         files: ^applications/DeepSpeed-Chat/.+
 
 -   repo: https://github.com/pycqa/flake8

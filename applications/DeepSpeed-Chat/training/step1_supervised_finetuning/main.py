@@ -223,7 +223,8 @@ def main():
         if args.only_optimize_lora:
             model = only_optimize_lora_parameters(model)
 
-    deepspeed.runtime.utils.see_memory_usage('**** post-model creation ****', force=True)
+    deepspeed.runtime.utils.see_memory_usage('**** post-model creation ****',
+                                             force=True)
 
     # Prepare the data
     train_phase = 1
