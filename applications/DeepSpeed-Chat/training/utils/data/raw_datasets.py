@@ -694,6 +694,7 @@ class CohereMiracljaqueries2212Dataset(PromptRawDataset):
                 'negative_passages'][0]['text']
         return None
 
+
 # Japanese dataset
 class LmqgQgjaquadDataset(PromptRawDataset):
 
