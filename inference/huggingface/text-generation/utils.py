@@ -102,7 +102,7 @@ class DSPipeline():
                          inputs=["test"],
                          num_tokens=100,
                          do_sample=False):
-        generate_kwargs = dict(max_new_tokens=num_tokens, do_sample=do_sample)
+        generate_kwargs = dict(max_new_tokens=num_tokens, do_sample=do_sample)#, min_length=500)
 
         input_tokens = self.tokenizer.batch_encode_plus(inputs, return_tensors="pt", padding=True)
         for t in input_tokens:
