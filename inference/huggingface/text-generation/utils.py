@@ -108,7 +108,7 @@ class DSPipeline():
 
         #input_tokens = self.tokenizer.batch_encode_plus(inputs, return_tensors="pt", padding=True)
         #input_tokens = self.tokenizer.batch_encode_plus(inputs, return_tensors="pt")
-        inputs = ['</s>' + inputs[0]] # Add prefix as is done in HF pipeline
+        #inputs = ['</s>' + inputs[0]] # Add prefix as is done in HF pipeline
         input_tokens = self.tokenizer(inputs, padding=False, add_special_tokens=False, return_tensors="pt")
 
         # DS      input_tokens = tensor([[49138,    29, 15698,   970,    32,   171, 19265,  1504, 11633]])
@@ -134,7 +134,7 @@ class DSPipeline():
             #outputs = self.model.generate(**input_tokens, **generate_kwargs)
             outputs = self.model.generate(input_ids=input_tokens['input_ids'], attention_mask=input_tokens['attention_mask'], **generate_kwargs)
 
-        print(f"outputs = {outputs}")
+        #print(f"outputs = {outputs}")
 
         #import pdb; pdb.set_trace()
 

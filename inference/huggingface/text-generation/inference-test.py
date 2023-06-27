@@ -68,6 +68,12 @@ if args.use_hf_pipe:
     model.half()
 
     pipe = pipeline('text-generation', model=model, tokenizer=tokenizer, torch_dtype=args.dtype, device=0)
+
+    #import pdb; pdb.set_trace()
+    print(f"args.name = {args.name}")
+    print(f"type(args.name) = {type(args.name)}")
+    #pipe = pipeline('text-generation', args.name, torch_dtype=args.dtype, device=0)
+    print(f"pipe.model.dtype = {pipe.model.dtype}")
 else:
     pipe = DSPipeline(model_name=args.name,
                       dtype=data_type,
