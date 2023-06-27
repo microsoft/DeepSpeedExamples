@@ -1,0 +1,1696 @@
+[2023-06-09 05:17:46,388] [INFO] [real_accelerator.py:110:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+Warning: Permanently added '[10.228.58.153]:43471' (ECDSA) to the list of known hosts.
+[2023-06-09 05:17:49,071] [INFO] [runner.py:452:main] Using IP address of 10.228.58.153 for node worker-0
+[2023-06-09 05:17:49,071] [INFO] [runner.py:555:main] cmd = /opt/conda/bin/python -u -m deepspeed.launcher.launch --world_info=eyJ3b3JrZXItMCI6IFswLCAxLCAyLCAzLCA0LCA1LCA2LCA3LCA4LCA5LCAxMCwgMTEsIDEyLCAxMywgMTQsIDE1XX0= --master_addr=10.228.58.153 --master_port=29500 --enable_each_rank_log=None main.py --data_path Dahoas/rm-static Dahoas/full-hh-rlhf --data_split 2,4,4 --model_name_or_path huggyllama/llama-7b --per_device_train_batch_size 4 --per_device_eval_batch_size 4 --max_seq_len 512 --learning_rate 1e-4 --weight_decay 0. --num_train_epochs 5 --gradient_accumulation_steps 1 --lr_scheduler_type cosine --num_warmup_steps 0 --seed 1234 --gradient_checkpointing --zero_stage 3 --lora_dim 256 --lora_module_name model.layers. --deepspeed --output_dir check-7b
+Setting ds_accelerator to cuda (auto detect)
+[2023-06-09 05:17:52,628] [INFO] [launch.py:138:main] 0 NCCL_VERSION=2.9.8
+[2023-06-09 05:17:52,629] [INFO] [launch.py:145:main] WORLD INFO DICT: {'worker-0': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]}
+[2023-06-09 05:17:52,629] [INFO] [launch.py:151:main] nnodes=1, num_local_procs=16, node_rank=0
+[2023-06-09 05:17:52,629] [INFO] [launch.py:162:main] global_rank_mapping=defaultdict(<class 'list'>, {'worker-0': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]})
+[2023-06-09 05:17:52,629] [INFO] [launch.py:163:main] dist_world_size=16
+[2023-06-09 05:17:52,629] [INFO] [launch.py:165:main] Setting CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15
+2023-06-09 05:17:54.677111: I tensorflow/stream_executor/platform/default/dso_loader.cc:53] Successfully opened dynamic library libcudart.so.11.0
+2023-06-09 05:17:54.732958: I tensorflow/stream_executor/platform/default/dso_loader.cc:53] Successfully opened dynamic library libcudart.so.11.0
+2023-06-09 05:17:54.732958: I tensorflow/stream_executor/platform/default/dso_loader.cc:53] Successfully opened dynamic library libcudart.so.11.0
+2023-06-09 05:17:54.746690: I tensorflow/stream_executor/platform/default/dso_loader.cc:53] Successfully opened dynamic library libcudart.so.11.0
+2023-06-09 05:17:54.746690: I tensorflow/stream_executor/platform/default/dso_loader.cc:53] Successfully opened dynamic library libcudart.so.11.0
+2023-06-09 05:17:54.752950: I tensorflow/stream_executor/platform/default/dso_loader.cc:53] Successfully opened dynamic library libcudart.so.11.0
+2023-06-09 05:17:54.752951: I tensorflow/stream_executor/platform/default/dso_loader.cc:53] Successfully opened dynamic library libcudart.so.11.0
+2023-06-09 05:17:54.774385: I tensorflow/stream_executor/platform/default/dso_loader.cc:53] Successfully opened dynamic library libcudart.so.11.0
+2023-06-09 05:17:54.781169: I tensorflow/stream_executor/platform/default/dso_loader.cc:53] Successfully opened dynamic library libcudart.so.11.0
+2023-06-09 05:17:54.787276: I tensorflow/stream_executor/platform/default/dso_loader.cc:53] Successfully opened dynamic library libcudart.so.11.0
+2023-06-09 05:17:54.836362: I tensorflow/stream_executor/platform/default/dso_loader.cc:53] Successfully opened dynamic library libcudart.so.11.0
+2023-06-09 05:17:54.836358: I tensorflow/stream_executor/platform/default/dso_loader.cc:53] Successfully opened dynamic library libcudart.so.11.0
+2023-06-09 05:17:54.836359: I tensorflow/stream_executor/platform/default/dso_loader.cc:53] Successfully opened dynamic library libcudart.so.11.0
+2023-06-09 05:17:54.836359: I tensorflow/stream_executor/platform/default/dso_loader.cc:53] Successfully opened dynamic library libcudart.so.11.0
+2023-06-09 05:17:54.836432: I tensorflow/stream_executor/platform/default/dso_loader.cc:53] Successfully opened dynamic library libcudart.so.11.0
+2023-06-09 05:17:54.918541: I tensorflow/stream_executor/platform/default/dso_loader.cc:53] Successfully opened dynamic library libcudart.so.11.0
+Setting ds_accelerator to cuda (auto detect)
+Setting ds_accelerator to cuda (auto detect)
+Setting ds_accelerator to cuda (auto detect)
+Setting ds_accelerator to cuda (auto detect)
+Setting ds_accelerator to cuda (auto detect)
+Setting ds_accelerator to cuda (auto detect)
+Setting ds_accelerator to cuda (auto detect)
+Setting ds_accelerator to cuda (auto detect)
+Setting ds_accelerator to cuda (auto detect)
+Setting ds_accelerator to cuda (auto detect)
+Setting ds_accelerator to cuda (auto detect)
+Setting ds_accelerator to cuda (auto detect)
+Setting ds_accelerator to cuda (auto detect)
+Setting ds_accelerator to cuda (auto detect)
+Setting ds_accelerator to cuda (auto detect)
+Setting ds_accelerator to cuda (auto detect)
+[2023-06-09 05:18:09,964] [WARNING] [comm.py:152:init_deepspeed_backend] NCCL backend in DeepSpeed not yet implemented
+[2023-06-09 05:18:09,964] [INFO] [comm.py:594:init_distributed] cdb=None
+[2023-06-09 05:18:11,063] [WARNING] [comm.py:152:init_deepspeed_backend] NCCL backend in DeepSpeed not yet implemented
+[2023-06-09 05:18:11,063] [INFO] [comm.py:594:init_distributed] cdb=None
+[2023-06-09 05:18:11,091] [WARNING] [comm.py:152:init_deepspeed_backend] NCCL backend in DeepSpeed not yet implemented
+[2023-06-09 05:18:11,091] [INFO] [comm.py:594:init_distributed] cdb=None
+[2023-06-09 05:18:11,175] [WARNING] [comm.py:152:init_deepspeed_backend] NCCL backend in DeepSpeed not yet implemented
+[2023-06-09 05:18:11,175] [INFO] [comm.py:594:init_distributed] cdb=None
+[2023-06-09 05:18:11,345] [WARNING] [comm.py:152:init_deepspeed_backend] NCCL backend in DeepSpeed not yet implemented
+[2023-06-09 05:18:11,345] [INFO] [comm.py:594:init_distributed] cdb=None
+[2023-06-09 05:18:11,345] [INFO] [comm.py:625:init_distributed] Initializing TorchBackend in DeepSpeed with backend nccl
+[2023-06-09 05:18:11,893] [WARNING] [comm.py:152:init_deepspeed_backend] NCCL backend in DeepSpeed not yet implemented
+[2023-06-09 05:18:11,893] [INFO] [comm.py:594:init_distributed] cdb=None
+[2023-06-09 05:18:12,242] [WARNING] [comm.py:152:init_deepspeed_backend] NCCL backend in DeepSpeed not yet implemented
+[2023-06-09 05:18:12,242] [INFO] [comm.py:594:init_distributed] cdb=None
+[2023-06-09 05:18:12,289] [WARNING] [comm.py:152:init_deepspeed_backend] NCCL backend in DeepSpeed not yet implemented
+[2023-06-09 05:18:12,289] [INFO] [comm.py:594:init_distributed] cdb=None
+[2023-06-09 05:18:12,553] [WARNING] [comm.py:152:init_deepspeed_backend] NCCL backend in DeepSpeed not yet implemented
+[2023-06-09 05:18:12,553] [INFO] [comm.py:594:init_distributed] cdb=None
+[2023-06-09 05:18:12,589] [WARNING] [comm.py:152:init_deepspeed_backend] NCCL backend in DeepSpeed not yet implemented
+[2023-06-09 05:18:12,590] [INFO] [comm.py:594:init_distributed] cdb=None
+[2023-06-09 05:18:12,638] [WARNING] [comm.py:152:init_deepspeed_backend] NCCL backend in DeepSpeed not yet implemented
+[2023-06-09 05:18:12,638] [INFO] [comm.py:594:init_distributed] cdb=None
+[2023-06-09 05:18:12,651] [WARNING] [comm.py:152:init_deepspeed_backend] NCCL backend in DeepSpeed not yet implemented
+[2023-06-09 05:18:12,651] [INFO] [comm.py:594:init_distributed] cdb=None
+[2023-06-09 05:18:12,693] [WARNING] [comm.py:152:init_deepspeed_backend] NCCL backend in DeepSpeed not yet implemented
+[2023-06-09 05:18:12,693] [INFO] [comm.py:594:init_distributed] cdb=None
+[2023-06-09 05:18:12,710] [WARNING] [comm.py:152:init_deepspeed_backend] NCCL backend in DeepSpeed not yet implemented
+[2023-06-09 05:18:12,710] [INFO] [comm.py:594:init_distributed] cdb=None
+[2023-06-09 05:18:12,714] [WARNING] [comm.py:152:init_deepspeed_backend] NCCL backend in DeepSpeed not yet implemented
+[2023-06-09 05:18:12,714] [INFO] [comm.py:594:init_distributed] cdb=None
+[2023-06-09 05:18:12,716] [WARNING] [comm.py:152:init_deepspeed_backend] NCCL backend in DeepSpeed not yet implemented
+[2023-06-09 05:18:12,716] [INFO] [comm.py:594:init_distributed] cdb=None
+Downloading (…)okenizer_config.json:   0%|          | 0.00/700 [00:00<?, ?B/s]Downloading (…)okenizer_config.json: 100%|██████████| 700/700 [00:00<00:00, 96.7kB/s]
+Downloading tokenizer.model:   0%|          | 0.00/500k [00:00<?, ?B/s]Downloading tokenizer.model: 100%|██████████| 500k/500k [00:00<00:00, 14.0MB/s]
+Downloading (…)/main/tokenizer.json:   0%|          | 0.00/1.84M [00:00<?, ?B/s]Downloading (…)/main/tokenizer.json: 100%|██████████| 1.84M/1.84M [00:00<00:00, 41.0MB/s]
+Downloading (…)cial_tokens_map.json:   0%|          | 0.00/411 [00:00<?, ?B/s]Downloading (…)cial_tokens_map.json: 100%|██████████| 411/411 [00:00<00:00, 245kB/s]
+Downloading (…)lve/main/config.json:   0%|          | 0.00/594 [00:00<?, ?B/s]Downloading (…)lve/main/config.json: 100%|██████████| 594/594 [00:00<00:00, 94.2kB/s]
+Downloading (…)fetensors.index.json:   0%|          | 0.00/26.8k [00:00<?, ?B/s]Downloading (…)fetensors.index.json: 100%|██████████| 26.8k/26.8k [00:00<00:00, 15.3MB/s]
+Downloading shards:   0%|          | 0/2 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/2 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/2 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/2 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/2 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/2 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/2 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/2 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/2 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/2 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/2 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/2 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/2 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/2 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/2 [00:00<?, ?it/s]Downloading shards:   0%|          | 0/2 [00:00<?, ?it/s]
+Downloading (…)of-00002.safetensors:   0%|          | 0.00/9.98G [00:00<?, ?B/s][A
+Downloading (…)of-00002.safetensors:   0%|          | 10.5M/9.98G [00:00<02:09, 77.2MB/s][A
+Downloading (…)of-00002.safetensors:   0%|          | 31.5M/9.98G [00:00<01:21, 122MB/s] [A
+Downloading (…)of-00002.safetensors:   1%|          | 52.4M/9.98G [00:00<01:12, 138MB/s][A
+Downloading (…)of-00002.safetensors:   1%|          | 73.4M/9.98G [00:00<01:07, 146MB/s][A
+Downloading (…)of-00002.safetensors:   1%|          | 94.4M/9.98G [00:00<01:06, 148MB/s][A
+Downloading (…)of-00002.safetensors:   1%|          | 115M/9.98G [00:00<01:07, 146MB/s] [A
+Downloading (…)of-00002.safetensors:   1%|▏         | 136M/9.98G [00:00<01:05, 150MB/s][A
+Downloading (…)of-00002.safetensors:   2%|▏         | 157M/9.98G [00:01<01:04, 152MB/s][A
+Downloading (…)of-00002.safetensors:   2%|▏         | 178M/9.98G [00:01<01:03, 154MB/s][A
+Downloading (…)of-00002.safetensors:   2%|▏         | 199M/9.98G [00:01<01:02, 156MB/s][A
+Downloading (…)of-00002.safetensors:   2%|▏         | 220M/9.98G [00:01<01:02, 157MB/s][A
+Downloading (…)of-00002.safetensors:   2%|▏         | 241M/9.98G [00:01<01:01, 157MB/s][A
+Downloading (…)of-00002.safetensors:   3%|▎         | 262M/9.98G [00:01<01:03, 153MB/s][A
+Downloading (…)of-00002.safetensors:   3%|▎         | 283M/9.98G [00:01<01:02, 154MB/s][A
+Downloading (…)of-00002.safetensors:   3%|▎         | 304M/9.98G [00:02<01:02, 156MB/s][A
+Downloading (…)of-00002.safetensors:   3%|▎         | 325M/9.98G [00:02<01:01, 156MB/s][A
+Downloading (…)of-00002.safetensors:   3%|▎         | 346M/9.98G [00:02<01:02, 154MB/s][A
+Downloading (…)of-00002.safetensors:   4%|▎         | 367M/9.98G [00:02<01:01, 155MB/s][A
+Downloading (…)of-00002.safetensors:   4%|▍         | 388M/9.98G [00:02<01:02, 154MB/s][A
+Downloading (…)of-00002.safetensors:   4%|▍         | 409M/9.98G [00:02<01:02, 153MB/s][A
+Downloading (…)of-00002.safetensors:   4%|▍         | 430M/9.98G [00:02<01:01, 155MB/s][A
+Downloading (…)of-00002.safetensors:   5%|▍         | 451M/9.98G [00:02<01:01, 156MB/s][A
+Downloading (…)of-00002.safetensors:   5%|▍         | 472M/9.98G [00:03<01:02, 152MB/s][A
+Downloading (…)of-00002.safetensors:   5%|▍         | 493M/9.98G [00:03<01:01, 154MB/s][A
+Downloading (…)of-00002.safetensors:   5%|▌         | 514M/9.98G [00:03<01:03, 149MB/s][A
+Downloading (…)of-00002.safetensors:   5%|▌         | 535M/9.98G [00:03<01:03, 149MB/s][A
+Downloading (…)of-00002.safetensors:   6%|▌         | 556M/9.98G [00:03<01:01, 152MB/s][A
+Downloading (…)of-00002.safetensors:   6%|▌         | 577M/9.98G [00:03<01:00, 154MB/s][A
+Downloading (…)of-00002.safetensors:   6%|▌         | 598M/9.98G [00:03<01:00, 156MB/s][A
+Downloading (…)of-00002.safetensors:   6%|▌         | 619M/9.98G [00:04<01:00, 154MB/s][A
+Downloading (…)of-00002.safetensors:   6%|▋         | 640M/9.98G [00:04<01:00, 155MB/s][A
+Downloading (…)of-00002.safetensors:   7%|▋         | 661M/9.98G [00:04<00:59, 156MB/s][A
+Downloading (…)of-00002.safetensors:   7%|▋         | 682M/9.98G [00:04<01:02, 150MB/s][A
+Downloading (…)of-00002.safetensors:   7%|▋         | 703M/9.98G [00:04<01:01, 152MB/s][A
+Downloading (…)of-00002.safetensors:   7%|▋         | 724M/9.98G [00:04<01:00, 154MB/s][A
+Downloading (…)of-00002.safetensors:   7%|▋         | 744M/9.98G [00:04<00:59, 155MB/s][A
+Downloading (…)of-00002.safetensors:   8%|▊         | 765M/9.98G [00:05<00:59, 156MB/s][A
+Downloading (…)of-00002.safetensors:   8%|▊         | 786M/9.98G [00:05<00:58, 156MB/s][A
+Downloading (…)of-00002.safetensors:   8%|▊         | 807M/9.98G [00:05<00:59, 154MB/s][A
+Downloading (…)of-00002.safetensors:   8%|▊         | 828M/9.98G [00:05<00:59, 153MB/s][A
+Downloading (…)of-00002.safetensors:   9%|▊         | 849M/9.98G [00:05<01:00, 150MB/s][A
+Downloading (…)of-00002.safetensors:   9%|▊         | 870M/9.98G [00:05<01:00, 150MB/s][A
+Downloading (…)of-00002.safetensors:   9%|▉         | 891M/9.98G [00:05<00:59, 153MB/s][A
+Downloading (…)of-00002.safetensors:   9%|▉         | 912M/9.98G [00:05<00:58, 154MB/s][A
+Downloading (…)of-00002.safetensors:   9%|▉         | 933M/9.98G [00:06<00:58, 155MB/s][A
+Downloading (…)of-00002.safetensors:  10%|▉         | 954M/9.98G [00:06<00:57, 156MB/s][A
+Downloading (…)of-00002.safetensors:  10%|▉         | 975M/9.98G [00:06<00:57, 157MB/s][A
+Downloading (…)of-00002.safetensors:  10%|▉         | 996M/9.98G [00:06<00:57, 157MB/s][A
+Downloading (…)of-00002.safetensors:  10%|█         | 1.02G/9.98G [00:06<00:56, 158MB/s][A
+Downloading (…)of-00002.safetensors:  10%|█         | 1.04G/9.98G [00:06<00:56, 158MB/s][A
+Downloading (…)of-00002.safetensors:  11%|█         | 1.06G/9.98G [00:06<00:56, 158MB/s][A
+Downloading (…)of-00002.safetensors:  11%|█         | 1.08G/9.98G [00:07<00:56, 158MB/s][A
+Downloading (…)of-00002.safetensors:  11%|█         | 1.10G/9.98G [00:07<00:56, 156MB/s][A
+Downloading (…)of-00002.safetensors:  11%|█         | 1.12G/9.98G [00:07<00:57, 154MB/s][A
+Downloading (…)of-00002.safetensors:  11%|█▏        | 1.14G/9.98G [00:07<00:57, 153MB/s][A
+Downloading (…)of-00002.safetensors:  12%|█▏        | 1.16G/9.98G [00:07<00:57, 153MB/s][A
+Downloading (…)of-00002.safetensors:  12%|█▏        | 1.18G/9.98G [00:07<00:57, 153MB/s][A
+Downloading (…)of-00002.safetensors:  12%|█▏        | 1.21G/9.98G [00:07<00:57, 153MB/s][A
+Downloading (…)of-00002.safetensors:  12%|█▏        | 1.23G/9.98G [00:08<00:56, 154MB/s][A
+Downloading (…)of-00002.safetensors:  13%|█▎        | 1.25G/9.98G [00:08<00:56, 154MB/s][A
+Downloading (…)of-00002.safetensors:  13%|█▎        | 1.27G/9.98G [00:08<00:56, 155MB/s][A
+Downloading (…)of-00002.safetensors:  13%|█▎        | 1.29G/9.98G [00:08<00:56, 155MB/s][A
+Downloading (…)of-00002.safetensors:  13%|█▎        | 1.31G/9.98G [00:08<00:56, 152MB/s][A
+Downloading (…)of-00002.safetensors:  13%|█▎        | 1.33G/9.98G [00:08<00:56, 154MB/s][A
+Downloading (…)of-00002.safetensors:  14%|█▎        | 1.35G/9.98G [00:08<00:56, 153MB/s][A
+Downloading (…)of-00002.safetensors:  14%|█▍        | 1.37G/9.98G [00:08<00:56, 154MB/s][A
+Downloading (…)of-00002.safetensors:  14%|█▍        | 1.39G/9.98G [00:09<00:55, 155MB/s][A
+Downloading (…)of-00002.safetensors:  14%|█▍        | 1.42G/9.98G [00:09<00:55, 154MB/s][A
+Downloading (…)of-00002.safetensors:  14%|█▍        | 1.44G/9.98G [00:09<00:56, 152MB/s][A
+Downloading (…)of-00002.safetensors:  15%|█▍        | 1.46G/9.98G [00:09<00:55, 154MB/s][A
+Downloading (…)of-00002.safetensors:  15%|█▍        | 1.48G/9.98G [00:09<00:54, 156MB/s][A
+Downloading (…)of-00002.safetensors:  15%|█▌        | 1.50G/9.98G [00:09<00:55, 153MB/s][A
+Downloading (…)of-00002.safetensors:  15%|█▌        | 1.52G/9.98G [00:09<00:54, 154MB/s][A
+Downloading (…)of-00002.safetensors:  15%|█▌        | 1.54G/9.98G [00:10<00:54, 156MB/s][A
+Downloading (…)of-00002.safetensors:  16%|█▌        | 1.56G/9.98G [00:10<00:55, 151MB/s][A
+Downloading (…)of-00002.safetensors:  16%|█▌        | 1.58G/9.98G [00:10<00:54, 154MB/s][A
+Downloading (…)of-00002.safetensors:  16%|█▌        | 1.60G/9.98G [00:10<00:54, 153MB/s][A
+Downloading (…)of-00002.safetensors:  16%|█▋        | 1.63G/9.98G [00:10<00:54, 155MB/s][A
+Downloading (…)of-00002.safetensors:  17%|█▋        | 1.65G/9.98G [00:10<00:53, 156MB/s][A
+Downloading (…)of-00002.safetensors:  17%|█▋        | 1.67G/9.98G [00:10<00:52, 157MB/s][A
+Downloading (…)of-00002.safetensors:  17%|█▋        | 1.69G/9.98G [00:11<00:53, 155MB/s][A
+Downloading (…)of-00002.safetensors:  17%|█▋        | 1.71G/9.98G [00:11<00:53, 156MB/s][A
+Downloading (…)of-00002.safetensors:  17%|█▋        | 1.73G/9.98G [00:11<00:53, 154MB/s][A
+Downloading (…)of-00002.safetensors:  18%|█▊        | 1.75G/9.98G [00:11<00:53, 153MB/s][A
+Downloading (…)of-00002.safetensors:  18%|█▊        | 1.77G/9.98G [00:11<00:54, 152MB/s][A
+Downloading (…)of-00002.safetensors:  18%|█▊        | 1.79G/9.98G [00:11<00:54, 151MB/s][A
+Downloading (…)of-00002.safetensors:  18%|█▊        | 1.81G/9.98G [00:11<00:53, 154MB/s][A
+Downloading (…)of-00002.safetensors:  18%|█▊        | 1.84G/9.98G [00:11<00:52, 155MB/s][A
+Downloading (…)of-00002.safetensors:  19%|█▊        | 1.86G/9.98G [00:12<00:52, 154MB/s][A
+Downloading (…)of-00002.safetensors:  19%|█▉        | 1.88G/9.98G [00:12<00:52, 155MB/s][A
+Downloading (…)of-00002.safetensors:  19%|█▉        | 1.90G/9.98G [00:12<00:52, 155MB/s][A
+Downloading (…)of-00002.safetensors:  19%|█▉        | 1.92G/9.98G [00:12<00:51, 156MB/s][A
+Downloading (…)of-00002.safetensors:  19%|█▉        | 1.94G/9.98G [00:12<00:51, 157MB/s][A
+Downloading (…)of-00002.safetensors:  20%|█▉        | 1.96G/9.98G [00:12<00:50, 157MB/s][A
+Downloading (…)of-00002.safetensors:  20%|█▉        | 1.98G/9.98G [00:12<00:51, 155MB/s][A
+Downloading (…)of-00002.safetensors:  20%|██        | 2.00G/9.98G [00:13<00:50, 157MB/s][A
+Downloading (…)of-00002.safetensors:  20%|██        | 2.02G/9.98G [00:13<00:50, 157MB/s][A
+Downloading (…)of-00002.safetensors:  20%|██        | 2.04G/9.98G [00:13<00:52, 151MB/s][A
+Downloading (…)of-00002.safetensors:  21%|██        | 2.07G/9.98G [00:13<00:51, 154MB/s][A
+Downloading (…)of-00002.safetensors:  21%|██        | 2.09G/9.98G [00:13<00:51, 153MB/s][A
+Downloading (…)of-00002.safetensors:  21%|██        | 2.11G/9.98G [00:13<00:50, 154MB/s][A
+Downloading (…)of-00002.safetensors:  21%|██▏       | 2.13G/9.98G [00:13<00:51, 153MB/s][A
+Downloading (…)of-00002.safetensors:  22%|██▏       | 2.15G/9.98G [00:13<00:50, 155MB/s][A
+Downloading (…)of-00002.safetensors:  22%|██▏       | 2.17G/9.98G [00:14<00:49, 156MB/s][A
+Downloading (…)of-00002.safetensors:  22%|██▏       | 2.19G/9.98G [00:14<00:50, 154MB/s][A
+Downloading (…)of-00002.safetensors:  22%|██▏       | 2.21G/9.98G [00:14<00:49, 155MB/s][A
+Downloading (…)of-00002.safetensors:  22%|██▏       | 2.23G/9.98G [00:14<00:50, 154MB/s][A
+Downloading (…)of-00002.safetensors:  23%|██▎       | 2.25G/9.98G [00:14<00:51, 151MB/s][A
+Downloading (…)of-00002.safetensors:  23%|██▎       | 2.28G/9.98G [00:14<00:51, 149MB/s][A
+Downloading (…)of-00002.safetensors:  23%|██▎       | 2.30G/9.98G [00:14<00:50, 151MB/s][A
+Downloading (…)of-00002.safetensors:  23%|██▎       | 2.32G/9.98G [00:15<00:50, 153MB/s][A
+Downloading (…)of-00002.safetensors:  23%|██▎       | 2.34G/9.98G [00:15<00:49, 155MB/s][A
+Downloading (…)of-00002.safetensors:  24%|██▎       | 2.36G/9.98G [00:15<00:48, 156MB/s][A
+Downloading (…)of-00002.safetensors:  24%|██▍       | 2.38G/9.98G [00:15<00:48, 157MB/s][A
+Downloading (…)of-00002.safetensors:  24%|██▍       | 2.40G/9.98G [00:15<00:48, 157MB/s][A
+Downloading (…)of-00002.safetensors:  24%|██▍       | 2.42G/9.98G [00:15<00:47, 158MB/s][A
+Downloading (…)of-00002.safetensors:  24%|██▍       | 2.44G/9.98G [00:15<00:48, 155MB/s][A
+Downloading (…)of-00002.safetensors:  25%|██▍       | 2.46G/9.98G [00:16<01:10, 106MB/s][A
+Downloading (…)of-00002.safetensors:  25%|██▍       | 2.49G/9.98G [00:16<01:03, 118MB/s][A
+Downloading (…)of-00002.safetensors:  25%|██▌       | 2.51G/9.98G [00:16<00:58, 128MB/s][A
+Downloading (…)of-00002.safetensors:  25%|██▌       | 2.53G/9.98G [00:16<00:55, 134MB/s][A
+Downloading (…)of-00002.safetensors:  26%|██▌       | 2.55G/9.98G [00:16<00:53, 138MB/s][A
+Downloading (…)of-00002.safetensors:  26%|██▌       | 2.57G/9.98G [00:16<00:52, 141MB/s][A
+Downloading (…)of-00002.safetensors:  26%|██▌       | 2.59G/9.98G [00:17<00:55, 133MB/s][A
+Downloading (…)of-00002.safetensors:  26%|██▌       | 2.61G/9.98G [00:17<00:53, 138MB/s][A
+Downloading (…)of-00002.safetensors:  26%|██▋       | 2.63G/9.98G [00:17<00:51, 142MB/s][A
+Downloading (…)of-00002.safetensors:  27%|██▋       | 2.65G/9.98G [00:17<00:50, 146MB/s][A
+Downloading (…)of-00002.safetensors:  27%|██▋       | 2.67G/9.98G [00:17<00:49, 148MB/s][A
+Downloading (…)of-00002.safetensors:  27%|██▋       | 2.69G/9.98G [00:17<00:48, 149MB/s][A
+Downloading (…)of-00002.safetensors:  27%|██▋       | 2.72G/9.98G [00:17<00:49, 146MB/s][A
+Downloading (…)of-00002.safetensors:  27%|██▋       | 2.74G/9.98G [00:18<00:48, 148MB/s][A
+Downloading (…)of-00002.safetensors:  28%|██▊       | 2.76G/9.98G [00:18<00:49, 147MB/s][A
+Downloading (…)of-00002.safetensors:  28%|██▊       | 2.78G/9.98G [00:18<00:49, 145MB/s][A
+Downloading (…)of-00002.safetensors:  28%|██▊       | 2.80G/9.98G [00:18<00:48, 148MB/s][A
+Downloading (…)of-00002.safetensors:  28%|██▊       | 2.82G/9.98G [00:18<00:48, 147MB/s][A
+Downloading (…)of-00002.safetensors:  28%|██▊       | 2.84G/9.98G [00:18<00:48, 148MB/s][A
+Downloading (…)of-00002.safetensors:  29%|██▊       | 2.86G/9.98G [00:18<00:47, 150MB/s][A
+Downloading (…)of-00002.safetensors:  29%|██▉       | 2.88G/9.98G [00:19<00:47, 151MB/s][A
+Downloading (…)of-00002.safetensors:  29%|██▉       | 2.90G/9.98G [00:19<00:46, 152MB/s][A
+Downloading (…)of-00002.safetensors:  29%|██▉       | 2.93G/9.98G [00:19<00:46, 152MB/s][A
+Downloading (…)of-00002.safetensors:  30%|██▉       | 2.95G/9.98G [00:19<00:46, 150MB/s][A
+Downloading (…)of-00002.safetensors:  30%|██▉       | 2.97G/9.98G [00:19<00:46, 151MB/s][A
+Downloading (…)of-00002.safetensors:  30%|██▉       | 2.99G/9.98G [00:19<00:46, 152MB/s][A
+Downloading (…)of-00002.safetensors:  30%|███       | 3.01G/9.98G [00:19<00:45, 152MB/s][A
+Downloading (…)of-00002.safetensors:  30%|███       | 3.03G/9.98G [00:20<00:46, 148MB/s][A
+Downloading (…)of-00002.safetensors:  31%|███       | 3.05G/9.98G [00:20<00:47, 147MB/s][A
+Downloading (…)of-00002.safetensors:  31%|███       | 3.07G/9.98G [00:20<00:46, 149MB/s][A
+Downloading (…)of-00002.safetensors:  31%|███       | 3.09G/9.98G [00:20<00:45, 150MB/s][A
+Downloading (…)of-00002.safetensors:  31%|███       | 3.11G/9.98G [00:20<00:46, 149MB/s][A
+Downloading (…)of-00002.safetensors:  31%|███▏      | 3.14G/9.98G [00:20<00:46, 148MB/s][A
+Downloading (…)of-00002.safetensors:  32%|███▏      | 3.16G/9.98G [00:20<00:45, 149MB/s][A
+Downloading (…)of-00002.safetensors:  32%|███▏      | 3.18G/9.98G [00:21<00:45, 151MB/s][A
+Downloading (…)of-00002.safetensors:  32%|███▏      | 3.20G/9.98G [00:21<00:44, 152MB/s][A
+Downloading (…)of-00002.safetensors:  32%|███▏      | 3.22G/9.98G [00:21<00:46, 147MB/s][A
+Downloading (…)of-00002.safetensors:  32%|███▏      | 3.24G/9.98G [00:21<00:45, 147MB/s][A
+Downloading (…)of-00002.safetensors:  33%|███▎      | 3.26G/9.98G [00:21<00:45, 149MB/s][A
+Downloading (…)of-00002.safetensors:  33%|███▎      | 3.28G/9.98G [00:21<00:44, 150MB/s][A
+Downloading (…)of-00002.safetensors:  33%|███▎      | 3.30G/9.98G [00:21<00:44, 151MB/s][A
+Downloading (…)of-00002.safetensors:  33%|███▎      | 3.32G/9.98G [00:22<00:43, 152MB/s][A
+Downloading (…)of-00002.safetensors:  34%|███▎      | 3.34G/9.98G [00:22<00:43, 152MB/s][A
+Downloading (…)of-00002.safetensors:  34%|███▎      | 3.37G/9.98G [00:22<00:44, 150MB/s][A
+Downloading (…)of-00002.safetensors:  34%|███▍      | 3.39G/9.98G [00:22<00:44, 148MB/s][A
+Downloading (…)of-00002.safetensors:  34%|███▍      | 3.41G/9.98G [00:22<00:43, 150MB/s][A
+Downloading (…)of-00002.safetensors:  34%|███▍      | 3.43G/9.98G [00:22<00:44, 149MB/s][A
+Downloading (…)of-00002.safetensors:  35%|███▍      | 3.45G/9.98G [00:22<00:43, 150MB/s][A
+Downloading (…)of-00002.safetensors:  35%|███▍      | 3.47G/9.98G [00:22<00:43, 150MB/s][A
+Downloading (…)of-00002.safetensors:  35%|███▍      | 3.49G/9.98G [00:23<00:43, 149MB/s][A
+Downloading (…)of-00002.safetensors:  35%|███▌      | 3.51G/9.98G [00:23<00:43, 150MB/s][A
+Downloading (…)of-00002.safetensors:  35%|███▌      | 3.53G/9.98G [00:23<00:42, 151MB/s][A
+Downloading (…)of-00002.safetensors:  36%|███▌      | 3.55G/9.98G [00:23<00:42, 152MB/s][A
+Downloading (…)of-00002.safetensors:  36%|███▌      | 3.58G/9.98G [00:23<00:42, 149MB/s][A
+Downloading (…)of-00002.safetensors:  36%|███▌      | 3.60G/9.98G [00:23<00:42, 151MB/s][A
+Downloading (…)of-00002.safetensors:  36%|███▋      | 3.62G/9.98G [00:23<00:43, 147MB/s][A
+Downloading (…)of-00002.safetensors:  36%|███▋      | 3.64G/9.98G [00:24<00:42, 149MB/s][A
+Downloading (…)of-00002.safetensors:  37%|███▋      | 3.66G/9.98G [00:24<00:42, 148MB/s][A
+Downloading (…)of-00002.safetensors:  37%|███▋      | 3.68G/9.98G [00:24<00:43, 145MB/s][A
+Downloading (…)of-00002.safetensors:  37%|███▋      | 3.70G/9.98G [00:24<00:43, 143MB/s][A
+Downloading (…)of-00002.safetensors:  37%|███▋      | 3.72G/9.98G [00:24<00:42, 146MB/s][A
+Downloading (…)of-00002.safetensors:  38%|███▊      | 3.74G/9.98G [00:24<00:42, 148MB/s][A
+Downloading (…)of-00002.safetensors:  38%|███▊      | 3.76G/9.98G [00:24<00:41, 149MB/s][A
+Downloading (…)of-00002.safetensors:  38%|███▊      | 3.79G/9.98G [00:25<00:41, 150MB/s][A
+Downloading (…)of-00002.safetensors:  38%|███▊      | 3.81G/9.98G [00:25<00:40, 151MB/s][A
+Downloading (…)of-00002.safetensors:  38%|███▊      | 3.83G/9.98G [00:25<00:40, 151MB/s][A
+Downloading (…)of-00002.safetensors:  39%|███▊      | 3.85G/9.98G [00:25<00:40, 151MB/s][A
+Downloading (…)of-00002.safetensors:  39%|███▉      | 3.87G/9.98G [00:25<00:40, 152MB/s][A
+Downloading (…)of-00002.safetensors:  39%|███▉      | 3.89G/9.98G [00:25<00:40, 152MB/s][A
+Downloading (…)of-00002.safetensors:  39%|███▉      | 3.91G/9.98G [00:25<00:40, 150MB/s][A
+Downloading (…)of-00002.safetensors:  39%|███▉      | 3.93G/9.98G [00:26<00:40, 151MB/s][A
+Downloading (…)of-00002.safetensors:  40%|███▉      | 3.95G/9.98G [00:26<00:39, 152MB/s][A
+Downloading (…)of-00002.safetensors:  40%|███▉      | 3.97G/9.98G [00:26<00:39, 152MB/s][A
+Downloading (…)of-00002.safetensors:  40%|████      | 4.00G/9.98G [00:26<00:39, 153MB/s][A
+Downloading (…)of-00002.safetensors:  40%|████      | 4.02G/9.98G [00:26<00:39, 153MB/s][A
+Downloading (…)of-00002.safetensors:  40%|████      | 4.04G/9.98G [00:26<00:38, 153MB/s][A
+Downloading (…)of-00002.safetensors:  41%|████      | 4.06G/9.98G [00:26<00:38, 153MB/s][A
+Downloading (…)of-00002.safetensors:  41%|████      | 4.08G/9.98G [00:27<00:38, 153MB/s][A
+Downloading (…)of-00002.safetensors:  41%|████      | 4.10G/9.98G [00:27<00:38, 152MB/s][A
+Downloading (…)of-00002.safetensors:  41%|████▏     | 4.12G/9.98G [00:27<00:38, 153MB/s][A
+Downloading (…)of-00002.safetensors:  42%|████▏     | 4.14G/9.98G [00:27<00:38, 153MB/s][A
+Downloading (…)of-00002.safetensors:  42%|████▏     | 4.16G/9.98G [00:27<00:37, 153MB/s][A
+Downloading (…)of-00002.safetensors:  42%|████▏     | 4.18G/9.98G [00:27<00:38, 150MB/s][A
+Downloading (…)of-00002.safetensors:  42%|████▏     | 4.20G/9.98G [00:27<00:39, 147MB/s][A
+Downloading (…)of-00002.safetensors:  42%|████▏     | 4.23G/9.98G [00:28<00:38, 149MB/s][A
+Downloading (…)of-00002.safetensors:  43%|████▎     | 4.25G/9.98G [00:28<00:38, 148MB/s][A
+Downloading (…)of-00002.safetensors:  43%|████▎     | 4.27G/9.98G [00:28<00:38, 147MB/s][A
+Downloading (…)of-00002.safetensors:  43%|████▎     | 4.29G/9.98G [00:28<00:38, 149MB/s][A
+Downloading (…)of-00002.safetensors:  43%|████▎     | 4.31G/9.98G [00:28<00:38, 148MB/s][A
+Downloading (…)of-00002.safetensors:  43%|████▎     | 4.33G/9.98G [00:28<00:37, 150MB/s][A
+Downloading (…)of-00002.safetensors:  44%|████▎     | 4.35G/9.98G [00:28<00:37, 150MB/s][A
+Downloading (…)of-00002.safetensors:  44%|████▍     | 4.37G/9.98G [00:29<00:37, 148MB/s][A
+Downloading (…)of-00002.safetensors:  44%|████▍     | 4.39G/9.98G [00:29<00:37, 148MB/s][A
+Downloading (…)of-00002.safetensors:  44%|████▍     | 4.41G/9.98G [00:29<00:37, 147MB/s][A
+Downloading (…)of-00002.safetensors:  44%|████▍     | 4.44G/9.98G [00:29<00:37, 149MB/s][A
+Downloading (…)of-00002.safetensors:  45%|████▍     | 4.46G/9.98G [00:29<00:36, 151MB/s][A
+Downloading (…)of-00002.safetensors:  45%|████▍     | 4.48G/9.98G [00:29<00:36, 149MB/s][A
+Downloading (…)of-00002.safetensors:  45%|████▌     | 4.50G/9.98G [00:29<00:36, 150MB/s][A
+Downloading (…)of-00002.safetensors:  45%|████▌     | 4.52G/9.98G [00:29<00:36, 151MB/s][A
+Downloading (…)of-00002.safetensors:  46%|████▌     | 4.54G/9.98G [00:30<00:36, 149MB/s][A
+Downloading (…)of-00002.safetensors:  46%|████▌     | 4.56G/9.98G [00:30<00:36, 148MB/s][A
+Downloading (…)of-00002.safetensors:  46%|████▌     | 4.58G/9.98G [00:30<00:53, 102MB/s][A
+Downloading (…)of-00002.safetensors:  46%|████▌     | 4.60G/9.98G [00:30<00:47, 113MB/s][A
+Downloading (…)of-00002.safetensors:  46%|████▋     | 4.62G/9.98G [00:30<00:43, 123MB/s][A
+Downloading (…)of-00002.safetensors:  47%|████▋     | 4.65G/9.98G [00:31<00:41, 129MB/s][A
+Downloading (…)of-00002.safetensors:  47%|████▋     | 4.67G/9.98G [00:31<00:39, 135MB/s][A
+Downloading (…)of-00002.safetensors:  47%|████▋     | 4.69G/9.98G [00:31<00:37, 141MB/s][A
+Downloading (…)of-00002.safetensors:  47%|████▋     | 4.71G/9.98G [00:31<00:36, 143MB/s][A
+Downloading (…)of-00002.safetensors:  47%|████▋     | 4.73G/9.98G [00:31<00:35, 146MB/s][A
+Downloading (…)of-00002.safetensors:  48%|████▊     | 4.75G/9.98G [00:31<00:35, 148MB/s][A
+Downloading (…)of-00002.safetensors:  48%|████▊     | 4.77G/9.98G [00:31<00:34, 150MB/s][A
+Downloading (…)of-00002.safetensors:  48%|████▊     | 4.79G/9.98G [00:32<00:34, 151MB/s][A
+Downloading (…)of-00002.safetensors:  48%|████▊     | 4.81G/9.98G [00:32<00:34, 149MB/s][A
+Downloading (…)of-00002.safetensors:  48%|████▊     | 4.83G/9.98G [00:32<00:34, 150MB/s][A
+Downloading (…)of-00002.safetensors:  49%|████▊     | 4.85G/9.98G [00:32<00:33, 151MB/s][A
+Downloading (…)of-00002.safetensors:  49%|████▉     | 4.88G/9.98G [00:32<00:34, 149MB/s][A
+Downloading (…)of-00002.safetensors:  49%|████▉     | 4.90G/9.98G [00:32<00:33, 151MB/s][A
+Downloading (…)of-00002.safetensors:  49%|████▉     | 4.92G/9.98G [00:32<00:34, 149MB/s][A
+Downloading (…)of-00002.safetensors:  50%|████▉     | 4.94G/9.98G [00:33<00:35, 141MB/s][A
+Downloading (…)of-00002.safetensors:  50%|████▉     | 4.96G/9.98G [00:33<00:34, 144MB/s][A
+Downloading (…)of-00002.safetensors:  50%|████▉     | 4.98G/9.98G [00:33<00:34, 146MB/s][A
+Downloading (…)of-00002.safetensors:  50%|█████     | 5.00G/9.98G [00:33<00:33, 149MB/s][A
+Downloading (…)of-00002.safetensors:  50%|█████     | 5.02G/9.98G [00:33<00:33, 150MB/s][A
+Downloading (…)of-00002.safetensors:  51%|█████     | 5.04G/9.98G [00:33<00:32, 151MB/s][A
+Downloading (…)of-00002.safetensors:  51%|█████     | 5.06G/9.98G [00:33<00:32, 152MB/s][A
+Downloading (…)of-00002.safetensors:  51%|█████     | 5.09G/9.98G [00:33<00:32, 152MB/s][A
+Downloading (…)of-00002.safetensors:  51%|█████     | 5.11G/9.98G [00:34<00:31, 153MB/s][A
+Downloading (…)of-00002.safetensors:  51%|█████▏    | 5.13G/9.98G [00:34<00:32, 151MB/s][A
+Downloading (…)of-00002.safetensors:  52%|█████▏    | 5.15G/9.98G [00:34<00:32, 149MB/s][A
+Downloading (…)of-00002.safetensors:  52%|█████▏    | 5.17G/9.98G [00:34<00:32, 148MB/s][A
+Downloading (…)of-00002.safetensors:  52%|█████▏    | 5.19G/9.98G [00:34<00:32, 150MB/s][A
+Downloading (…)of-00002.safetensors:  52%|█████▏    | 5.21G/9.98G [00:34<00:31, 151MB/s][A
+Downloading (…)of-00002.safetensors:  52%|█████▏    | 5.23G/9.98G [00:34<00:31, 152MB/s][A
+Downloading (…)of-00002.safetensors:  53%|█████▎    | 5.25G/9.98G [00:35<00:31, 152MB/s][A
+Downloading (…)of-00002.safetensors:  53%|█████▎    | 5.27G/9.98G [00:35<00:30, 153MB/s][A
+Downloading (…)of-00002.safetensors:  53%|█████▎    | 5.30G/9.98G [00:35<00:30, 153MB/s][A
+Downloading (…)of-00002.safetensors:  53%|█████▎    | 5.32G/9.98G [00:35<00:30, 151MB/s][A
+Downloading (…)of-00002.safetensors:  53%|█████▎    | 5.34G/9.98G [00:35<00:30, 151MB/s][A
+Downloading (…)of-00002.safetensors:  54%|█████▎    | 5.36G/9.98G [00:35<00:30, 150MB/s][A
+Downloading (…)of-00002.safetensors:  54%|█████▍    | 5.38G/9.98G [00:35<00:31, 146MB/s][A
+Downloading (…)of-00002.safetensors:  54%|█████▍    | 5.40G/9.98G [00:36<00:30, 148MB/s][A
+Downloading (…)of-00002.safetensors:  54%|█████▍    | 5.42G/9.98G [00:36<00:30, 150MB/s][A
+Downloading (…)of-00002.safetensors:  55%|█████▍    | 5.44G/9.98G [00:36<00:30, 151MB/s][A
+Downloading (…)of-00002.safetensors:  55%|█████▍    | 5.46G/9.98G [00:36<00:29, 152MB/s][A
+Downloading (…)of-00002.safetensors:  55%|█████▍    | 5.48G/9.98G [00:36<00:29, 152MB/s][A
+Downloading (…)of-00002.safetensors:  55%|█████▌    | 5.51G/9.98G [00:36<00:29, 153MB/s][A
+Downloading (…)of-00002.safetensors:  55%|█████▌    | 5.53G/9.98G [00:36<00:29, 153MB/s][A
+Downloading (…)of-00002.safetensors:  56%|█████▌    | 5.55G/9.98G [00:37<00:28, 153MB/s][A
+Downloading (…)of-00002.safetensors:  56%|█████▌    | 5.57G/9.98G [00:37<00:28, 153MB/s][A
+Downloading (…)of-00002.safetensors:  56%|█████▌    | 5.59G/9.98G [00:37<00:28, 153MB/s][A
+Downloading (…)of-00002.safetensors:  56%|█████▌    | 5.61G/9.98G [00:37<00:28, 151MB/s][A
+Downloading (…)of-00002.safetensors:  56%|█████▋    | 5.63G/9.98G [00:37<00:28, 152MB/s][A
+Downloading (…)of-00002.safetensors:  57%|█████▋    | 5.65G/9.98G [00:37<00:28, 152MB/s][A
+Downloading (…)of-00002.safetensors:  57%|█████▋    | 5.67G/9.98G [00:37<00:28, 150MB/s][A
+Downloading (…)of-00002.safetensors:  57%|█████▋    | 5.69G/9.98G [00:38<00:28, 149MB/s][A
+Downloading (…)of-00002.safetensors:  57%|█████▋    | 5.71G/9.98G [00:38<00:28, 150MB/s][A
+Downloading (…)of-00002.safetensors:  57%|█████▋    | 5.74G/9.98G [00:38<00:28, 151MB/s][A
+Downloading (…)of-00002.safetensors:  58%|█████▊    | 5.76G/9.98G [00:38<00:27, 152MB/s][A
+Downloading (…)of-00002.safetensors:  58%|█████▊    | 5.78G/9.98G [00:38<00:27, 152MB/s][A
+Downloading (…)of-00002.safetensors:  58%|█████▊    | 5.80G/9.98G [00:38<00:27, 153MB/s][A
+Downloading (…)of-00002.safetensors:  58%|█████▊    | 5.82G/9.98G [00:38<00:27, 152MB/s][A
+Downloading (…)of-00002.safetensors:  59%|█████▊    | 5.84G/9.98G [00:38<00:27, 152MB/s][A
+Downloading (…)of-00002.safetensors:  59%|█████▉    | 5.86G/9.98G [00:39<00:26, 153MB/s][A
+Downloading (…)of-00002.safetensors:  59%|█████▉    | 5.88G/9.98G [00:39<00:26, 153MB/s][A
+Downloading (…)of-00002.safetensors:  59%|█████▉    | 5.90G/9.98G [00:39<00:26, 153MB/s][A
+Downloading (…)of-00002.safetensors:  59%|█████▉    | 5.92G/9.98G [00:39<00:26, 153MB/s][A
+Downloading (…)of-00002.safetensors:  60%|█████▉    | 5.95G/9.98G [00:39<00:26, 154MB/s][A
+Downloading (…)of-00002.safetensors:  60%|█████▉    | 5.97G/9.98G [00:39<00:26, 154MB/s][A
+Downloading (…)of-00002.safetensors:  60%|██████    | 5.99G/9.98G [00:39<00:25, 154MB/s][A
+Downloading (…)of-00002.safetensors:  60%|██████    | 6.01G/9.98G [00:40<00:25, 154MB/s][A
+Downloading (…)of-00002.safetensors:  60%|██████    | 6.03G/9.98G [00:40<00:26, 151MB/s][A
+Downloading (…)of-00002.safetensors:  61%|██████    | 6.05G/9.98G [00:40<00:25, 152MB/s][A
+Downloading (…)of-00002.safetensors:  61%|██████    | 6.07G/9.98G [00:40<00:25, 150MB/s][A
+Downloading (…)of-00002.safetensors:  61%|██████    | 6.09G/9.98G [00:40<00:25, 151MB/s][A
+Downloading (…)of-00002.safetensors:  61%|██████▏   | 6.11G/9.98G [00:40<00:25, 152MB/s][A
+Downloading (…)of-00002.safetensors:  61%|██████▏   | 6.13G/9.98G [00:40<00:25, 151MB/s][A
+Downloading (…)of-00002.safetensors:  62%|██████▏   | 6.16G/9.98G [00:41<00:25, 149MB/s][A
+Downloading (…)of-00002.safetensors:  62%|██████▏   | 6.18G/9.98G [00:41<00:25, 148MB/s][A
+Downloading (…)of-00002.safetensors:  62%|██████▏   | 6.20G/9.98G [00:41<00:25, 150MB/s][A
+Downloading (…)of-00002.safetensors:  62%|██████▏   | 6.22G/9.98G [00:41<00:24, 151MB/s][A
+Downloading (…)of-00002.safetensors:  63%|██████▎   | 6.24G/9.98G [00:41<00:25, 149MB/s][A
+Downloading (…)of-00002.safetensors:  63%|██████▎   | 6.26G/9.98G [00:41<00:24, 151MB/s][A
+Downloading (…)of-00002.safetensors:  63%|██████▎   | 6.28G/9.98G [00:41<00:24, 149MB/s][A
+Downloading (…)of-00002.safetensors:  63%|██████▎   | 6.30G/9.98G [00:42<00:24, 151MB/s][A
+Downloading (…)of-00002.safetensors:  63%|██████▎   | 6.32G/9.98G [00:42<00:24, 151MB/s][A
+Downloading (…)of-00002.safetensors:  64%|██████▎   | 6.34G/9.98G [00:42<00:24, 150MB/s][A
+Downloading (…)of-00002.safetensors:  64%|██████▍   | 6.36G/9.98G [00:42<00:24, 149MB/s][A
+Downloading (…)of-00002.safetensors:  64%|██████▍   | 6.39G/9.98G [00:42<00:24, 148MB/s][A
+Downloading (…)of-00002.safetensors:  64%|██████▍   | 6.41G/9.98G [00:42<00:23, 149MB/s][A
+Downloading (…)of-00002.safetensors:  64%|██████▍   | 6.43G/9.98G [00:42<00:23, 148MB/s][A
+Downloading (…)of-00002.safetensors:  65%|██████▍   | 6.45G/9.98G [00:43<00:23, 149MB/s][A
+Downloading (…)of-00002.safetensors:  65%|██████▍   | 6.47G/9.98G [00:43<00:23, 151MB/s][A
+Downloading (…)of-00002.safetensors:  65%|██████▌   | 6.49G/9.98G [00:43<00:23, 152MB/s][A
+Downloading (…)of-00002.safetensors:  65%|██████▌   | 6.51G/9.98G [00:43<00:23, 149MB/s][A
+Downloading (…)of-00002.safetensors:  65%|██████▌   | 6.53G/9.98G [00:43<00:23, 148MB/s][A
+Downloading (…)of-00002.safetensors:  66%|██████▌   | 6.55G/9.98G [00:43<00:22, 150MB/s][A
+Downloading (…)of-00002.safetensors:  66%|██████▌   | 6.57G/9.98G [00:43<00:22, 151MB/s][A
+Downloading (…)of-00002.safetensors:  66%|██████▌   | 6.60G/9.98G [00:43<00:22, 152MB/s][A
+Downloading (…)of-00002.safetensors:  66%|██████▋   | 6.62G/9.98G [00:44<00:22, 150MB/s][A
+Downloading (…)of-00002.safetensors:  67%|██████▋   | 6.64G/9.98G [00:44<00:22, 149MB/s][A
+Downloading (…)of-00002.safetensors:  67%|██████▋   | 6.66G/9.98G [00:44<00:22, 150MB/s][A
+Downloading (…)of-00002.safetensors:  67%|██████▋   | 6.68G/9.98G [00:44<00:21, 151MB/s][A
+Downloading (…)of-00002.safetensors:  67%|██████▋   | 6.70G/9.98G [00:44<00:21, 152MB/s][A
+Downloading (…)of-00002.safetensors:  67%|██████▋   | 6.72G/9.98G [00:44<00:21, 153MB/s][A
+Downloading (…)of-00002.safetensors:  68%|██████▊   | 6.74G/9.98G [00:44<00:21, 151MB/s][A
+Downloading (…)of-00002.safetensors:  68%|██████▊   | 6.76G/9.98G [00:45<00:21, 151MB/s][A
+Downloading (…)of-00002.safetensors:  68%|██████▊   | 6.78G/9.98G [00:45<00:21, 152MB/s][A
+Downloading (…)of-00002.safetensors:  68%|██████▊   | 6.81G/9.98G [00:45<00:20, 152MB/s][A
+Downloading (…)of-00002.safetensors:  68%|██████▊   | 6.83G/9.98G [00:45<00:20, 152MB/s][A
+Downloading (…)of-00002.safetensors:  69%|██████▊   | 6.85G/9.98G [00:45<00:20, 152MB/s][A
+Downloading (…)of-00002.safetensors:  69%|██████▉   | 6.87G/9.98G [00:46<00:30, 102MB/s][A
+Downloading (…)of-00002.safetensors:  69%|██████▉   | 6.89G/9.98G [00:46<00:27, 112MB/s][A
+Downloading (…)of-00002.safetensors:  69%|██████▉   | 6.91G/9.98G [00:46<00:25, 121MB/s][A
+Downloading (…)of-00002.safetensors:  69%|██████▉   | 6.93G/9.98G [00:46<00:23, 129MB/s][A
+Downloading (…)of-00002.safetensors:  70%|██████▉   | 6.95G/9.98G [00:46<00:22, 134MB/s][A
+Downloading (…)of-00002.safetensors:  70%|██████▉   | 6.97G/9.98G [00:46<00:21, 138MB/s][A
+Downloading (…)of-00002.safetensors:  70%|███████   | 6.99G/9.98G [00:46<00:21, 141MB/s][A
+Downloading (…)of-00002.safetensors:  70%|███████   | 7.01G/9.98G [00:46<00:20, 144MB/s][A
+Downloading (…)of-00002.safetensors:  71%|███████   | 7.04G/9.98G [00:47<00:20, 146MB/s][A
+Downloading (…)of-00002.safetensors:  71%|███████   | 7.06G/9.98G [00:47<00:20, 146MB/s][A
+Downloading (…)of-00002.safetensors:  71%|███████   | 7.08G/9.98G [00:47<00:19, 146MB/s][A
+Downloading (…)of-00002.safetensors:  71%|███████   | 7.10G/9.98G [00:47<00:19, 147MB/s][A
+Downloading (…)of-00002.safetensors:  71%|███████▏  | 7.12G/9.98G [00:47<00:19, 147MB/s][A
+Downloading (…)of-00002.safetensors:  72%|███████▏  | 7.14G/9.98G [00:47<00:19, 146MB/s][A
+Downloading (…)of-00002.safetensors:  72%|███████▏  | 7.16G/9.98G [00:47<00:19, 147MB/s][A
+Downloading (…)of-00002.safetensors:  72%|███████▏  | 7.18G/9.98G [00:48<00:18, 148MB/s][A
+Downloading (…)of-00002.safetensors:  72%|███████▏  | 7.20G/9.98G [00:48<00:18, 149MB/s][A
+Downloading (…)of-00002.safetensors:  72%|███████▏  | 7.22G/9.98G [00:48<00:18, 150MB/s][A
+Downloading (…)of-00002.safetensors:  73%|███████▎  | 7.25G/9.98G [00:48<00:18, 150MB/s][A
+Downloading (…)of-00002.safetensors:  73%|███████▎  | 7.27G/9.98G [00:48<00:18, 150MB/s][A
+Downloading (…)of-00002.safetensors:  73%|███████▎  | 7.29G/9.98G [00:48<00:17, 150MB/s][A
+Downloading (…)of-00002.safetensors:  73%|███████▎  | 7.31G/9.98G [00:48<00:17, 150MB/s][A
+Downloading (…)of-00002.safetensors:  73%|███████▎  | 7.33G/9.98G [00:49<00:17, 151MB/s][A
+Downloading (…)of-00002.safetensors:  74%|███████▎  | 7.35G/9.98G [00:49<00:17, 151MB/s][A
+Downloading (…)of-00002.safetensors:  74%|███████▍  | 7.37G/9.98G [00:49<00:17, 151MB/s][A
+Downloading (…)of-00002.safetensors:  74%|███████▍  | 7.39G/9.98G [00:49<00:17, 147MB/s][A
+Downloading (…)of-00002.safetensors:  74%|███████▍  | 7.41G/9.98G [00:49<00:17, 148MB/s][A
+Downloading (…)of-00002.safetensors:  75%|███████▍  | 7.43G/9.98G [00:49<00:17, 145MB/s][A
+Downloading (…)of-00002.safetensors:  75%|███████▍  | 7.46G/9.98G [00:49<00:17, 148MB/s][A
+Downloading (…)of-00002.safetensors:  75%|███████▍  | 7.48G/9.98G [00:50<00:16, 149MB/s][A
+Downloading (…)of-00002.safetensors:  75%|███████▌  | 7.50G/9.98G [00:50<00:16, 149MB/s][A
+Downloading (…)of-00002.safetensors:  75%|███████▌  | 7.52G/9.98G [00:50<00:16, 148MB/s][A
+Downloading (…)of-00002.safetensors:  76%|███████▌  | 7.54G/9.98G [00:50<00:16, 149MB/s][A
+Downloading (…)of-00002.safetensors:  76%|███████▌  | 7.56G/9.98G [00:50<00:16, 148MB/s][A
+Downloading (…)of-00002.safetensors:  76%|███████▌  | 7.58G/9.98G [00:50<00:16, 146MB/s][A
+Downloading (…)of-00002.safetensors:  76%|███████▌  | 7.60G/9.98G [00:50<00:15, 149MB/s][A
+Downloading (…)of-00002.safetensors:  76%|███████▋  | 7.62G/9.98G [00:51<00:15, 148MB/s][A
+Downloading (…)of-00002.safetensors:  77%|███████▋  | 7.64G/9.98G [00:51<00:16, 143MB/s][A
+Downloading (…)of-00002.safetensors:  77%|███████▋  | 7.67G/9.98G [00:51<00:15, 146MB/s][A
+Downloading (…)of-00002.safetensors:  77%|███████▋  | 7.69G/9.98G [00:51<00:15, 144MB/s][A
+Downloading (…)of-00002.safetensors:  77%|███████▋  | 7.71G/9.98G [00:51<00:15, 147MB/s][A
+Downloading (…)of-00002.safetensors:  77%|███████▋  | 7.73G/9.98G [00:51<00:15, 147MB/s][A
+Downloading (…)of-00002.safetensors:  78%|███████▊  | 7.75G/9.98G [00:51<00:15, 147MB/s][A
+Downloading (…)of-00002.safetensors:  78%|███████▊  | 7.77G/9.98G [00:52<00:15, 144MB/s][A
+Downloading (…)of-00002.safetensors:  78%|███████▊  | 7.79G/9.98G [00:52<00:14, 146MB/s][A
+Downloading (…)of-00002.safetensors:  78%|███████▊  | 7.81G/9.98G [00:52<00:14, 149MB/s][A
+Downloading (…)of-00002.safetensors:  79%|███████▊  | 7.83G/9.98G [00:52<00:14, 150MB/s][A
+Downloading (…)of-00002.safetensors:  79%|███████▊  | 7.85G/9.98G [00:52<00:14, 151MB/s][A
+Downloading (…)of-00002.safetensors:  79%|███████▉  | 7.87G/9.98G [00:52<00:14, 149MB/s][A
+Downloading (…)of-00002.safetensors:  79%|███████▉  | 7.90G/9.98G [00:52<00:13, 151MB/s][A
+Downloading (…)of-00002.safetensors:  79%|███████▉  | 7.92G/9.98G [00:53<00:13, 149MB/s][A
+Downloading (…)of-00002.safetensors:  80%|███████▉  | 7.94G/9.98G [00:53<00:13, 148MB/s][A
+Downloading (…)of-00002.safetensors:  80%|███████▉  | 7.96G/9.98G [00:53<00:13, 150MB/s][A
+Downloading (…)of-00002.safetensors:  80%|███████▉  | 7.98G/9.98G [00:53<00:13, 149MB/s][A
+Downloading (…)of-00002.safetensors:  80%|████████  | 8.00G/9.98G [00:53<00:13, 150MB/s][A
+Downloading (…)of-00002.safetensors:  80%|████████  | 8.02G/9.98G [00:53<00:12, 151MB/s][A
+Downloading (…)of-00002.safetensors:  81%|████████  | 8.04G/9.98G [00:53<00:12, 152MB/s][A
+Downloading (…)of-00002.safetensors:  81%|████████  | 8.06G/9.98G [00:54<00:12, 150MB/s][A
+Downloading (…)of-00002.safetensors:  81%|████████  | 8.08G/9.98G [00:54<00:12, 149MB/s][A
+Downloading (…)of-00002.safetensors:  81%|████████  | 8.11G/9.98G [00:54<00:12, 148MB/s][A
+Downloading (…)of-00002.safetensors:  81%|████████▏ | 8.13G/9.98G [00:54<00:12, 147MB/s][A
+Downloading (…)of-00002.safetensors:  82%|████████▏ | 8.15G/9.98G [00:54<00:12, 149MB/s][A
+Downloading (…)of-00002.safetensors:  82%|████████▏ | 8.17G/9.98G [00:54<00:12, 150MB/s][A
+Downloading (…)of-00002.safetensors:  82%|████████▏ | 8.19G/9.98G [00:54<00:11, 151MB/s][A
+Downloading (…)of-00002.safetensors:  82%|████████▏ | 8.21G/9.98G [00:55<00:11, 152MB/s][A
+Downloading (…)of-00002.safetensors:  83%|████████▎ | 8.23G/9.98G [00:55<00:11, 153MB/s][A
+Downloading (…)of-00002.safetensors:  83%|████████▎ | 8.25G/9.98G [00:55<00:11, 153MB/s][A
+Downloading (…)of-00002.safetensors:  83%|████████▎ | 8.27G/9.98G [00:55<00:11, 151MB/s][A
+Downloading (…)of-00002.safetensors:  83%|████████▎ | 8.29G/9.98G [00:55<00:11, 151MB/s][A
+Downloading (…)of-00002.safetensors:  83%|████████▎ | 8.32G/9.98G [00:55<00:10, 151MB/s][A
+Downloading (…)of-00002.safetensors:  84%|████████▎ | 8.34G/9.98G [00:55<00:10, 151MB/s][A
+Downloading (…)of-00002.safetensors:  84%|████████▍ | 8.36G/9.98G [00:56<00:10, 152MB/s][A
+Downloading (…)of-00002.safetensors:  84%|████████▍ | 8.38G/9.98G [00:56<00:10, 149MB/s][A
+Downloading (…)of-00002.safetensors:  84%|████████▍ | 8.40G/9.98G [00:56<00:10, 150MB/s][A
+Downloading (…)of-00002.safetensors:  84%|████████▍ | 8.42G/9.98G [00:56<00:10, 152MB/s][A
+Downloading (…)of-00002.safetensors:  85%|████████▍ | 8.44G/9.98G [00:56<00:10, 152MB/s][A
+Downloading (…)of-00002.safetensors:  85%|████████▍ | 8.46G/9.98G [00:56<00:09, 153MB/s][A
+Downloading (…)of-00002.safetensors:  85%|████████▌ | 8.48G/9.98G [00:56<00:09, 153MB/s][A
+Downloading (…)of-00002.safetensors:  85%|████████▌ | 8.50G/9.98G [00:56<00:09, 153MB/s][A
+Downloading (…)of-00002.safetensors:  85%|████████▌ | 8.52G/9.98G [00:57<00:09, 151MB/s][A
+Downloading (…)of-00002.safetensors:  86%|████████▌ | 8.55G/9.98G [00:57<00:09, 152MB/s][A
+Downloading (…)of-00002.safetensors:  86%|████████▌ | 8.57G/9.98G [00:57<00:09, 152MB/s][A
+Downloading (…)of-00002.safetensors:  86%|████████▌ | 8.59G/9.98G [00:57<00:09, 150MB/s][A
+Downloading (…)of-00002.safetensors:  86%|████████▋ | 8.61G/9.98G [00:57<00:09, 151MB/s][A
+Downloading (…)of-00002.safetensors:  87%|████████▋ | 8.63G/9.98G [00:57<00:08, 151MB/s][A
+Downloading (…)of-00002.safetensors:  87%|████████▋ | 8.65G/9.98G [00:57<00:09, 146MB/s][A
+Downloading (…)of-00002.safetensors:  87%|████████▋ | 8.67G/9.98G [00:58<00:08, 146MB/s][A
+Downloading (…)of-00002.safetensors:  87%|████████▋ | 8.69G/9.98G [00:58<00:08, 146MB/s][A
+Downloading (…)of-00002.safetensors:  87%|████████▋ | 8.71G/9.98G [00:58<00:08, 148MB/s][A
+Downloading (…)of-00002.safetensors:  88%|████████▊ | 8.73G/9.98G [00:58<00:08, 147MB/s][A
+Downloading (…)of-00002.safetensors:  88%|████████▊ | 8.76G/9.98G [00:58<00:08, 147MB/s][A
+Downloading (…)of-00002.safetensors:  88%|████████▊ | 8.78G/9.98G [00:58<00:08, 149MB/s][A
+Downloading (…)of-00002.safetensors:  88%|████████▊ | 8.80G/9.98G [00:58<00:07, 150MB/s][A
+Downloading (…)of-00002.safetensors:  88%|████████▊ | 8.82G/9.98G [00:59<00:07, 151MB/s][A
+Downloading (…)of-00002.safetensors:  89%|████████▊ | 8.84G/9.98G [00:59<00:07, 152MB/s][A
+Downloading (…)of-00002.safetensors:  89%|████████▉ | 8.86G/9.98G [00:59<00:07, 152MB/s][A
+Downloading (…)of-00002.safetensors:  89%|████████▉ | 8.88G/9.98G [00:59<00:07, 153MB/s][A
+Downloading (…)of-00002.safetensors:  89%|████████▉ | 8.90G/9.98G [00:59<00:07, 150MB/s][A
+Downloading (…)of-00002.safetensors:  89%|████████▉ | 8.92G/9.98G [00:59<00:07, 147MB/s][A
+Downloading (…)of-00002.safetensors:  90%|████████▉ | 8.94G/9.98G [00:59<00:07, 146MB/s][A
+Downloading (…)of-00002.safetensors:  90%|████████▉ | 8.97G/9.98G [01:00<00:06, 148MB/s][A
+Downloading (…)of-00002.safetensors:  90%|█████████ | 8.99G/9.98G [01:00<00:06, 150MB/s][A
+Downloading (…)of-00002.safetensors:  90%|█████████ | 9.01G/9.98G [01:00<00:06, 151MB/s][A
+Downloading (…)of-00002.safetensors:  90%|█████████ | 9.03G/9.98G [01:00<00:06, 149MB/s][A
+Downloading (…)of-00002.safetensors:  91%|█████████ | 9.05G/9.98G [01:00<00:06, 150MB/s][A
+Downloading (…)of-00002.safetensors:  91%|█████████ | 9.07G/9.98G [01:00<00:05, 151MB/s][A
+Downloading (…)of-00002.safetensors:  91%|█████████ | 9.09G/9.98G [01:00<00:05, 152MB/s][A
+Downloading (…)of-00002.safetensors:  91%|█████████▏| 9.11G/9.98G [01:01<00:05, 153MB/s][A
+Downloading (…)of-00002.safetensors:  92%|█████████▏| 9.13G/9.98G [01:01<00:05, 153MB/s][A
+Downloading (…)of-00002.safetensors:  92%|█████████▏| 9.15G/9.98G [01:01<00:05, 153MB/s][A
+Downloading (…)of-00002.safetensors:  92%|█████████▏| 9.18G/9.98G [01:01<00:05, 153MB/s][A
+Downloading (…)of-00002.safetensors:  92%|█████████▏| 9.20G/9.98G [01:01<00:05, 151MB/s][A
+Downloading (…)of-00002.safetensors:  92%|█████████▏| 9.22G/9.98G [01:01<00:05, 151MB/s][A
+Downloading (…)of-00002.safetensors:  93%|█████████▎| 9.24G/9.98G [01:01<00:04, 152MB/s][A
+Downloading (…)of-00002.safetensors:  93%|█████████▎| 9.26G/9.98G [01:02<00:04, 150MB/s][A
+Downloading (…)of-00002.safetensors:  93%|█████████▎| 9.28G/9.98G [01:02<00:04, 151MB/s][A
+Downloading (…)of-00002.safetensors:  93%|█████████▎| 9.30G/9.98G [01:02<00:04, 152MB/s][A
+Downloading (…)of-00002.safetensors:  93%|█████████▎| 9.32G/9.98G [01:02<00:04, 152MB/s][A
+Downloading (…)of-00002.safetensors:  94%|█████████▎| 9.34G/9.98G [01:02<00:04, 150MB/s][A
+Downloading (…)of-00002.safetensors:  94%|█████████▍| 9.36G/9.98G [01:02<00:04, 148MB/s][A
+Downloading (…)of-00002.safetensors:  94%|█████████▍| 9.38G/9.98G [01:02<00:04, 147MB/s][A
+Downloading (…)of-00002.safetensors:  94%|█████████▍| 9.41G/9.98G [01:02<00:03, 146MB/s][A
+Downloading (…)of-00002.safetensors:  94%|█████████▍| 9.43G/9.98G [01:03<00:03, 148MB/s][A
+Downloading (…)of-00002.safetensors:  95%|█████████▍| 9.45G/9.98G [01:03<00:05, 102MB/s][A
+Downloading (…)of-00002.safetensors:  95%|█████████▍| 9.47G/9.98G [01:03<00:04, 112MB/s][A
+Downloading (…)of-00002.safetensors:  95%|█████████▌| 9.49G/9.98G [01:03<00:03, 122MB/s][A
+Downloading (…)of-00002.safetensors:  95%|█████████▌| 9.51G/9.98G [01:03<00:03, 128MB/s][A
+Downloading (…)of-00002.safetensors:  96%|█████████▌| 9.53G/9.98G [01:04<00:03, 131MB/s][A
+Downloading (…)of-00002.safetensors:  96%|█████████▌| 9.55G/9.98G [01:04<00:03, 135MB/s][A
+Downloading (…)of-00002.safetensors:  96%|█████████▌| 9.57G/9.98G [01:04<00:02, 140MB/s][A
+Downloading (…)of-00002.safetensors:  96%|█████████▌| 9.59G/9.98G [01:04<00:02, 144MB/s][A
+Downloading (…)of-00002.safetensors:  96%|█████████▋| 9.62G/9.98G [01:04<00:02, 147MB/s][A
+Downloading (…)of-00002.safetensors:  97%|█████████▋| 9.64G/9.98G [01:04<00:02, 149MB/s][A
+Downloading (…)of-00002.safetensors:  97%|█████████▋| 9.66G/9.98G [01:04<00:02, 148MB/s][A
+Downloading (…)of-00002.safetensors:  97%|█████████▋| 9.68G/9.98G [01:05<00:01, 149MB/s][A
+Downloading (…)of-00002.safetensors:  97%|█████████▋| 9.70G/9.98G [01:05<00:01, 148MB/s][A
+Downloading (…)of-00002.safetensors:  97%|█████████▋| 9.72G/9.98G [01:05<00:01, 150MB/s][A
+Downloading (…)of-00002.safetensors:  98%|█████████▊| 9.74G/9.98G [01:05<00:01, 149MB/s][A
+Downloading (…)of-00002.safetensors:  98%|█████████▊| 9.76G/9.98G [01:05<00:01, 148MB/s][A
+Downloading (…)of-00002.safetensors:  98%|█████████▊| 9.78G/9.98G [01:05<00:01, 147MB/s][A
+Downloading (…)of-00002.safetensors:  98%|█████████▊| 9.80G/9.98G [01:05<00:01, 149MB/s][A
+Downloading (…)of-00002.safetensors:  98%|█████████▊| 9.83G/9.98G [01:06<00:01, 151MB/s][A
+Downloading (…)of-00002.safetensors:  99%|█████████▊| 9.85G/9.98G [01:06<00:00, 149MB/s][A
+Downloading (…)of-00002.safetensors:  99%|█████████▉| 9.87G/9.98G [01:06<00:00, 150MB/s][A
+Downloading (…)of-00002.safetensors:  99%|█████████▉| 9.89G/9.98G [01:06<00:00, 151MB/s][A
+Downloading (…)of-00002.safetensors:  99%|█████████▉| 9.91G/9.98G [01:06<00:00, 152MB/s][A
+Downloading (…)of-00002.safetensors: 100%|█████████▉| 9.93G/9.98G [01:06<00:00, 153MB/s][A
+Downloading (…)of-00002.safetensors: 100%|█████████▉| 9.95G/9.98G [01:06<00:00, 150MB/s][A
+Downloading (…)of-00002.safetensors: 100%|█████████▉| 9.97G/9.98G [01:06<00:00, 148MB/s][ADownloading (…)of-00002.safetensors: 100%|██████████| 9.98G/9.98G [01:07<00:00, 149MB/s]
+Downloading shards:  50%|█████     | 1/2 [01:07<01:07, 67.24s/it]Downloading shards:  50%|█████     | 1/2 [01:07<01:07, 67.26s/it]Downloading shards:  50%|█████     | 1/2 [01:07<01:07, 67.23s/it]Downloading shards:  50%|█████     | 1/2 [01:07<01:07, 67.24s/it]Downloading shards:  50%|█████     | 1/2 [01:07<01:07, 67.25s/it]Downloading shards:  50%|█████     | 1/2 [01:07<01:07, 67.27s/it]Downloading shards:  50%|█████     | 1/2 [01:07<01:07, 67.25s/it]Downloading shards:  50%|█████     | 1/2 [01:07<01:07, 67.28s/it]Downloading shards:  50%|█████     | 1/2 [01:07<01:07, 67.28s/it]Downloading shards:  50%|█████     | 1/2 [01:07<01:07, 67.23s/it]Downloading shards:  50%|█████     | 1/2 [01:07<01:07, 67.23s/it]Downloading shards:  50%|█████     | 1/2 [01:07<01:07, 67.26s/it]Downloading shards:  50%|█████     | 1/2 [01:07<01:07, 67.25s/it]Downloading shards:  50%|█████     | 1/2 [01:07<01:07, 67.25s/it]Downloading shards:  50%|█████     | 1/2 [01:07<01:07, 67.28s/it]Downloading shards:  50%|█████     | 1/2 [01:07<01:07, 67.29s/it]
+Downloading (…)of-00002.safetensors:   0%|          | 0.00/3.50G [00:00<?, ?B/s][A
+Downloading (…)of-00002.safetensors:   1%|          | 21.0M/3.50G [00:00<00:22, 152MB/s][A
+Downloading (…)of-00002.safetensors:   1%|          | 41.9M/3.50G [00:00<00:22, 153MB/s][A
+Downloading (…)of-00002.safetensors:   2%|▏         | 62.9M/3.50G [00:00<00:22, 154MB/s][A
+Downloading (…)of-00002.safetensors:   2%|▏         | 83.9M/3.50G [00:00<00:22, 151MB/s][A
+Downloading (…)of-00002.safetensors:   3%|▎         | 105M/3.50G [00:00<00:22, 152MB/s] [A
+Downloading (…)of-00002.safetensors:   4%|▎         | 126M/3.50G [00:00<00:22, 150MB/s][A
+Downloading (…)of-00002.safetensors:   4%|▍         | 147M/3.50G [00:00<00:22, 151MB/s][A
+Downloading (…)of-00002.safetensors:   5%|▍         | 168M/3.50G [00:01<00:21, 152MB/s][A
+Downloading (…)of-00002.safetensors:   5%|▌         | 189M/3.50G [00:01<00:21, 152MB/s][A
+Downloading (…)of-00002.safetensors:   6%|▌         | 210M/3.50G [00:01<00:21, 150MB/s][A
+Downloading (…)of-00002.safetensors:   7%|▋         | 231M/3.50G [00:01<00:22, 148MB/s][A
+Downloading (…)of-00002.safetensors:   7%|▋         | 252M/3.50G [00:01<00:21, 150MB/s][A
+Downloading (…)of-00002.safetensors:   8%|▊         | 273M/3.50G [00:01<00:21, 149MB/s][A
+Downloading (…)of-00002.safetensors:   8%|▊         | 294M/3.50G [00:01<00:21, 150MB/s][A
+Downloading (…)of-00002.safetensors:   9%|▉         | 315M/3.50G [00:02<00:21, 152MB/s][A
+Downloading (…)of-00002.safetensors:  10%|▉         | 336M/3.50G [00:02<00:20, 152MB/s][A
+Downloading (…)of-00002.safetensors:  10%|█         | 357M/3.50G [00:02<00:20, 153MB/s][A
+Downloading (…)of-00002.safetensors:  11%|█         | 377M/3.50G [00:02<00:20, 153MB/s][A
+Downloading (…)of-00002.safetensors:  11%|█▏        | 398M/3.50G [00:02<00:20, 148MB/s][A
+Downloading (…)of-00002.safetensors:  12%|█▏        | 419M/3.50G [00:02<00:20, 148MB/s][A
+Downloading (…)of-00002.safetensors:  13%|█▎        | 440M/3.50G [00:02<00:20, 147MB/s][A
+Downloading (…)of-00002.safetensors:  13%|█▎        | 461M/3.50G [00:03<00:21, 145MB/s][A
+Downloading (…)of-00002.safetensors:  14%|█▍        | 482M/3.50G [00:03<00:20, 147MB/s][A
+Downloading (…)of-00002.safetensors:  14%|█▍        | 503M/3.50G [00:03<00:20, 149MB/s][A
+Downloading (…)of-00002.safetensors:  15%|█▍        | 524M/3.50G [00:03<00:20, 148MB/s][A
+Downloading (…)of-00002.safetensors:  16%|█▌        | 545M/3.50G [00:03<00:20, 147MB/s][A
+Downloading (…)of-00002.safetensors:  16%|█▌        | 566M/3.50G [00:03<00:19, 147MB/s][A
+Downloading (…)of-00002.safetensors:  17%|█▋        | 587M/3.50G [00:03<00:19, 149MB/s][A
+Downloading (…)of-00002.safetensors:  17%|█▋        | 608M/3.50G [00:04<00:19, 151MB/s][A
+Downloading (…)of-00002.safetensors:  18%|█▊        | 629M/3.50G [00:04<00:18, 152MB/s][A
+Downloading (…)of-00002.safetensors:  19%|█▊        | 650M/3.50G [00:04<00:18, 152MB/s][A
+Downloading (…)of-00002.safetensors:  19%|█▉        | 671M/3.50G [00:04<00:18, 153MB/s][A
+Downloading (…)of-00002.safetensors:  20%|█▉        | 692M/3.50G [00:04<00:18, 153MB/s][A
+Downloading (…)of-00002.safetensors:  20%|██        | 713M/3.50G [00:04<00:18, 150MB/s][A
+Downloading (…)of-00002.safetensors:  21%|██        | 734M/3.50G [00:04<00:18, 151MB/s][A
+Downloading (…)of-00002.safetensors:  22%|██▏       | 755M/3.50G [00:05<00:18, 151MB/s][A
+Downloading (…)of-00002.safetensors:  22%|██▏       | 776M/3.50G [00:05<00:17, 152MB/s][A
+Downloading (…)of-00002.safetensors:  23%|██▎       | 797M/3.50G [00:05<00:17, 152MB/s][A
+Downloading (…)of-00002.safetensors:  23%|██▎       | 818M/3.50G [00:05<00:17, 151MB/s][A
+Downloading (…)of-00002.safetensors:  24%|██▍       | 839M/3.50G [00:05<00:17, 151MB/s][A
+Downloading (…)of-00002.safetensors:  25%|██▍       | 860M/3.50G [00:05<00:17, 152MB/s][A
+Downloading (…)of-00002.safetensors:  25%|██▌       | 881M/3.50G [00:05<00:17, 150MB/s][A
+Downloading (…)of-00002.safetensors:  26%|██▌       | 902M/3.50G [00:06<00:17, 149MB/s][A
+Downloading (…)of-00002.safetensors:  26%|██▋       | 923M/3.50G [00:06<00:17, 150MB/s][A
+Downloading (…)of-00002.safetensors:  27%|██▋       | 944M/3.50G [00:06<00:16, 152MB/s][A
+Downloading (…)of-00002.safetensors:  28%|██▊       | 965M/3.50G [00:06<00:16, 150MB/s][A
+Downloading (…)of-00002.safetensors:  28%|██▊       | 986M/3.50G [00:06<00:17, 146MB/s][A
+Downloading (…)of-00002.safetensors:  29%|██▉       | 1.01G/3.50G [00:06<00:16, 148MB/s][A
+Downloading (…)of-00002.safetensors:  29%|██▉       | 1.03G/3.50G [00:06<00:16, 148MB/s][A
+Downloading (…)of-00002.safetensors:  30%|██▉       | 1.05G/3.50G [00:06<00:16, 149MB/s][A
+Downloading (…)of-00002.safetensors:  31%|███       | 1.07G/3.50G [00:07<00:16, 151MB/s][A
+Downloading (…)of-00002.safetensors:  31%|███       | 1.09G/3.50G [00:07<00:15, 152MB/s][A
+Downloading (…)of-00002.safetensors:  32%|███▏      | 1.11G/3.50G [00:07<00:15, 153MB/s][A
+Downloading (…)of-00002.safetensors:  32%|███▏      | 1.13G/3.50G [00:07<00:15, 150MB/s][A
+Downloading (…)of-00002.safetensors:  33%|███▎      | 1.15G/3.50G [00:07<00:15, 149MB/s][A
+Downloading (…)of-00002.safetensors:  34%|███▎      | 1.17G/3.50G [00:07<00:15, 148MB/s][A
+Downloading (…)of-00002.safetensors:  34%|███▍      | 1.20G/3.50G [00:07<00:15, 147MB/s][A
+Downloading (…)of-00002.safetensors:  35%|███▍      | 1.22G/3.50G [00:08<00:15, 147MB/s][A
+Downloading (…)of-00002.safetensors:  35%|███▌      | 1.24G/3.50G [00:08<00:15, 149MB/s][A
+Downloading (…)of-00002.safetensors:  36%|███▌      | 1.26G/3.50G [00:08<00:15, 148MB/s][A
+Downloading (…)of-00002.safetensors:  37%|███▋      | 1.28G/3.50G [00:08<00:15, 147MB/s][A
+Downloading (…)of-00002.safetensors:  37%|███▋      | 1.30G/3.50G [00:08<00:14, 149MB/s][A
+Downloading (…)of-00002.safetensors:  38%|███▊      | 1.32G/3.50G [00:08<00:14, 150MB/s][A
+Downloading (…)of-00002.safetensors:  38%|███▊      | 1.34G/3.50G [00:08<00:14, 152MB/s][A
+Downloading (…)of-00002.safetensors:  39%|███▉      | 1.36G/3.50G [00:09<00:14, 152MB/s][A
+Downloading (…)of-00002.safetensors:  40%|███▉      | 1.38G/3.50G [00:09<00:13, 153MB/s][A
+Downloading (…)of-00002.safetensors:  40%|████      | 1.41G/3.50G [00:09<00:13, 153MB/s][A
+Downloading (…)of-00002.safetensors:  41%|████      | 1.43G/3.50G [00:09<00:13, 151MB/s][A
+Downloading (…)of-00002.safetensors:  41%|████▏     | 1.45G/3.50G [00:09<00:13, 147MB/s][A
+Downloading (…)of-00002.safetensors:  42%|████▏     | 1.47G/3.50G [00:09<00:13, 147MB/s][A
+Downloading (…)of-00002.safetensors:  43%|████▎     | 1.49G/3.50G [00:09<00:13, 146MB/s][A
+Downloading (…)of-00002.safetensors:  43%|████▎     | 1.51G/3.50G [00:10<00:13, 148MB/s][A
+Downloading (…)of-00002.safetensors:  44%|████▎     | 1.53G/3.50G [00:10<00:13, 147MB/s][A
+Downloading (…)of-00002.safetensors:  44%|████▍     | 1.55G/3.50G [00:10<00:13, 147MB/s][A
+Downloading (…)of-00002.safetensors:  45%|████▍     | 1.57G/3.50G [00:10<00:12, 149MB/s][A
+Downloading (…)of-00002.safetensors:  46%|████▌     | 1.59G/3.50G [00:10<00:12, 150MB/s][A
+Downloading (…)of-00002.safetensors:  46%|████▌     | 1.61G/3.50G [00:10<00:12, 149MB/s][A
+Downloading (…)of-00002.safetensors:  47%|████▋     | 1.64G/3.50G [00:10<00:12, 149MB/s][A
+Downloading (…)of-00002.safetensors:  47%|████▋     | 1.66G/3.50G [00:11<00:12, 148MB/s][A
+Downloading (…)of-00002.safetensors:  48%|████▊     | 1.68G/3.50G [00:11<00:12, 147MB/s][A
+Downloading (…)of-00002.safetensors:  49%|████▊     | 1.70G/3.50G [00:11<00:12, 149MB/s][A
+Downloading (…)of-00002.safetensors:  49%|████▉     | 1.72G/3.50G [00:11<00:11, 151MB/s][A
+Downloading (…)of-00002.safetensors:  50%|████▉     | 1.74G/3.50G [00:11<00:11, 149MB/s][A
+Downloading (…)of-00002.safetensors:  50%|█████     | 1.76G/3.50G [00:11<00:11, 151MB/s][A
+Downloading (…)of-00002.safetensors:  51%|█████     | 1.78G/3.50G [00:11<00:11, 149MB/s][A
+Downloading (…)of-00002.safetensors:  52%|█████▏    | 1.80G/3.50G [00:12<00:11, 150MB/s][A
+Downloading (…)of-00002.safetensors:  52%|█████▏    | 1.82G/3.50G [00:12<00:11, 152MB/s][A
+Downloading (…)of-00002.safetensors:  53%|█████▎    | 1.85G/3.50G [00:12<00:10, 152MB/s][A
+Downloading (…)of-00002.safetensors:  53%|█████▎    | 1.87G/3.50G [00:12<00:10, 153MB/s][A
+Downloading (…)of-00002.safetensors:  54%|█████▍    | 1.89G/3.50G [00:12<00:10, 153MB/s][A
+Downloading (…)of-00002.safetensors:  55%|█████▍    | 1.91G/3.50G [00:12<00:10, 151MB/s][A
+Downloading (…)of-00002.safetensors:  55%|█████▌    | 1.93G/3.50G [00:12<00:10, 152MB/s][A
+Downloading (…)of-00002.safetensors:  56%|█████▌    | 1.95G/3.50G [00:13<00:10, 152MB/s][A
+Downloading (…)of-00002.safetensors:  56%|█████▋    | 1.97G/3.50G [00:13<00:10, 148MB/s][A
+Downloading (…)of-00002.safetensors:  57%|█████▋    | 1.99G/3.50G [00:13<00:10, 148MB/s][A
+Downloading (…)of-00002.safetensors:  58%|█████▊    | 2.01G/3.50G [00:13<00:10, 147MB/s][A
+Downloading (…)of-00002.safetensors:  58%|█████▊    | 2.03G/3.50G [00:13<00:09, 149MB/s][A
+Downloading (…)of-00002.safetensors:  59%|█████▊    | 2.06G/3.50G [00:13<00:09, 146MB/s][A
+Downloading (…)of-00002.safetensors:  59%|█████▉    | 2.08G/3.50G [00:13<00:09, 148MB/s][A
+Downloading (…)of-00002.safetensors:  60%|█████▉    | 2.10G/3.50G [00:14<00:09, 145MB/s][A
+Downloading (…)of-00002.safetensors:  61%|██████    | 2.12G/3.50G [00:14<00:09, 147MB/s][A
+Downloading (…)of-00002.safetensors:  61%|██████    | 2.14G/3.50G [00:14<00:09, 150MB/s][A
+Downloading (…)of-00002.safetensors:  62%|██████▏   | 2.16G/3.50G [00:14<00:09, 149MB/s][A
+Downloading (…)of-00002.safetensors:  62%|██████▏   | 2.18G/3.50G [00:14<00:08, 150MB/s][A
+Downloading (…)of-00002.safetensors:  63%|██████▎   | 2.20G/3.50G [00:14<00:08, 151MB/s][A
+Downloading (…)of-00002.safetensors:  64%|██████▎   | 2.22G/3.50G [00:14<00:08, 152MB/s][A
+Downloading (…)of-00002.safetensors:  64%|██████▍   | 2.24G/3.50G [00:14<00:08, 152MB/s][A
+Downloading (…)of-00002.safetensors:  65%|██████▍   | 2.26G/3.50G [00:15<00:08, 153MB/s][A
+Downloading (…)of-00002.safetensors:  65%|██████▌   | 2.29G/3.50G [00:15<00:08, 150MB/s][A
+Downloading (…)of-00002.safetensors:  66%|██████▌   | 2.31G/3.50G [00:15<00:07, 152MB/s][A
+Downloading (…)of-00002.safetensors:  67%|██████▋   | 2.33G/3.50G [00:15<00:07, 152MB/s][A
+Downloading (…)of-00002.safetensors:  67%|██████▋   | 2.35G/3.50G [00:15<00:07, 153MB/s][A
+Downloading (…)of-00002.safetensors:  68%|██████▊   | 2.37G/3.50G [00:15<00:07, 153MB/s][A
+Downloading (…)of-00002.safetensors:  68%|██████▊   | 2.39G/3.50G [00:15<00:07, 153MB/s][A
+Downloading (…)of-00002.safetensors:  69%|██████▉   | 2.41G/3.50G [00:16<00:07, 154MB/s][A
+Downloading (…)of-00002.safetensors:  69%|██████▉   | 2.43G/3.50G [00:16<00:07, 149MB/s][A
+Downloading (…)of-00002.safetensors:  70%|███████   | 2.45G/3.50G [00:16<00:06, 150MB/s][A
+Downloading (…)of-00002.safetensors:  71%|███████   | 2.47G/3.50G [00:16<00:06, 151MB/s][A
+Downloading (…)of-00002.safetensors:  71%|███████▏  | 2.50G/3.50G [00:16<00:06, 150MB/s][A
+Downloading (…)of-00002.safetensors:  72%|███████▏  | 2.52G/3.50G [00:16<00:06, 148MB/s][A
+Downloading (…)of-00002.safetensors:  72%|███████▏  | 2.54G/3.50G [00:16<00:06, 150MB/s][A
+Downloading (…)of-00002.safetensors:  73%|███████▎  | 2.56G/3.50G [00:17<00:06, 149MB/s][A
+Downloading (…)of-00002.safetensors:  74%|███████▎  | 2.58G/3.50G [00:17<00:06, 150MB/s][A
+Downloading (…)of-00002.safetensors:  74%|███████▍  | 2.60G/3.50G [00:17<00:08, 102MB/s][A
+Downloading (…)of-00002.safetensors:  75%|███████▍  | 2.62G/3.50G [00:17<00:07, 111MB/s][A
+Downloading (…)of-00002.safetensors:  75%|███████▌  | 2.64G/3.50G [00:17<00:07, 119MB/s][A
+Downloading (…)of-00002.safetensors:  76%|███████▌  | 2.66G/3.50G [00:18<00:07, 119MB/s][A
+Downloading (…)of-00002.safetensors:  77%|███████▋  | 2.68G/3.50G [00:18<00:06, 127MB/s][A
+Downloading (…)of-00002.safetensors:  77%|███████▋  | 2.71G/3.50G [00:18<00:05, 133MB/s][A
+Downloading (…)of-00002.safetensors:  78%|███████▊  | 2.73G/3.50G [00:18<00:05, 138MB/s][A
+Downloading (…)of-00002.safetensors:  78%|███████▊  | 2.75G/3.50G [00:18<00:05, 141MB/s][A
+Downloading (…)of-00002.safetensors:  79%|███████▉  | 2.77G/3.50G [00:18<00:05, 143MB/s][A
+Downloading (…)of-00002.safetensors:  80%|███████▉  | 2.79G/3.50G [00:18<00:04, 145MB/s][A
+Downloading (…)of-00002.safetensors:  80%|████████  | 2.81G/3.50G [00:19<00:04, 146MB/s][A
+Downloading (…)of-00002.safetensors:  81%|████████  | 2.83G/3.50G [00:19<00:04, 147MB/s][A
+Downloading (…)of-00002.safetensors:  81%|████████▏ | 2.85G/3.50G [00:19<00:04, 148MB/s][A
+Downloading (…)of-00002.safetensors:  82%|████████▏ | 2.87G/3.50G [00:19<00:04, 149MB/s][A
+Downloading (…)of-00002.safetensors:  83%|████████▎ | 2.89G/3.50G [00:19<00:04, 150MB/s][A
+Downloading (…)of-00002.safetensors:  83%|████████▎ | 2.92G/3.50G [00:19<00:03, 150MB/s][A
+Downloading (…)of-00002.safetensors:  84%|████████▍ | 2.94G/3.50G [00:19<00:03, 151MB/s][A
+Downloading (…)of-00002.safetensors:  84%|████████▍ | 2.96G/3.50G [00:19<00:03, 151MB/s][A
+Downloading (…)of-00002.safetensors:  85%|████████▌ | 2.98G/3.50G [00:20<00:03, 152MB/s][A
+Downloading (…)of-00002.safetensors:  86%|████████▌ | 3.00G/3.50G [00:20<00:03, 150MB/s][A
+Downloading (…)of-00002.safetensors:  86%|████████▋ | 3.02G/3.50G [00:20<00:03, 151MB/s][A
+Downloading (…)of-00002.safetensors:  87%|████████▋ | 3.04G/3.50G [00:20<00:03, 152MB/s][A
+Downloading (…)of-00002.safetensors:  87%|████████▋ | 3.06G/3.50G [00:20<00:02, 153MB/s][A
+Downloading (…)of-00002.safetensors:  88%|████████▊ | 3.08G/3.50G [00:20<00:02, 151MB/s][A
+Downloading (…)of-00002.safetensors:  89%|████████▊ | 3.10G/3.50G [00:20<00:02, 151MB/s][A
+Downloading (…)of-00002.safetensors:  89%|████████▉ | 3.12G/3.50G [00:21<00:02, 150MB/s][A
+Downloading (…)of-00002.safetensors:  90%|████████▉ | 3.15G/3.50G [00:21<00:02, 148MB/s][A
+Downloading (…)of-00002.safetensors:  90%|█████████ | 3.17G/3.50G [00:21<00:02, 150MB/s][A
+Downloading (…)of-00002.safetensors:  91%|█████████ | 3.19G/3.50G [00:21<00:02, 151MB/s][A
+Downloading (…)of-00002.safetensors:  92%|█████████▏| 3.21G/3.50G [00:21<00:01, 151MB/s][A
+Downloading (…)of-00002.safetensors:  92%|█████████▏| 3.23G/3.50G [00:21<00:01, 149MB/s][A
+Downloading (…)of-00002.safetensors:  93%|█████████▎| 3.25G/3.50G [00:21<00:01, 150MB/s][A
+Downloading (…)of-00002.safetensors:  93%|█████████▎| 3.27G/3.50G [00:22<00:01, 151MB/s][A
+Downloading (…)of-00002.safetensors:  94%|█████████▍| 3.29G/3.50G [00:22<00:01, 152MB/s][A
+Downloading (…)of-00002.safetensors:  95%|█████████▍| 3.31G/3.50G [00:22<00:01, 153MB/s][A
+Downloading (…)of-00002.safetensors:  95%|█████████▌| 3.33G/3.50G [00:22<00:01, 150MB/s][A
+Downloading (…)of-00002.safetensors:  96%|█████████▌| 3.36G/3.50G [00:22<00:00, 148MB/s][A
+Downloading (…)of-00002.safetensors:  96%|█████████▋| 3.38G/3.50G [00:22<00:00, 148MB/s][A
+Downloading (…)of-00002.safetensors:  97%|█████████▋| 3.40G/3.50G [00:22<00:00, 149MB/s][A
+Downloading (…)of-00002.safetensors:  98%|█████████▊| 3.42G/3.50G [00:23<00:00, 151MB/s][A
+Downloading (…)of-00002.safetensors:  98%|█████████▊| 3.44G/3.50G [00:23<00:00, 149MB/s][A
+Downloading (…)of-00002.safetensors:  99%|█████████▉| 3.46G/3.50G [00:23<00:00, 151MB/s][A
+Downloading (…)of-00002.safetensors:  99%|█████████▉| 3.48G/3.50G [00:23<00:00, 152MB/s][A
+Downloading (…)of-00002.safetensors: 100%|██████████| 3.50G/3.50G [00:23<00:00, 152MB/s][ADownloading (…)of-00002.safetensors: 100%|██████████| 3.50G/3.50G [00:23<00:00, 148MB/s]
+Downloading shards: 100%|██████████| 2/2 [01:31<00:00, 41.67s/it]Downloading shards: 100%|██████████| 2/2 [01:31<00:00, 45.51s/it]
+Downloading shards: 100%|██████████| 2/2 [01:30<00:00, 41.66s/it]Downloading shards: 100%|██████████| 2/2 [01:30<00:00, 45.50s/it]
+Downloading shards: 100%|██████████| 2/2 [01:31<00:00, 41.68s/it]Downloading shards: 100%|██████████| 2/2 [01:31<00:00, 45.51s/it]
+Downloading shards: 100%|██████████| 2/2 [01:31<00:00, 41.68s/it]Downloading shards: 100%|██████████| 2/2 [01:31<00:00, 45.51s/it]
+Downloading shards: 100%|██████████| 2/2 [01:31<00:00, 41.68s/it]Downloading shards: 100%|██████████| 2/2 [01:31<00:00, 45.52s/it]
+Downloading shards: 100%|██████████| 2/2 [01:31<00:00, 41.68s/it]Downloading shards: 100%|██████████| 2/2 [01:31<00:00, 45.52s/it]
+Downloading shards: 100%|██████████| 2/2 [01:31<00:00, 41.68s/it]Downloading shards: 100%|██████████| 2/2 [01:31<00:00, 45.52s/it]
+Downloading shards: 100%|██████████| 2/2 [01:31<00:00, 41.68s/it]Downloading shards: 100%|██████████| 2/2 [01:31<00:00, 45.51s/it]
+Downloading shards: 100%|██████████| 2/2 [01:31<00:00, 41.69s/it]Downloading shards: 100%|██████████| 2/2 [01:31<00:00, 45.53s/it]
+Downloading shards: 100%|██████████| 2/2 [01:31<00:00, 41.68s/it]Downloading shards: 100%|██████████| 2/2 [01:31<00:00, 45.51s/it]
+Downloading shards: 100%|██████████| 2/2 [01:31<00:00, 41.67s/it]Downloading shards: 100%|██████████| 2/2 [01:31<00:00, 45.51s/it]
+Downloading shards: 100%|██████████| 2/2 [01:31<00:00, 41.69s/it]Downloading shards: 100%|██████████| 2/2 [01:31<00:00, 45.53s/it]
+Downloading shards: 100%|██████████| 2/2 [01:31<00:00, 41.69s/it]Downloading shards: 100%|██████████| 2/2 [01:31<00:00, 45.53s/it]
+Downloading shards: 100%|██████████| 2/2 [01:31<00:00, 41.72s/it]Downloading shards: 100%|██████████| 2/2 [01:31<00:00, 41.71s/it]Downloading shards: 100%|██████████| 2/2 [01:31<00:00, 45.56s/it]
+Downloading shards: 100%|██████████| 2/2 [01:31<00:00, 45.54s/it]
+Downloading shards: 100%|██████████| 2/2 [01:31<00:00, 41.70s/it]Downloading shards: 100%|██████████| 2/2 [01:31<00:00, 45.53s/it]
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s][2023-06-09 05:20:26,793] [INFO] [partition_parameters.py:454:__exit__] finished initializing model with 6.74B parameters
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:02<00:02,  2.77s/it]Loading checkpoint shards:  50%|█████     | 1/2 [00:02<00:02,  2.77s/it]Loading checkpoint shards:  50%|█████     | 1/2 [00:02<00:02,  2.60s/it]Loading checkpoint shards:  50%|█████     | 1/2 [00:02<00:02,  2.59s/it]Loading checkpoint shards:  50%|█████     | 1/2 [00:02<00:02,  2.61s/it]Loading checkpoint shards:  50%|█████     | 1/2 [00:02<00:02,  2.96s/it]Loading checkpoint shards:  50%|█████     | 1/2 [00:02<00:02,  2.73s/it]Loading checkpoint shards:  50%|█████     | 1/2 [00:03<00:03,  3.27s/it]Loading checkpoint shards:  50%|█████     | 1/2 [00:02<00:02,  2.62s/it]Loading checkpoint shards:  50%|█████     | 1/2 [00:02<00:02,  2.91s/it]Loading checkpoint shards:  50%|█████     | 1/2 [00:02<00:02,  2.73s/it]Loading checkpoint shards:  50%|█████     | 1/2 [00:02<00:02,  2.64s/it]Loading checkpoint shards:  50%|█████     | 1/2 [00:02<00:02,  2.99s/it]Loading checkpoint shards:  50%|█████     | 1/2 [00:04<00:04,  4.30s/it]Loading checkpoint shards:  50%|█████     | 1/2 [00:02<00:02,  2.84s/it]Loading checkpoint shards:  50%|█████     | 1/2 [00:04<00:04,  4.20s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:04<00:00,  1.95s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:04<00:00,  2.07s/it]
+Loading checkpoint shards: 100%|██████████| 2/2 [00:03<00:00,  1.88s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:03<00:00,  1.99s/it]
+Loading checkpoint shards: 100%|██████████| 2/2 [00:05<00:00,  2.57s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:05<00:00,  2.83s/it]
+Loading checkpoint shards: 100%|██████████| 2/2 [00:03<00:00,  1.88s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:03<00:00,  1.99s/it]
+Loading checkpoint shards: 100%|██████████| 2/2 [00:04<00:00,  1.94s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:04<00:00,  2.06s/it]
+Loading checkpoint shards: 100%|██████████| 2/2 [00:04<00:00,  1.98s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:04<00:00,  2.11s/it]
+Loading checkpoint shards: 100%|██████████| 2/2 [00:04<00:00,  1.94s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:04<00:00,  2.06s/it]
+Loading checkpoint shards: 100%|██████████| 2/2 [00:04<00:00,  1.97s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:04<00:00,  2.09s/it]
+Loading checkpoint shards: 100%|██████████| 2/2 [00:04<00:00,  2.16s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:04<00:00,  2.33s/it]
+Loading checkpoint shards: 100%|██████████| 2/2 [00:04<00:00,  2.04s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:04<00:00,  2.18s/it]
+Loading checkpoint shards: 100%|██████████| 2/2 [00:04<00:00,  2.05s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:04<00:00,  2.19s/it]
+Loading checkpoint shards: 100%|██████████| 2/2 [00:04<00:00,  1.90s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:04<00:00,  2.01s/it]
+Loading checkpoint shards: 100%|██████████| 2/2 [00:04<00:00,  2.02s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:04<00:00,  2.15s/it]
+Loading checkpoint shards: 100%|██████████| 2/2 [00:04<00:00,  1.91s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:04<00:00,  2.02s/it]
+Loading checkpoint shards: 100%|██████████| 2/2 [00:04<00:00,  1.92s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:04<00:00,  2.02s/it]
+Downloading (…)neration_config.json:   0%|          | 0.00/137 [00:00<?, ?B/s]Downloading (…)neration_config.json: 100%|██████████| 137/137 [00:00<00:00, 20.1kB/s]
+Loading checkpoint shards: 100%|██████████| 2/2 [00:05<00:00,  2.79s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:05<00:00,  3.00s/it]
+Found cached dataset parquet (/home/xiaoxiawu/.cache/huggingface/datasets/Dahoas___parquet/default-b9d2c4937d617106/0.0.0/2a3b91fbd88a2c90d1dbbb32b460cf621d31bd5b05b934492fdef7d8d6f236ec)
+  0%|          | 0/2 [00:00<?, ?it/s]100%|██████████| 2/2 [00:00<00:00, 354.85it/s]
+Found cached dataset parquet (/home/xiaoxiawu/.cache/huggingface/datasets/Dahoas___parquet/default-b25c081aeeca3652/0.0.0/2a3b91fbd88a2c90d1dbbb32b460cf621d31bd5b05b934492fdef7d8d6f236ec)
+  0%|          | 0/2 [00:00<?, ?it/s]100%|██████████| 2/2 [00:00<00:00, 313.99it/s]
+Using /home/xiaoxiawu/.cache/torch_extensions/py38_cu113 as PyTorch extensions root...
+Using /home/xiaoxiawu/.cache/torch_extensions/py38_cu113 as PyTorch extensions root...
+Using /home/xiaoxiawu/.cache/torch_extensions/py38_cu113 as PyTorch extensions root...
+Using /home/xiaoxiawu/.cache/torch_extensions/py38_cu113 as PyTorch extensions root...
+Using /home/xiaoxiawu/.cache/torch_extensions/py38_cu113 as PyTorch extensions root...
+Using /home/xiaoxiawu/.cache/torch_extensions/py38_cu113 as PyTorch extensions root...
+Using /home/xiaoxiawu/.cache/torch_extensions/py38_cu113 as PyTorch extensions root...
+Using /home/xiaoxiawu/.cache/torch_extensions/py38_cu113 as PyTorch extensions root...
+Using /home/xiaoxiawu/.cache/torch_extensions/py38_cu113 as PyTorch extensions root...
+Using /home/xiaoxiawu/.cache/torch_extensions/py38_cu113 as PyTorch extensions root...
+Using /home/xiaoxiawu/.cache/torch_extensions/py38_cu113 as PyTorch extensions root...
+Using /home/xiaoxiawu/.cache/torch_extensions/py38_cu113 as PyTorch extensions root...
+Using /home/xiaoxiawu/.cache/torch_extensions/py38_cu113 as PyTorch extensions root...
+Using /home/xiaoxiawu/.cache/torch_extensions/py38_cu113 as PyTorch extensions root...
+Using /home/xiaoxiawu/.cache/torch_extensions/py38_cu113 as PyTorch extensions root...
+Detected CUDA files, patching ldflags
+Emitting ninja build file /home/xiaoxiawu/.cache/torch_extensions/py38_cu113/fused_adam/build.ninja...
+Building extension module fused_adam...
+Allowing ninja to set a default number of workers... (overridable by setting the environment variable MAX_JOBS=N)
+ninja: no work to do.
+Loading extension module fused_adam...
+Time to load fused_adam op: 0.9857563972473145 seconds
+Loading extension module fused_adam...
+Time to load fused_adam op: 0.40325498580932617 seconds
+Loading extension module fused_adam...
+Loading extension module fused_adam...
+Time to load fused_adam op: 0.7042148113250732 seconds
+Time to load fused_adam op: 0.705251932144165 seconds
+Loading extension module fused_adam...
+Time to load fused_adam op: 0.9040791988372803 seconds
+Loading extension module fused_adam...
+Loading extension module fused_adam...
+Loading extension module fused_adam...
+Time to load fused_adam op: 0.8038911819458008 seconds
+Time to load fused_adam op: 0.8049235343933105 seconds
+Time to load fused_adam op: 0.40300536155700684 seconds
+Loading extension module fused_adam...
+Time to load fused_adam op: 0.6153662204742432 seconds
+Loading extension module fused_adam...
+Loading extension module fused_adam...
+Time to load fused_adam op: 1.004563331604004 seconds
+Loading extension module fused_adam...
+Time to load fused_adam op: 0.9048013687133789 seconds
+Time to load fused_adam op: 0.820887565612793 seconds
+Loading extension module fused_adam...
+Time to load fused_adam op: 0.6039276123046875 seconds
+Loading extension module fused_adam...
+Time to load fused_adam op: 0.44257664680480957 seconds
+Loading extension module fused_adam...
+Time to load fused_adam op: 0.5621867179870605 seconds
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+Using /home/xiaoxiawu/.cache/torch_extensions/py38_cu113 as PyTorch extensions root...
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+Detected CUDA files, patching ldflags
+Emitting ninja build file /home/xiaoxiawu/.cache/torch_extensions/py38_cu113/fused_adam/build.ninja...
+Building extension module fused_adam...
+Allowing ninja to set a default number of workers... (overridable by setting the environment variable MAX_JOBS=N)
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+ninja: no work to do.
+Loading extension module fused_adam...
+Time to load fused_adam op: 4.558108568191528 seconds
+[2023-06-09 05:24:31,076] [INFO] [logging.py:96:log_dist] [Rank 0] DeepSpeed info: version=0.9.3, git-hash=unknown, git-branch=unknown
+[2023-06-09 05:24:31,076] [INFO] [comm.py:619:init_distributed] Distributed backend already initialized
+[2023-06-09 05:24:31,166] [INFO] [logging.py:96:log_dist] [Rank 0] DeepSpeed Flops Profiler Enabled: False
+[2023-06-09 05:24:31,171] [INFO] [logging.py:96:log_dist] [Rank 0] Removing param_group that has no 'params' in the client Optimizer
+[2023-06-09 05:24:31,171] [INFO] [logging.py:96:log_dist] [Rank 0] Using client Optimizer as basic optimizer
+[2023-06-09 05:24:31,339] [INFO] [logging.py:96:log_dist] [Rank 0] DeepSpeed Basic Optimizer = FusedAdam
+[2023-06-09 05:24:31,339] [INFO] [utils.py:54:is_zero_supported_optimizer] Checking ZeRO support for optimizer=FusedAdam type=<class 'deepspeed.ops.adam.fused_adam.FusedAdam'>
+[2023-06-09 05:24:31,339] [INFO] [logging.py:96:log_dist] [Rank 0] Creating fp16 ZeRO stage 3 optimizer, MiCS is enabled False, Hierarchical params gather False
+[2023-06-09 05:24:31,340] [INFO] [logging.py:96:log_dist] [Rank 0] Creating torch.float16 ZeRO stage 3 optimizer
+Using /home/xiaoxiawu/.cache/torch_extensions/py38_cu113 as PyTorch extensions root...
+Using /home/xiaoxiawu/.cache/torch_extensions/py38_cu113 as PyTorch extensions root...
+Using /home/xiaoxiawu/.cache/torch_extensions/py38_cu113 as PyTorch extensions root...
+Using /home/xiaoxiawu/.cache/torch_extensions/py38_cu113 as PyTorch extensions root...
+Using /home/xiaoxiawu/.cache/torch_extensions/py38_cu113 as PyTorch extensions root...
+Using /home/xiaoxiawu/.cache/torch_extensions/py38_cu113 as PyTorch extensions root...
+Using /home/xiaoxiawu/.cache/torch_extensions/py38_cu113 as PyTorch extensions root...
+Using /home/xiaoxiawu/.cache/torch_extensions/py38_cu113 as PyTorch extensions root...
+Using /home/xiaoxiawu/.cache/torch_extensions/py38_cu113 as PyTorch extensions root...
+Using /home/xiaoxiawu/.cache/torch_extensions/py38_cu113 as PyTorch extensions root...
+Using /home/xiaoxiawu/.cache/torch_extensions/py38_cu113 as PyTorch extensions root...
+Using /home/xiaoxiawu/.cache/torch_extensions/py38_cu113 as PyTorch extensions root...
+Using /home/xiaoxiawu/.cache/torch_extensions/py38_cu113 as PyTorch extensions root...
+Using /home/xiaoxiawu/.cache/torch_extensions/py38_cu113 as PyTorch extensions root...
+Using /home/xiaoxiawu/.cache/torch_extensions/py38_cu113 as PyTorch extensions root...
+Emitting ninja build file /home/xiaoxiawu/.cache/torch_extensions/py38_cu113/utils/build.ninja...
+Building extension module utils...
+Allowing ninja to set a default number of workers... (overridable by setting the environment variable MAX_JOBS=N)
+[2023-06-09 05:24:32,010] [INFO] [utils.py:785:see_memory_usage] Stage 3 initialize beginning
+[2023-06-09 05:24:32,011] [INFO] [utils.py:786:see_memory_usage] MA 2.0 GB         Max_MA 2.01 GB         CA 3.13 GB         Max_CA 3 GB 
+[2023-06-09 05:24:32,011] [INFO] [utils.py:793:see_memory_usage] CPU Virtual Memory:  used = 138.98 GB, percent = 9.2%
+[2023-06-09 05:24:32,018] [INFO] [stage3.py:113:__init__] Reduce bucket size 500,000,000
+[2023-06-09 05:24:32,018] [INFO] [stage3.py:114:__init__] Prefetch bucket size 30000000
+Using /home/xiaoxiawu/.cache/torch_extensions/py38_cu113 as PyTorch extensions root...
+ninja: no work to do.
+Loading extension module utils...
+Loading extension module utils...
+Loading extension module utils...
+Loading extension module utils...
+Loading extension module utils...
+Loading extension module utils...
+Loading extension module utils...
+Time to load utils op: 0.8031129837036133 seconds
+Time to load utils op: 0.8108572959899902 seconds
+Time to load utils op: 0.8050065040588379 seconds
+Loading extension module utils...
+Time to load utils op: 0.8066062927246094 seconds
+Time to load utils op: 0.8062629699707031 seconds
+Loading extension module utils...
+Time to load utils op: 0.8044962882995605 secondsTime to load utils op: 0.8068716526031494 seconds
+
+Loading extension module utils...
+Time to load utils op: 0.8045985698699951 seconds
+Time to load utils op: 0.8078193664550781 seconds
+Time to load utils op: 0.8042795658111572 seconds
+Loading extension module utils...
+Time to load utils op: 0.20230746269226074 seconds
+Loading extension module utils...
+Loading extension module utils...
+Time to load utils op: 0.9048128128051758 seconds
+Loading extension module utils...
+Loading extension module utils...
+Loading extension module utils...
+Time to load utils op: 0.9052712917327881 seconds
+Time to load utils op: 0.904094934463501 seconds
+Time to load utils op: 0.904019832611084 seconds
+Time to load utils op: 0.9050252437591553 seconds
+[2023-06-09 05:24:32,681] [INFO] [utils.py:785:see_memory_usage] DeepSpeedZeRoOffload initialize [begin]
+[2023-06-09 05:24:32,682] [INFO] [utils.py:786:see_memory_usage] MA 2.0 GB         Max_MA 2.0 GB         CA 3.13 GB         Max_CA 3 GB 
+[2023-06-09 05:24:32,682] [INFO] [utils.py:793:see_memory_usage] CPU Virtual Memory:  used = 138.96 GB, percent = 9.2%
+Parameter Offload: Total persistent parameters: 266240 in 65 params
+[2023-06-09 05:24:33,348] [INFO] [utils.py:785:see_memory_usage] DeepSpeedZeRoOffload initialize [end]
+[2023-06-09 05:24:33,349] [INFO] [utils.py:786:see_memory_usage] MA 0.87 GB         Max_MA 2.0 GB         CA 3.21 GB         Max_CA 3 GB 
+[2023-06-09 05:24:33,349] [INFO] [utils.py:793:see_memory_usage] CPU Virtual Memory:  used = 138.96 GB, percent = 9.2%
+[2023-06-09 05:24:33,798] [INFO] [utils.py:785:see_memory_usage] Before creating fp16 partitions
+[2023-06-09 05:24:33,800] [INFO] [utils.py:786:see_memory_usage] MA 0.87 GB         Max_MA 0.87 GB         CA 3.21 GB         Max_CA 3 GB 
+[2023-06-09 05:24:33,800] [INFO] [utils.py:793:see_memory_usage] CPU Virtual Memory:  used = 138.96 GB, percent = 9.2%
+[2023-06-09 05:24:35,173] [INFO] [utils.py:785:see_memory_usage] After creating fp16 partitions: 1
+[2023-06-09 05:24:35,176] [INFO] [utils.py:786:see_memory_usage] MA 0.87 GB         Max_MA 0.87 GB         CA 1.41 GB         Max_CA 3 GB 
+[2023-06-09 05:24:35,176] [INFO] [utils.py:793:see_memory_usage] CPU Virtual Memory:  used = 140.54 GB, percent = 9.3%
+[2023-06-09 05:24:35,620] [INFO] [utils.py:785:see_memory_usage] Before creating fp32 partitions
+[2023-06-09 05:24:35,621] [INFO] [utils.py:786:see_memory_usage] MA 0.87 GB         Max_MA 0.87 GB         CA 1.41 GB         Max_CA 1 GB 
+[2023-06-09 05:24:35,621] [INFO] [utils.py:793:see_memory_usage] CPU Virtual Memory:  used = 140.54 GB, percent = 9.3%
+[2023-06-09 05:24:36,096] [INFO] [utils.py:785:see_memory_usage] After creating fp32 partitions
+[2023-06-09 05:24:36,097] [INFO] [utils.py:786:see_memory_usage] MA 1.08 GB         Max_MA 1.18 GB         CA 1.62 GB         Max_CA 2 GB 
+[2023-06-09 05:24:36,097] [INFO] [utils.py:793:see_memory_usage] CPU Virtual Memory:  used = 140.01 GB, percent = 9.3%
+[2023-06-09 05:24:36,724] [INFO] [utils.py:785:see_memory_usage] Before initializing optimizer states
+[2023-06-09 05:24:36,725] [INFO] [utils.py:786:see_memory_usage] MA 1.08 GB         Max_MA 1.08 GB         CA 1.62 GB         Max_CA 2 GB 
+[2023-06-09 05:24:36,725] [INFO] [utils.py:793:see_memory_usage] CPU Virtual Memory:  used = 138.97 GB, percent = 9.2%
+[2023-06-09 05:24:37,112] [INFO] [utils.py:785:see_memory_usage] After initializing optimizer states
+[2023-06-09 05:24:37,112] [INFO] [utils.py:786:see_memory_usage] MA 1.5 GB         Max_MA 1.71 GB         CA 2.25 GB         Max_CA 2 GB 
+[2023-06-09 05:24:37,113] [INFO] [utils.py:793:see_memory_usage] CPU Virtual Memory:  used = 138.97 GB, percent = 9.2%
+[2023-06-09 05:24:37,113] [INFO] [stage3.py:392:_setup_for_real_optimizer] optimizer state initialized
+Using /home/xiaoxiawu/.cache/torch_extensions/py38_cu113 as PyTorch extensions root...
+Using /home/xiaoxiawu/.cache/torch_extensions/py38_cu113 as PyTorch extensions root...
+Using /home/xiaoxiawu/.cache/torch_extensions/py38_cu113 as PyTorch extensions root...
+No modifications detected for re-loaded extension module utils, skipping build step...No modifications detected for re-loaded extension module utils, skipping build step...
+
+Loading extension module utils...Loading extension module utils...
+
+Using /home/xiaoxiawu/.cache/torch_extensions/py38_cu113 as PyTorch extensions root...
+Time to load utils op: 0.0006310939788818359 secondsTime to load utils op: 0.0005838871002197266 seconds
+
+No modifications detected for re-loaded extension module utils, skipping build step...
+Loading extension module utils...
+Using /home/xiaoxiawu/.cache/torch_extensions/py38_cu113 as PyTorch extensions root...
+No modifications detected for re-loaded extension module utils, skipping build step...
+Loading extension module utils...
+Time to load utils op: 0.0008101463317871094 seconds
+Time to load utils op: 0.0007524490356445312 seconds
+Using /home/xiaoxiawu/.cache/torch_extensions/py38_cu113 as PyTorch extensions root...
+No modifications detected for re-loaded extension module utils, skipping build step...
+Loading extension module utils...
+Using /home/xiaoxiawu/.cache/torch_extensions/py38_cu113 as PyTorch extensions root...
+Using /home/xiaoxiawu/.cache/torch_extensions/py38_cu113 as PyTorch extensions root...
+Time to load utils op: 0.0008728504180908203 seconds
+No modifications detected for re-loaded extension module utils, skipping build step...
+Loading extension module utils...
+Time to load utils op: 0.0008742809295654297 seconds
+No modifications detected for re-loaded extension module utils, skipping build step...No modifications detected for re-loaded extension module utils, skipping build step...
+
+Loading extension module utils...Loading extension module utils...
+
+Using /home/xiaoxiawu/.cache/torch_extensions/py38_cu113 as PyTorch extensions root...
+Time to load utils op: 0.0007936954498291016 seconds
+Time to load utils op: 0.0010783672332763672 seconds
+No modifications detected for re-loaded extension module utils, skipping build step...
+Loading extension module utils...
+Using /home/xiaoxiawu/.cache/torch_extensions/py38_cu113 as PyTorch extensions root...
+Time to load utils op: 0.0006184577941894531 seconds
+Using /home/xiaoxiawu/.cache/torch_extensions/py38_cu113 as PyTorch extensions root...
+Using /home/xiaoxiawu/.cache/torch_extensions/py38_cu113 as PyTorch extensions root...
+Using /home/xiaoxiawu/.cache/torch_extensions/py38_cu113 as PyTorch extensions root...
+No modifications detected for re-loaded extension module utils, skipping build step...
+Loading extension module utils...
+Using /home/xiaoxiawu/.cache/torch_extensions/py38_cu113 as PyTorch extensions root...
+No modifications detected for re-loaded extension module utils, skipping build step...
+Loading extension module utils...
+No modifications detected for re-loaded extension module utils, skipping build step...
+Time to load utils op: 0.0010318756103515625 secondsLoading extension module utils...
+
+No modifications detected for re-loaded extension module utils, skipping build step...
+Loading extension module utils...
+Time to load utils op: 0.0010607242584228516 seconds
+Time to load utils op: 0.0011675357818603516 seconds
+No modifications detected for re-loaded extension module utils, skipping build step...
+Loading extension module utils...
+Time to load utils op: 0.0011608600616455078 seconds
+Time to load utils op: 0.0012354850769042969 seconds
+Using /home/xiaoxiawu/.cache/torch_extensions/py38_cu113 as PyTorch extensions root...
+No modifications detected for re-loaded extension module utils, skipping build step...
+Loading extension module utils...
+Time to load utils op: 0.0007038116455078125 seconds
+[2023-06-09 05:24:38,193] [INFO] [utils.py:785:see_memory_usage] After initializing ZeRO optimizer
+[2023-06-09 05:24:38,195] [INFO] [utils.py:786:see_memory_usage] MA 2.54 GB         Max_MA 3.03 GB         CA 3.91 GB         Max_CA 4 GB 
+[2023-06-09 05:24:38,195] [INFO] [utils.py:793:see_memory_usage] CPU Virtual Memory:  used = 138.96 GB, percent = 9.2%
+[2023-06-09 05:24:38,195] [INFO] [logging.py:96:log_dist] [Rank 0] DeepSpeed Final Optimizer = FusedAdam
+[2023-06-09 05:24:38,195] [INFO] [logging.py:96:log_dist] [Rank 0] DeepSpeed using client LR scheduler
+[2023-06-09 05:24:38,195] [INFO] [logging.py:96:log_dist] [Rank 0] DeepSpeed LR Scheduler = <torch.optim.lr_scheduler.LambdaLR object at 0x7fb5d814b100>
+[2023-06-09 05:24:38,195] [INFO] [logging.py:96:log_dist] [Rank 0] step=0, skipped=0, lr=[0.0001], mom=[(0.9, 0.95)]
+[2023-06-09 05:24:38,198] [INFO] [config.py:960:print] DeepSpeedEngine configuration:
+[2023-06-09 05:24:38,199] [INFO] [config.py:964:print]   activation_checkpointing_config  {
+    "partition_activations": false, 
+    "contiguous_memory_optimization": false, 
+    "cpu_checkpointing": false, 
+    "number_checkpoints": null, 
+    "synchronize_checkpoint_boundary": false, 
+    "profile": false
+}
+[2023-06-09 05:24:38,199] [INFO] [config.py:964:print]   aio_config ................... {'block_size': 1048576, 'queue_depth': 8, 'thread_count': 1, 'single_submit': False, 'overlap_events': True}
+[2023-06-09 05:24:38,199] [INFO] [config.py:964:print]   amp_enabled .................. False
+[2023-06-09 05:24:38,199] [INFO] [config.py:964:print]   amp_params ................... False
+[2023-06-09 05:24:38,199] [INFO] [config.py:964:print]   autotuning_config ............ {
+    "enabled": false, 
+    "start_step": null, 
+    "end_step": null, 
+    "metric_path": null, 
+    "arg_mappings": null, 
+    "metric": "throughput", 
+    "model_info": null, 
+    "results_dir": "autotuning_results", 
+    "exps_dir": "autotuning_exps", 
+    "overwrite": true, 
+    "fast": true, 
+    "start_profile_step": 3, 
+    "end_profile_step": 5, 
+    "tuner_type": "gridsearch", 
+    "tuner_early_stopping": 5, 
+    "tuner_num_trials": 50, 
+    "model_info_path": null, 
+    "mp_size": 1, 
+    "max_train_batch_size": null, 
+    "min_train_batch_size": 1, 
+    "max_train_micro_batch_size_per_gpu": 1.024000e+03, 
+    "min_train_micro_batch_size_per_gpu": 1, 
+    "num_tuning_micro_batch_sizes": 3
+}
+[2023-06-09 05:24:38,199] [INFO] [config.py:964:print]   bfloat16_enabled ............. False
+[2023-06-09 05:24:38,199] [INFO] [config.py:964:print]   checkpoint_parallel_write_pipeline  False
+[2023-06-09 05:24:38,199] [INFO] [config.py:964:print]   checkpoint_tag_validation_enabled  True
+[2023-06-09 05:24:38,199] [INFO] [config.py:964:print]   checkpoint_tag_validation_fail  False
+[2023-06-09 05:24:38,200] [INFO] [config.py:964:print]   comms_config ................. <deepspeed.comm.config.DeepSpeedCommsConfig object at 0x7fa8b766e970>
+[2023-06-09 05:24:38,200] [INFO] [config.py:964:print]   communication_data_type ...... None
+[2023-06-09 05:24:38,200] [INFO] [config.py:964:print]   compression_config ........... {'weight_quantization': {'shared_parameters': {'enabled': False, 'quantizer_kernel': False, 'schedule_offset': 0, 'quantize_groups': 1, 'quantize_verbose': False, 'quantization_type': 'symmetric', 'quantize_weight_in_forward': False, 'rounding': 'nearest', 'fp16_mixed_quantize': False, 'quantize_change_ratio': 0.001}, 'different_groups': {}}, 'activation_quantization': {'shared_parameters': {'enabled': False, 'quantization_type': 'symmetric', 'range_calibration': 'dynamic', 'schedule_offset': 1000}, 'different_groups': {}}, 'sparse_pruning': {'shared_parameters': {'enabled': False, 'method': 'l1', 'schedule_offset': 1000}, 'different_groups': {}}, 'row_pruning': {'shared_parameters': {'enabled': False, 'method': 'l1', 'schedule_offset': 1000}, 'different_groups': {}}, 'head_pruning': {'shared_parameters': {'enabled': False, 'method': 'topk', 'schedule_offset': 1000}, 'different_groups': {}}, 'channel_pruning': {'shared_parameters': {'enabled': False, 'method': 'l1', 'schedule_offset': 1000}, 'different_groups': {}}, 'layer_reduction': {'enabled': False}}
+[2023-06-09 05:24:38,200] [INFO] [config.py:964:print]   curriculum_enabled_legacy .... False
+[2023-06-09 05:24:38,200] [INFO] [config.py:964:print]   curriculum_params_legacy ..... False
+[2023-06-09 05:24:38,200] [INFO] [config.py:964:print]   data_efficiency_config ....... {'enabled': False, 'seed': 1234, 'data_sampling': {'enabled': False, 'num_epochs': 1000, 'num_workers': 0, 'curriculum_learning': {'enabled': False}}, 'data_routing': {'enabled': False, 'random_ltd': {'enabled': False, 'layer_token_lr_schedule': {'enabled': False}}}}
+[2023-06-09 05:24:38,200] [INFO] [config.py:964:print]   data_efficiency_enabled ...... False
+[2023-06-09 05:24:38,200] [INFO] [config.py:964:print]   dataloader_drop_last ......... False
+[2023-06-09 05:24:38,200] [INFO] [config.py:964:print]   disable_allgather ............ False
+[2023-06-09 05:24:38,200] [INFO] [config.py:964:print]   dump_state ................... False
+[2023-06-09 05:24:38,200] [INFO] [config.py:964:print]   dynamic_loss_scale_args ...... {'init_scale': 65536, 'scale_window': 100, 'delayed_shift': 2, 'consecutive_hysteresis': False, 'min_scale': 1}
+[2023-06-09 05:24:38,200] [INFO] [config.py:964:print]   eigenvalue_enabled ........... False
+[2023-06-09 05:24:38,200] [INFO] [config.py:964:print]   eigenvalue_gas_boundary_resolution  1
+[2023-06-09 05:24:38,200] [INFO] [config.py:964:print]   eigenvalue_layer_name ........ bert.encoder.layer
+[2023-06-09 05:24:38,200] [INFO] [config.py:964:print]   eigenvalue_layer_num ......... 0
+[2023-06-09 05:24:38,200] [INFO] [config.py:964:print]   eigenvalue_max_iter .......... 100
+[2023-06-09 05:24:38,200] [INFO] [config.py:964:print]   eigenvalue_stability ......... 1e-06
+[2023-06-09 05:24:38,200] [INFO] [config.py:964:print]   eigenvalue_tol ............... 0.01
+[2023-06-09 05:24:38,200] [INFO] [config.py:964:print]   eigenvalue_verbose ........... False
+[2023-06-09 05:24:38,200] [INFO] [config.py:964:print]   elasticity_enabled ........... False
+[2023-06-09 05:24:38,200] [INFO] [config.py:964:print]   flops_profiler_config ........ {
+    "enabled": false, 
+    "recompute_fwd_factor": 0.0, 
+    "profile_step": 1, 
+    "module_depth": -1, 
+    "top_modules": 1, 
+    "detailed": true, 
+    "output_file": null
+}
+[2023-06-09 05:24:38,200] [INFO] [config.py:964:print]   fp16_auto_cast ............... False
+[2023-06-09 05:24:38,200] [INFO] [config.py:964:print]   fp16_enabled ................. True
+[2023-06-09 05:24:38,200] [INFO] [config.py:964:print]   fp16_master_weights_and_gradients  False
+[2023-06-09 05:24:38,201] [INFO] [config.py:964:print]   global_rank .................. 0
+[2023-06-09 05:24:38,201] [INFO] [config.py:964:print]   grad_accum_dtype ............. None
+[2023-06-09 05:24:38,201] [INFO] [config.py:964:print]   gradient_accumulation_steps .. 1
+[2023-06-09 05:24:38,201] [INFO] [config.py:964:print]   gradient_clipping ............ 1.0
+[2023-06-09 05:24:38,201] [INFO] [config.py:964:print]   gradient_predivide_factor .... 1.0
+[2023-06-09 05:24:38,201] [INFO] [config.py:964:print]   hybrid_engine ................ enabled=False max_out_tokens=512 inference_tp_size=1 release_inference_cache=False pin_parameters=True tp_gather_partition_size=8
+[2023-06-09 05:24:38,201] [INFO] [config.py:964:print]   initial_dynamic_scale ........ 65536
+[2023-06-09 05:24:38,201] [INFO] [config.py:964:print]   load_universal_checkpoint .... False
+[2023-06-09 05:24:38,201] [INFO] [config.py:964:print]   loss_scale ................... 0
+[2023-06-09 05:24:38,201] [INFO] [config.py:964:print]   memory_breakdown ............. False
+[2023-06-09 05:24:38,201] [INFO] [config.py:964:print]   mics_hierarchial_params_gather  False
+[2023-06-09 05:24:38,201] [INFO] [config.py:964:print]   mics_shard_size .............. -1
+[2023-06-09 05:24:38,201] [INFO] [config.py:964:print]   monitor_config ............... tensorboard=TensorBoardConfig(enabled=False, output_path='', job_name='DeepSpeedJobName') wandb=WandbConfig(enabled=False, group=None, team=None, project='deepspeed') csv_monitor=CSVConfig(enabled=False, output_path='', job_name='DeepSpeedJobName') enabled=False
+[2023-06-09 05:24:38,201] [INFO] [config.py:964:print]   nebula_config ................ {
+    "enabled": false, 
+    "persistent_storage_path": null, 
+    "persistent_time_interval": 100, 
+    "num_of_version_in_retention": 2, 
+    "enable_nebula_load": true, 
+    "load_path": null
+}
+[2023-06-09 05:24:38,201] [INFO] [config.py:964:print]   optimizer_legacy_fusion ...... False
+[2023-06-09 05:24:38,201] [INFO] [config.py:964:print]   optimizer_name ............... None
+[2023-06-09 05:24:38,201] [INFO] [config.py:964:print]   optimizer_params ............. None
+[2023-06-09 05:24:38,201] [INFO] [config.py:964:print]   pipeline ..................... {'stages': 'auto', 'partition': 'best', 'seed_layers': False, 'activation_checkpoint_interval': 0}
+[2023-06-09 05:24:38,201] [INFO] [config.py:964:print]   pld_enabled .................. False
+[2023-06-09 05:24:38,201] [INFO] [config.py:964:print]   pld_params ................... False
+[2023-06-09 05:24:38,201] [INFO] [config.py:964:print]   prescale_gradients ........... False
+[2023-06-09 05:24:38,201] [INFO] [config.py:964:print]   scheduler_name ............... None
+[2023-06-09 05:24:38,201] [INFO] [config.py:964:print]   scheduler_params ............. None
+[2023-06-09 05:24:38,201] [INFO] [config.py:964:print]   sparse_attention ............. None
+[2023-06-09 05:24:38,202] [INFO] [config.py:964:print]   sparse_gradients_enabled ..... False
+[2023-06-09 05:24:38,202] [INFO] [config.py:964:print]   steps_per_print .............. 10
+[2023-06-09 05:24:38,202] [INFO] [config.py:964:print]   train_batch_size ............. 64
+[2023-06-09 05:24:38,202] [INFO] [config.py:964:print]   train_micro_batch_size_per_gpu  4
+[2023-06-09 05:24:38,202] [INFO] [config.py:964:print]   use_node_local_storage ....... False
+[2023-06-09 05:24:38,202] [INFO] [config.py:964:print]   wall_clock_breakdown ......... False
+[2023-06-09 05:24:38,202] [INFO] [config.py:964:print]   world_size ................... 16
+[2023-06-09 05:24:38,202] [INFO] [config.py:964:print]   zero_allow_untested_optimizer  False
+[2023-06-09 05:24:38,202] [INFO] [config.py:964:print]   zero_config .................. stage=3 contiguous_gradients=True reduce_scatter=True reduce_bucket_size=500,000,000 allgather_partitions=True allgather_bucket_size=500,000,000 overlap_comm=True load_from_fp32_weights=True elastic_checkpoint=False offload_param=DeepSpeedZeroOffloadParamConfig(device='none', nvme_path=None, buffer_count=5, buffer_size=100,000,000, max_in_cpu=1,000,000,000, pin_memory=False) offload_optimizer=DeepSpeedZeroOffloadOptimizerConfig(device='none', nvme_path=None, buffer_count=4, pin_memory=False, pipeline=False, pipeline_read=False, pipeline_write=False, fast_init=False) sub_group_size=1,000,000,000 cpu_offload_param=None cpu_offload_use_pin_memory=None cpu_offload=None prefetch_bucket_size=30000000 param_persistence_threshold=10000 model_persistence_threshold=sys.maxsize max_live_parameters=30000000 max_reuse_distance=1,000,000,000 gather_16bit_weights_on_model_save=False stage3_gather_fp16_weights_on_model_save=False ignore_unused_parameters=True legacy_stage1=False round_robin_gradients=False mics_shard_size=-1 mics_hierarchical_params_gather=False memory_efficient_linear=False
+[2023-06-09 05:24:38,202] [INFO] [config.py:964:print]   zero_enabled ................. True
+[2023-06-09 05:24:38,202] [INFO] [config.py:964:print]   zero_force_ds_cpu_optimizer .. True
+[2023-06-09 05:24:38,202] [INFO] [config.py:964:print]   zero_optimization_stage ...... 3
+[2023-06-09 05:24:38,202] [INFO] [config.py:950:print_user_config]   json = {
+    "train_batch_size": 64, 
+    "train_micro_batch_size_per_gpu": 4, 
+    "steps_per_print": 10, 
+    "zero_optimization": {
+        "stage": 3, 
+        "offload_param": {
+            "device": "none"
+        }, 
+        "offload_optimizer": {
+            "device": "none"
+        }, 
+        "stage3_param_persistence_threshold": 1.000000e+04, 
+        "stage3_max_live_parameters": 3.000000e+07, 
+        "stage3_prefetch_bucket_size": 3.000000e+07, 
+        "memory_efficient_linear": false
+    }, 
+    "fp16": {
+        "enabled": true, 
+        "loss_scale_window": 100
+    }, 
+    "gradient_clipping": 1.0, 
+    "prescale_gradients": false, 
+    "wall_clock_breakdown": false, 
+    "hybrid_engine": {
+        "enabled": false, 
+        "max_out_tokens": 512, 
+        "inference_tp_size": 1, 
+        "release_inference_cache": false, 
+        "pin_parameters": true, 
+        "tp_gather_partition_size": 8
+    }
+}
+Using /home/xiaoxiawu/.cache/torch_extensions/py38_cu113 as PyTorch extensions root...
+No modifications detected for re-loaded extension module utils, skipping build step...
+Loading extension module utils...
+Time to load utils op: 0.0006682872772216797 seconds
+***** Running training *****
+***** Evaluating perplexity, Epoch 0/5 *****
+Traceback (most recent call last):
+  File "main.py", line 343, in <module>
+Traceback (most recent call last):
+  File "main.py", line 343, in <module>
+    main()
+  File "main.py", line 304, in main
+    main()
+  File "main.py", line 304, in main
+    perplexity = evaluation(model, eval_dataloader)
+  File "main.py", line 255, in evaluation
+    outputs = model(**batch)
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1110, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/deepspeed/utils/nvtx.py", line 15, in wrapped_fn
+    ret_val = func(*args, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/deepspeed/runtime/engine.py", line 1736, in forward
+    loss = self.module(*inputs, **kwargs)
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1128, in _call_impl
+    result = forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 688, in forward
+    outputs = self.model(
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1128, in _call_impl
+    result = forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 578, in forward
+    layer_outputs = decoder_layer(
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1128, in _call_impl
+    result = forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 292, in forward
+    hidden_states, self_attn_weights, present_key_value = self.self_attn(
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1128, in _call_impl
+    result = forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 202, in forward
+    query_states, key_states = apply_rotary_pos_emb(query_states, key_states, cos, sin, position_ids)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 136, in apply_rotary_pos_emb
+    q_embed = (q * cos) + (rotate_half(q) * sin)
+RuntimeError: Expected all tensors to be on the same device, but found at least two devices, cuda:9 and cpu!
+    perplexity = evaluation(model, eval_dataloader)
+  File "main.py", line 255, in evaluation
+    outputs = model(**batch)
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1110, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/deepspeed/utils/nvtx.py", line 15, in wrapped_fn
+    ret_val = func(*args, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/deepspeed/runtime/engine.py", line 1736, in forward
+    loss = self.module(*inputs, **kwargs)
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1128, in _call_impl
+    result = forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 688, in forward
+    outputs = self.model(
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1128, in _call_impl
+    result = forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 578, in forward
+    layer_outputs = decoder_layer(
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1128, in _call_impl
+    result = forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 292, in forward
+    hidden_states, self_attn_weights, present_key_value = self.self_attn(
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1128, in _call_impl
+    result = forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 202, in forward
+    query_states, key_states = apply_rotary_pos_emb(query_states, key_states, cos, sin, position_ids)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 136, in apply_rotary_pos_emb
+    q_embed = (q * cos) + (rotate_half(q) * sin)
+RuntimeError: Expected all tensors to be on the same device, but found at least two devices, cuda:15 and cpu!
+Traceback (most recent call last):
+  File "main.py", line 343, in <module>
+    main()
+  File "main.py", line 304, in main
+    perplexity = evaluation(model, eval_dataloader)
+  File "main.py", line 255, in evaluation
+    outputs = model(**batch)
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1110, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/deepspeed/utils/nvtx.py", line 15, in wrapped_fn
+    ret_val = func(*args, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/deepspeed/runtime/engine.py", line 1736, in forward
+    loss = self.module(*inputs, **kwargs)
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1128, in _call_impl
+    result = forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 688, in forward
+    outputs = self.model(
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1128, in _call_impl
+    result = forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 578, in forward
+    layer_outputs = decoder_layer(
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1128, in _call_impl
+    result = forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 292, in forward
+    hidden_states, self_attn_weights, present_key_value = self.self_attn(
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1128, in _call_impl
+    result = forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 202, in forward
+    query_states, key_states = apply_rotary_pos_emb(query_states, key_states, cos, sin, position_ids)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 136, in apply_rotary_pos_emb
+    q_embed = (q * cos) + (rotate_half(q) * sin)
+RuntimeError: Expected all tensors to be on the same device, but found at least two devices, cuda:8 and cpu!
+Traceback (most recent call last):
+  File "main.py", line 343, in <module>
+    main()
+  File "main.py", line 304, in main
+    perplexity = evaluation(model, eval_dataloader)
+  File "main.py", line 255, in evaluation
+    outputs = model(**batch)
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1110, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/deepspeed/utils/nvtx.py", line 15, in wrapped_fn
+    ret_val = func(*args, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/deepspeed/runtime/engine.py", line 1736, in forward
+Traceback (most recent call last):
+  File "main.py", line 343, in <module>
+    loss = self.module(*inputs, **kwargs)
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1128, in _call_impl
+    result = forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 688, in forward
+    outputs = self.model(
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1128, in _call_impl
+    result = forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 578, in forward
+    layer_outputs = decoder_layer(
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1128, in _call_impl
+    result = forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 292, in forward
+    hidden_states, self_attn_weights, present_key_value = self.self_attn(
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1128, in _call_impl
+    result = forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 202, in forward
+    query_states, key_states = apply_rotary_pos_emb(query_states, key_states, cos, sin, position_ids)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 136, in apply_rotary_pos_emb
+    q_embed = (q * cos) + (rotate_half(q) * sin)
+RuntimeError: Expected all tensors to be on the same device, but found at least two devices, cuda:4 and cpu!
+Traceback (most recent call last):
+  File "main.py", line 343, in <module>
+Traceback (most recent call last):
+  File "main.py", line 343, in <module>
+    main()
+  File "main.py", line 304, in main
+Traceback (most recent call last):
+  File "main.py", line 343, in <module>
+    main()
+  File "main.py", line 304, in main
+    perplexity = evaluation(model, eval_dataloader)
+  File "main.py", line 255, in evaluation
+    outputs = model(**batch)
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1110, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/deepspeed/utils/nvtx.py", line 15, in wrapped_fn
+    ret_val = func(*args, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/deepspeed/runtime/engine.py", line 1736, in forward
+    loss = self.module(*inputs, **kwargs)
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1128, in _call_impl
+    result = forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 688, in forward
+    outputs = self.model(
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1128, in _call_impl
+    result = forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 578, in forward
+    layer_outputs = decoder_layer(
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1128, in _call_impl
+    result = forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 292, in forward
+    hidden_states, self_attn_weights, present_key_value = self.self_attn(
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1128, in _call_impl
+    result = forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 202, in forward
+    query_states, key_states = apply_rotary_pos_emb(query_states, key_states, cos, sin, position_ids)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 136, in apply_rotary_pos_emb
+    q_embed = (q * cos) + (rotate_half(q) * sin)
+RuntimeError: Expected all tensors to be on the same device, but found at least two devices, cuda:14 and cpu!
+    perplexity = evaluation(model, eval_dataloader)
+  File "main.py", line 255, in evaluation
+    outputs = model(**batch)
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1110, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/deepspeed/utils/nvtx.py", line 15, in wrapped_fn
+    ret_val = func(*args, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/deepspeed/runtime/engine.py", line 1736, in forward
+    loss = self.module(*inputs, **kwargs)
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1128, in _call_impl
+    result = forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 688, in forward
+    outputs = self.model(
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1128, in _call_impl
+    result = forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 578, in forward
+    layer_outputs = decoder_layer(
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1128, in _call_impl
+    result = forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 292, in forward
+    hidden_states, self_attn_weights, present_key_value = self.self_attn(
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1128, in _call_impl
+    result = forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 202, in forward
+    query_states, key_states = apply_rotary_pos_emb(query_states, key_states, cos, sin, position_ids)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 136, in apply_rotary_pos_emb
+    q_embed = (q * cos) + (rotate_half(q) * sin)
+RuntimeError: Expected all tensors to be on the same device, but found at least two devices, cuda:11 and cpu!
+    main()
+  File "main.py", line 304, in main
+    perplexity = evaluation(model, eval_dataloader)
+  File "main.py", line 255, in evaluation
+    outputs = model(**batch)
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1110, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/deepspeed/utils/nvtx.py", line 15, in wrapped_fn
+    ret_val = func(*args, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/deepspeed/runtime/engine.py", line 1736, in forward
+    loss = self.module(*inputs, **kwargs)
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1128, in _call_impl
+    result = forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 688, in forward
+    outputs = self.model(
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1128, in _call_impl
+    result = forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 578, in forward
+    layer_outputs = decoder_layer(
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1128, in _call_impl
+    result = forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 292, in forward
+    hidden_states, self_attn_weights, present_key_value = self.self_attn(
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1128, in _call_impl
+    result = forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 202, in forward
+    query_states, key_states = apply_rotary_pos_emb(query_states, key_states, cos, sin, position_ids)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 136, in apply_rotary_pos_emb
+    q_embed = (q * cos) + (rotate_half(q) * sin)
+RuntimeError: Expected all tensors to be on the same device, but found at least two devices, cuda:2 and cpu!
+Traceback (most recent call last):
+  File "main.py", line 343, in <module>
+    main()
+  File "main.py", line 304, in main
+    perplexity = evaluation(model, eval_dataloader)
+  File "main.py", line 255, in evaluation
+    outputs = model(**batch)
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1110, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/deepspeed/utils/nvtx.py", line 15, in wrapped_fn
+    ret_val = func(*args, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/deepspeed/runtime/engine.py", line 1736, in forward
+    loss = self.module(*inputs, **kwargs)
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1128, in _call_impl
+    result = forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 688, in forward
+    outputs = self.model(
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1128, in _call_impl
+    result = forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 578, in forward
+    layer_outputs = decoder_layer(
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1128, in _call_impl
+    result = forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 292, in forward
+    hidden_states, self_attn_weights, present_key_value = self.self_attn(
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1128, in _call_impl
+    result = forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 202, in forward
+    query_states, key_states = apply_rotary_pos_emb(query_states, key_states, cos, sin, position_ids)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 136, in apply_rotary_pos_emb
+    q_embed = (q * cos) + (rotate_half(q) * sin)
+RuntimeError: Expected all tensors to be on the same device, but found at least two devices, cuda:6 and cpu!
+Traceback (most recent call last):
+  File "main.py", line 343, in <module>
+    main()
+  File "main.py", line 304, in main
+    perplexity = evaluation(model, eval_dataloader)
+  File "main.py", line 255, in evaluation
+    outputs = model(**batch)
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1110, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/deepspeed/utils/nvtx.py", line 15, in wrapped_fn
+    ret_val = func(*args, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/deepspeed/runtime/engine.py", line 1736, in forward
+    loss = self.module(*inputs, **kwargs)
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1128, in _call_impl
+    result = forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 688, in forward
+    outputs = self.model(
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1128, in _call_impl
+    result = forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 578, in forward
+    layer_outputs = decoder_layer(
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1128, in _call_impl
+    result = forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 292, in forward
+    hidden_states, self_attn_weights, present_key_value = self.self_attn(
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1128, in _call_impl
+    result = forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 202, in forward
+    query_states, key_states = apply_rotary_pos_emb(query_states, key_states, cos, sin, position_ids)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 136, in apply_rotary_pos_emb
+    q_embed = (q * cos) + (rotate_half(q) * sin)
+RuntimeError: Expected all tensors to be on the same device, but found at least two devices, cuda:0 and cpu!
+    main()
+  File "main.py", line 304, in main
+    perplexity = evaluation(model, eval_dataloader)
+  File "main.py", line 255, in evaluation
+    outputs = model(**batch)
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1110, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/deepspeed/utils/nvtx.py", line 15, in wrapped_fn
+    ret_val = func(*args, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/deepspeed/runtime/engine.py", line 1736, in forward
+    loss = self.module(*inputs, **kwargs)
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1128, in _call_impl
+    result = forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 688, in forward
+    outputs = self.model(
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1128, in _call_impl
+    result = forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 578, in forward
+    layer_outputs = decoder_layer(
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1128, in _call_impl
+    result = forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 292, in forward
+    hidden_states, self_attn_weights, present_key_value = self.self_attn(
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1128, in _call_impl
+    result = forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 202, in forward
+    query_states, key_states = apply_rotary_pos_emb(query_states, key_states, cos, sin, position_ids)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 136, in apply_rotary_pos_emb
+    q_embed = (q * cos) + (rotate_half(q) * sin)
+RuntimeError: Expected all tensors to be on the same device, but found at least two devices, cuda:10 and cpu!
+Traceback (most recent call last):
+  File "main.py", line 343, in <module>
+    main()
+  File "main.py", line 304, in main
+    perplexity = evaluation(model, eval_dataloader)
+  File "main.py", line 255, in evaluation
+    outputs = model(**batch)
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1110, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/deepspeed/utils/nvtx.py", line 15, in wrapped_fn
+    ret_val = func(*args, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/deepspeed/runtime/engine.py", line 1736, in forward
+    loss = self.module(*inputs, **kwargs)
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1128, in _call_impl
+    result = forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 688, in forward
+    outputs = self.model(
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1128, in _call_impl
+    result = forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 578, in forward
+    layer_outputs = decoder_layer(
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1128, in _call_impl
+    result = forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 292, in forward
+    hidden_states, self_attn_weights, present_key_value = self.self_attn(
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1128, in _call_impl
+    result = forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 202, in forward
+    query_states, key_states = apply_rotary_pos_emb(query_states, key_states, cos, sin, position_ids)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 136, in apply_rotary_pos_emb
+    q_embed = (q * cos) + (rotate_half(q) * sin)
+RuntimeError: Expected all tensors to be on the same device, but found at least two devices, cuda:5 and cpu!
+Traceback (most recent call last):
+  File "main.py", line 343, in <module>
+    main()
+  File "main.py", line 304, in main
+    perplexity = evaluation(model, eval_dataloader)
+  File "main.py", line 255, in evaluation
+    outputs = model(**batch)
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1110, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/deepspeed/utils/nvtx.py", line 15, in wrapped_fn
+    ret_val = func(*args, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/deepspeed/runtime/engine.py", line 1736, in forward
+    loss = self.module(*inputs, **kwargs)
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1128, in _call_impl
+    result = forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 688, in forward
+    outputs = self.model(
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1128, in _call_impl
+    result = forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 578, in forward
+    layer_outputs = decoder_layer(
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1128, in _call_impl
+    result = forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 292, in forward
+    hidden_states, self_attn_weights, present_key_value = self.self_attn(
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1128, in _call_impl
+    result = forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 202, in forward
+    query_states, key_states = apply_rotary_pos_emb(query_states, key_states, cos, sin, position_ids)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 136, in apply_rotary_pos_emb
+    q_embed = (q * cos) + (rotate_half(q) * sin)
+RuntimeError: Expected all tensors to be on the same device, but found at least two devices, cuda:1 and cpu!
+Traceback (most recent call last):
+  File "main.py", line 343, in <module>
+    main()
+  File "main.py", line 304, in main
+    perplexity = evaluation(model, eval_dataloader)
+  File "main.py", line 255, in evaluation
+    outputs = model(**batch)
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1110, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/deepspeed/utils/nvtx.py", line 15, in wrapped_fn
+    ret_val = func(*args, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/deepspeed/runtime/engine.py", line 1736, in forward
+    loss = self.module(*inputs, **kwargs)
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1128, in _call_impl
+    result = forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 688, in forward
+    outputs = self.model(
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1128, in _call_impl
+    result = forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 578, in forward
+    layer_outputs = decoder_layer(
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1128, in _call_impl
+Traceback (most recent call last):
+  File "main.py", line 343, in <module>
+    result = forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 292, in forward
+    hidden_states, self_attn_weights, present_key_value = self.self_attn(
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1128, in _call_impl
+Traceback (most recent call last):
+  File "main.py", line 343, in <module>
+    main()
+  File "main.py", line 304, in main
+    perplexity = evaluation(model, eval_dataloader)
+  File "main.py", line 255, in evaluation
+    outputs = model(**batch)
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1110, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/deepspeed/utils/nvtx.py", line 15, in wrapped_fn
+    result = forward_call(*input, **kwargs)    
+ret_val = func(*args, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 202, in forward
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/deepspeed/runtime/engine.py", line 1736, in forward
+    query_states, key_states = apply_rotary_pos_emb(query_states, key_states, cos, sin, position_ids)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 136, in apply_rotary_pos_emb
+    q_embed = (q * cos) + (rotate_half(q) * sin)
+RuntimeError: Expected all tensors to be on the same device, but found at least two devices, cuda:13 and cpu!
+    loss = self.module(*inputs, **kwargs)
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1128, in _call_impl
+    result = forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 688, in forward
+    outputs = self.model(
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1128, in _call_impl
+    result = forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 578, in forward
+    layer_outputs = decoder_layer(
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1128, in _call_impl
+    result = forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 292, in forward
+    hidden_states, self_attn_weights, present_key_value = self.self_attn(
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1128, in _call_impl
+    result = forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 202, in forward
+    query_states, key_states = apply_rotary_pos_emb(query_states, key_states, cos, sin, position_ids)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 136, in apply_rotary_pos_emb
+    q_embed = (q * cos) + (rotate_half(q) * sin)
+RuntimeError: Expected all tensors to be on the same device, but found at least two devices, cuda:7 and cpu!
+    main()
+  File "main.py", line 304, in main
+Traceback (most recent call last):
+  File "main.py", line 343, in <module>
+    perplexity = evaluation(model, eval_dataloader)
+  File "main.py", line 255, in evaluation
+    outputs = model(**batch)    
+main()
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1110, in _call_impl
+  File "main.py", line 304, in main
+    perplexity = evaluation(model, eval_dataloader)
+  File "main.py", line 255, in evaluation
+    outputs = model(**batch)
+      File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1110, in _call_impl
+return forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/deepspeed/utils/nvtx.py", line 15, in wrapped_fn
+    ret_val = func(*args, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/deepspeed/runtime/engine.py", line 1736, in forward
+    return forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/deepspeed/utils/nvtx.py", line 15, in wrapped_fn
+    ret_val = func(*args, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/deepspeed/runtime/engine.py", line 1736, in forward
+    loss = self.module(*inputs, **kwargs)
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1128, in _call_impl
+    loss = self.module(*inputs, **kwargs)
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1128, in _call_impl
+    result = forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 688, in forward
+    outputs = self.model(
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1128, in _call_impl
+    result = forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 688, in forward
+    outputs = self.model(
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1128, in _call_impl
+    result = forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 578, in forward
+    layer_outputs = decoder_layer(
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1128, in _call_impl
+    result = forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 578, in forward
+    layer_outputs = decoder_layer(
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1128, in _call_impl
+    result = forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 292, in forward
+    hidden_states, self_attn_weights, present_key_value = self.self_attn(
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1128, in _call_impl
+    result = forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 292, in forward
+    hidden_states, self_attn_weights, present_key_value = self.self_attn(
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1128, in _call_impl
+    result = forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 202, in forward
+    query_states, key_states = apply_rotary_pos_emb(query_states, key_states, cos, sin, position_ids)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 136, in apply_rotary_pos_emb
+    q_embed = (q * cos) + (rotate_half(q) * sin)
+RuntimeError: Expected all tensors to be on the same device, but found at least two devices, cuda:12 and cpu!
+    result = forward_call(*input, **kwargs)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 202, in forward
+    query_states, key_states = apply_rotary_pos_emb(query_states, key_states, cos, sin, position_ids)
+  File "/home/xiaoxiawu/.local/lib/python3.8/site-packages/transformers/models/llama/modeling_llama.py", line 136, in apply_rotary_pos_emb
+    q_embed = (q * cos) + (rotate_half(q) * sin)
+RuntimeError: Expected all tensors to be on the same device, but found at least two devices, cuda:3 and cpu!
+[2023-06-09 05:24:44,405] [INFO] [launch.py:314:sigkill_handler] Killing subprocess 75727
+[2023-06-09 05:24:50,216] [INFO] [launch.py:314:sigkill_handler] Killing subprocess 75728
+[2023-06-09 05:24:52,247] [INFO] [launch.py:314:sigkill_handler] Killing subprocess 75729
+[2023-06-09 05:24:52,249] [INFO] [launch.py:314:sigkill_handler] Killing subprocess 75730
+[2023-06-09 05:24:52,250] [INFO] [launch.py:314:sigkill_handler] Killing subprocess 75731
+[2023-06-09 05:24:52,252] [INFO] [launch.py:314:sigkill_handler] Killing subprocess 75732
+[2023-06-09 05:24:52,253] [INFO] [launch.py:314:sigkill_handler] Killing subprocess 75734
+[2023-06-09 05:24:52,253] [INFO] [launch.py:314:sigkill_handler] Killing subprocess 75736
+[2023-06-09 05:24:52,254] [INFO] [launch.py:314:sigkill_handler] Killing subprocess 75738
+[2023-06-09 05:24:52,256] [INFO] [launch.py:314:sigkill_handler] Killing subprocess 75740
+[2023-06-09 05:24:52,257] [INFO] [launch.py:314:sigkill_handler] Killing subprocess 75742
+[2023-06-09 05:24:52,258] [INFO] [launch.py:314:sigkill_handler] Killing subprocess 75744
+[2023-06-09 05:24:52,259] [INFO] [launch.py:314:sigkill_handler] Killing subprocess 75746
+[2023-06-09 05:24:52,260] [INFO] [launch.py:314:sigkill_handler] Killing subprocess 75748
+[2023-06-09 05:24:52,261] [INFO] [launch.py:314:sigkill_handler] Killing subprocess 75750
+[2023-06-09 05:24:52,262] [INFO] [launch.py:314:sigkill_handler] Killing subprocess 75752
+[2023-06-09 05:24:52,263] [ERROR] [launch.py:320:sigkill_handler] ['/opt/conda/bin/python', '-u', 'main.py', '--local_rank=15', '--data_path', 'Dahoas/rm-static', 'Dahoas/full-hh-rlhf', '--data_split', '2,4,4', '--model_name_or_path', 'huggyllama/llama-7b', '--per_device_train_batch_size', '4', '--per_device_eval_batch_size', '4', '--max_seq_len', '512', '--learning_rate', '1e-4', '--weight_decay', '0.', '--num_train_epochs', '5', '--gradient_accumulation_steps', '1', '--lr_scheduler_type', 'cosine', '--num_warmup_steps', '0', '--seed', '1234', '--gradient_checkpointing', '--zero_stage', '3', '--lora_dim', '256', '--lora_module_name', 'model.layers.', '--deepspeed', '--output_dir', 'check-7b'] exits with return code = 1

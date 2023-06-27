@@ -14,6 +14,7 @@ from transformers.deepspeed import HfDeepSpeedConfig
 
 from .reward_model import RewardModel
 
+from .hf_model.modeling_llama import LlamaForCausalLM
 
 def create_hf_model(model_class,
                     model_name_or_path,
@@ -21,6 +22,8 @@ def create_hf_model(model_class,
                     ds_config=None,
                     rlhf_training=False,
                     disable_dropout=False):
+    # import os
+    # os.environ['TRANSFORMERS_CACHE'] = '/tmp/hf_cache/'
     model_config = AutoConfig.from_pretrained(model_name_or_path)
     if disable_dropout:
         model_config.dropout = 0.0
@@ -34,10 +37,18 @@ def create_hf_model(model_class,
         # the weight loading is handled by create critic model
         model = model_class.from_config(model_config)
     else:
-        model = model_class.from_pretrained(
-            model_name_or_path,
-            from_tf=bool(".ckpt" in model_name_or_path),
-            config=model_config)
+        if 'llama' in model_name_or_path:
+            model =  LlamaForCausalLM.from_pretrained(
+                model_name_or_path,
+                from_tf=bool(".ckpt" in model_name_or_path),
+                config=model_config,
+                cache_dir=f'/tmp/hf_cache/')
+        else:
+            model = model_class.from_pretrained(
+                model_name_or_path,
+                from_tf=bool(".ckpt" in model_name_or_path),
+                config=model_config,
+                cache_dir=f'/tmp/hf_cache/')
 
     model.config.end_token_id = tokenizer.eos_token_id
     model.config.pad_token_id = model.config.eos_token_id
@@ -72,6 +83,7 @@ def create_critic_model(model_name_or_path,
             model_ckpt_path
         ), f"Cannot find model checkpoint at {model_ckpt_path}"
         critic_model.load_state_dict(
-            torch.load(model_ckpt_path, map_location='cpu'))
+            torch.load(model_ckpt_path, map_location='cpu'),
+            strict=False)  # llama does not save ALIBI embeddings
 
     return critic_model
