@@ -462,9 +462,26 @@ def main():
                     random.shuffle(exp_dataset)
                     random.shuffle(unsup_dataset)
 
-                print_rank_0(
-                    f'epoch: {epoch}|step: {step}|ppo_ep: {ppo_ep+1}|act_loss: {actor_loss_sum/inner_iter}|cri_loss: {critic_loss_sum/inner_iter}|unsuper_loss: {unsup_loss_sum/inner_iter}',
-                    args.global_rank)
+                #print_rank_0(
+                #    f'epoch: {epoch}|step: {step}|ppo_ep: {ppo_ep+1}|act_loss: {actor_loss_sum/inner_iter}|cri_loss: {critic_loss_sum/inner_iter}|unsuper_loss: {unsup_loss_sum/inner_iter}',
+                #    args.global_rank)
+                #print_rank_0(
+                #    f'exp_data[\"rewards\"]: {exp_data["rewards"]}',
+                #    args.global_rank)
+                #print_rank_0(
+                #    f'average reward score (pre all reduce): {average_reward}',
+                #    args.global_rank)
+                #average_reward = get_all_reduce_mean(average_reward).item()
+                #print_rank_0(
+                #    f"average reward score: {average_reward/inner_iter}",
+                #    args.global_rank)
+                #print_rank_0(
+                #    "-------------------------------------------------------------------------------------",
+                #    args.global_rank)
+
+                print(f'rank: {torch.distributed.get_rank()}|epoch: {epoch}|step: {step}|ppo_ep: {ppo_ep+1}|act_loss: {actor_loss_sum/inner_iter}|cri_loss: {critic_loss_sum/inner_iter}|unsuper_loss: {unsup_loss_sum/inner_iter}')
+                print(f'rank: {torch.distributed.get_rank()}|exp_data[\"rewards\"]: {exp_data["rewards"]}')
+                print(f'rank: {torch.distributed.get_rank()}|average reward score (pre all reduce): {average_reward}')
                 average_reward = get_all_reduce_mean(average_reward).item()
                 print_rank_0(
                     f"average reward score: {average_reward/inner_iter}",
@@ -472,8 +489,9 @@ def main():
                 print_rank_0(
                     "-------------------------------------------------------------------------------------",
                     args.global_rank)
+
                 #if step == 250:
-                #if step == 2:
+                #if step == 120:
                 #    break
 
             if args.actor_gradient_checkpointing:
