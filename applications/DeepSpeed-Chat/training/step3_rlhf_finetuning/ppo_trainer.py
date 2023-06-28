@@ -170,7 +170,9 @@ class DeepSpeedPPOTrainer():
                                         log_probs[:, start:], advantages,
                                         action_mask[:, start:])
         self.actor_model.backward(actor_loss)
-        self.actor_model.step()
+        
+        actor_overflow = self.actor_model.optimizer.check_overflow(external=True)
+
         value = self.critic_model.forward_value(**batch,
                                                 return_value_only=True,
                                                 use_cache=False)[:, :-1]
@@ -178,6 +180,19 @@ class DeepSpeedPPOTrainer():
                                                                        start:],
                                           returns, action_mask[:, start:])
         self.critic_model.backward(critic_loss)
+        critic_overflow = self.critic_model.optimizer.check_overflow(external=True)
+
+        rank = torch.distributed.get_rank()
+        if actor_overflow and not critic_overflow:
+            self.critic_model.optimizer.skip_step = True
+            print_rank_0("OVERFLOW: actor overflow, skipping both actor and critic steps", rank)
+        elif not actor_overflow and critic_overflow:
+            self.actor_model.optimizer.skip_step = True
+            print_rank_0("OVERFLOW: critic overflow, skipping both actor and critic steps", rank)
+        elif actor_overflow and critic_overflow:
+            print_rank_0("OVERFLOW: actor and critic overflow, skipping both actor and critic steps", rank)
+
+        self.actor_model.step()
         self.critic_model.step()
 
         return actor_loss, critic_loss
