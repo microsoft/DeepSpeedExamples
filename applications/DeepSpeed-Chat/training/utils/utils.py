@@ -44,6 +44,7 @@ class MovingAverage:
 
 def load_hf_tokenizer(model_name_or_path, fast_tokenizer=True):
     model_name = ""
+    model_name_or_path = "/home/zheweiyao/chatgpt_post_release/DeepSpeedExamples/applications/DeepSpeed-Chat/training/step1_supervised_finetuning/output_llama_7b"
     if os.path.exists(model_name_or_path):
         # Locally tokenizer loading has some issue, so we need to force download
         model_json = os.path.join(model_name_or_path, "config.json")

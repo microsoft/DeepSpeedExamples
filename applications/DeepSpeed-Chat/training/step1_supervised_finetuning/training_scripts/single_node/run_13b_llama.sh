@@ -6,7 +6,7 @@
 OUTPUT=$1
 ZERO_STAGE=$2
 if [ "$OUTPUT" == "" ]; then
-    OUTPUT=./output_llama_13b
+    OUTPUT=./output_llama_13b_16E_LoRA
 fi
 if [ "$ZERO_STAGE" == "" ]; then
     ZERO_STAGE=3
@@ -22,7 +22,7 @@ deepspeed main.py \
    --max_seq_len 512 \
    --learning_rate 1e-4 \
    --weight_decay 0. \
-   --num_train_epochs 5  \
+   --num_train_epochs 16  \
    --gradient_accumulation_steps 1 \
    --lr_scheduler_type cosine \
    --num_warmup_steps 0 \

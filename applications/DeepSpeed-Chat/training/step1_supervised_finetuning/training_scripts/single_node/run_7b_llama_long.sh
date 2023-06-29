@@ -6,7 +6,7 @@
 OUTPUT=$1
 ZERO_STAGE=$2
 if [ "$OUTPUT" == "" ]; then
-    OUTPUT=./output_llama_7b
+    OUTPUT=./output_llama_7b_long_fulldata
 fi
 if [ "$ZERO_STAGE" == "" ]; then
     ZERO_STAGE=3
@@ -14,15 +14,15 @@ fi
 mkdir -p $OUTPUT
 
 deepspeed main.py \
-   --data_path Dahoas/rm-static Dahoas/full-hh-rlhf \
-   --data_split 2,4,4 \
+   --data_path Dahoas/rm-static Dahoas/full-hh-rlhf Dahoas/synthetic-instruct-gptj-pairwise yitingxie/rlhf-reward-datasets openai/webgpt_comparisons \
+   --data_split 10,0,0 \
    --model_name_or_path decapoda-research/llama-7b-hf \
-   --per_device_train_batch_size 8 \
-   --per_device_eval_batch_size 8 \
-   --max_seq_len 512 \
+   --per_device_train_batch_size 2 \
+   --per_device_eval_batch_size 2 \
+   --max_seq_len 2048 \
    --learning_rate 9.65e-6 \
    --weight_decay 0. \
-   --num_train_epochs 16  \
+   --num_train_epochs 1  \
    --gradient_accumulation_steps 1 \
    --lr_scheduler_type cosine \
    --num_warmup_steps 0 \
