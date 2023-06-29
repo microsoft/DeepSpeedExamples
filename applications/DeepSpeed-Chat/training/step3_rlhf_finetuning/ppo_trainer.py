@@ -72,8 +72,10 @@ class DeepSpeedPPOTrainer():
         with torch.no_grad():
             seq = self.actor_model.module.generate(prompts,
                                                    attention_mask=mask,
-                                                   max_length=max_min_length,
-                                                   min_length=max_min_length)
+                                                   max_length=max_min_length)
+                                                   #min_length=max_min_length)
+
+
 
         # Filter out seq with no answers (or very short). This happens when users directly use the pre-training ckpt without supervised finetuning
         # NOTE: this will causes each GPU has different number of examples
@@ -82,6 +84,8 @@ class DeepSpeedPPOTrainer():
         ans = seq[:, prompt_length:]
         self.prompt_length = prompt_length
         valid_ans_len = (ans != self.tokenizer.pad_token_id).sum(dim=-1)
+        #print(f"--- prompt --> rank={torch.distributed.get_rank()} {self.tokenizer.batch_decode(prompts, skip_special_tokens=True)}")
+        #print(f"--- ans    --> rank={torch.distributed.get_rank()} {self.tokenizer.batch_decode(ans, skip_special_tokens=True)}")
         out_seq = []
         for i in range(batch_size):
             if valid_ans_len[
@@ -170,7 +174,8 @@ class DeepSpeedPPOTrainer():
                                         log_probs[:, start:], advantages,
                                         action_mask[:, start:])
         self.actor_model.backward(actor_loss)
-        self.actor_model.step()
+
+
         value = self.critic_model.forward_value(**batch,
                                                 return_value_only=True,
                                                 use_cache=False)[:, :-1]
@@ -178,6 +183,22 @@ class DeepSpeedPPOTrainer():
                                                                        start:],
                                           returns, action_mask[:, start:])
         self.critic_model.backward(critic_loss)
+
+        if self.args.align_overflow:
+            actor_overflow = self.actor_model.optimizer.check_overflow(external=True)
+            critic_overflow = self.critic_model.optimizer.check_overflow(external=True)
+
+            rank = torch.distributed.get_rank()
+            if actor_overflow and not critic_overflow:
+                self.critic_model.optimizer.skip_step = True
+                print_rank_0("OVERFLOW: actor overflow, skipping both actor and critic steps", rank)
+            elif not actor_overflow and critic_overflow:
+                self.actor_model.optimizer.skip_step = True
+                print_rank_0("OVERFLOW: critic overflow, skipping both actor and critic steps", rank)
+            elif actor_overflow and critic_overflow:
+                print_rank_0("OVERFLOW: actor and critic overflow, skipping both actor and critic steps", rank)
+
+        self.actor_model.step()
         self.critic_model.step()
 
         return actor_loss, critic_loss

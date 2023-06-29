@@ -32,7 +32,7 @@ def get_train_ds_config(offload,
     return {
         "train_batch_size": GLOBAL_BATCH_SIZE,
         "train_micro_batch_size_per_gpu": MICRO_BATCH_SIZE,
-        "steps_per_print": 10,
+        "steps_per_print": 2,
         "zero_optimization": zero_opt_dict,
         "fp16": {
             "enabled": True,

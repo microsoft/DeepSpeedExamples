@@ -23,6 +23,8 @@ import torch
 from torch.utils.data import DataLoader, RandomSampler
 from torch.utils.data.distributed import DistributedSampler
 
+from torch.utils.tensorboard import SummaryWriter
+
 from transformers import (
     SchedulerType,
     default_data_collator,
@@ -42,7 +44,10 @@ from utils.utils import print_rank_0, to_device, save_hf_format, set_random_seed
 from utils.module.lora import convert_lora_to_linear_layer
 
 
+writer = None
+
 def parse_args():
+    global writer
     parser = argparse.ArgumentParser(
         description="(Step 3) RLHF training arguments")
 
@@ -286,8 +291,14 @@ def parse_args():
                         action='store_true',
                         help='Enable EMA checkpoint for the model.')
 
+    parser.add_argument('--tensorboard-name', type=str)
+    parser.add_argument('--align-overflow', action='store_true', help='align loss scale overflow between actor and critic')
+
     parser = deepspeed.add_config_arguments(parser)
     args = parser.parse_args()
+
+    print(f"Tensorboard logs going to: {args.tensorboard_name}")
+    writer = SummaryWriter(args.tensorboard_name)
 
     # Validate settings
     if (args.actor_gradient_checkpointing
@@ -470,6 +481,13 @@ def main():
                 print_rank_0(
                     "-------------------------------------------------------------------------------------",
                     args.global_rank)
+                if torch.distributed.get_rank() == 0:
+                    writer.add_scalar('reward', average_reward/inner_iter, global_step=step)
+                    writer.add_scalar('actor_loss', actor_loss, global_step=step)
+                    writer.add_scalar('actor_loss_sum', actor_loss_sum, global_step=step)
+                    writer.add_scalar('critic_loss', critic_loss, global_step=step)
+                    writer.add_scalar('critic_loss_sum', critic_loss_sum, global_step=step)
+                    writer.flush()
 
             if args.actor_gradient_checkpointing:
                 rlhf_engine.actor.gradient_checkpointing_disable()
