@@ -293,6 +293,7 @@ def parse_args():
 
     parser.add_argument('--tensorboard-name', type=str)
     parser.add_argument('--align-overflow', action='store_true', help='align loss scale overflow between actor and critic')
+    parser.add_argument('--print-answers', action='store_true', help='print prompt and answers during training')
 
     parser = deepspeed.add_config_arguments(parser)
     args = parser.parse_args()
