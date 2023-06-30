@@ -311,8 +311,12 @@ def main():
             batch = to_device(batch, device)
             outputs = model(**batch, use_cache=False)
             loss = outputs.loss
+            print(f"Epoch: {epoch}, Step: {step}, Rank: {torch.distributed.get_rank()}, loss = {loss}")
             model.backward(loss)
             model.step()
+
+            #if step == 3:
+            #    break
 
         # Evaluate perplexity on the validation set.
         print_rank_0(
@@ -321,6 +325,8 @@ def main():
         perplexity = evaluation(model, eval_dataloader)
         print_rank_0(f"ppl: {perplexity}", args.global_rank)
         model.tput_timer.update_epoch_count()
+
+        #break
 
     if args.output_dir is not None:
         print_rank_0('saving the final model ...', args.global_rank)

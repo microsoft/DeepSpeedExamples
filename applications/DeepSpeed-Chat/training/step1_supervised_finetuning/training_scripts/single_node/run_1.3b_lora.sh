@@ -24,6 +24,7 @@ fi
 
 mkdir -p $OUTPUT
 
+#cmd="deepspeed --num_gpus 2 main.py \
 cmd="deepspeed main.py \
    --data_path Dahoas/rm-static Dahoas/full-hh-rlhf Dahoas/synthetic-instruct-gptj-pairwise yitingxie/rlhf-reward-datasets \
    --data_split 2,4,4 \
@@ -49,3 +50,4 @@ cmd="deepspeed main.py \
 echo $cmd
 
 $cmd &> $OUTPUT/${OUTPUT}.log
+#$cmd
