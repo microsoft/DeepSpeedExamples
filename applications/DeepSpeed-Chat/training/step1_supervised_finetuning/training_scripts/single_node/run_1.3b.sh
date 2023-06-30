@@ -3,17 +3,25 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # DeepSpeed Team
-OUTPUT=$1
-ZERO_STAGE=$2
-if [ "$OUTPUT" == "" ]; then
-    OUTPUT=./output
-fi
+ZERO_STAGE=$1
+OFFLOAD=$2
+OUTPUT=$3
 if [ "$ZERO_STAGE" == "" ]; then
     ZERO_STAGE=2
 fi
+if [ "$OFFLOAD" == true ]; then
+    OFFLOAD="--offload"
+else
+    OFFLOAD=""
+fi
+echo $OFFLOAD
+if [ "$OUTPUT" == "" ]; then
+    OUTPUT=./output
+fi
+
 mkdir -p $OUTPUT
 
-deepspeed main.py \
+cmd="deepspeed main.py \
    --data_path Dahoas/rm-static Dahoas/full-hh-rlhf Dahoas/synthetic-instruct-gptj-pairwise yitingxie/rlhf-reward-datasets \
    --data_split 2,4,4 \
    --model_name_or_path facebook/opt-1.3b \
@@ -30,4 +38,8 @@ deepspeed main.py \
    --zero_stage $ZERO_STAGE \
    --deepspeed \
    --output_dir $OUTPUT \
-   &> $OUTPUT/training.log
+   $OFFLOAD"
+
+echo $cmd
+
+$cmd &> $OUTPUT/${OUTPUT}.log
