@@ -59,7 +59,7 @@ def parse_args():
         default='2,4,4',
         help=
         'Comma-separated list of proportions for training phase 1, 2, and 3 data. For example the split `2,4,4` '
-        'will use 60% of data for phase 1, 20% for phase 2 and 20% for phase 3.'
+        'will use 60%% of data for phase 1, 20%% for phase 2 and 20%% for phase 3.'
     )
     parser.add_argument(
         '--data_output_path',
@@ -380,7 +380,8 @@ def main():
     tokenizer = load_hf_tokenizer(args.actor_model_name_or_path,
                                   fast_tokenizer=True)
     tokenizer.pad_token = tokenizer.eos_token
-
+    # make sure tokenizer is right pad in our logic
+    tokenizer.padding_side = 'right'
     prompt_train_dataloader, unsupervised_train_dataloader, num_total_iters = create_datasets(
         args=args, tokenizer=tokenizer, train_phase=3)
 
