@@ -30,7 +30,7 @@ if [ "$LORA" == true ]; then
     ACTOR_LORA_MODULE_NAME="--actor_lora_module_name decoder.layers."
 else
     Actor_Lr=9.65e-6
-    ACTOR_LORA_DIM=""
+    ACTOR_LORA_DIM="--actor_lora_dim 0"
     ACTOR_LORA_MODULE_NAME=""
 fi
 
@@ -62,8 +62,8 @@ cmd="deepspeed --num_nodes=1 --num_gpus=16 main.py \
    --num_warmup_steps 100 \
    --deepspeed --seed 1234 \
    --disable_actor_dropout \
-   ${ACTOR_ZERO_STAGE} \
-   ${CRITIC_ZERO_STAGE} \
+   --actor_learning_rate ${Actor_Lr} \
+   --critic_learning_rate ${Critic_Lr} \
    --output_dir $OUTPUT \
     $ENABLE_HYBRID_ENGINE $OFFLOAD $UNPIN_ACTOR_PARAMETERS \
     $ACTOR_LORA_DIM $ACTOR_LORA_MODULE_NAME"
@@ -71,5 +71,5 @@ cmd="deepspeed --num_nodes=1 --num_gpus=16 main.py \
 echo "----------------------------- DS COMMAND -----------------------------"
 echo $cmd
 
-#$cmd &> $OUTPUT/${OUTPUT}.log
+$cmd &> $OUTPUT/${OUTPUT}.log
 #$cmd

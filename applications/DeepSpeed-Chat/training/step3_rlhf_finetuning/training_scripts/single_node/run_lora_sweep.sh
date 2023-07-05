@@ -18,7 +18,7 @@ do
                 echo $cmd
                 $cmd
                 pkill -9 python
-                #sleep 60
+                sleep 60
                 echo ""
             done
         done
