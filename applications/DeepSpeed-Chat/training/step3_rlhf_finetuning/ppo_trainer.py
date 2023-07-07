@@ -85,6 +85,11 @@ class DeepSpeedPPOTrainer():
         self.prompt_length = prompt_length
         ans = seq[:, prompt_length:]
         valid_ans_len = (ans != self.tokenizer.pad_token_id).sum(dim=-1)
+
+        if self.args.print_answers:
+            print(f"--- prompt --> rank={torch.distributed.get_rank()} {self.tokenizer.batch_decode(prompts, skip_special_tokens=True)}")
+            print(f"--- ans    --> rank={torch.distributed.get_rank()} {self.tokenizer.batch_decode(ans, skip_special_tokens=True)}")
+
         out_seq = []
         for i in range(batch_size):
             if valid_ans_len[

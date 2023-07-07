@@ -285,6 +285,7 @@ def parse_args():
     parser.add_argument('--enable_ema',
                         action='store_true',
                         help='Enable EMA checkpoint for the model.')
+    parser.add_argument('--print_answers', action='store_true', help='print prompt and answers during training')
 
     parser = deepspeed.add_config_arguments(parser)
     args = parser.parse_args()

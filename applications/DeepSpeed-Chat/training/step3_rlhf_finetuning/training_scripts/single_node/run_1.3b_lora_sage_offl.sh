@@ -62,6 +62,7 @@ cmd="deepspeed --num_nodes=1 --num_gpus=16 main.py \
    --num_warmup_steps 100 \
    --deepspeed --seed 1234 \
    --disable_actor_dropout \
+   --print_answers \
    --actor_zero_stage ${ACTOR_ZERO_STAGE} \
    --critic_zero_stage ${CRITIC_ZERO_STAGE} \
    --output_dir $OUTPUT \
