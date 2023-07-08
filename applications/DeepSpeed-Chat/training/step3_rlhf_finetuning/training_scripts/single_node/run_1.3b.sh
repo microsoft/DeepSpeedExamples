@@ -48,9 +48,10 @@ deepspeed --master_port 12346 main.py \
    --critic_zero_stage $CRITIC_ZERO_STAGE \
    --enable_ema \
    --output_dir $OUTPUT \
-   --tensorboard-name $OUTPUT \
-   # &> $OUTPUT/training.log
+   --print_answers \
+   --enable_tensorboard \
+   --tensorboard_name $OUTPUT \
+   --enable_hybrid_engine \
+    &> $OUTPUT/training.log
 
    #--actor_gradient_checkpointing
-   
-   #--enable_hybrid_engine \

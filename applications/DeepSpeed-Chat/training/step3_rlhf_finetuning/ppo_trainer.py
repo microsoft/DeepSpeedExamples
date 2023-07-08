@@ -65,7 +65,7 @@ class DeepSpeedPPOTrainer():
         self.gamma = 1.0
         self.lam = 0.95
 
-    def _generate_sequence(self, prompts, mask):
+    def _generate_sequence(self, prompts, mask, step):
 
         max_min_length = self.max_answer_seq_len + prompts.shape[1]
 
@@ -87,8 +87,8 @@ class DeepSpeedPPOTrainer():
         valid_ans_len = (ans != self.tokenizer.pad_token_id).sum(dim=-1)
 
         if self.args.print_answers:
-            print(f"--- prompt --> rank={torch.distributed.get_rank()} {self.tokenizer.batch_decode(prompts, skip_special_tokens=True)}")
-            print(f"--- ans    --> rank={torch.distributed.get_rank()} {self.tokenizer.batch_decode(ans, skip_special_tokens=True)}")
+            print(f"--- prompt --> step={step}, rank={torch.distributed.get_rank()}, {self.tokenizer.batch_decode(prompts, skip_special_tokens=True)}")
+            print(f"--- ans    --> step={step}, rank={torch.distributed.get_rank()}, {self.tokenizer.batch_decode(ans, skip_special_tokens=True)}")
 
         out_seq = []
         for i in range(batch_size):
@@ -101,9 +101,9 @@ class DeepSpeedPPOTrainer():
 
         return out_seq
 
-    def generate_experience(self, prompts, mask):
+    def generate_experience(self, prompts, mask, step):
         self.eval()
-        seq = self._generate_sequence(prompts, mask)
+        seq = self._generate_sequence(prompts, mask, step)
         self.train()
 
         pad_token_id = self.tokenizer.pad_token_id
@@ -184,6 +184,8 @@ class DeepSpeedPPOTrainer():
                                         action_mask[:, start:])
         self.actor_model.backward(actor_loss)
 
+        if not self.args.align_overflow:
+            self.actor_model.step()
 
         value = self.critic_model.forward_value(**batch,
                                                 return_value_only=True,
@@ -206,8 +208,8 @@ class DeepSpeedPPOTrainer():
                 print_rank_0("OVERFLOW: critic overflow, skipping both actor and critic steps", rank)
             elif actor_overflow and critic_overflow:
                 print_rank_0("OVERFLOW: actor and critic overflow, skipping both actor and critic steps", rank)
+            self.actor_model.step()
 
-        self.actor_model.step()
         self.critic_model.step()
 
         return actor_loss, critic_loss
