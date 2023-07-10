@@ -5,7 +5,7 @@
 ACTOR_MODEL_PATH="AdamG012/chat-opt-1.3b-sft-deepspeed"
 CRITIC_MODEL_PATH="AdamG012/chat-opt-350m-reward-deepspeed"
 
-for z in 2
+for z in {2..3}
 do
     for he in true false
     do

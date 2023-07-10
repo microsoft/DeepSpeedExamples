@@ -25,11 +25,9 @@ else
 fi
 
 if [ "$LORA" == true ]; then
-    Actor_Lr=5e-4
     ACTOR_LORA_DIM="--actor_lora_dim 128"
     ACTOR_LORA_MODULE_NAME="--actor_lora_module_name decoder.layers."
 else
-    Actor_Lr=9.65e-6
     ACTOR_LORA_DIM="--actor_lora_dim 0"
     ACTOR_LORA_MODULE_NAME=""
 fi
@@ -38,6 +36,7 @@ mkdir -p $OUTPUT
 
 Num_Padding_at_Beginning=1 # this is model related
 
+Actor_Lr=9.65e-6
 Critic_Lr=5e-6
 
 cmd="deepspeed --num_nodes=1 --num_gpus=16 main.py \

@@ -428,7 +428,8 @@ def main():
             #     raise ValueError("Prompt length is too long")
 
             out = trainer.generate_experience(batch_prompt['prompt'],
-                                              batch_prompt['prompt_att_mask'])
+                                              batch_prompt['prompt_att_mask'],
+                                              step)
             exp_dataset = exp_mini_dataset.add(out)
 
             if exp_dataset is not None:
@@ -474,6 +475,10 @@ def main():
 
             if args.actor_gradient_checkpointing:
                 rlhf_engine.actor.gradient_checkpointing_disable()
+
+            #if step == 15:
+            #    break
+        #break
 
     if args.output_dir is not None:
         print_rank_0('saving model ...')
