@@ -5,27 +5,10 @@
 # DeepSpeed Team
 
 # Note that usually LoRA needs to use larger learning rate
-# DeepSpeed Team
-ZERO_STAGE=$1
-OFFLOAD=$2
-OUTPUT=$3
-if [ "$ZERO_STAGE" == "" ]; then
-    ZERO_STAGE=2
-fi
-if [ "$OFFLOAD" == true ]; then
-    OFFLOAD="--offload"
-else
-    OFFLOAD=""
-fi
-echo $OFFLOAD
-if [ "$OUTPUT" == "" ]; then
-    OUTPUT=./output
-fi
+OUTPUT_PATH=./output
+mkdir -p $OUTPUT_PATH
 
-mkdir -p $OUTPUT
-
-#cmd="deepspeed --num_gpus 2 main.py \
-cmd="deepspeed main.py \
+deepspeed main.py \
    --data_path Dahoas/rm-static Dahoas/full-hh-rlhf Dahoas/synthetic-instruct-gptj-pairwise yitingxie/rlhf-reward-datasets \
    --data_split 2,4,4 \
    --model_name_or_path facebook/opt-1.3b \
@@ -39,15 +22,10 @@ cmd="deepspeed main.py \
    --lr_scheduler_type cosine \
    --num_warmup_steps 0 \
    --seed 1234 \
-   --zero_stage $ZERO_STAGE \
+   --zero_stage 0 \
    --lora_dim 128 \
    --lora_module_name decoder.layers. \
    --only_optimize_lora \
    --deepspeed \
-   --output_dir $OUTPUT \
-   $OFFLOAD"
-
-echo $cmd
-
-$cmd &> $OUTPUT/${OUTPUT}.log
-#$cmd
+   --output_dir $OUTPUT_PATH \
+   &> $OUTPUT_PATH/training.log
