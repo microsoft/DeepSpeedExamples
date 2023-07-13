@@ -87,8 +87,12 @@ class DeepSpeedPPOTrainer():
         valid_ans_len = (ans != self.tokenizer.pad_token_id).sum(dim=-1)
 
         if self.args.print_answers:
-            print(f"--- prompt --> step={step}, rank={torch.distributed.get_rank()}, {self.tokenizer.batch_decode(prompts, skip_special_tokens=True)}")
-            print(f"--- ans    --> step={step}, rank={torch.distributed.get_rank()}, {self.tokenizer.batch_decode(ans, skip_special_tokens=True)}")
+            print(
+                f"--- prompt --> step={step}, rank={torch.distributed.get_rank()}, {self.tokenizer.batch_decode(prompts, skip_special_tokens=True)}"
+            )
+            print(
+                f"--- ans    --> step={step}, rank={torch.distributed.get_rank()}, {self.tokenizer.batch_decode(ans, skip_special_tokens=True)}"
+            )
 
         out_seq = []
         for i in range(batch_size):
@@ -196,18 +200,26 @@ class DeepSpeedPPOTrainer():
         self.critic_model.backward(critic_loss)
 
         if self.args.align_overflow:
-            actor_overflow = self.actor_model.optimizer.check_overflow(external=True)
-            critic_overflow = self.critic_model.optimizer.check_overflow(external=True)
+            actor_overflow = self.actor_model.optimizer.check_overflow(
+                external=True)
+            critic_overflow = self.critic_model.optimizer.check_overflow(
+                external=True)
 
             rank = torch.distributed.get_rank()
             if actor_overflow and not critic_overflow:
                 self.critic_model.optimizer.skip_step = True
-                print_rank_0("OVERFLOW: actor overflow, skipping both actor and critic steps", rank)
+                print_rank_0(
+                    "OVERFLOW: actor overflow, skipping both actor and critic steps",
+                    rank)
             elif not actor_overflow and critic_overflow:
                 self.actor_model.optimizer.skip_step = True
-                print_rank_0("OVERFLOW: critic overflow, skipping both actor and critic steps", rank)
+                print_rank_0(
+                    "OVERFLOW: critic overflow, skipping both actor and critic steps",
+                    rank)
             elif actor_overflow and critic_overflow:
-                print_rank_0("OVERFLOW: actor and critic overflow, skipping both actor and critic steps", rank)
+                print_rank_0(
+                    "OVERFLOW: actor and critic overflow, skipping both actor and critic steps",
+                    rank)
             self.actor_model.step()
 
         self.critic_model.step()

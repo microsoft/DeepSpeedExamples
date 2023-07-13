@@ -296,9 +296,10 @@ def parse_args():
     parser.add_argument('--tensorboard_path',
                         type=str,
                         default="step3_tensorboard")
-    parser.add_argument('--align_overflow',
-                        action='store_true',
-                        help='Align loss scale overflow between actor and critic')
+    parser.add_argument(
+        '--align_overflow',
+        action='store_true',
+        help='Align loss scale overflow between actor and critic')
     parser.add_argument('--print_answers',
                         action='store_true',
                         help='Print prompt and answers during training')
@@ -307,8 +308,11 @@ def parse_args():
     args = parser.parse_args()
 
     if args.enable_tensorboard:
-        print(f"Tensorboard logs going to: {args.tensorboard_path}/step3_tensorboard_logs")
-        writer = SummaryWriter(f"{args.tensorboard_path}/step3_tensorboard_logs")
+        print(
+            f"Tensorboard logs going to: {args.tensorboard_path}/step3_tensorboard_logs"
+        )
+        writer = SummaryWriter(
+            f"{args.tensorboard_path}/step3_tensorboard_logs")
 
     # Validate settings
     if (args.actor_gradient_checkpointing
@@ -492,12 +496,23 @@ def main():
                 print_rank_0(
                     "-------------------------------------------------------------------------------------",
                     args.global_rank)
-                if args.enable_tensorboard and torch.distributed.get_rank() == 0:
-                    writer.add_scalar('reward', average_reward/inner_iter, global_step=step)
-                    writer.add_scalar('actor_loss', actor_loss, global_step=step)
-                    writer.add_scalar('actor_loss_sum', actor_loss_sum, global_step=step)
-                    writer.add_scalar('critic_loss', critic_loss, global_step=step)
-                    writer.add_scalar('critic_loss_sum', critic_loss_sum, global_step=step)
+                if args.enable_tensorboard and torch.distributed.get_rank(
+                ) == 0:
+                    writer.add_scalar('reward',
+                                      average_reward / inner_iter,
+                                      global_step=step)
+                    writer.add_scalar('actor_loss',
+                                      actor_loss,
+                                      global_step=step)
+                    writer.add_scalar('actor_loss_sum',
+                                      actor_loss_sum,
+                                      global_step=step)
+                    writer.add_scalar('critic_loss',
+                                      critic_loss,
+                                      global_step=step)
+                    writer.add_scalar('critic_loss_sum',
+                                      critic_loss_sum,
+                                      global_step=step)
                     writer.flush()
 
             if args.actor_gradient_checkpointing:

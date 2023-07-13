@@ -186,11 +186,12 @@ class DeepSpeedRLHFEngine():
 
     def _init_critic(self, critic_model_name_or_path):
         stime = log_init("Critic")
-        ds_config = get_train_ds_config(offload=self.args.offload,
-                                        stage=self.args.critic_zero_stage,
-                                        enable_tensorboard=self.args.enable_tensorboard,
-                                        tb_path=self.args.tensorboard_path,
-                                        tb_name="step3_critic")
+        ds_config = get_train_ds_config(
+            offload=self.args.offload,
+            stage=self.args.critic_zero_stage,
+            enable_tensorboard=self.args.enable_tensorboard,
+            tb_path=self.args.tensorboard_path,
+            tb_name="step3_critic")
         ds_config[
             'train_micro_batch_size_per_gpu'] = self.args.per_device_mini_train_batch_size
         #TODO(jeff): we should probably set grad accumlation steps here as well for clarity
