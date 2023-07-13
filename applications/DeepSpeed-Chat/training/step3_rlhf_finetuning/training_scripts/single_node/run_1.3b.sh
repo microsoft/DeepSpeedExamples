@@ -50,7 +50,7 @@ deepspeed --master_port 12346 main.py \
    --output_dir $OUTPUT \
    --print_answers \
    --enable_tensorboard \
-   --tensorboard_name $OUTPUT \
+   --tensorboard_path $OUTPUT \
    --enable_hybrid_engine \
     &> $OUTPUT/training.log
 

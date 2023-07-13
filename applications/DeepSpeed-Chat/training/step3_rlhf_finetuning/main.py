@@ -293,7 +293,7 @@ def parse_args():
     parser.add_argument('--enable_tensorboard',
                         action='store_true',
                         help='Enable tensorboard logging')
-    parser.add_argument('--tensorboard_name',
+    parser.add_argument('--tensorboard_path',
                         type=str,
                         default="step3_tensorboard")
     parser.add_argument('--align_overflow',
@@ -307,8 +307,8 @@ def parse_args():
     args = parser.parse_args()
 
     if args.enable_tensorboard:
-        print(f"Tensorboard logs going to: {args.tensorboard_name}")
-        writer = SummaryWriter(args.tensorboard_name)
+        print(f"Tensorboard logs going to: {args.tensorboard_path}/step3_tensorboard_logs")
+        writer = SummaryWriter(f"{args.tensorboard_path}/step3_tensorboard_logs")
 
     # Validate settings
     if (args.actor_gradient_checkpointing

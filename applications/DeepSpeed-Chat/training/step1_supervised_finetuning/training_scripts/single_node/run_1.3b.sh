@@ -30,5 +30,6 @@ deepspeed main.py \
    --zero_stage $ZERO_STAGE \
    --deepspeed \
    --enable_tensorboard \
+   --tensorboard_path $OUTPUT \
    --output_dir $OUTPUT \
    &> $OUTPUT/training.log

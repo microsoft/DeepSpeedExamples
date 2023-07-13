@@ -76,6 +76,7 @@ class DeepSpeedRLHFEngine():
             max_out_tokens=self.args.max_prompt_seq_len +
             self.args.max_answer_seq_len,
             enable_tensorboard=self.args.enable_tensorboard,
+            tb_path=self.args.tensorboard_path,
             tb_name="step3_actor")
         ds_config[
             'train_micro_batch_size_per_gpu'] = self.args.per_device_mini_train_batch_size
@@ -188,6 +189,7 @@ class DeepSpeedRLHFEngine():
         ds_config = get_train_ds_config(offload=self.args.offload,
                                         stage=self.args.critic_zero_stage,
                                         enable_tensorboard=self.args.enable_tensorboard,
+                                        tb_path=self.args.tensorboard_path,
                                         tb_name="step3_critic")
         ds_config[
             'train_micro_batch_size_per_gpu'] = self.args.per_device_mini_train_batch_size

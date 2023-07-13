@@ -15,6 +15,7 @@ def get_train_ds_config(offload,
                         tp_gather_partition_size=8,
                         max_out_tokens=512,
                         enable_tensorboard=False,
+                        tb_path="",
                         tb_name=""):
 
     device = "cpu" if offload else "none"
@@ -53,7 +54,7 @@ def get_train_ds_config(offload,
         },
         "tensorboard": {
             "enabled": enable_tensorboard,
-            "output_path": "ds_tensorboard_logs/",
+            "output_path": f"{tb_path}/ds_tensorboard_logs/",
             "job_name": f"{tb_name}_tensorboard"
         }
     }
