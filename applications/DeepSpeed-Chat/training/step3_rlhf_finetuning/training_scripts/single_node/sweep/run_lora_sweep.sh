@@ -2,6 +2,7 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0
 
+# DeepSpeed Team
 ACTOR_MODEL_PATH="AdamG012/chat-opt-1.3b-sft-deepspeed"
 CRITIC_MODEL_PATH="AdamG012/chat-opt-350m-reward-deepspeed"
 
