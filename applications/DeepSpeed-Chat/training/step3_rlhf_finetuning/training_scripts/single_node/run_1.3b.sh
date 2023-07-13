@@ -3,11 +3,11 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # DeepSpeed Team
-ACTOR_MODEL_PATH=AdamG012/chat-opt-1.3b-sft-deepspeed
-CRITIC_MODEL_PATH=AdamG012/chat-opt-350m-reward-deepspeed
-ACTOR_ZERO_STAGE=2
-CRITIC_ZERO_STAGE=2
-OUTPUT=$1
+ACTOR_MODEL_PATH=$1
+CRITIC_MODEL_PATH=$2
+ACTOR_ZERO_STAGE=$3
+CRITIC_ZERO_STAGE=$4
+OUTPUT=$5
 if [ "$OUTPUT" == "" ]; then
     OUTPUT=./output
 fi
@@ -44,6 +44,7 @@ deepspeed --master_port 12346 main.py \
    --disable_actor_dropout \
    --num_warmup_steps 100 \
    --deepspeed --seed 1234 \
+   --enable_hybrid_engine \
    --actor_zero_stage $ACTOR_ZERO_STAGE \
    --critic_zero_stage $CRITIC_ZERO_STAGE \
    --enable_ema \
@@ -51,7 +52,4 @@ deepspeed --master_port 12346 main.py \
    --print_answers \
    --enable_tensorboard \
    --tensorboard_path $OUTPUT \
-   --enable_hybrid_engine \
     &> $OUTPUT/training.log
-
-   #--actor_gradient_checkpointing
