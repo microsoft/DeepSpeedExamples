@@ -12,6 +12,14 @@ OFFLOAD=$6
 LORA=$7
 OUTPUT=$8
 
+if [ "$ACTOR_ZERO_STAGE" == "" ]; then
+    ACTOR_ZERO_STAGE=2
+fi
+
+if [ "$CRITIC_ZERO_STAGE" == "" ]; then
+    CRITIC_ZERO_STAGE=2
+fi
+
 if [ "$ENABLE_HYBRID_ENGINE" == true ]; then
     ENABLE_HYBRID_ENGINE="--enable_hybrid_engine"
 else
