@@ -66,7 +66,7 @@ class DeepSpeedPPOTrainer():
         self.gamma = 1.0
         self.lam = 0.95
 
-    def _generate_sequence(self, prompts, mask, step):
+    def _generate_sequence(self, prompts, mask):
 
         max_min_length = self.max_answer_seq_len + prompts.shape[1]
 
@@ -85,11 +85,6 @@ class DeepSpeedPPOTrainer():
         self.prompt_length = prompt_length
         ans = seq[:, prompt_length:]
         valid_ans_len = (ans != self.tokenizer.pad_token_id).sum(dim=-1)
-
-        if self.args.print_answers:
-            print(f"--- prompt --> step={step}, rank={torch.distributed.get_rank()} {self.tokenizer.batch_decode(prompts, skip_special_tokens=True)}")
-            print(f"--- ans    --> step={step}, rank={torch.distributed.get_rank()} {self.tokenizer.batch_decode(ans, skip_special_tokens=True)}")
-
         out_seq = []
         for i in range(batch_size):
             if valid_ans_len[
@@ -101,9 +96,9 @@ class DeepSpeedPPOTrainer():
 
         return out_seq
 
-    def generate_experience(self, prompts, mask, step):
+    def generate_experience(self, prompts, mask):
         self.eval()
-        seq = self._generate_sequence(prompts, mask, step)
+        seq = self._generate_sequence(prompts, mask)
         self.train()
 
         pad_token_id = self.tokenizer.pad_token_id

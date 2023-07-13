@@ -13,7 +13,15 @@ do
         do
             for lora in true false
             do
-                cmd="bash training_scripts/single_node/run_1.3b_lora_sage_offl.sh $ACTOR_MODEL_PATH $CRITIC_MODEL_PATH ${z} ${z} ${he} ${offload} ${lora} z${z}_he_${he}_offload_${offload}_lora_${lora}"
+                cmd="bash training_scripts/single_node/sweep/run_1.3b_lora_swp.sh \
+                    $ACTOR_MODEL_PATH \
+                    $CRITIC_MODEL_PATH \
+                    ${z} \
+                    ${z} \
+                    ${he} \
+                    ${offload} \
+                    ${lora} \
+                    z${z}_he_${he}_offload_${offload}_lora_${lora}"
                 echo "----------------------------- CALLING SHELL SCRIPT -----------------------------"
                 echo $cmd
                 $cmd

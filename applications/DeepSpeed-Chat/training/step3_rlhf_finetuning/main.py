@@ -285,7 +285,6 @@ def parse_args():
     parser.add_argument('--enable_ema',
                         action='store_true',
                         help='Enable EMA checkpoint for the model.')
-    parser.add_argument('--print_answers', action='store_true', help='print prompt and answers during training')
 
     parser = deepspeed.add_config_arguments(parser)
     args = parser.parse_args()
@@ -428,8 +427,7 @@ def main():
             #     raise ValueError("Prompt length is too long")
 
             out = trainer.generate_experience(batch_prompt['prompt'],
-                                              batch_prompt['prompt_att_mask'],
-                                              step)
+                                              batch_prompt['prompt_att_mask'])
             exp_dataset = exp_mini_dataset.add(out)
 
             if exp_dataset is not None:
@@ -475,10 +473,6 @@ def main():
 
             if args.actor_gradient_checkpointing:
                 rlhf_engine.actor.gradient_checkpointing_disable()
-
-            #if step == 15:
-            #    break
-        #break
 
     if args.output_dir is not None:
         print_rank_0('saving model ...')

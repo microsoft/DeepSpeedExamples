@@ -72,4 +72,3 @@ echo "----------------------------- DS COMMAND -----------------------------"
 echo $cmd
 
 $cmd &> $OUTPUT/${OUTPUT}.log
-#$cmd
