@@ -290,16 +290,19 @@ def parse_args():
     parser.add_argument('--enable_ema',
                         action='store_true',
                         help='Enable EMA checkpoint for the model.')
+    ## Tensorboard logging
     parser.add_argument('--enable_tensorboard',
                         action='store_true',
                         help='Enable tensorboard logging')
     parser.add_argument('--tensorboard_path',
                         type=str,
                         default="step3_tensorboard")
+    ## Actor/critic model overflow alignment
     parser.add_argument(
         '--align_overflow',
         action='store_true',
         help='Align loss scale overflow between actor and critic')
+    ## Print actor model answers during training
     parser.add_argument('--print_answers',
                         action='store_true',
                         help='Print prompt and answers during training')
