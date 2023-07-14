@@ -25,10 +25,14 @@ if [ "$LORA" == true ]; then
     LORA_DIM="--lora_dim 128"
     LORA_MODULE_NAME="--lora_module_name decoder.layers."
     ONLY_OPTIMIZE_LORA="--only_optimize_lora"
+    LEARNING_RATE="1e-3"
+    WEIGHT_DECAY="0.1"
 else
     LORA_DIM="--lora_dim 0"
     LORA_MODULE_NAME=""
     ONLY_OPTIMIZE_LORA=""
+    LEARNING_RATE="9.65e-6"
+    WEIGHT_DECAY="0."
 fi
 
 if [ "$OUTPUT" == "" ]; then
@@ -44,8 +48,8 @@ cmd="deepspeed main.py \
    --per_device_train_batch_size 8 \
    --per_device_eval_batch_size 8 \
    --max_seq_len 512 \
-   --learning_rate 1e-3 \
-   --weight_decay 0.1 \
+   --learning_rate ${LEARNING_RATE} \
+   --weight_decay ${WEIGHT_DECAY} \
    --num_train_epochs 16 \
    --gradient_accumulation_steps 1 \
    --lr_scheduler_type cosine \
