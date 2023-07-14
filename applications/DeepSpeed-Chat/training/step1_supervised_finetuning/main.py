@@ -316,7 +316,9 @@ def main():
             outputs = model(**batch, use_cache=False)
             loss = outputs.loss
             if args.print_loss:
-                print(f"Epoch: {epoch}, Step: {step}, Rank: {torch.distributed.get_rank()}, loss = {loss}")
+                print(
+                    f"Epoch: {epoch}, Step: {step}, Rank: {torch.distributed.get_rank()}, loss = {loss}"
+                )
             model.backward(loss)
             model.step()
 
