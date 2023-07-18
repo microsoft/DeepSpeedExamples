@@ -250,8 +250,12 @@ model_engine, optimizer, trainloader, __ = deepspeed.initialize(
 local_device = get_accelerator().device_name(model_engine.local_rank)
 local_rank = model_engine.local_rank
 
-bf16 = model_engine.bfloat16_enabled()
-print(f'bf16={bf16}')
+# For float32, target_dtype will be None so no datatype conversion needed
+target_dtype = None
+if model_engine.bfloat16_enabled():
+    target_dtype=torch.bfloat16
+elif model_engine.fp16_enabled():
+    target_dtype=torch.half
 
 #device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 #net.to(device)
@@ -279,8 +283,8 @@ for epoch in range(2):  # loop over the dataset multiple times
     for i, data in enumerate(trainloader):
         # get the inputs; data is a list of [inputs, labels]
         inputs, labels = data[0].to(local_device), data[1].to(local_device)
-        if bf16:
-            inputs = inputs.to(torch.bfloat16)
+        if target_dtype != None:
+            inputs = inputs.to(target_dtype)
         outputs = model_engine(inputs)
         loss = criterion(outputs, labels)
 
@@ -320,8 +324,8 @@ print('GroundTruth: ', ' '.join('%5s' % classes[labels[j]] for j in range(4)))
 
 ########################################################################
 # Okay, now let us see what the neural network thinks these examples above are:
-if bf16:
-    images = images.to(torch.bfloat16)
+if target_dtype != None:
+    images = images.to(target_dtype)
 outputs = net(images.to(local_device))
 
 ########################################################################
@@ -343,8 +347,8 @@ total = 0
 with torch.no_grad():
     for data in testloader:
         images, labels = data
-        if bf16:
-            images = images.to(torch.bfloat16)
+        if target_dtype != None:
+            images = images.to(target_dtype)
         outputs = net(images.to(local_device))
         _, predicted = torch.max(outputs.data, 1)
         total += labels.size(0)
@@ -366,12 +370,11 @@ class_total = list(0. for i in range(10))
 with torch.no_grad():
     for data in testloader:
         images, labels = data
-        if bf16:
-            images = images.to(torch.bfloat16)
+        if target_dtype != None:
+            images = images.to(target_dtype)
         outputs = net(images.to(local_device))
         _, predicted = torch.max(outputs, 1)
         c = (predicted == labels.to(local_device)).squeeze()
-
         for i in range(4):
             label = labels[i]
             class_correct[label] += c[i].item()
