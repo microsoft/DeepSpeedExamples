@@ -3,6 +3,7 @@ import torchvision
 import torchvision.transforms as transforms
 import argparse
 import deepspeed
+from deepspeed.accelerator import get_accelerator
 
 
 def add_argument():
@@ -159,7 +160,7 @@ def imshow(img):
 
 # get some random training images
 dataiter = iter(trainloader)
-images, labels = dataiter.next()
+images, labels = next(dataiter)
 
 # show images
 imshow(torchvision.utils.make_grid(images))
@@ -246,8 +247,11 @@ if args.moe_param_group:
 model_engine, optimizer, trainloader, __ = deepspeed.initialize(
     args=args, model=net, model_parameters=parameters, training_data=trainset)
 
-fp16 = model_engine.fp16_enabled()
-print(f'fp16={fp16}')
+local_device = get_accelerator().device_name(model_engine.local_rank)
+local_rank = model_engine.local_rank
+
+bf16 = model_engine.bfloat16_enabled()
+print(f'bf16={bf16}')
 
 #device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 #net.to(device)
@@ -274,10 +278,9 @@ for epoch in range(2):  # loop over the dataset multiple times
     running_loss = 0.0
     for i, data in enumerate(trainloader):
         # get the inputs; data is a list of [inputs, labels]
-        inputs, labels = data[0].to(model_engine.local_rank), data[1].to(
-            model_engine.local_rank)
-        if fp16:
-            inputs = inputs.half()
+        inputs, labels = data[0].to(local_device), data[1].to(local_device)
+        if bf16:
+            inputs = inputs.to(torch.bfloat16)
         outputs = model_engine(inputs)
         loss = criterion(outputs, labels)
 
@@ -286,7 +289,7 @@ for epoch in range(2):  # loop over the dataset multiple times
 
         # print statistics
         running_loss += loss.item()
-        if i % args.log_interval == (
+        if local_rank == 0 and i % args.log_interval == (
                 args.log_interval -
                 1):  # print every log_interval mini-batches
             print('[%d, %5d] loss: %.3f' %
@@ -309,7 +312,7 @@ print('Finished Training')
 # Okay, first step. Let us display an image from the test set to get familiar.
 
 dataiter = iter(testloader)
-images, labels = dataiter.next()
+images, labels = next(dataiter)
 
 # print images
 imshow(torchvision.utils.make_grid(images))
@@ -317,9 +320,9 @@ print('GroundTruth: ', ' '.join('%5s' % classes[labels[j]] for j in range(4)))
 
 ########################################################################
 # Okay, now let us see what the neural network thinks these examples above are:
-if fp16:
-    images = images.half()
-outputs = net(images.to(model_engine.local_rank))
+if bf16:
+    images = images.to(torch.bfloat16)
+outputs = net(images.to(local_device))
 
 ########################################################################
 # The outputs are energies for the 10 classes.
@@ -340,13 +343,12 @@ total = 0
 with torch.no_grad():
     for data in testloader:
         images, labels = data
-        if fp16:
-            images = images.half()
-        outputs = net(images.to(model_engine.local_rank))
+        if bf16:
+            images = images.to(torch.bfloat16)
+        outputs = net(images.to(local_device))
         _, predicted = torch.max(outputs.data, 1)
         total += labels.size(0)
-        correct += (predicted == labels.to(
-            model_engine.local_rank)).sum().item()
+        correct += (predicted == labels.to(local_device)).sum().item()
 
 print('Accuracy of the network on the 10000 test images: %d %%' %
       (100 * correct / total))
@@ -364,11 +366,12 @@ class_total = list(0. for i in range(10))
 with torch.no_grad():
     for data in testloader:
         images, labels = data
-        if fp16:
-            images = images.half()
-        outputs = net(images.to(model_engine.local_rank))
+        if bf16:
+            images = images.to(torch.bfloat16)
+        outputs = net(images.to(local_device))
         _, predicted = torch.max(outputs, 1)
-        c = (predicted == labels.to(model_engine.local_rank)).squeeze()
+        c = (predicted == labels.to(local_device)).squeeze()
+
         for i in range(4):
             label = labels[i]
             class_correct[label] += c[i].item()
