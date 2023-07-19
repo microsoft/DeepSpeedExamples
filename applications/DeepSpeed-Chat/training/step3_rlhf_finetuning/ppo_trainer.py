@@ -92,6 +92,11 @@ class DeepSpeedPPOTrainer():
                 continue
             else:
                 out_seq.append(seq[i:i + 1])
+        if len(out_seq) == 0:
+            out_seq = torch.zeros(1, seq.shape[1]).long()
+
+            return out_seq
+
         out_seq = torch.cat(out_seq, dim=0)  # concate output in the batch dim
 
         return out_seq
@@ -99,10 +104,12 @@ class DeepSpeedPPOTrainer():
     def generate_experience(self, prompts, mask):
         self.eval()
         seq = self._generate_sequence(prompts, mask)
+        seq = seq.to(self.actor_model.device)
+
         self.train()
 
         pad_token_id = self.tokenizer.pad_token_id
-        attention_mask = seq.not_equal(pad_token_id).long()
+        attention_mask = seq.not_equal(pad_token_id).long().to(self.actor_model.device)
         with torch.no_grad():
             output = self.actor_model(seq, attention_mask=attention_mask)
             output_ref = self.ref_model(seq, attention_mask=attention_mask)
