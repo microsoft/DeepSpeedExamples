@@ -18,5 +18,5 @@ The `run_step3_opt_sweep.sh` script passes configuration arguments to `run_1.3b_
 # Usage
 The sweep script can be run as follows:
 <pre>
-DeepSpeedExamples/applications/DeepSpeed-Chat/training/step1_supervised_finetuning$ bash training_scripts/single_node/sweep/run_step1_opt_sweep.sh
+DeepSpeedExamples/applications/DeepSpeed-Chat/training/step3_rlhf_finetuning$ bash training_scripts/single_node/sweep/run_step3_opt_sweep.sh
 </pre>
