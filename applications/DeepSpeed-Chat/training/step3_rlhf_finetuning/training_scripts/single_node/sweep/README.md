@@ -20,4 +20,3 @@ The sweep script can be run as follows:
 <pre>
 DeepSpeedExamples/applications/DeepSpeed-Chat/training/step1_supervised_finetuning$ bash training_scripts/single_node/sweep/run_step1_opt_sweep.sh
 </pre>
-
