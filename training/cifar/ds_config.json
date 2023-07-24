@@ -23,7 +23,7 @@
   },
   "gradient_clipping": 1.0,
   "prescale_gradients": false,
-  "fp16": {
+  "bf16": {
       "enabled": true,
       "fp16_master_weights_and_grads": false,
       "loss_scale": 0,
