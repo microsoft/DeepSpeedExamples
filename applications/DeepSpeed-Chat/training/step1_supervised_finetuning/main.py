@@ -30,6 +30,7 @@ from utils.ds_utils import get_train_ds_config
 from utils.module.lora import convert_linear_layer_to_lora, convert_lora_to_linear_layer, only_optimize_lora_parameters
 from utils.model.model_utils import create_hf_model
 
+import pdb 
 
 def parse_args():
     parser = argparse.ArgumentParser(
@@ -200,10 +201,20 @@ def main():
 
     torch.distributed.barrier()
 
-    tokenizer = load_hf_tokenizer(args.model_name_or_path, fast_tokenizer=True)
-    tokenizer.pad_token = tokenizer.eos_token
-    # make sure tokenizer is right pad in our logic
-    tokenizer.padding_side = 'right'
+    if "llama" in args.model_name_or_path:
+        from transformers.models.llama import LlamaTokenizer
+        tokenizer = LlamaTokenizer.from_pretrained(args.model_name_or_path,
+                                                    fast_tokenizer=True)
+        if tokenizer.pad_token is None:
+        # assert tokenizer.eos_token is not None
+        # tokenizer.add_special_tokens({'pad_token': tokenizer.eos_token})
+            tokenizer.add_special_tokens({'pad_token': '[PAD]'})
+            tokenizer.padding_side = 'right'
+    else:
+        tokenizer = load_hf_tokenizer(args.model_name_or_path, fast_tokenizer=True)
+        tokenizer.pad_token = tokenizer.eos_token
+        # make sure tokenizer is right pad in our logic
+        tokenizer.padding_side = 'right'
     model = create_hf_model(AutoModelForCausalLM,
                             args.model_name_or_path,
                             tokenizer,
