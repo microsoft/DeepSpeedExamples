@@ -119,9 +119,28 @@ def parse_args():
                         default=0,
                         help='ZeRO optimization stage for Actor model (and clones).')
     ## LoRA for efficient training setting
-    parser.add_argument("--lora_dim", type=int, default=0, help="If > 0, use LoRA for efficient training.")
-    parser.add_argument("--lora_module_name", type=str, default="decoder.layers.", help="The scope of LoRA.")
-    parser.add_argument('--only_optimize_lora', action='store_true', help='Only optimize the LoRA parameters.')
+    parser.add_argument("--lora_dim",
+                        type=int,
+                        default=0,
+                        help="If > 0, use LoRA for efficient training.")
+    parser.add_argument("--lora_module_name",
+                        type=str,
+                        default="decoder.layers.",
+                        help="The scope of LoRA.")
+    parser.add_argument('--only_optimize_lora',
+                        action='store_true',
+                        help='Only optimize the LoRA parameters.')
+    ## Tensorboard logging
+    parser.add_argument('--enable_tensorboard',
+                        action='store_true',
+                        help='Enable tensorboard logging')
+    parser.add_argument('--tensorboard_path',
+                        type=str,
+                        default="step1_tensorboard")
+    ## Print loss
+    parser.add_argument('--print_loss',
+                        action='store_true',
+                        help='Prints loss at each step.')
     parser = deepspeed.add_config_arguments(parser)
     args = parser.parse_args()
 
@@ -147,10 +166,16 @@ def main():
 
     args.global_rank = torch.distributed.get_rank()
 
-    ds_config = get_train_ds_config(offload=args.offload, stage=args.zero_stage)
-    ds_config['train_micro_batch_size_per_gpu'] = args.per_device_train_batch_size
-    ds_config['train_batch_size'] = args.per_device_train_batch_size * torch.distributed.get_world_size(
-    ) * args.gradient_accumulation_steps
+    ds_config = get_train_ds_config(offload=args.offload,
+                                    stage=args.zero_stage,
+                                    enable_tensorboard=args.enable_tensorboard,
+                                    tb_path=args.tensorboard_path,
+                                    tb_name="step1_model")
+    ds_config[
+        'train_micro_batch_size_per_gpu'] = args.per_device_train_batch_size
+    ds_config[
+        'train_batch_size'] = args.per_device_train_batch_size * torch.distributed.get_world_size(
+        ) * args.gradient_accumulation_steps
 
     # If passed along, set the training seed now.
     set_random_seed(args.seed)
@@ -268,6 +293,10 @@ def main():
             batch = to_device(batch, device)
             outputs = model(**batch, use_cache=False)
             loss = outputs.loss
+            if args.print_loss:
+                print(
+                    f"Epoch: {epoch}, Step: {step}, Rank: {torch.distributed.get_rank()}, loss = {loss}"
+                )
             model.backward(loss)
             model.step()
 
