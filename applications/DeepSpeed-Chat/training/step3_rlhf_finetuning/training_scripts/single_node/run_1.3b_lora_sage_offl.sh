@@ -10,7 +10,9 @@ CRITIC_ZERO_STAGE=$4
 ENABLE_HYBRID_ENGINE=$5
 OFFLOAD=$6
 LORA=$7
-OUTPUT=$8
+OFFLOAD_REFERENCE_MODEL=$8
+GRADIENT_CHECKPOINTING=$9
+OUTPUT=${10}
 
 if [ "$ENABLE_HYBRID_ENGINE" == true ]; then
     ENABLE_HYBRID_ENGINE="--enable_hybrid_engine"
@@ -30,6 +32,20 @@ if [ "$LORA" == true ]; then
 else
     ACTOR_LORA_DIM="--actor_lora_dim 0"
     ACTOR_LORA_MODULE_NAME=""
+fi
+
+if [ "$OFFLOAD_REFERENCE_MODEL" == true ]; then
+    OFFLOAD_REFERENCE_MODEL="--offload_reference_model"
+else
+    OFFLOAD_REFERENCE_MODEL=""
+fi
+
+if [ "$GRADIENT_CHECKPOINTING" == true ]; then
+    ACTOR_GRADIENT_CHECKPOINTING="--actor_gradient_checkpointing"
+    CRITIC_GRADIENT_CHECKPOINTING="--critic_gradient_checkpointing"
+else
+    ACTOR_GRADIENT_CHECKPOINTING=""
+    CRITIC_GRADIENT_CHECKPOINTING=""
 fi
 
 mkdir -p $OUTPUT
@@ -65,9 +81,10 @@ cmd="deepspeed --num_nodes=1 --num_gpus=16 main.py \
    --actor_zero_stage ${ACTOR_ZERO_STAGE} \
    --critic_zero_stage ${CRITIC_ZERO_STAGE} \
    --output_dir $OUTPUT \
-    $ENABLE_HYBRID_ENGINE $OFFLOAD $UNPIN_ACTOR_PARAMETERS \
-    $ACTOR_LORA_DIM $ACTOR_LORA_MODULE_NAME"
-
+    $ENABLE_HYBRID_ENGINE $OFFLOAD  \
+    $ACTOR_LORA_DIM $ACTOR_LORA_MODULE_NAME \
+    $ACTOR_GRADIENT_CHECKPOINTING $CRITIC_GRADIENT_CHECKPOINTING \
+    $OFFLOAD_REFERENCE_MODEL"
 echo "----------------------------- DS COMMAND -----------------------------"
 echo $cmd
 
