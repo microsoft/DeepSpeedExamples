@@ -318,13 +318,6 @@ def parse_args():
             f"{args.tensorboard_path}/step3_tensorboard_logs")
 
     # Validate settings
-    if (args.actor_gradient_checkpointing
-            and args.actor_lora_dim > 0) or (args.critic_gradient_checkpointing
-                                             and args.critic_lora_dim > 0):
-        assert (
-            not args.only_optimize_lora
-        ), "--{actor,critic}_gradient_checkpointing and --only_optimize_lora cannot be enabled at the same time."
-
     if args.inference_tp_size > 1:
         assert (
             args.actor_zero_stage == 3
