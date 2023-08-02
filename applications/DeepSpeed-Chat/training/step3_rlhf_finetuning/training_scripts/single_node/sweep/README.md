@@ -5,7 +5,7 @@
    * [Usage](#usage)
 
 # Introduction
-The step 3 characterization script is intented to sweep across various training parameters. Currently, the following are parameters are swept:
+The step 3 characterization script sweeps across various training parameters. Currently, the following parameters are swept:
 <pre>
 Zero Stage: 2, 3
 Hybrid Engine: True, False

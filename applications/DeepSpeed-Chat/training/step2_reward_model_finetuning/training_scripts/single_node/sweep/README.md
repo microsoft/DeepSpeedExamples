@@ -5,7 +5,7 @@
    * [Usage](#usage)
 
 # Introduction
-The step 2 characterization script is intented to sweep across various training parameters. Currently, the following are parameters are swept:
+The step 2 characterization script sweeps across various training parameters. Currently, the following parameters are swept:
 <pre>
 Zero Stage: 2, 3
 Offload: True, False
