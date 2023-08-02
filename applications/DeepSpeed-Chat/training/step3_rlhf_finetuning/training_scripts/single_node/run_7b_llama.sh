@@ -54,4 +54,3 @@ deepspeed --master_port 12346 main.py \
     --enable_hybrid_engine \
    --output_dir $OUTPUT \
     &> $OUTPUT/training.log
-
