@@ -182,6 +182,10 @@ def parse_args():
                         type=str,
                         default=None,
                         help="Where to store the model.")
+    parser.add_argument("--job_name",
+                        type=str,
+                        default="default",
+                        help="Job name.")
     parser.add_argument("--seed",
                         type=int,
                         default=None,
@@ -377,11 +381,19 @@ def main():
     torch.distributed.barrier()
 
     # create common tokenizer based on actor model
-    tokenizer = load_hf_tokenizer(args.actor_model_name_or_path,
-                                  fast_tokenizer=True)
-    tokenizer.pad_token = tokenizer.eos_token
-    # make sure tokenizer is right pad in our logic
-    tokenizer.padding_side = 'right'
+    if "llama" in args.actor_model_name_or_path:
+        from transformers.models.llama import LlamaTokenizer
+        tokenizer = LlamaTokenizer.from_pretrained(args.actor_model_name_or_path,
+                                                    fast_tokenizer=True)
+        if tokenizer.pad_token is None:
+            tokenizer.add_special_tokens({'pad_token': '[PAD]'})
+            tokenizer.padding_side = 'right'
+    else:
+        tokenizer = load_hf_tokenizer(args.actor_model_name_or_path,
+                                    fast_tokenizer=True)
+        tokenizer.pad_token = tokenizer.eos_token
+        # make sure tokenizer is right pad in our logic
+        tokenizer.padding_side = 'right'
     prompt_train_dataloader, unsupervised_train_dataloader, num_total_iters = create_datasets(
         args=args, tokenizer=tokenizer, train_phase=3)
 

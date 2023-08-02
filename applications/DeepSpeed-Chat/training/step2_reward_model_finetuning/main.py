@@ -199,10 +199,20 @@ def main():
     set_random_seed(args.seed)
     torch.distributed.barrier()
 
-    tokenizer = load_hf_tokenizer(args.model_name_or_path, fast_tokenizer=True)
-    tokenizer.pad_token = tokenizer.eos_token
-    # make sure tokenizer is right pad in our logic
-    tokenizer.padding_side = 'right'
+    if "llama" in args.model_name_or_path:
+        from transformers.models.llama import LlamaTokenizer
+        tokenizer = LlamaTokenizer.from_pretrained(args.model_name_or_path,
+                                                    fast_tokenizer=True)
+        if tokenizer.pad_token is None:
+            # tokenizer.add_special_tokens({'pad_token': tokenizer.eos_token})
+            tokenizer.add_special_tokens({'pad_token': '[PAD]'})
+            tokenizer.padding_side = 'right'
+    else:
+        tokenizer = load_hf_tokenizer(args.model_name_or_path, fast_tokenizer=True)
+
+        tokenizer.pad_token = tokenizer.eos_token
+        # make sure tokenizer is right pad in our logic
+        tokenizer.padding_side = 'right'
     rm_model = create_critic_model(args.model_name_or_path,
                                    tokenizer,
                                    ds_config,
