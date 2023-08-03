@@ -29,6 +29,7 @@ from utils.utils import print_rank_0, to_device, save_hf_format, set_random_seed
 from utils.ds_utils import get_train_ds_config
 from utils.module.lora import convert_linear_layer_to_lora, convert_lora_to_linear_layer, only_optimize_lora_parameters, make_model_gradient_checkpointing_compatible
 from utils.model.model_utils import create_hf_model
+from utils.feature_selection import feature_selection
 
 
 def parse_args():
@@ -144,10 +145,11 @@ def parse_args():
     parser.add_argument('--offload',
                         action='store_true',
                         help='Enable ZeRO Offload techniques.')
+
     parser.add_argument(
         '--zero_stage',
-        type=int,
-        default=0,
+        type=str,
+        default="auto",
         help='ZeRO optimization stage for Actor model (and clones).')
     ## LoRA for efficient training setting
     parser.add_argument("--lora_dim",
@@ -192,6 +194,9 @@ def main():
 
     args.global_rank = torch.distributed.get_rank()
 
+    args = feature_selection(args=args, model_class=AutoModelForCausalLM)
+    print(f'done with feature selection, args: {args}')
+
     ds_config = get_train_ds_config(offload=args.offload,
                                     stage=args.zero_stage,
                                     enable_tensorboard=args.enable_tensorboard,
@@ -202,6 +207,8 @@ def main():
     ds_config[
         'train_batch_size'] = args.per_device_train_batch_size * torch.distributed.get_world_size(
         ) * args.gradient_accumulation_steps
+
+    ds_config['wall_clock_breakdown'] = False
 
     # If passed along, set the training seed now.
     set_random_seed(args.seed)
@@ -222,6 +229,9 @@ def main():
         if args.only_optimize_lora:
             model = only_optimize_lora_parameters(model)
             model = make_model_gradient_checkpointing_compatible(model)
+
+    deepspeed.runtime.utils.see_memory_usage('**** post-model creation ****',
+                                             force=True)
 
     # Prepare the data
     train_phase = 1
