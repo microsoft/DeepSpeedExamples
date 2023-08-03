@@ -100,7 +100,8 @@ class DeepSpeedRLHFEngine():
                 self.args.actor_lora_dim)
             if self.args.only_optimize_lora:
                 actor_model = only_optimize_lora_parameters(actor_model)
-                actor_model = make_model_gradient_checkpointing_compatible(actor_model)
+                actor_model = make_model_gradient_checkpointing_compatible(
+                    actor_model)
 
         # Optimizer
         AdamOptimizer = DeepSpeedCPUAdam if self.args.offload else FusedAdam
@@ -227,7 +228,8 @@ class DeepSpeedRLHFEngine():
                 self.args.critic_lora_dim)
             if self.args.only_optimize_lora:
                 critic_model = only_optimize_lora_parameters(critic_model)
-                critic_model = make_model_gradient_checkpointing_compatible(critic_model)
+                critic_model = make_model_gradient_checkpointing_compatible(
+                    critic_model)
 
         # Optimizer
         AdamOptimizer = DeepSpeedCPUAdam if self.args.offload else FusedAdam
