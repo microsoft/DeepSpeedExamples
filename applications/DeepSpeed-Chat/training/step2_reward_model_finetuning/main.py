@@ -26,7 +26,7 @@ from utils.model.model_utils import create_critic_model
 from utils.data.data_utils import create_prompt_dataset, DataCollatorReward
 from utils.utils import print_rank_0, to_device, save_hf_format, set_random_seed, get_all_reduce_mean, get_optimizer_grouped_parameters, save_zero_three_model, load_hf_tokenizer
 from utils.ds_utils import get_train_ds_config
-from utils.module.lora import convert_linear_layer_to_lora, convert_lora_to_linear_layer, only_optimize_lora_parameters
+from utils.module.lora import convert_linear_layer_to_lora, convert_lora_to_linear_layer, only_optimize_lora_parameters, make_model_gradient_checkpointing_compatible
 
 
 def parse_args():
@@ -161,14 +161,15 @@ def parse_args():
     parser.add_argument('--only_optimize_lora',
                         action='store_true',
                         help='Only optimize the LoRA parameters.')
+    ## Tensorboard logging
+    parser.add_argument('--enable_tensorboard',
+                        action='store_true',
+                        help='Enable tensorboard logging')
+    parser.add_argument('--tensorboard_path',
+                        type=str,
+                        default="step2_tensorboard")
     parser = deepspeed.add_config_arguments(parser)
     args = parser.parse_args()
-
-    # Validate settings
-    if args.gradient_checkpointing and args.lora_dim > 0:
-        assert (
-            not args.only_optimize_lora
-        ), "--gradient_checkpointing and --only_optimize_lora cannot be enabled at the same time."
 
     return args
 
@@ -188,7 +189,10 @@ def main():
     args.global_rank = torch.distributed.get_rank()
 
     ds_config = get_train_ds_config(offload=args.offload,
-                                    stage=args.zero_stage)
+                                    stage=args.zero_stage,
+                                    enable_tensorboard=args.enable_tensorboard,
+                                    tb_path=args.tensorboard_path,
+                                    tb_name="step2_model")
     ds_config[
         'train_micro_batch_size_per_gpu'] = args.per_device_train_batch_size
     ds_config[
@@ -215,6 +219,7 @@ def main():
                                                 args.lora_dim)
         if args.only_optimize_lora:
             rm_model = only_optimize_lora_parameters(rm_model)
+            rm_model = make_model_gradient_checkpointing_compatible(rm_model)
 
     train_phase = 2
     train_dataset, eval_dataset = create_prompt_dataset(

@@ -27,7 +27,7 @@ sys.path.append(
 from utils.data.data_utils import create_prompt_dataset
 from utils.utils import print_rank_0, to_device, save_hf_format, set_random_seed, get_all_reduce_mean, get_optimizer_grouped_parameters, save_zero_three_model, load_hf_tokenizer
 from utils.ds_utils import get_train_ds_config
-from utils.module.lora import convert_linear_layer_to_lora, convert_lora_to_linear_layer, only_optimize_lora_parameters
+from utils.module.lora import convert_linear_layer_to_lora, convert_lora_to_linear_layer, only_optimize_lora_parameters, make_model_gradient_checkpointing_compatible
 from utils.model.model_utils import create_hf_model
 
 
@@ -161,14 +161,19 @@ def parse_args():
     parser.add_argument('--only_optimize_lora',
                         action='store_true',
                         help='Only optimize the LoRA parameters.')
+    ## Tensorboard logging
+    parser.add_argument('--enable_tensorboard',
+                        action='store_true',
+                        help='Enable tensorboard logging')
+    parser.add_argument('--tensorboard_path',
+                        type=str,
+                        default="step1_tensorboard")
+    ## Print loss
+    parser.add_argument('--print_loss',
+                        action='store_true',
+                        help='Prints loss at each step.')
     parser = deepspeed.add_config_arguments(parser)
     args = parser.parse_args()
-
-    # Validate settings
-    if args.gradient_checkpointing and args.lora_dim > 0:
-        assert (
-            not args.only_optimize_lora
-        ), "--gradient_checkpointing and --only_optimize_lora cannot be enabled at the same time."
 
     return args
 
@@ -188,7 +193,10 @@ def main():
     args.global_rank = torch.distributed.get_rank()
 
     ds_config = get_train_ds_config(offload=args.offload,
-                                    stage=args.zero_stage)
+                                    stage=args.zero_stage,
+                                    enable_tensorboard=args.enable_tensorboard,
+                                    tb_path=args.tensorboard_path,
+                                    tb_name="step1_model")
     ds_config[
         'train_micro_batch_size_per_gpu'] = args.per_device_train_batch_size
     ds_config[
@@ -200,10 +208,21 @@ def main():
 
     torch.distributed.barrier()
 
-    tokenizer = load_hf_tokenizer(args.model_name_or_path, fast_tokenizer=True)
-    tokenizer.pad_token = tokenizer.eos_token
-    # make sure tokenizer is right pad in our logic
-    tokenizer.padding_side = 'right'
+    if "llama" in args.model_name_or_path:
+        from transformers.models.llama import LlamaTokenizer
+        tokenizer = LlamaTokenizer.from_pretrained(args.model_name_or_path,
+                                                   fast_tokenizer=True)
+        if tokenizer.pad_token is None:
+            # assert tokenizer.eos_token is not None
+            # tokenizer.add_special_tokens({'pad_token': tokenizer.eos_token})
+            tokenizer.add_special_tokens({'pad_token': '[PAD]'})
+            tokenizer.padding_side = 'right'
+    else:
+        tokenizer = load_hf_tokenizer(args.model_name_or_path,
+                                      fast_tokenizer=True)
+        tokenizer.pad_token = tokenizer.eos_token
+        # make sure tokenizer is right pad in our logic
+        tokenizer.padding_side = 'right'
     model = create_hf_model(AutoModelForCausalLM,
                             args.model_name_or_path,
                             tokenizer,
@@ -215,6 +234,7 @@ def main():
                                              args.lora_dim)
         if args.only_optimize_lora:
             model = only_optimize_lora_parameters(model)
+            model = make_model_gradient_checkpointing_compatible(model)
 
     # Prepare the data
     train_phase = 1
@@ -311,6 +331,10 @@ def main():
             batch = to_device(batch, device)
             outputs = model(**batch, use_cache=False)
             loss = outputs.loss
+            if args.print_loss:
+                print(
+                    f"Epoch: {epoch}, Step: {step}, Rank: {torch.distributed.get_rank()}, loss = {loss}"
+                )
             model.backward(loss)
             model.step()
 
