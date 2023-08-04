@@ -5,7 +5,7 @@ import math
 import os
 import torch
 import time
-from utils import DSPipeline
+from utils import DSPipeline, Performance
 from deepspeed.runtime.utils import see_memory_usage
 
 parser = ArgumentParser()
@@ -26,27 +26,6 @@ parser.add_argument("--local_rank", type=int, default=int(os.getenv("LOCAL_RANK"
 parser.add_argument("--world_size", type=int, default=int(os.getenv("WORLD_SIZE", "1")), help="world_size")
 args = parser.parse_args()
 
-def print_perf_stats(latency_set, config, warmup=3):
-    # trim warmup queries
-    latency_set = list(latency_set)
-    latency_set = latency_set[warmup:]
-    count = len(latency_set)
-
-    if count > 0:
-        latency_set.sort()
-        avg = sum(latency_set) / count
-        num_layers = getattr(config, "num_layers", config.num_hidden_layers)
-        num_parameters = num_layers * config.hidden_size * config.hidden_size * 12
-        if args.dtype == "float16":
-            num_bytes = 2
-        elif args.dtype == "float32":
-            num_bytes = 4
-        else:
-            num_bytes = 1
-        print("Avg Per Token Latency: {0:8.2f} ms".format(avg * 1000))
-        print("Avg BW: {0:8.2f} GB/s".format(1/avg * num_parameters * num_bytes / 1e9))
-        print("Avg flops: {0:8.2f} TFlops/s".format(1/avg * num_parameters * num_bytes * args.batch_size / 1e12))
-
 if args.hf_baseline and args.world_size > 1:
     raise RuntimeError("Only `--num_gpus 1` supported for non-DeepSpeed uses")
 
@@ -56,14 +35,17 @@ if args.local_rank == 0:
     see_memory_usage("before init", True)
 
 t0 = time.time()
-pipe = DSPipeline(model_name=args.name,
+
+pipe = DSPipeline(model_name=args.model,
                   dtype=data_type,
                   is_meta=args.use_meta_tensor,
                   device=args.local_rank,
                   checkpoint_path=args.checkpoint_path)
+
 if args.local_rank == 0:
     print(f"initialization time: {(time.time()-t0) * 1000}ms")
     see_memory_usage("after init", True)
+
 if args.use_meta_tensor:
     ds_kwargs = dict(base_dir=pipe.repo_root, checkpoint=pipe.checkpoints_json)
 else:
@@ -78,9 +60,9 @@ if not args.hf_baseline:
                                     save_mp_checkpoint_path=args.save_mp_checkpoint_path,
                                     **ds_kwargs
                                     )
+
 if args.local_rank == 0:
     see_memory_usage("after init_inference", True)
-
 
 input_sentences = [
          "DeepSpeed is a machine learning framework",
@@ -116,5 +98,5 @@ if args.local_rank == 0:
     for i, o in zip(inputs, outputs):
         print(f"\nin={i}\nout={o}\n{'-'*60}")
     if args.test_performance:
-        print_perf_stats(map(lambda t: t / args.max_new_tokens, times), pipe.model.config)
+        Performance.print_perf_stats(map(lambda t: t / args.max_new_tokens, times), pipe.model.config, args.dtype, args.batch_size)
 
