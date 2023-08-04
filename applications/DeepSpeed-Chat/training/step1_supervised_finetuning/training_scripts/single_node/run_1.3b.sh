@@ -13,7 +13,16 @@ if [ "$ZERO_STAGE" == "" ]; then
 fi
 mkdir -p $OUTPUT
 
-deepspeed main.py \
+if [[ $0 =~ ^\/.* ]]    #判断当前脚本是否为绝对路径，匹配以/开头下的所有
+then
+  script=$0
+else
+  script=$(pwd)/$0
+fi
+path_dir=${script%%training_scripts*}
+echo $path_dir
+
+nohup ds --num_gpus 2 $path_dir'main.py' \
    --data_path Dahoas/rm-static Dahoas/full-hh-rlhf Dahoas/synthetic-instruct-gptj-pairwise yitingxie/rlhf-reward-datasets \
    --data_split 2,4,4 \
    --model_name_or_path facebook/opt-1.3b \
@@ -32,4 +41,4 @@ deepspeed main.py \
    --enable_tensorboard \
    --tensorboard_path $OUTPUT \
    --output_dir $OUTPUT \
-   &> $OUTPUT/training.log
+   > $OUTPUT/training.log 2>&1 &
