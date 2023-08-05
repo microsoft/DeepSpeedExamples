@@ -10,7 +10,7 @@ from deepspeed.ops.adam import DeepSpeedCPUAdam
 from transformers import AutoModelForCausalLM, get_scheduler
 
 from utils.ds_utils import get_train_ds_config, get_eval_ds_config
-from utils.module.lora import convert_linear_layer_to_lora, only_optimize_lora_parameters
+from utils.module.lora import convert_linear_layer_to_lora, only_optimize_lora_parameters, make_model_gradient_checkpointing_compatible
 from utils.model.model_utils import create_hf_model, create_critic_model
 from utils.utils import get_optimizer_grouped_parameters
 """
@@ -100,6 +100,8 @@ class DeepSpeedRLHFEngine():
                 self.args.actor_lora_dim)
             if self.args.only_optimize_lora:
                 actor_model = only_optimize_lora_parameters(actor_model)
+                actor_model = make_model_gradient_checkpointing_compatible(
+                    actor_model)
 
         # Optimizer
         AdamOptimizer = DeepSpeedCPUAdam if self.args.offload else FusedAdam
@@ -201,7 +203,14 @@ class DeepSpeedRLHFEngine():
 
         #TODO(jeff): should not be needed, we should be able to use ds_config above
         #TODO(jeff): it means we never create the critic w. zero.init context if we are using ZeRO-3
+        # ds_eval_config = get_eval_ds_config(offload=False, stage=self.args.critic_zero_stage)
         ds_eval_config = get_eval_ds_config(offload=False, stage=0)
+        #Minjia: We need to set train batch size and micro batch size here to pass the sanity check of DeepSpeed engine.
+        ds_eval_config[
+            'train_micro_batch_size_per_gpu'] = self.args.per_device_mini_train_batch_size
+        ds_eval_config[
+            'train_batch_size'] = self.args.per_device_mini_train_batch_size * torch.distributed.get_world_size(
+            ) * self.args.gradient_accumulation_steps
 
         # Model
         critic_model = create_critic_model(
@@ -219,6 +228,8 @@ class DeepSpeedRLHFEngine():
                 self.args.critic_lora_dim)
             if self.args.only_optimize_lora:
                 critic_model = only_optimize_lora_parameters(critic_model)
+                critic_model = make_model_gradient_checkpointing_compatible(
+                    critic_model)
 
         # Optimizer
         AdamOptimizer = DeepSpeedCPUAdam if self.args.offload else FusedAdam
@@ -263,7 +274,14 @@ class DeepSpeedRLHFEngine():
 
         #TODO(jeff): should not be needed, we should be able to use ds_config above
         #TODO(jeff): it means we never create the critic w. zero.init context if we are using ZeRO-3
+        # ds_eval_config = get_eval_ds_config(offload=False, stage=zero_stage)
         ds_eval_config = get_eval_ds_config(offload=False, stage=0)
+        #Minjia: We need to set train batch size and micro batch size here to pass the sanity check of DeepSpeed engine.
+        ds_eval_config[
+            'train_micro_batch_size_per_gpu'] = self.args.per_device_mini_train_batch_size
+        ds_eval_config[
+            'train_batch_size'] = self.args.per_device_mini_train_batch_size * torch.distributed.get_world_size(
+            ) * self.args.gradient_accumulation_steps
 
         # Model
         reward_model = create_critic_model(
