@@ -13,7 +13,7 @@ if [ "$ZERO_STAGE" == "" ]; then
 fi
 mkdir -p $OUTPUT
 
-if [[ $0 =~ ^\/.* ]]    #判断当前脚本是否为绝对路径，匹配以/开头下的所有
+if [[ $0 =~ ^\/.* ]]   
 then
   script=$0
 else
@@ -23,7 +23,7 @@ path_dir=${script%%training_scripts*}
 echo $path_dir
 
 nohup ds --num_gpus 2 $path_dir'main.py' \
-   --data_path Dahoas/rm-static Dahoas/full-hh-rlhf Dahoas/synthetic-instruct-gptj-pairwise yitingxie/rlhf-reward-datasets \
+   --data_path $HOME/.cache/huggingface/hub/datasets--Dahoas--full-hh-rlhf   \
    --data_split 2,4,4 \
    --model_name_or_path facebook/opt-1.3b \
    --per_device_train_batch_size 8 \
@@ -42,3 +42,5 @@ nohup ds --num_gpus 2 $path_dir'main.py' \
    --tensorboard_path $OUTPUT \
    --output_dir $OUTPUT \
    > $OUTPUT/training.log 2>&1 &
+
+# Dahoas/full-hh-rlhf Dahoas/synthetic-instruct-gptj-pairwise yitingxie/rlhf-reward-datasets

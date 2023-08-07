@@ -15,40 +15,78 @@ import os
 import hashlib
 from itertools import chain
 from . import raw_datasets
+import re
 
+def get_dataset_name(dataset_name:str):
+    """if `dataset_name` is a not a path, return it directly;
+        else, get the repo-id by analyse the `dataset_name`
 
-def get_raw_dataset(dataset_name, output_path, seed, local_rank):
+        @param dataset_name: str, the path or repo-id of dataset
+        return : str, the repo-id in huggingface_hub of the dataset 
+    """
+    if not os.path.exists(dataset_name):
+        return dataset_name
+    # downloaded and cached by huggingface_hub.snapshot_download
+    if dataset_name[-1] == "/":
+        dataset_name = dataset_name[:-1]
+    if "datasets--" in dataset_name:
+        splitted = re.split(r"/|\\",dataset_name)[-1].split("--")
+        print(splitted)
+        if len(splitted) == 3:
+            dataset_name = "/".join(splitted[-2:])
+        else:
+            dataset_name = splitted[-1]
 
+    # downloaded and cached by datasets.load_dataset
+    elif "__" in dataset_name: 
+        dataset_name = re.split(r"/|\\",dataset_name)[-1].split("__")
+        if len(splitted) == 2:
+            dataset_name = "/".join(splitted[-2:])
+        else:
+            dataset_name = splitted[-1]
+
+    # the user build a local data dir just same as repo-id
+    elif len(re.split(r"/",dataset_name)) <= 2:
+        pass
+    # the user build a local data dir that contains repo-id
+    else:
+        dataset_name = "/".join(re.split(r"/|\\",dataset_name)[-2:])
+    return dataset_name
+
+def get_raw_dataset(dataset_name_or_path, output_path, seed, local_rank):
+
+    dataset_name = get_dataset_name(dataset_name_or_path)
+    print(f"the datasetname is {dataset_name}")
     if "Dahoas/rm-static" in dataset_name:
         return raw_datasets.DahoasRmstaticDataset(output_path, seed,
-                                                  local_rank, dataset_name)
+                                                  local_rank, dataset_name_or_path)
     elif "Dahoas/full-hh-rlhf" in dataset_name:
         return raw_datasets.DahoasFullhhrlhfDataset(output_path, seed,
-                                                    local_rank, dataset_name)
+                                                    local_rank, dataset_name_or_path)
     elif "Dahoas/synthetic-instruct-gptj-pairwise" in dataset_name:
         return raw_datasets.DahoasSyntheticinstructgptjpairwiseDataset(
-            output_path, seed, local_rank, dataset_name)
+            output_path, seed, local_rank, dataset_name_or_path)
     elif "yitingxie/rlhf-reward-datasets" in dataset_name:
         return raw_datasets.YitingxieRlhfrewarddatasetsDataset(
-            output_path, seed, local_rank, dataset_name)
+            output_path, seed, local_rank, dataset_name_or_path)
     elif "openai/webgpt_comparisons" in dataset_name:
         return raw_datasets.OpenaiWebgptcomparisonsDataset(
-            output_path, seed, local_rank, dataset_name)
+            output_path, seed, local_rank, dataset_name_or_path)
     elif "stanfordnlp/SHP" in dataset_name:
         return raw_datasets.StanfordnlpSHPDataset(output_path, seed,
-                                                  local_rank, dataset_name)
+                                                  local_rank, dataset_name_or_path)
     elif "pvduy/sharegpt_alpaca_oa_vicuna_format" in dataset_name:
         return raw_datasets.PvduySharegptalpacaoavicunaformatDataset(
-            output_path, seed, local_rank, dataset_name)
+            output_path, seed, local_rank, dataset_name_or_path)
     elif "wangrui6/Zhihu-KOL" in dataset_name:
         return raw_datasets.Wangrui6ZhihuKOLDataset(output_path, seed,
-                                                    local_rank, dataset_name)
+                                                    local_rank, dataset_name_or_path)
     elif "Cohere/miracl-zh-queries-22-12" in dataset_name:
         return raw_datasets.CohereMiraclzhqueries2212Dataset(
-            output_path, seed, local_rank, dataset_name)
+            output_path, seed, local_rank, dataset_name_or_path)
     elif "Hello-SimpleAI/HC3-Chinese" in dataset_name:
         return raw_datasets.HelloSimpleAIHC3ChineseDataset(
-            output_path, seed, local_rank, dataset_name)
+            output_path, seed, local_rank, dataset_name_or_path)
     elif "mkqa-Chinese" in dataset_name:
         return raw_datasets.MkqaChineseDataset(output_path, seed, local_rank,
                                                "mkqa")
@@ -57,13 +95,13 @@ def get_raw_dataset(dataset_name, output_path, seed, local_rank):
                                                 "mkqa")
     elif "Cohere/miracl-ja-queries-22-12" in dataset_name:
         return raw_datasets.CohereMiracljaqueries2212Dataset(
-            output_path, seed, local_rank, dataset_name)
+            output_path, seed, local_rank, dataset_name_or_path)
     elif "lmqg/qg_jaquad" in dataset_name:
         return raw_datasets.LmqgQgjaquadDataset(output_path, seed, local_rank,
-                                                dataset_name)
+                                                dataset_name_or_path)
     elif "lmqg/qag_jaquad" in dataset_name:
         return raw_datasets.LmqgQagjaquadDataset(output_path, seed, local_rank,
-                                                 dataset_name)
+                                                 dataset_name_or_path)
     elif "local/jsonfile" in dataset_name:
         chat_path = os.path.abspath(
             os.path.join(os.path.dirname(__file__), os.path.pardir,
