@@ -48,7 +48,7 @@ class RewardModel(nn.Module):
             input_ids,
             past_key_values=past_key_values,
             attention_mask=attention_mask,
-            head_mask=head_mask,
+            #head_mask=head_mask,
             inputs_embeds=inputs_embeds,
             use_cache=use_cache)
 
