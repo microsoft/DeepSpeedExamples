@@ -5,7 +5,7 @@ __pycache__/
 
 # C extensions
 *.so
-
+.vscode
 # Distribution / packaging
 .idea
 .Python
@@ -129,3 +129,4 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+applications/DeepSpeed-Chat/training/output/ds_tensorboard_logs/*
