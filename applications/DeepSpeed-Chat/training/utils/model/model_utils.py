@@ -13,6 +13,7 @@ from huggingface_hub import snapshot_download
 from transformers.deepspeed import HfDeepSpeedConfig
 
 from .reward_model import RewardModel
+from ..utils import load_state_dict_into_model
 
 
 def create_hf_model(model_class,
@@ -56,22 +57,77 @@ def create_critic_model(model_name_or_path,
                         disable_dropout=False):
     # OPT model family always put a padding token at the beginning of the sequence,
     # we did not see this in other models but not sure if it is a general rule
+
+    import time
+
+    start = time.time()
     critic_model = create_hf_model(AutoModel, model_name_or_path, tokenizer,
                                    ds_config, rlhf_training, disable_dropout)
+    end = time.time()
+    print(f"> Creating model from_config took {end - start} seconds")
+
     critic_model = RewardModel(
         critic_model,
         tokenizer,
         num_padding_at_beginning=num_padding_at_beginning)
 
     if rlhf_training:
+
+        # start debug
+        before = None
+        after = None
+
+        def debug1():
+            import deepspeed
+            with deepspeed.zero.GatheredParameters(
+                    critic_model.rwtranrsformer.layers[31].mlp.gate_proj.
+                    weight,
+                    modifier_rank=0):
+                before = critic_model.state_dict(
+                )['rwtranrsformer.layers.31.mlp.gate_proj.weight']
+                print(f"before => {before}")
+
+        #debug1()
+        # end debug
+
         if not os.path.isdir(model_name_or_path):
             model_name_or_path = snapshot_download(model_name_or_path)
-        # critic model needs to load the weight here
         model_ckpt_path = os.path.join(model_name_or_path, 'pytorch_model.bin')
         assert os.path.exists(
             model_ckpt_path
         ), f"Cannot find model checkpoint at {model_ckpt_path}"
-        critic_model.load_state_dict(
-            torch.load(model_ckpt_path, map_location='cpu'))
 
+        start = time.time()
+        model_ckpt_state_dict = torch.load(model_ckpt_path, map_location='cpu')
+        end = time.time()
+        print(f"> torch.load took {end - start} seconds")
+
+        # load critic model from checkpoint with zero-stage 3 compatibility
+        # this functionality may be moved to DS checkpoint load API in future
+        start = time.time()
+        load_state_dict_into_model(critic_model, model_ckpt_state_dict)
+        end = time.time()
+        print(f"> Loading model state dict took {end - start} seconds")
+
+        # start debug
+        def debug2():
+            import deepspeed
+            with deepspeed.zero.GatheredParameters(
+                    critic_model.rwtranrsformer.layers[31].mlp.gate_proj.
+                    weight,
+                    modifier_rank=0):
+                after = critic_model.state_dict(
+                )['rwtranrsformer.layers.31.mlp.gate_proj.weight']
+                print(f"after => {after}")
+            sd = model_ckpt_state_dict[
+                'rwtranrsformer.layers.31.mlp.gate_proj.weight']
+            sd = sd.to(after.device)
+            print(f"sd => {sd}")
+            assert torch.equal(sd,
+                               after), "critic model is not loaded correctly"
+            assert not torch.equal(
+                before, after), "critic model is not loaded correctly"
+
+        #debug2()
+        # end debug
     return critic_model
