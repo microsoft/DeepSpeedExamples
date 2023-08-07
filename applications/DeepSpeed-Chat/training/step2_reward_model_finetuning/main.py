@@ -263,7 +263,7 @@ def main():
             correct_predictions += (chosen > rejected).sum()
             total_predictions += chosen.shape[0]
             scores += outputs["chosen_mean_scores"].mean().float()
-            if step == 99:  # For faster evaluation and debugging
+            if step == 1:  # For faster evaluation and debugging
                 break
         acc = correct_predictions / total_predictions
         scores = scores / (step + 1)
@@ -328,6 +328,8 @@ def main():
             rm_model.backward(loss)
             rm_model.step()
             mean_loss += loss.item()
+            if step == 20:  # For faster evaluation and debugging
+                break
         print_rank_0(
             f"Epoch {epoch+1}/{args.num_train_epochs} with loss {mean_loss/(step+1)}",
             args.global_rank)
