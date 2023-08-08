@@ -18,7 +18,20 @@ pip install -r requirements.txt
 
 # Inference Test
 
-The script inference-test.py can be used to test DeepSpeed with AutoTP, kernel injection, batching, meta tensors, and checkpoints using the DS Pipeline utility class. 
+The script inference-test.py can be used to test DeepSpeed with AutoTP (--num_gpus > 1), kernel injection (--use_kernel), batching (--batch_size > 1), meta tensors (--use_meta), and checkpoints using the DS Pipeline utility class. 
+
+The default setting (no user supplied arguments except --model to inference-test.py) runs the model with deepspeed.init_inference wrapper. However, the exact optimizations will need to be supplied by the user based on the model they want to run.
+
+1. AutoTP will be applied if the --num_gpus > 1. This is inferred through the world_size argument
+2. Kernel injection will only happen if user passes --use_kernel as a command-line flag. This option can work in tandem with --num_gpus > 1 for some models
+3. Meta tensor feature enables fast loading of checkpoints for large models. 
+
+## Example usage with kernel injection and meta tensor support for a large model
+<pre>
+deepspeed --num_gpus 1 inference-test.py --model bigscience/bloom-3b --use_meta --use_kernel
+</pre>
+
+The above command will offer the best performance for the Bloom-3B model. For other models, users need to experiment with various features to get best performance. 
 
 ## Usage
 Examples can be run as follows:
