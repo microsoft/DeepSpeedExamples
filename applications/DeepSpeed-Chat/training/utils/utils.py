@@ -114,7 +114,10 @@ def get_all_reduce_mean(tensor):
 # This function is a modified version of code available in the from_pretrained API of HuggingFace Transformers
 # The code is copied and modified from: https://github.com/huggingface/transformers/blob/5ee9693a1c77c617ebc43ef20194b6d3b674318e/src/transformers/modeling_utils.py#L498
 # This function helps load a HF format checkpoint into a DeepSpeed wrapped model that has been sharded using ZeRO Stage 3
-def load_state_dict_into_model(model_to_load, state_dict, start_prefix=""):
+def load_state_dict_into_model(model_to_load,
+                               state_dict,
+                               start_prefix="",
+                               zero_stage):
 
     # copy state_dict so _load_from_state_dict can modify it
     metadata = getattr(state_dict, "_metadata", None)
@@ -134,24 +137,27 @@ def load_state_dict_into_model(model_to_load, state_dict, start_prefix=""):
         # Parameters of module and children will start with prefix. We can exit early if there are none in this
         # state_dict
         if len([key for key in state_dict if key.startswith(prefix)]) > 0:
-            # In sharded models, each shard has only part of the full state_dict, so only gather
-            # parameters that are in the current state_dict.
-            named_parameters = dict(
-                module.named_parameters(prefix=prefix[:-1], recurse=False))
-            #print(f"named_parameters: {named_parameters}")
-            params_to_gather = [
-                named_parameters[k] for k in state_dict.keys()
-                if k in named_parameters
-            ]
-            #print(f"params_to_gather: {params_to_gather}")
-            if len(params_to_gather) > 0:
-                # because zero3 puts placeholders in model params, this context
-                # manager gathers (unpartitions) the params of the current layer, then loads from
-                # the state dict and then re-partitions them again
-                with deepspeed.zero.GatheredParameters(params_to_gather,
-                                                       modifier_rank=0):
-                    if torch.distributed.get_rank() == 0:
-                        module._load_from_state_dict(*args)
+            if zero_stage == 3:
+                # In sharded models, each shard has only part of the full state_dict, so only gather
+                # parameters that are in the current state_dict.
+                named_parameters = dict(
+                    module.named_parameters(prefix=prefix[:-1], recurse=False))
+                #print(f"named_parameters: {named_parameters}")
+                params_to_gather = [
+                    named_parameters[k] for k in state_dict.keys()
+                    if k in named_parameters
+                ]
+                #print(f"params_to_gather: {params_to_gather}")
+                if len(params_to_gather) > 0:
+                    # because zero3 puts placeholders in model params, this context
+                    # manager gathers (unpartitions) the params of the current layer, then loads from
+                    # the state dict and then re-partitions them again
+                    with deepspeed.zero.GatheredParameters(params_to_gather,
+                                                           modifier_rank=0):
+                        if torch.distributed.get_rank() == 0:
+                            module._load_from_state_dict(*args)
+            else:
+                module._load_from_state_dict(*args)
 
         for name, child in module._modules.items():
             if child is not None:

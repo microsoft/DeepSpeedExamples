@@ -54,7 +54,8 @@ def create_critic_model(model_name_or_path,
                         ds_config,
                         num_padding_at_beginning=0,
                         rlhf_training=False,
-                        disable_dropout=False):
+                        disable_dropout=False,
+                        zero_stage=0):
     # OPT model family always put a padding token at the beginning of the sequence,
     # we did not see this in other models but not sure if it is a general rule
 
@@ -105,7 +106,10 @@ def create_critic_model(model_name_or_path,
         # load critic model from checkpoint with zero-stage 3 compatibility
         # this functionality may be moved to DS checkpoint load API in future
         start = time.time()
-        load_state_dict_into_model(critic_model, model_ckpt_state_dict)
+        load_state_dict_into_model(critic_model,
+                                   model_ckpt_state_dict,
+                                   "",
+                                   zero_stage=zero_stage)
         end = time.time()
         print(f"> Loading model state dict took {end - start} seconds")
 
