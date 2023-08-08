@@ -92,7 +92,11 @@ def save_hf_format(model, tokenizer, args, sub_folder=""):
             del save_dict[key]
     torch.save(save_dict, output_model_file)
     model_to_save.config.to_json_file(output_config_file)
-    tokenizer.save_vocabulary(output_dir)
+    try:
+        tokenizer.save_vocabulary(output_dir)
+    except NotImplementedError:
+        print(f"{tokenizer.__class__} with repo-id: {tokenizer.name_or_path} "
+              "dose not support `save_vocabulary` method")
 
 
 def set_random_seed(seed):

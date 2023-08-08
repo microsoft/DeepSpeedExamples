@@ -130,3 +130,4 @@ dmypy.json
 # Pyre type checker
 .pyre/
 applications/DeepSpeed-Chat/training/output/ds_tensorboard_logs/*
+applications/DeepSpeed-Chat/training/output/*
