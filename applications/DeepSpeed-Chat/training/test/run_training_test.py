@@ -52,11 +52,17 @@ def params(zero_stage, hybrid_engine, offload, lora):
 #@pytest.mark.parametrize('lora', [True, False])
 def test_ds_chat(params):
     # TODO (lekurile): Add test-only params to main.py (test_enable, test_breakpoint)
-    if params[3] == "2" and params[4] == "true" and params[5] == "true" and params[6] == "false":
-        pytest.skip("The combination of [actor_zero_stage==2, critic_zero_stage==2, enable_hybrid_engine=True, offload=True, lora=False] is currently unsupported due to training instability!")
+    if params[3] == "2" and params[4] == "true" and params[
+            5] == "true" and params[6] == "false":
+        pytest.skip(
+            "The combination of [actor_zero_stage==2, critic_zero_stage==2, enable_hybrid_engine=True, offload=True, lora=False] is currently unsupported due to training instability!"
+        )
 
-    if params[3] == "3" and params[4] == "true" and params[5] == "true" and params[6] == "true":
-        pytest.skip("The combination of [actor_zero_stage==3, critic_zero_stage==3, enable_hybrid_engine=True, offload=True, lora=True] is currently unsupported due to training instability!")
+    if params[3] == "3" and params[4] == "true" and params[
+            5] == "true" and params[6] == "true":
+        pytest.skip(
+            "The combination of [actor_zero_stage==3, critic_zero_stage==3, enable_hybrid_engine=True, offload=True, lora=True] is currently unsupported due to training instability!"
+        )
 
     wd = os.getcwd()
     os.chdir("../step3_rlhf_finetuning")
@@ -72,5 +78,7 @@ def test_ds_chat(params):
     #import pdb; pdb.set_trace()
 
     # Assert Model files exist
-    assert file_exists(f"{params[-1]}/actor/", "pytorch_model.bin"), "Actor model was not saved during step 3 training."
-    assert file_exists(f"{params[-1]}/critic/", "pytorch_model.bin"), "Critic model was not saved during step 3 training."
+    assert file_exists(f"{params[-1]}/actor/", "pytorch_model.bin"
+                       ), "Actor model was not saved during step 3 training."
+    assert file_exists(f"{params[-1]}/critic/", "pytorch_model.bin"
+                       ), "Critic model was not saved during step 3 training."
