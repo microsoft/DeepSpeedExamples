@@ -37,7 +37,7 @@ def create_hf_model(model_class,
         model = model_class.from_pretrained(
             model_name_or_path,
             from_tf=bool(".ckpt" in model_name_or_path),
-            config=model_config)
+            config=model_config, trust_remote_code=True)
 
     model.config.end_token_id = tokenizer.eos_token_id
     model.config.pad_token_id = model.config.eos_token_id

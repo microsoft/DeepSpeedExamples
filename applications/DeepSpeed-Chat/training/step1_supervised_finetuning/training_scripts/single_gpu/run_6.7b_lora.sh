@@ -4,9 +4,17 @@
 
 # DeepSpeed Team
 
+# Get the directory path of the current script file
+CURRENT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+echo "The directory path of the current script file is: $CURRENT_DIR"
+
+source $CURRENT_DIR/../../../base.sh
+
 # Note that usually LoRA needs to use larger learning rate
-OUTPUT_PATH=./output
-mkdir -p $OUTPUT_PATH
+OUTPUT=${1:-output}
+ZERO_STAGE=${2:-0}
+mkdir -p $OUTPUT
 
 deepspeed --num_gpus 1 main.py \
    --data_path Dahoas/rm-static Dahoas/full-hh-rlhf Dahoas/synthetic-instruct-gptj-pairwise yitingxie/rlhf-reward-datasets \

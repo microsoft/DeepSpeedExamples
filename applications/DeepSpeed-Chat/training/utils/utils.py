@@ -62,6 +62,11 @@ def get_tokenizer(model_name_or_path, fast_tokenizer=True):
 
 
 def load_hf_tokenizer(model_name_or_path, fast_tokenizer=True):
+    try:
+        return AutoTokenizer.from_pretrained(model_name_or_path,
+                                                  fast_tokenizer=True)
+    except:
+        pass
     if os.path.exists(model_name_or_path):
         # Locally tokenizer loading has some issue, so we need to force download
         model_json = os.path.join(model_name_or_path, "config.json")
