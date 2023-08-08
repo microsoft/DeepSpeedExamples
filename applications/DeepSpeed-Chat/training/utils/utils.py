@@ -114,10 +114,10 @@ def get_all_reduce_mean(tensor):
 # This function is a modified version of code available in the from_pretrained API of HuggingFace Transformers
 # The code is copied and modified from: https://github.com/huggingface/transformers/blob/5ee9693a1c77c617ebc43ef20194b6d3b674318e/src/transformers/modeling_utils.py#L498
 # This function helps load a HF format checkpoint into a DeepSpeed wrapped model that has been sharded using ZeRO Stage 3
-def load_state_dict_into_model(model_to_load,
-                               state_dict,
+def load_state_dict_into_model(model_to_load=None,
+                               state_dict=None,
                                start_prefix="",
-                               zero_stage):
+                               zero_stage=0):
 
     # copy state_dict so _load_from_state_dict can modify it
     metadata = getattr(state_dict, "_metadata", None)
