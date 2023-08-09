@@ -7,9 +7,9 @@ ACTOR_MODEL_PATH=$1
 CRITIC_MODEL_PATH=$2
 ACTOR_ZERO_STAGE=$3
 CRITIC_ZERO_STAGE=$4
-OUTPUT=$3
+OUTPUT=$5
 if [ "$OUTPUT" == "" ]; then
-    OUTPUT=./output_step3_llama
+    OUTPUT=./output_step3_llama2
 fi
 if [ "$ACTOR_ZERO_STAGE" == "" ]; then
     ACTOR_ZERO_STAGE=3
@@ -24,7 +24,7 @@ Num_Padding_at_Beginning=1 # this is model related
 Actor_Lr=9.65e-6
 Critic_Lr=5e-6
 
-deepspeed --master_port 12346 --num_gpus=1 main.py \
+deepspeed --master_port 12346 main.py \
    --data_path Dahoas/rm-static \
    --data_split 2,4,4 \
    --actor_model_name_or_path $ACTOR_MODEL_PATH \
@@ -59,6 +59,3 @@ deepspeed --master_port 12346 --num_gpus=1 main.py \
    --output_dir $OUTPUT \
     &> $OUTPUT/training.log
 
-#--offload \
-#--actor_lora_dim 128 \
-#--actor_lora_module_name "layers." \
