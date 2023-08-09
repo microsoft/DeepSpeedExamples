@@ -10,7 +10,8 @@ CRITIC_ZERO_STAGE=$4
 ENABLE_HYBRID_ENGINE=$5
 OFFLOAD=$6
 LORA=$7
-OUTPUT=$8
+MIXED_PRECISION_LORA=$8
+OUTPUT=$9
 
 if [ "$ACTOR_ZERO_STAGE" == "" ]; then
     ACTOR_ZERO_STAGE=2
@@ -24,6 +25,12 @@ if [ "$ENABLE_HYBRID_ENGINE" == true ]; then
     ENABLE_HYBRID_ENGINE="--enable_hybrid_engine"
 else
     ENABLE_HYBRID_ENGINE=""
+fi
+
+if [ "$MIXED_PRECISION_LORA" == true ]; then
+    MIXED_PRECISION_LORA="--enable_mixed_precision_lora"
+else
+    MIXED_PRECISION_LORA=""
 fi
 
 if [ "$OFFLOAD" == true ]; then
@@ -73,7 +80,7 @@ cmd="deepspeed --num_nodes=1 main.py \
    --actor_zero_stage ${ACTOR_ZERO_STAGE} \
    --critic_zero_stage ${CRITIC_ZERO_STAGE} \
    --output_dir $OUTPUT \
-    $ENABLE_HYBRID_ENGINE $OFFLOAD $UNPIN_ACTOR_PARAMETERS \
+    $ENABLE_HYBRID_ENGINE $OFFLOAD $MIXED_PRECISION_LORA $UNPIN_ACTOR_PARAMETERS \
     $ACTOR_LORA_DIM $ACTOR_LORA_MODULE_NAME"
 
 echo "----------------------------- DS COMMAND -----------------------------"
