@@ -323,7 +323,6 @@ def main():
             rm_model.backward(loss)
             rm_model.step()
             mean_loss += loss.item()
-
         print_rank_0(
             f"Epoch {epoch+1}/{args.num_train_epochs} with loss {mean_loss/(step+1)}",
             args.global_rank)
