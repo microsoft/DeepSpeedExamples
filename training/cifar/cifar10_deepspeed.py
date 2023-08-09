@@ -89,6 +89,22 @@ def add_argument():
         help=
         '(moe) create separate moe param groups, required when using ZeRO w. MoE'
     )
+    parser.add_argument(
+        '--dtype',
+        default='fp16',
+        type=str,
+        choices=['bf16', 'fp16'],
+        help=
+        'Datatype used for training'
+    )
+    parser.add_argument(
+        '--stage',
+        default=0,
+        type=int,
+        choices=[0, 1, 2, 3],
+        help=
+        'Datatype used for training'
+    )
 
     # Include DeepSpeed configuration arguments
     parser = deepspeed.add_config_arguments(parser)
@@ -244,8 +260,55 @@ if args.moe_param_group:
 # 1) Distributed model
 # 2) Distributed data loader
 # 3) DeepSpeed optimizer
+ds_config = {
+  "train_batch_size": 16,
+  "steps_per_print": 2000,
+  "optimizer": {
+    "type": "Adam",
+    "params": {
+      "lr": 0.001,
+      "betas": [
+        0.8,
+        0.999
+      ],
+      "eps": 1e-8,
+      "weight_decay": 3e-7
+    }
+  },
+  "scheduler": {
+    "type": "WarmupLR",
+    "params": {
+      "warmup_min_lr": 0,
+      "warmup_max_lr": 0.001,
+      "warmup_num_steps": 1000
+    }
+  },
+  "gradient_clipping": 1.0,
+  "prescale_gradients": False,
+  args.dtype: {
+      "enabled": True,
+      "fp16_master_weights_and_grads": False,
+      "loss_scale": 0,
+      "loss_scale_window": 500,
+      "hysteresis": 2,
+      "min_loss_scale": 1,
+      "initial_scale_power": 15
+  },
+  "wall_clock_breakdown": False,
+  "zero_optimization": {
+      "stage": args.stage,
+      "allgather_partitions": True,
+      "reduce_scatter": True,
+      "allgather_bucket_size": 50000000,
+      "reduce_bucket_size": 50000000,
+      "overlap_comm": True,
+      "contiguous_gradients": True,
+      "cpu_offload": False
+  }
+}
+
 model_engine, optimizer, trainloader, __ = deepspeed.initialize(
-    args=args, model=net, model_parameters=parameters, training_data=trainset)
+    args=args, model=net, model_parameters=parameters, training_data=trainset, config=ds_config)
 
 local_device = get_accelerator().device_name(model_engine.local_rank)
 local_rank = model_engine.local_rank

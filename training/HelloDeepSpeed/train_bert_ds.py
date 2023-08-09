@@ -613,6 +613,7 @@ def train(
         checkpoint_every: int = 1000,
         log_every: int = 10,
         local_rank: int = -1,
+        dtype: str = "bf16",
 ) -> pathlib.Path:
     """Trains a [Bert style](https://arxiv.org/pdf/1810.04805.pdf)
     (transformer encoder only) model for MLM Task
@@ -778,6 +779,7 @@ def train(
     ###### DeepSpeed engine ########
     ################################
     log_dist("Creating DeepSpeed engine", ranks=[0], level=logging.INFO)
+    assert (dtype == 'fp16' or dtype == 'bf16')
     ds_config = {
         "train_micro_batch_size_per_gpu": batch_size,
         "optimizer": {
@@ -786,7 +788,7 @@ def train(
                 "lr": 1e-4
             }
         },
-        "bf16": {
+        dtype: {
             "enabled": True
         },
         "zero_optimization": {
