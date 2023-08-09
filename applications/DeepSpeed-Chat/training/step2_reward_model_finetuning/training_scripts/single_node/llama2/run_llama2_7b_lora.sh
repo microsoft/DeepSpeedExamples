@@ -13,7 +13,7 @@ if [ "$ZERO_STAGE" == "" ]; then
 fi
 mkdir -p $OUTPUT
 
-deepspeed --num_gpus 1 main.py \
+deepspeed main.py \
    --data_path Dahoas/rm-static \
    --data_split 2,4,4 \
    --model_name_or_path meta-llama/Llama-2-7b-hf \
@@ -32,5 +32,7 @@ deepspeed --num_gpus 1 main.py \
    --zero_stage $ZERO_STAGE \
    --deepspeed \
    --offload \
+   --lora_dim 128 \
+   --lora_module_name "layers." \
    --output_dir $OUTPUT \
    &> $OUTPUT/training.log
