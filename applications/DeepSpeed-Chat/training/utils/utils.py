@@ -145,7 +145,6 @@ def load_state_dict_into_model(model_to_load=None,
                     named_parameters[k] for k in state_dict.keys()
                     if k in named_parameters
                 ]
-                #print(f"params_to_gather: {params_to_gather}")
                 if len(params_to_gather) > 0:
                     # because zero3 puts placeholders in model params, this context
                     # manager gathers (unpartitions) the params of the current layer, then loads from
