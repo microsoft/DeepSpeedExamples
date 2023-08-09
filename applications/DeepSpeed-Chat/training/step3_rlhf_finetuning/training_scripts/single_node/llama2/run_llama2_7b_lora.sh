@@ -58,4 +58,3 @@ deepspeed --master_port 12346 main.py \
    --actor_lora_module_name "layers." \
    --output_dir $OUTPUT \
     &> $OUTPUT/training.log
-

@@ -254,6 +254,7 @@ def save_zero_three_model(model_ema, global_rank, save_dir, zero_stage=0):
     else:
         output_state_dict = {}
         for k, v in model_to_save.named_parameters():
+
             if hasattr(v, 'ds_id'):
                 with deepspeed.zero.GatheredParameters(_z3_params_to_fetch([v
                                                                             ]),
