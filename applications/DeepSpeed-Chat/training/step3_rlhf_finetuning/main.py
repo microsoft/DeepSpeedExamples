@@ -425,6 +425,11 @@ def main():
         num_total_iters=num_total_iters,
         args=args)
 
+    # Mixed Precision LoRA
+    if args.enable_mixed_precision_lora:
+        rlhf_engine.actor.optimizer.quantize_nontrainable_params()
+        print_rank_0("Mixed Precision LoRA enabled")
+
     args.end_of_conversation_token = "<|endoftext|>"
 
     ppo_trainer = DeepSpeedPPOTrainerUnsupervised if unsupervised_training_enabled else DeepSpeedPPOTrainer
