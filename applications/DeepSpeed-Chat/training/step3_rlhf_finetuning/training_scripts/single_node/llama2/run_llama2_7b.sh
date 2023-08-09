@@ -7,7 +7,7 @@ ACTOR_MODEL_PATH=$1
 CRITIC_MODEL_PATH=$2
 ACTOR_ZERO_STAGE=$3
 CRITIC_ZERO_STAGE=$4
-OUTPUT=$3
+OUTPUT=$5
 if [ "$OUTPUT" == "" ]; then
     OUTPUT=./output_step3_llama
 fi
@@ -51,6 +51,6 @@ deepspeed --master_port 12346 main.py \
    --deepspeed --seed 1234 \
    --actor_zero_stage $ACTOR_ZERO_STAGE \
    --critic_zero_stage $CRITIC_ZERO_STAGE \
-    --enable_hybrid_engine \
+   --enable_hybrid_engine \
    --output_dir $OUTPUT \
     &> $OUTPUT/training.log
