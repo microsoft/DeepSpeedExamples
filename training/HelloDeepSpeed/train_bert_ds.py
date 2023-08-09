@@ -497,7 +497,7 @@ def create_experiment_dir(checkpoint_dir: pathlib.Path,
     try:
         gitlog = sh.git.log("-1", format="%H", _tty_out=False, _fg=False)
         with (exp_dir / "githash.log").open("w") as handle:
-            handle.write(gitlog)
+            handle.write(gitlog.stdout.decode("utf-8"))
     except sh.ErrorReturnCode_128:
         log_dist(
             "Seems like the code is not running from"
@@ -511,7 +511,7 @@ def create_experiment_dir(checkpoint_dir: pathlib.Path,
     try:
         gitdiff = sh.git.diff(_fg=False, _tty_out=False)
         with (exp_dir / "gitdiff.log").open("w") as handle:
-            handle.write(gitdiff)
+            handle.write(gitdiff.stdout.decode("utf-8"))
     except sh.ErrorReturnCode_129:
         log_dist(
             "Seems like the code is not running from"
