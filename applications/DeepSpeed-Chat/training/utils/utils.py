@@ -125,7 +125,6 @@ def load_state_dict_into_model(model_to_load=None,
     if metadata is not None:
         state_dict._metadata = metadata
 
-    #print(f"state_dict: {state_dict.keys()}")
     error_msgs = []
 
     # PyTorch's `_load_from_state_dict` does not copy parameters in a module's descendants
@@ -142,7 +141,6 @@ def load_state_dict_into_model(model_to_load=None,
                 # parameters that are in the current state_dict.
                 named_parameters = dict(
                     module.named_parameters(prefix=prefix[:-1], recurse=False))
-                #print(f"named_parameters: {named_parameters}")
                 params_to_gather = [
                     named_parameters[k] for k in state_dict.keys()
                     if k in named_parameters
