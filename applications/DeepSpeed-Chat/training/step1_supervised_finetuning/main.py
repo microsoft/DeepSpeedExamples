@@ -217,7 +217,7 @@ def main():
     torch.distributed.barrier()
 
     # load_hf_tokenizer will get the correct tokenizer and set padding tokens based on the model family
-    # Causally, some repo owners of huggingface hub, such as bigscience, would like to separate model and tokenizer
+    # Occasionally , some repo owners of huggingface hub, such as bigscience, would like to separate model and tokenizer
     tokenizer_name_or_path = args.model_name_or_path if not args.tokenizer_name_or_path else args.tokenizer_name_or_path
 
     tokenizer = load_hf_tokenizer(tokenizer_name_or_path, fast_tokenizer=True)

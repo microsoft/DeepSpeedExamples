@@ -59,6 +59,13 @@ def parse_args():
         required=True,
     )
     parser.add_argument(
+        "--tokenizer_name_or_path",
+        type=str,
+        default=None,
+        help=
+        "Path to pretrained tokenizer or tokenizer identifier from huggingface.co/models, if None, use `model_name_or_path`"
+    )
+    parser.add_argument(
         "--num_padding_at_beginning",
         type=int,
         default=1,
@@ -204,7 +211,10 @@ def main():
     torch.distributed.barrier()
 
     # load_hf_tokenizer will get the correct tokenizer and set padding tokens based on the model family
-    tokenizer = load_hf_tokenizer(args.model_name_or_path, fast_tokenizer=True)
+    # Occasionally , some repo owners of huggingface hub, such as bigscience, would like to separate model and tokenizer
+    tokenizer_name_or_path = args.model_name_or_path if not args.tokenizer_name_or_path else args.tokenizer_name_or_path
+
+    tokenizer = load_hf_tokenizer(tokenizer_name_or_path, fast_tokenizer=True)
     rm_model = create_critic_model(args.model_name_or_path,
                                    tokenizer,
                                    ds_config,
