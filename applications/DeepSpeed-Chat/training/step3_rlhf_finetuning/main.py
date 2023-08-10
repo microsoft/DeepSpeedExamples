@@ -307,13 +307,17 @@ def parse_args():
                         action='store_true',
                         help='Print prompt and answers during training')
     ## Testing
-    parser.add_argument('--enable_test_mode',
-                        action='store_true',
-                        help='Enable a testing mode that terminates training based on args.test_stop_step')
-    parser.add_argument("--test_stop_step",
-                        type=int,
-                        default=0,
-                        help="Training step at which to terminate training during testing.")
+    parser.add_argument(
+        '--enable_test_mode',
+        action='store_true',
+        help=
+        'Enable a testing mode that terminates training based on args.test_stop_step'
+    )
+    parser.add_argument(
+        "--test_stop_step",
+        type=int,
+        default=0,
+        help="Training step at which to terminate training during testing.")
 
     parser = deepspeed.add_config_arguments(parser)
     args = parser.parse_args()
