@@ -30,7 +30,7 @@ To overcome both challenges, we are introducing the DeepSpeed Hybrid Engine (Dee
 We provide multiple actor training scripts in the 'training_scripts' folder, all using a fixed OPT-350m reward model. However, users are encouraged to experiment with different reward model sizes based on their preferences. For example, if you have a single GPU and want to train an OPT-1.3B model, you can simply run the following bash script to initiate the training process.
 
 ```bash
-training_scripts/single_gpu/run_1.3b.sh
+training_scripts/opt/single_gpu/run_1.3b.sh
 ```
 
 ## 🎵 Some arguments explanation and largest model training on your own system
@@ -41,7 +41,7 @@ We provide most of unique arguments used in DeepSpeed RLHF other than the previo
 | ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | --unsupervised_dataset_name and --unsupervised_dataset_config_name | Huggingface datasets standard setting to collect the data, e.g., using Wikitext-103          | When both are provided, during each PPO training, we will also add the pretraining objective. Based on InstructGPT, this will enhance the model's benchmark performance. |
 | --unsup_coef                                                       | Used to balance RLHF/PPO loss and the unsupervised loss                                      |                                                                                                                                                                          |
-| --per_device_train_batch_size and --per_device_mini_batch_size     | The first one is the generation batch size and the second one is the PPO training batch size | Usually, the first one needs to be divisbale by the first one.                                                                                                           |
+| --per_device_train_batch_size and --per_device_mini_batch_size     | The first one is the generation batch size and the second one is the PPO training batch size | Usually, the first one needs to be divisible by the second one.                                                                                                           |
 | --generation_batch_numbers                                         | Generated N batches then do PPO training                                                     | This setting is common in RL, i.e., we generate an experiment table then do RL training                                                                                  |
 | --ppo_epochs                                                       | For the generated experiments, how many PPO epochs we want to perform                        |                                                                                                                                                                          |
 | --max_prompt_seq_len and --max_answer_seq_len                      | The length of the query and the length of the answer                                         |                                                                                                                                                                          |
