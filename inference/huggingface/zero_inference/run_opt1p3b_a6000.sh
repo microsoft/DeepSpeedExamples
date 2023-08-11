@@ -19,4 +19,4 @@ mkdir -p  $LOG_DIR
 OFFLOAD_DIR=/local_nvme/flexgen_offload
 mkdir -p $OFFLOAD_DIR
 python -m flexgen.flex_opt --model facebook/${MSZ} --path _DUMMY_ --percent 0 0 0 100 0 100 --gpu-batch-size ${BSZ} --offload-dir ${OFFLOAD_DIR} --pin-weight 0 --num-gpu-batches 1 &> $LOG_DIR/fg_${MSZ}_bs${BSZ}_cpu_disk.txt
-python -m flexgen.flex_opt --model facebook/${MSZ} --path _DUMMY_ --percent 0 0 0 100 0 100 --gpu-batch-size ${BSZ} --offload-dir ${OFFLOAD_DIR} --pin-weight 0 --num-gpu-batches 1 --cpu-cache-compute &> $LOG_DIR/fg_${MSZ}_bs${BSZ}_cpu_ccc_disk.txt  
+python -m flexgen.flex_opt --model facebook/${MSZ} --path _DUMMY_ --percent 0 0 0 100 0 100 --gpu-batch-size ${BSZ} --offload-dir ${OFFLOAD_DIR} --pin-weight 0 --num-gpu-batches 1 --cpu-cache-compute &> $LOG_DIR/fg_${MSZ}_bs${BSZ}_cpu_ccc_disk.txt
