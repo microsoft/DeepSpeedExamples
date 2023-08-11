@@ -161,10 +161,13 @@ def parse_args():
     parser.add_argument('--only_optimize_lora',
                         action='store_true',
                         help='Only optimize the LoRA parameters.')
-    parser.add_argument("--lora_learning_rate",
-                        type=float,
-                        default=5e-4,
-                        help="Initial LoRA learning rate (after the potential warmup period) to use.")
+    parser.add_argument(
+        "--lora_learning_rate",
+        type=float,
+        default=5e-4,
+        help=
+        "Initial LoRA learning rate (after the potential warmup period) to use."
+    )
     ## Tensorboard logging
     parser.add_argument('--enable_tensorboard',
                         action='store_true',
