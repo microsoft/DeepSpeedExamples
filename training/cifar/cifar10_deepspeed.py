@@ -93,7 +93,7 @@ def add_argument():
         '--dtype',
         default='fp16',
         type=str,
-        choices=['bf16', 'fp16'],
+        choices=['bf16', 'fp16', 'fp32'],
         help=
         'Datatype used for training'
     )
@@ -285,8 +285,11 @@ ds_config = {
   },
   "gradient_clipping": 1.0,
   "prescale_gradients": False,
-  args.dtype: {
-      "enabled": True,
+  "bf16": {
+      "enabled": args.dtype == "bf16"
+  },
+  "fp16": {
+      "enabled": args.dtype == "fp16",
       "fp16_master_weights_and_grads": False,
       "loss_scale": 0,
       "loss_scale_window": 500,
