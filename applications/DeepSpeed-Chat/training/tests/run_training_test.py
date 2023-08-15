@@ -33,9 +33,6 @@ def lora(request):
 
 
 def test_ds_chat(zero_stage, hybrid_engine, offload, lora):
-    # TODO (lekurile): create opt-125m dummy ckpt trained in step 2 for reward
-    #actor_model = "AdamG012/chat-opt-1.3b-sft-deepspeed"
-    #critic_model = "AdamG012/chat-opt-350m-reward-deepspeed"
     actor_model = "facebook/opt-125m"
     critic_model = "../step2_reward_model_finetuning/output"
     output_path = "z" + zero_stage + "_he_" + hybrid_engine + "_offload_" + offload + "_lora_" + lora
