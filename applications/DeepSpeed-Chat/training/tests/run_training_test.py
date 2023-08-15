@@ -33,8 +33,12 @@ def lora(request):
 
 
 def test_ds_chat(zero_stage, hybrid_engine, offload, lora):
+    critic_ckpt_dir = os.getenv("CRITIC_CKPT_DIR")
+    assert critic_ckpt_dir, "Please set CRITIC_CKPT_DIR in your environment"
+
     actor_model = "facebook/opt-125m"
-    critic_model = "../step2_reward_model_finetuning/output"
+    #critic_model = "../step2_reward_model_finetuning/output"
+    critic_model = critic_ckpt_dir
     output_path = "z" + zero_stage + "_he_" + hybrid_engine + "_offload_" + offload + "_lora_" + lora
     enable_test_mode = "true"
     test_stop_step = "5"
