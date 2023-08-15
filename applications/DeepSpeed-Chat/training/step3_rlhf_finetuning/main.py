@@ -536,13 +536,9 @@ def main():
                 rlhf_engine.actor.gradient_checkpointing_disable()
 
             actor_overflow, critic_overflow = trainer.get_overflow()
-            #print(f"actor_overflow = {actor_overflow}")
-            #print(f"critic_overflow = {critic_overflow}")
 
             if not actor_overflow and not critic_overflow:
                 non_overflow_step_count += 1
-
-            #print(f"non_overflow_step_count = {non_overflow_step_count}")
 
             if args.enable_test_mode and non_overflow_step_count == args.test_stop_step:
                 break
