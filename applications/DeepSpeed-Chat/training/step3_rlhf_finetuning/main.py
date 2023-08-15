@@ -317,7 +317,7 @@ def parse_args():
         "--test_stop_step",
         type=int,
         default=0,
-        help="Training step at which to terminate training during testing.")
+        help="Training non-overflow step at which to terminate training during testing.")
 
     parser = deepspeed.add_config_arguments(parser)
     args = parser.parse_args()
@@ -447,6 +447,8 @@ def main():
     # Train!
     print_rank_0("***** Running training *****", args.global_rank)
 
+    non_overflow_step_count = 0
+
     for epoch in range(args.num_train_epochs):
         print_rank_0(
             f"Beginning of Epoch {epoch+1}/{args.num_train_epochs}, Total Generation Batches {min(len(prompt_train_dataloader), len(unsupervised_train_dataloader))}",
@@ -533,7 +535,16 @@ def main():
             if args.actor_gradient_checkpointing:
                 rlhf_engine.actor.gradient_checkpointing_disable()
 
-            if args.enable_test_mode and step == args.test_stop_step:
+            actor_overflow, critic_overflow = trainer.get_overflow()
+            #print(f"actor_overflow = {actor_overflow}")
+            #print(f"critic_overflow = {critic_overflow}")
+
+            if not actor_overflow and not critic_overflow:
+                non_overflow_step_count += 1
+
+            #print(f"non_overflow_step_count = {non_overflow_step_count}")
+
+            if args.enable_test_mode and non_overflow_step_count == args.test_stop_step:
                 break
 
         if args.enable_test_mode:
