@@ -37,7 +37,6 @@ def test_ds_chat(zero_stage, hybrid_engine, offload, lora):
     assert critic_ckpt_dir, "Please set CRITIC_CKPT_DIR in your environment"
 
     actor_model = "facebook/opt-125m"
-    #critic_model = "../step2_reward_model_finetuning/output"
     critic_model = critic_ckpt_dir
     output_path = "z" + zero_stage + "_he_" + hybrid_engine + "_offload_" + offload + "_lora_" + lora
     enable_test_mode = "true"
@@ -76,7 +75,13 @@ def test_ds_chat(zero_stage, hybrid_engine, offload, lora):
     result = subprocess.run(cmd)
 
     # Assertions
-    result.check_returncode()
+    try:
+        result.check_returncode()
+    except subprocess.CalledProcessError as e:
+        with open(os.path.join(output_path, f"{output_path}.log"), "r") as f:
+            print(f.read())
+        raise e
+
     assert file_exists(f"{output_path}/actor/", "pytorch_model.bin"
                        ), "Actor model was not saved during step 3 training."
     assert file_exists(f"{output_path}/critic/", "pytorch_model.bin"
