@@ -317,7 +317,9 @@ def parse_args():
         "--test_stop_step",
         type=int,
         default=0,
-        help="Training non-overflow step at which to terminate training during testing.")
+        help=
+        "Training non-overflow step at which to terminate training during testing."
+    )
 
     parser = deepspeed.add_config_arguments(parser)
     args = parser.parse_args()
