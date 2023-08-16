@@ -19,6 +19,7 @@ for prompt_batch in prompt_train_dataloader:
 import argparse
 import os
 import random
+import time
 import torch
 from torch.utils.data import DataLoader, RandomSampler
 from torch.utils.data.distributed import DistributedSampler
@@ -460,7 +461,6 @@ def main():
 
     # Train!
     print_rank_0("***** Running training *****", args.global_rank)
-    import time
 
     for epoch in range(args.num_train_epochs):
         print_rank_0(
@@ -520,9 +520,11 @@ def main():
                     random.shuffle(exp_dataset)
                     random.shuffle(unsup_dataset)
                 end = time.time()
-                print_rank_0(f"|E2E latency={end-start}s |Generate time={t1-start} |Training time={end-t1}")
                 print_rank_0(
-                        f'epoch: {epoch}|step: {step} |ppo_ep: {ppo_ep+1}|act_loss: {actor_loss_sum/inner_iter}|cri_loss: {critic_loss_sum/inner_iter}|unsuper_loss: {unsup_loss_sum/inner_iter}',
+                    f"|E2E latency={end-start}s |Generate time={t1-start} |Training time={end-t1}"
+                )
+                print_rank_0(
+                    f'epoch: {epoch}|step: {step} |ppo_ep: {ppo_ep+1}|act_loss: {actor_loss_sum/inner_iter}|cri_loss: {critic_loss_sum/inner_iter}|unsuper_loss: {unsup_loss_sum/inner_iter}',
                     args.global_rank)
                 average_reward = get_all_reduce_mean(average_reward).item()
                 print_rank_0(
