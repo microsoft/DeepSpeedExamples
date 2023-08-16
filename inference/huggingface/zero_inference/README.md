@@ -1,15 +1,15 @@
 
-# DeepSpeed ZeRO-Inference v2.0
+# ZeRO-Inference: 20X faster inference through weight quantization and KV cache offloading
 
-We released initial ZeRO-Inference support back [in late 2021](https://github.com/microsoft/DeepSpeed/pull/1514) and have been continuously pushing out usability and performance updates ever since. In mid 2022 we released a [detailed blog and performance study of ZeRO-Inference that we will reference as ZeRO-Inference v1.0](https://www.deepspeed.ai/2022/09/09/zero-inference.html). We are pleased to announce a refreshed version of this popular feature with dramatically improved performance we are calling ZeRO-Inference v2.0. This release continues to enable inference computation of massive models (with hundreds of billions of parameters) on as few as a single GPU by leveraging multi-level hierarchical memory (e.g., GPU, CPU, and NVMe). It delivers efficient computation for `throughput-oriented` inference scenarios despite the latency of fetching model weights from CPU memory or NVMe over PCIe interconnect. This repo is used to showcase ZeRO-Inference's capability of serving economic cases for large generative models. For these models, the major memory consumption originates from model weights and KV cache, limiting the maximum batch size (thus throughput) that can be used in inference.
+ZeRO-Inference enables inference computation of massive models (with hundreds of billions of parameters) on as few as a single GPU by leveraging multi-level hierarchical memory (e.g., GPU, CPU, and NVMe). It delivers efficient computation for `throughput-oriented` inference scenarios despite the latency of fetching model weights from CPU memory or NVMe over PCIe interconnect. We [previewed](https://github.com/microsoft/DeepSpeed/pull/1514) this AI democratization technology in late 2021, and followed up in 2022 with a [paper](https://arxiv.org/abs/2207.00032) and [blog](https://www.deepspeed.ai/2022/09/09/zero-inference.html) describing the first full-feature release in [DeepSpeed versions >= 0..6.6](https://github.com/microsoft/DeepSpeed/tree/v0.6.6). We have been continuously pushing out usability and performance updates ever since, and are pleased to announce a major refresh of this popular DeepSpeed feature. This new release leverages two memory optimizations (weight quantization and KV cache offloading) to deliver up to 20X speedup in inference throughput, and is available in [DeepSpeed versions >= 0.10.2](). 
 
-ZeRO-Inference v2.0 supports 4-bit quantization of model weights, leading to approximately $4\times$ reduction on its memory usage. This is a generic feature and is model agnostic (requiring no model change). The highly efficient quantization/dequantization kernels have been integrated into the DeepSpeed framework. Additionally, KV cache, as the other limiting factor of improving system throughput, can be offloaded to CPU for computation (e.g.,cpu-cache-compute).
+This repo is used to showcase ZeRO-Inference's capability of serving economic cases for large generative models. For these models, the major memory consumption originates from model weights and KV cache, limiting the maximum batch size (thus throughput) that can be used in inference. ZeRO-Inference now supports 4-bit quantization of model weights, leading to approximately $4\times$ reduction on its memory usage. This is a generic feature and is model agnostic (requiring no model change). The highly efficient quantization/dequantization kernels have been integrated into the DeepSpeed framework. Additionally, KV cache, as the other limiting factor of improving system throughput, can be offloaded to CPU for computation (e.g.,cpu-cache-compute).
 Using publically available OPT and BLOOM models as examples, we demonstrate how KV cache CPU offloading can be easily enabled for all Hugging Face models through our recipe. Refer to [models](models) for details.
 
-With these two added techniques, we show that ZeRO-Inference v2.0 can achieve significant throughput and batch size improvement over the v1.0 of ZeRO-Inference, and comparable generation throughput to the SOTA throughput-oriented inference frameworks.
-Unlike [FlexGen](https://github.com/FMInference/FlexGen) which requires from-scratch model implementation with their APIs, ZeRO-Inference v2.0 requires `NO` code change for `4-bit` weight quantization and offloading (integrated to DeepSpeed inference framework), and only minor changes to the model code for KV cache offloading.
+With these two added techniques, we show the significant throughput and batch size improvements of this new ZeRO-Inference release over the previous one. We further show that ZeRO-Inference achieves comparable token generation throughput to the SOTA throughput-oriented inference frameworks.
+Unlike [FlexGen](https://github.com/FMInference/FlexGen) which requires from-scratch model implementation with their APIs, ZeRO-Inference requires `NO` code change for `4-bit` weight quantization and offloading (integrated to DeepSpeed inference framework), and only minor changes to the model code for KV cache offloading.
 
-More features are planned to be release in the near future to further improve the performance of ZeRO-Inference; for example, partial offloading, KV cache quantization, and etc. Please check the [Working-In-Progress](#working-in-progress) list and stay tuned.
+We plan to release more performance improvements to ZeRO-Inference, such as partial offloading, KV cache quantization, and etc, in the near future. Please check the [Working-In-Progress](#working-in-progress) list and stay tuned.
 
 ## Install
 
@@ -22,17 +22,17 @@ The model changes are detailed in [`model-support.md`](model-support.md).
 
 ## Usage
 
-We provide [`run_model.py`](run_model.py) as the entry script to run ZeRO-Inference v2.0. Run
+We provide [`run_model.py`](run_model.py) as the entry script to run ZeRO-Inference. Run
 ```sh
 python run_model.py --help
 ```
 For help on what options are available, please refer to [`run_model.sh`](run_model.sh) for more example scripts.
 
-## Running with ZeRO-Inference v2.0
+## Token Generation with ZeRO-Inference
 
 ### Example 1: OPT Models
 
-Here is an example of running the `facebook/opt-13b` model with Zero-Inference v2.0 using model weights and kv cache cpu offloading:
+Here is an example of running the `facebook/opt-13b` model with Zero-Inference using model weights and kv cache cpu offloading:
 
 ```sh
 deepspeed --num_gpus 1 run_model.py --model facebook/opt-13b --batch-size 8 --prompt-len 512 --gen-len 32 --cpu-offload --kv-offload
@@ -46,7 +46,7 @@ deepspeed --num_gpus 1 run_model.py --model facebook/opt-13b --batch-size 16 --p
 
 ### Example 2: BLOOM Models
 
-Here is an example of running `bigscience/bloom-7b1` with Zero-Inference v2.0 using model weights and kv cache cpu offloading:
+Here is an example of running `bigscience/bloom-7b1` with Zero-Inference using model weights and kv cache cpu offloading:
 
 ```sh
 deepspeed --num_gpus 1 run_model.py --model bigscience/bloom-7b1 --batch-size 8 --prompt-len 512 --gen-len 32 --cpu-offload --kv-offload
@@ -54,20 +54,20 @@ deepspeed --num_gpus 1 run_model.py --model bigscience/bloom-7b1 --batch-size 8 
 
 ## Benchmarking
 
-### 😽 Overall Throughput Improvement Over ZeRO-Inference v1.0 😽
+### 😽 Overall Throughput Improvement of new ZeRO-Inference release 😽
 
 <p align="center">
 
 <img src="images/over_v1.png" alt="democratization"/>
 
- Figure 1: Zero-Inference v2.0 throughput improvement (speedup) over the version v1.0 for performing throughput-oriented inference on various model sizes on a single NVIDIA A6000 GPU. `NVIDIA A6000 GPU` with 48GB device HBM and 252GB host CPU memory, 252GB host CPU memory with disk throughput of 3200 MB/s sequential reads; prompt=512, gen=32. The significant throughput originates from our faster generation kernel design, KV cache offloading and hybrid computation, as well as efficient weight compression.
+ Figure 1: Zero-Inference throughput improvement (speedup) over the previous version for performing throughput-oriented inference on various model sizes on a single NVIDIA A6000 GPU. `NVIDIA A6000 GPU` with 48GB device HBM and 252GB host CPU memory, 252GB host CPU memory with disk throughput of 3200 MB/s sequential reads; prompt=512, gen=32. The significant throughput originates from our faster generation kernel design, KV cache offloading and hybrid computation, as well as efficient weight compression.
 
 </p>
 
 
 ### 🐼 Comparison with SOTA Throughput-Oriented Inference Framework 🐼
 
-For fairness, we selected the same features supported by both FlexGen and our ZeRO-Inference v2.0 for performance comparison, including KV cache offloading and weight compression (i.e., INT4). Each data point is described using the format of | `throughput` (`batch size` on the last level of memory hierarchy)|. Throughput is measured by `tokens/sec`.
+For fairness, we selected the same features supported by both FlexGen and our ZeRO-Inference for performance comparison, including KV cache offloading and weight compression (i.e., INT4). Each data point is described using the format of | `throughput` (`batch size` on the last level of memory hierarchy)|. Throughput is measured by `tokens/sec`.
 
 Configuration 1: `NVIDIA A6000 GPU` with 48GB HBM; 252GB host CPU memory with disk throughput of 3200 MB/s sequential reads; prompt=512, gen=32.
 
@@ -127,7 +127,7 @@ with torch.no_grad():
   # Now model is on-the-fly quantized.
   model = AutoModel.from_pretrained('facebook/opt-66b')
 ```
-Currently, ZeRO-inference v2.0 can quantize the weight matrix of nn.Embedding and nn.Linear into INT4 format. In the example above, we applied group_size=64 and performed asymmetric quantization on the 1st dimension of the weight matrix. `group_size` here is configurable based on users' demand.
+Currently, ZeRO-inference can quantize the weight matrix of nn.Embedding and nn.Linear into INT4 format. In the example above, we applied group_size=64 and performed asymmetric quantization on the 1st dimension of the weight matrix. `group_size` here is configurable based on users' demand.
 
 ### Post Initialization Quantization
 In this mode, model is first loaded in FP16 format and then convert into INT4. The advantage of enabling this mode is that users will have an overview of the model architecture. Thus, they will have fine-grained control over the quantization decision. For example, which layer should be quantized with which quantization configuration can be controlled. Only a few lines of code changes are needed. Note that we plan to expand this mode to accommodate more formats in the near future.
@@ -167,5 +167,5 @@ In running example above, only two fully connected layers (fc1 and fc2) and the 
 
 ## References
 
-- DeepSpeed [ZeRO-Inference v1.0](https://www.deepspeed.ai/2022/09/09/zero-inference.html)
+- DeepSpeed [ZeRO-Inference](https://www.deepspeed.ai/2022/09/09/zero-inference.html)
 - Shen, Sheng, et al. "Q-bert: Hessian based ultra low precision quantization of bert." Proceedings of the AAAI Conference on Artificial Intelligence. Vol. 34. No. 05. 2020.
