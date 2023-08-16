@@ -460,6 +460,7 @@ def main():
 
     # Train!
     print_rank_0("***** Running training *****", args.global_rank)
+    import time
 
     for epoch in range(args.num_train_epochs):
         print_rank_0(
@@ -467,6 +468,8 @@ def main():
             args.global_rank)
         for step, (batch_prompt, batch_unsupervised) in enumerate(
                 zip(prompt_train_dataloader, unsupervised_train_dataloader)):
+
+            start = time.time()
             batch_prompt = to_device(batch_prompt, device)
             if batch_unsupervised is not None:
                 batch_unsupervised = to_device(batch_unsupervised, device)
@@ -484,8 +487,10 @@ def main():
                                               batch_prompt['prompt_att_mask'],
                                               step)
             exp_dataset = exp_mini_dataset.add(out)
+            t1 = time.time()
 
             if exp_dataset is not None:
+                t1 = time.time()
                 inner_iter = 0
                 actor_loss_sum, critic_loss_sum, unsup_loss_sum = 0, 0, 0
                 average_reward = 0
@@ -514,9 +519,10 @@ def main():
 
                     random.shuffle(exp_dataset)
                     random.shuffle(unsup_dataset)
-
+                end = time.time()
+                print_rank_0(f"|E2E latency={end-start}s |Generate time={t1-start} |Training time={end-t1}")
                 print_rank_0(
-                    f'epoch: {epoch}|step: {step}|ppo_ep: {ppo_ep+1}|act_loss: {actor_loss_sum/inner_iter}|cri_loss: {critic_loss_sum/inner_iter}|unsuper_loss: {unsup_loss_sum/inner_iter}',
+                        f'epoch: {epoch}|step: {step} |ppo_ep: {ppo_ep+1}|act_loss: {actor_loss_sum/inner_iter}|cri_loss: {critic_loss_sum/inner_iter}|unsuper_loss: {unsup_loss_sum/inner_iter}',
                     args.global_rank)
                 average_reward = get_all_reduce_mean(average_reward).item()
                 print_rank_0(
