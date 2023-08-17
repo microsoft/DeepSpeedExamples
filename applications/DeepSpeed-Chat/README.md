@@ -48,6 +48,7 @@ A fast, affordable, scalable and open system framework for enabling end-to-end R
    - [🐼 Serving Your Model: Plug-in and Test!](#-serving-plug-in-your-final-model-trained-by-deepspeed-chat-and-test-it-out)  
 - [🔥 Training Performance Evaluation 🔥](#-training-performance-evaluation-)
 - [😽 Supported Models 😽](#-supported-models-)
+- [:microscope: Build Pipeline Status :microscope:](#-build-pipeline-status-)
 - [⚓ Documentation and Tutorial ⚓](#-documentation-and-tutorial-)
 - [🌱 DeepSpeed Chat's Roadmap 🌱](#-deepspeed-chats-roadmap-)
 - [💬 DeepSpeed Chat and DeepSpeed Community 💬](#-deepspeed-chat-and-deepspeed-community-)
@@ -386,6 +387,13 @@ model family | size range
 [codegen](https://huggingface.co/Salesforce/codegen-16B-multi) | 0.35b - 16B
 
 * All performance and accuracy tests have been performed using the OPT model family only. For other models, please see our training_scripts folder on how to change model families.
+
+
+# :microscope: Build Pipeline Status :microscope:
+| Description | Status |
+| ----------- | ------ |
+| Integrations | [![nv-ds-chat](https://github.com/microsoft/DeepSpeed/actions/workflows/nv-ds-chat.yml/badge.svg?branch=master)](https://github.com/microsoft/DeepSpeed/actions/workflows/nv-ds-chat.yml) |
+
 
 ## ⚓ Documentation and Tutorial ⚓
 
