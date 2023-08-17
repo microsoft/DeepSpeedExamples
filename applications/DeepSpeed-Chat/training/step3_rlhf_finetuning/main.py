@@ -116,7 +116,7 @@ def parse_args():
         "Batch size (per device) for the training dataloader and generation purpose."
     )
     parser.add_argument(
-        "--per_device_mini_train_batch_size",
+        "--per_device_training_batch_size",
         type=int,
         default=16,
         help=
@@ -399,7 +399,7 @@ def create_datasets(args, tokenizer, train_phase=3):
             prompt_train_dataloader)  # basically a dummy dataloader
 
     num_update_steps_per_epoch = min(len(prompt_train_dataloader), len(unsupervised_train_dataloader)) * \
-        (args.per_device_generation_batch_size / args.per_device_mini_train_batch_size) * \
+        (args.per_device_generation_batch_size / args.per_device_training_batch_size) * \
         args.ppo_epochs / args.gradient_accumulation_steps
     num_total_iters = int(args.num_train_epochs * num_update_steps_per_epoch)
 
@@ -451,9 +451,9 @@ def main():
 
     # first number is how many experience-batch to generate, second number is the training batch size, which is the micro-batch size used
     exp_mini_dataset = MiniDataset(args.generation_batch_numbers,
-                                   args.per_device_mini_train_batch_size)
+                                   args.per_device_training_batch_size)
     unsup_mini_dataset = MiniDataset(args.generation_batch_numbers,
-                                     args.per_device_mini_train_batch_size)
+                                     args.per_device_training_batch_size)
 
     # Train!
     print_rank_0("***** Running training *****", args.global_rank)

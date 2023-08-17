@@ -40,7 +40,7 @@ deepspeed --master_port 12346 main.py \
    --critic_model_name_or_path $CRITIC_MODEL_PATH \
    --num_padding_at_beginning 1 \
    --per_device_generation_batch_size 4 \
-   --per_device_mini_train_batch_size 4 \
+   --per_device_training_batch_size 4 \
    --generation_batch_numbers 1 \
    --ppo_epochs 1 \
    --max_answer_seq_len 256 \
