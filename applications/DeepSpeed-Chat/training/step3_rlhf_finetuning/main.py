@@ -471,26 +471,27 @@ def main():
 
             start = time.time()
             batch_prompt = to_device(batch_prompt, device)
-            if batch_unsupervised is not None:
-                batch_unsupervised = to_device(batch_unsupervised, device)
-                unsup_dataset = unsup_mini_dataset.add(batch_unsupervised)
-            else:
-                unsup_dataset = unsup_mini_dataset.add(
-                    [[None] * args.per_device_train_batch_size])
+
             # prompts = batch_prompt['prompt']
             # length = prompts.size(-1)
             # if length > args.max_prompt_seq_len:
             #     prompts = prompts[:, length - args.max_prompt_seq_len:]
             #     raise ValueError("Prompt length is too long")
 
-            out = trainer.generate_experience(batch_prompt['prompt'],
-                                              batch_prompt['prompt_att_mask'],
-                                              step)
+            out, generate_time = trainer.generate_experience(
+                batch_prompt['prompt'], batch_prompt['prompt_att_mask'], step)
+
+            training_start = time.time()
+            if batch_unsupervised is not None:
+                batch_unsupervised = to_device(batch_unsupervised, device)
+                unsup_dataset = unsup_mini_dataset.add(batch_unsupervised)
+            else:
+                unsup_dataset = unsup_mini_dataset.add(
+                    [[None] * args.per_device_train_batch_size])
+
             exp_dataset = exp_mini_dataset.add(out)
-            t1 = time.time()
 
             if exp_dataset is not None:
-                t1 = time.time()
                 inner_iter = 0
                 actor_loss_sum, critic_loss_sum, unsup_loss_sum = 0, 0, 0
                 average_reward = 0
@@ -521,8 +522,8 @@ def main():
                     random.shuffle(unsup_dataset)
                 end = time.time()
                 print_rank_0(
-                    f"|E2E latency={end-start}s |Generate time={t1-start} |Training time={end-t1}"
-                )
+                    f"|E2E latency={end-start}s |Generate time={generate_time} |Training time={end-training_start} |Others={training_start-start-generate_time}",
+                    args.global_rank)
                 print_rank_0(
                     f'epoch: {epoch}|step: {step} |ppo_ep: {ppo_ep+1}|act_loss: {actor_loss_sum/inner_iter}|cri_loss: {critic_loss_sum/inner_iter}|unsuper_loss: {unsup_loss_sum/inner_iter}',
                     args.global_rank)
