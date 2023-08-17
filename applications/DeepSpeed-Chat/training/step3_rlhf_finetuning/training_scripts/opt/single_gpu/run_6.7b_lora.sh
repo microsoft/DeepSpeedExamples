@@ -31,7 +31,6 @@ deepspeed --num_gpus 1 main.py \
    --ppo_epochs 1 \
    --max_answer_seq_len 256 \
    --max_prompt_seq_len 256 \
-   --ppo_epochs 1 \
    --actor_learning_rate ${Actor_Lr} \
    --critic_learning_rate ${Critic_Lr} \
    --num_train_epochs 1 \
