@@ -524,6 +524,8 @@ def main():
                 print_rank_0(
                     f"|E2E latency={end-start}s |Generate time={generate_time} |Training time={end-training_start} |Others={training_start-start-generate_time}",
                     args.global_rank)
+                from utils.perf import print_throughput
+                print_throughput(rlhf_engine.actor.model, args, end-start)
                 print_rank_0(
                     f'epoch: {epoch}|step: {step} |ppo_ep: {ppo_ep+1}|act_loss: {actor_loss_sum/inner_iter}|cri_loss: {critic_loss_sum/inner_iter}|unsuper_loss: {unsup_loss_sum/inner_iter}',
                     args.global_rank)
