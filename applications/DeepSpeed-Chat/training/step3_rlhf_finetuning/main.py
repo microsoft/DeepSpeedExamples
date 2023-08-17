@@ -109,7 +109,7 @@ def parse_args():
         "OPT model has a fixed number (1) of padding tokens at the beginning of the input. We did not see this in other models but keep it as an option for now."
     )
     parser.add_argument(
-        "--per_device_train_batch_size",
+        "--per_device_generation_batch_size",
         type=int,
         default=16,
         help=
@@ -387,19 +387,19 @@ def create_datasets(args, tokenizer, train_phase=3):
         prompt_train_dataset,
         collate_fn=data_collator,
         sampler=prompt_train_sampler,
-        batch_size=args.per_device_train_batch_size)
+        batch_size=args.per_device_generation_batch_size)
     if unsupervised_training_enabled:
         unsupervised_train_dataloader = DataLoader(
             unsupervised_train_dataset,
             collate_fn=default_data_collator,
             sampler=unsupervised_train_sampler,
-            batch_size=args.per_device_train_batch_size)
+            batch_size=args.per_device_generation_batch_size)
     else:
         unsupervised_train_dataloader = [None] * len(
             prompt_train_dataloader)  # basically a dummy dataloader
 
     num_update_steps_per_epoch = min(len(prompt_train_dataloader), len(unsupervised_train_dataloader)) * \
-        (args.per_device_train_batch_size / args.per_device_mini_train_batch_size) * \
+        (args.per_device_generation_batch_size / args.per_device_mini_train_batch_size) * \
         args.ppo_epochs / args.gradient_accumulation_steps
     num_total_iters = int(args.num_train_epochs * num_update_steps_per_epoch)
 
@@ -472,7 +472,7 @@ def main():
                 unsup_dataset = unsup_mini_dataset.add(batch_unsupervised)
             else:
                 unsup_dataset = unsup_mini_dataset.add(
-                    [[None] * args.per_device_train_batch_size])
+                    [[None] * args.per_device_generation_batch_size])
             # prompts = batch_prompt['prompt']
             # length = prompts.size(-1)
             # if length > args.max_prompt_seq_len:
