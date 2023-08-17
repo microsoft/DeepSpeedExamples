@@ -43,6 +43,7 @@ sys.path.append(
 from utils.data.data_utils import create_prompt_dataset, MiniDataset, DataCollatorRLHF, get_unsupervised_data
 from utils.utils import print_rank_0, to_device, save_hf_format, set_random_seed, get_all_reduce_mean, moving_average, save_zero_three_model, load_hf_tokenizer
 from utils.module.lora import convert_lora_to_linear_layer
+from utils.perf import print_throughput
 
 writer = None
 
@@ -478,6 +479,7 @@ def main():
             #     prompts = prompts[:, length - args.max_prompt_seq_len:]
             #     raise ValueError("Prompt length is too long")
 
+            generate_start = time.time()
             out, generate_time = trainer.generate_experience(
                 batch_prompt['prompt'], batch_prompt['prompt_att_mask'], step)
 
@@ -521,11 +523,7 @@ def main():
                     random.shuffle(exp_dataset)
                     random.shuffle(unsup_dataset)
                 end = time.time()
-                print_rank_0(
-                    f"|E2E latency={end-start}s |Generate time={generate_time} |Training time={end-training_start} |Others={training_start-start-generate_time}",
-                    args.global_rank)
-                from utils.perf import print_throughput
-                print_throughput(rlhf_engine.actor.model, args, end-start)
+                print_throughput(rlhf_engine.actor.model, args, end-start, training_start-generate_start, generate_time, end-training_start, args.global_rank)
                 print_rank_0(
                     f'epoch: {epoch}|step: {step} |ppo_ep: {ppo_ep+1}|act_loss: {actor_loss_sum/inner_iter}|cri_loss: {critic_loss_sum/inner_iter}|unsuper_loss: {unsup_loss_sum/inner_iter}',
                     args.global_rank)
