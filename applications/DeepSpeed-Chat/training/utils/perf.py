@@ -4,7 +4,6 @@
 # DeepSpeed Team
 
 import numpy as np
-from loguru import logger
 import torch
 
 def print_throughput(hf_model, args, e2e_time, gen_exp_time, gen_seq_time, train_time, rank=0):
@@ -48,16 +47,8 @@ def print_throughput(hf_model, args, e2e_time, gen_exp_time, gen_seq_time, train
         e2e_tflops = flops_per_iteration / (e2e_time * gpus_per_model * (10**12))
         gen_tflops = flops_per_iteration / (gen_exp_time * gpus_per_model * (10**12))
         train_tflops = flops_per_iteration / (train_time * gpus_per_model * (10**12))
-        print(
-            ", ".join(
-                (
-                    f"E2E Time: {e2e_time:.2f}s, {e2e_tflops:.2f} TFLOPs, {samples_per_second:.2f} Samples/S",
-                    f"Generation Experience Time (incl. gen seq): {gen_exp_time:.2f}s, {gen_tflops:.2f} TFLOPs",
-                    f"Generation Sequence Time: {gen_seq_time:.2f}s",
-                    f"Training Time: {train_time:.2f}s, {train_tflops:.2f} TFLOPs",
-                    f"",
-                    "Params: "
-                    + (f"{params_in_billions:.3f} B" if params_in_billions != 0 else "NA"),
-                )
-            )
-        )
+        print(f"End-to-End => Latency: {e2e_time:.2f}s, TFLOPs: {e2e_tflops:.2f}, Samples/sec: {samples_per_second:.2f}, Time/seq {e2e_time/batch_size:.2f}s, Batch Size: {batch_size}, Sequence Length: {seq_length}")
+        print(f"Generation => Latency: {gen_exp_time:.2f}s, TFLOPs: {gen_tflops:.2f}")
+        print(f"Training   => Latency: {train_time:.2f}s, TFLOPs: {train_tflops:.2f}")
+        param_string = f"{params_in_billions:.3f} B" if params_in_billions != 0 else "NA"
+        print(f"Parameters => {param_string}")
