@@ -451,6 +451,8 @@ def main():
 
     # Mixed Precision LoRA
     if args.enable_mixed_precision_lora:
+        assert args.actor_lora_dim > 0, "Mixed Precision LoRA requires LoRA to be enabled"
+        assert args.actor_zero_stage == 3, "Mixed Precision LoRA requires Zero stage 3"
         rlhf_engine.actor.optimizer.quantize_nontrainable_params()
         print_rank_0("Mixed Precision LoRA enabled")
 
