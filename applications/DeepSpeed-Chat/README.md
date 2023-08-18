@@ -48,6 +48,7 @@ A fast, affordable, scalable and open system framework for enabling end-to-end R
    - [🐼 Serving Your Model: Plug-in and Test!](#-serving-plug-in-your-final-model-trained-by-deepspeed-chat-and-test-it-out)  
 - [🔥 Training Performance Evaluation 🔥](#-training-performance-evaluation-)
 - [😽 Supported Models 😽](#-supported-models-)
+- [🔬 Build Pipeline Status 🔬](#-build-pipeline-status-)
 - [⚓ Documentation and Tutorial ⚓](#-documentation-and-tutorial-)
 - [🌱 DeepSpeed Chat's Roadmap 🌱](#-deepspeed-chats-roadmap-)
 - [💬 DeepSpeed Chat and DeepSpeed Community 💬](#-deepspeed-chat-and-deepspeed-community-)
@@ -192,7 +193,7 @@ The train.py script has an easy-to-use command-line interface and can be launche
 cd training/step1_supervised_finetuning/
 
 # Run the training script
-bash training_scripts/single_gpu/run_1.3b.sh
+bash training_scripts/opt/single_gpu/run_1.3b.sh
 
 # Evaluate the model
 bash evaluation_scripts/run_prompt.sh
@@ -209,7 +210,7 @@ bash evaluation_scripts/run_prompt.sh
 cd training/step2_reward_model_finetuning
 
 # Run the training script
-bash training_scripts/single_gpu/run_350m.sh
+bash training_scripts/opt/single_gpu/run_350m.sh
 
 # Evaluate the model
 bash evaluation_scripts/run_eval.sh
@@ -237,7 +238,7 @@ As the most complex step of the entire 3-step InstructGPT pipeline, DeepSpeed Ch
 cd training/step3_rlhf_finetuning/
 
 # Run the training script
-bash training_scripts/single_gpu/run_1.3b.sh
+bash training_scripts/opt/single_gpu/run_1.3b.sh
 ```
 </p></details>
 
@@ -386,6 +387,33 @@ model family | size range
 [codegen](https://huggingface.co/Salesforce/codegen-16B-multi) | 0.35b - 16B
 
 * All performance and accuracy tests have been performed using the OPT model family only. For other models, please see our training_scripts folder on how to change model families.
+
+
+## 🔬 Build Pipeline Status 🔬
+
+| Description | Status |
+| ----------- | ------ |
+| Integrations | [![nv-ds-chat](https://github.com/microsoft/DeepSpeed/actions/workflows/nv-ds-chat.yml/badge.svg?branch=master)](https://github.com/microsoft/DeepSpeed/actions/workflows/nv-ds-chat.yml) |
+
+A DeepSpeed CI workflow runs the DeepSpeed-Chat Step 3 pipeline nightly across the following test configurations:
+
+Models
+```
+Actor:  facebook/opt-125m
+Critic: facebook/opt-125m (trained in DS-Chat Step 2)
+```
+
+Parameters comprising test matrix
+```
+Zero Stage:    2, 3
+Hybrid Engine: True, False
+Offload:       True, False
+LoRA:          True, False
+```
+
+Each configuration (16 total) runs through a limited number of Step 3 non-overflow training steps (i.e. steps where neither actor nor critic overflow) and saves the actor/critic models.
+Assertions are used to check if the training pipeline executed correctly and if the actor and critic models were saved properly.
+
 
 ## ⚓ Documentation and Tutorial ⚓
 
