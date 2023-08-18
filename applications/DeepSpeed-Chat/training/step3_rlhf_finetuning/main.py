@@ -305,9 +305,10 @@ def parse_args():
                         action='store_true',
                         help='Enable EMA checkpoint for the model.')
     ## Mixed Precision LoRA
-    parser.add_argument('--enable_mixed_precision_lora',
-                        action='store_true',
-                        help='Enable Mixed Precision LoRA for training and generation.')
+    parser.add_argument(
+        '--enable_mixed_precision_lora',
+        action='store_true',
+        help='Enable Mixed Precision LoRA for training and generation.')
     ## Tensorboard logging
     parser.add_argument('--enable_tensorboard',
                         action='store_true',
