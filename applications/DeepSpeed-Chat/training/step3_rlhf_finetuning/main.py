@@ -111,20 +111,20 @@ def parse_args():
         "OPT model has a fixed number (1) of padding tokens at the beginning of the input. We did not see this in other models but keep it as an option for now."
     )
     parser.add_argument(
-        "--per_device_train_batch_size",
+        "--per_device_generation_batch_size",
         type=int,
         default=16,
         help=
         "Batch size (per device) for the training dataloader and generation purpose."
     )
     parser.add_argument(
-        "--per_device_mini_train_batch_size",
+        "--per_device_training_batch_size",
         type=int,
         default=16,
         help=
         "Mini Batch size (per device) for the training dataloader and training purpose."
     )
-    parser.add_argument("--generation_batch_numbers",
+    parser.add_argument("--generation_batches",
                         type=int,
                         default=1,
                         help="Generate x batches to go to training mode.")
@@ -333,7 +333,9 @@ def parse_args():
         "--test_stop_step",
         type=int,
         default=0,
-        help="Training step at which to terminate training during testing.")
+        help=
+        "Training non-overflow step at which to terminate training during testing."
+    )
 
     parser = deepspeed.add_config_arguments(parser)
     args = parser.parse_args()
@@ -354,11 +356,6 @@ def parse_args():
     if args.actor_zero_stage == 2 and args.critic_zero_stage == 2 and args.enable_hybrid_engine and args.offload and args.actor_lora_dim == 0:
         raise ValueError(
             "The combination of [actor_zero_stage==2, critic_zero_stage==2, enable_hybrid_engine=True, offload=True, lora=False] is currently unsupported due to training instability!"
-        )
-
-    if args.actor_zero_stage == 3 and args.critic_zero_stage == 3 and args.enable_hybrid_engine and args.offload and args.actor_lora_dim > 0:
-        raise ValueError(
-            "The combination of [actor_zero_stage==3, critic_zero_stage==3, enable_hybrid_engine=True, offload=True, lora=True] is currently unsupported due to training instability!"
         )
 
     return args
@@ -392,19 +389,19 @@ def create_datasets(args, tokenizer, train_phase=3):
         prompt_train_dataset,
         collate_fn=data_collator,
         sampler=prompt_train_sampler,
-        batch_size=args.per_device_train_batch_size)
+        batch_size=args.per_device_generation_batch_size)
     if unsupervised_training_enabled:
         unsupervised_train_dataloader = DataLoader(
             unsupervised_train_dataset,
             collate_fn=default_data_collator,
             sampler=unsupervised_train_sampler,
-            batch_size=args.per_device_train_batch_size)
+            batch_size=args.per_device_generation_batch_size)
     else:
         unsupervised_train_dataloader = [None] * len(
             prompt_train_dataloader)  # basically a dummy dataloader
 
     num_update_steps_per_epoch = min(len(prompt_train_dataloader), len(unsupervised_train_dataloader)) * \
-        (args.per_device_train_batch_size / args.per_device_mini_train_batch_size) * \
+        (args.per_device_generation_batch_size / args.per_device_training_batch_size) * \
         args.ppo_epochs / args.gradient_accumulation_steps
     num_total_iters = int(args.num_train_epochs * num_update_steps_per_epoch)
 
@@ -455,13 +452,15 @@ def main():
     trainer = ppo_trainer(rlhf_engine, args)
 
     # first number is how many experience-batch to generate, second number is the training batch size, which is the micro-batch size used
-    exp_mini_dataset = MiniDataset(args.generation_batch_numbers,
-                                   args.per_device_mini_train_batch_size)
-    unsup_mini_dataset = MiniDataset(args.generation_batch_numbers,
-                                     args.per_device_mini_train_batch_size)
+    exp_mini_dataset = MiniDataset(args.generation_batches,
+                                   args.per_device_training_batch_size)
+    unsup_mini_dataset = MiniDataset(args.generation_batches,
+                                     args.per_device_training_batch_size)
 
     # Train!
     print_rank_0("***** Running training *****", args.global_rank)
+
+    non_overflow_step_count = 0
 
     for epoch in range(args.num_train_epochs):
         print_rank_0(
@@ -489,7 +488,7 @@ def main():
                 unsup_dataset = unsup_mini_dataset.add(batch_unsupervised)
             else:
                 unsup_dataset = unsup_mini_dataset.add(
-                    [[None] * args.per_device_train_batch_size])
+                    [[None] * args.per_device_generation_batch_size])
 
             exp_dataset = exp_mini_dataset.add(out)
 
@@ -552,7 +551,12 @@ def main():
             if args.actor_gradient_checkpointing:
                 rlhf_engine.actor.gradient_checkpointing_disable()
 
-            if args.enable_test_mode and step == args.test_stop_step:
+            actor_overflow, critic_overflow = trainer.get_overflow()
+
+            if not actor_overflow and not critic_overflow:
+                non_overflow_step_count += 1
+
+            if args.enable_test_mode and non_overflow_step_count == args.test_stop_step:
                 break
 
         if args.enable_test_mode:
