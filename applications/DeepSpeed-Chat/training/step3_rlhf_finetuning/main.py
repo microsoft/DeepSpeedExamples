@@ -478,9 +478,9 @@ def main():
             #     prompts = prompts[:, length - args.max_prompt_seq_len:]
             #     raise ValueError("Prompt length is too long")
 
-            generate_start = time.time()
-            out, generate_time = trainer.generate_experience(
-                batch_prompt['prompt'], batch_prompt['prompt_att_mask'], step)
+            out = trainer.generate_experience(batch_prompt['prompt'],
+                                              batch_prompt['prompt_att_mask'],
+                                              step)
 
             training_start = time.time()
             if batch_unsupervised is not None:
@@ -523,13 +523,14 @@ def main():
                     random.shuffle(unsup_dataset)
 
                 end = time.time()
+                e2e_time = end - start
+                training_time = end - training_start
 
                 print_rank_0(
                     f'Epoch: {epoch} | Step: {step} | PPO Epoch: {ppo_ep+1} | Actor Loss: {actor_loss_sum/inner_iter} | Critic Loss: {critic_loss_sum/inner_iter} | Unsupervised Loss: {unsup_loss_sum/inner_iter}',
                     args.global_rank)
-                print_throughput(rlhf_engine.actor.model, args, end - start,
-                                 training_start - generate_start,
-                                 generate_time, end - training_start,
+                print_throughput(rlhf_engine.actor.model, args, e2e_time,
+                                 trainer.generate_time, training_time,
                                  args.global_rank)
                 average_reward = get_all_reduce_mean(average_reward).item()
                 print_rank_0(

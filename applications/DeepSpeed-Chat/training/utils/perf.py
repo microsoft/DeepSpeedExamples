@@ -10,7 +10,6 @@ def print_throughput(hf_model,
                      args,
                      e2e_time,
                      gen_exp_time,
-                     gen_seq_time,
                      train_time,
                      rank=0):
     if rank <= 0:

@@ -66,6 +66,7 @@ class DeepSpeedPPOTrainer():
         self.cliprange_value = 0.2
         self.gamma = 1.0
         self.lam = 0.95
+        self.generate_time = 0.0
 
     def _generate_sequence(self, prompts, mask, step):
 
@@ -137,7 +138,7 @@ class DeepSpeedPPOTrainer():
         logits = output.logits
         logits_ref = output_ref.logits
 
-        generate_time = generate_end - generate_start
+        self.generate_time = generate_end - generate_start
 
         return {
             'prompts': prompts,
@@ -148,7 +149,7 @@ class DeepSpeedPPOTrainer():
             'rewards': reward_score,
             'input_ids': seq,
             "attention_mask": attention_mask
-        }, generate_time
+        }
 
     def compute_rewards(self, prompts, log_probs, ref_log_probs, reward_score,
                         action_mask):
