@@ -524,13 +524,23 @@ def main():
 
                 end = time.time()
 
-                print_rank_0(f'Epoch: {epoch} | Step: {step} | PPO Epoch: {ppo_ep+1} | Actor Loss: {actor_loss_sum/inner_iter} | Critic Loss: {critic_loss_sum/inner_iter} | Unsupervised Loss: {unsup_loss_sum/inner_iter}', args.global_rank)
-                print_throughput(rlhf_engine.actor.model, args, end-start, training_start-generate_start, generate_time, end-training_start, args.global_rank)
+                print_rank_0(
+                    f'Epoch: {epoch} | Step: {step} | PPO Epoch: {ppo_ep+1} | Actor Loss: {actor_loss_sum/inner_iter} | Critic Loss: {critic_loss_sum/inner_iter} | Unsupervised Loss: {unsup_loss_sum/inner_iter}',
+                    args.global_rank)
+                print_throughput(rlhf_engine.actor.model, args, end - start,
+                                 training_start - generate_start,
+                                 generate_time, end - training_start,
+                                 args.global_rank)
                 average_reward = get_all_reduce_mean(average_reward).item()
-                print_rank_0(f"Average reward score: {average_reward/inner_iter}", args.global_rank)
-                print_rank_0("-------------------------------------------------------------------------------------", args.global_rank)
+                print_rank_0(
+                    f"Average reward score: {average_reward/inner_iter}",
+                    args.global_rank)
+                print_rank_0(
+                    "-------------------------------------------------------------------------------------",
+                    args.global_rank)
 
-                if args.enable_tensorboard and torch.distributed.get_rank() == 0:
+                if args.enable_tensorboard and torch.distributed.get_rank(
+                ) == 0:
                     writer.add_scalar('reward',
                                       average_reward / inner_iter,
                                       global_step=step)

@@ -268,6 +268,8 @@ def main():
 
             loss = outputs.loss
             losses += loss.float()
+            if step == 1:
+                break
         losses = losses / (step + 1)
         try:
             perplexity = torch.exp(losses)
