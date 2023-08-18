@@ -16,6 +16,8 @@ sleep 300
 
 # Run generic sweep w/o Mixed Precision ZeRO++
 if [ "$RUN_GENERIC_SWEEP" == true ]; then
+    echo "----------------------------- RUNNING GENERIC SWEEPS -----------------------------"
+    echo ""
     for z in {2..3}
     do
         for he in true false
@@ -25,7 +27,7 @@ if [ "$RUN_GENERIC_SWEEP" == true ]; then
                 for lora in true false
                 do
                     mixed_precision_lora=false
-                    cmd="bash training_scripts/single_node/sweep/run_single.sh \
+                    cmd="bash training_scripts/opt/single_node/sweep/run_single.sh \
                         $ACTOR_MODEL_PATH \
                         $CRITIC_MODEL_PATH \
                         ${z} \
@@ -45,17 +47,20 @@ if [ "$RUN_GENERIC_SWEEP" == true ]; then
             done
         done
     done
+    echo ""
 fi
 
 # Run Mixed Precision ZeRO++ sweep
 if [ "$RUN_MPL_SWEEP" == true ]; then
+    echo "----------------------------- RUNNING MIXED PRECISION ZERO++ SWEEPS -----------------------------"
+    echo ""
     for he in true false
     do
         z=3
         offload=false
         lora=true
         mixed_precision_lora=true
-        cmd="bash training_scripts/single_node/sweep/run_single.sh \
+        cmd="bash training_scripts/opt/single_node/sweep/run_single.sh \
             $ACTOR_MODEL_PATH \
             $CRITIC_MODEL_PATH \
             ${z} \
@@ -72,4 +77,5 @@ if [ "$RUN_MPL_SWEEP" == true ]; then
         sleep 300
         echo ""
     done
+    echo ""
 fi
