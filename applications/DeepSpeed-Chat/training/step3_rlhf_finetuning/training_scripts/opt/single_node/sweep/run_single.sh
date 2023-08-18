@@ -29,12 +29,6 @@ else
     ENABLE_HYBRID_ENGINE=""
 fi
 
-if [ "$MIXED_PRECISION_LORA" == true ]; then
-    MIXED_PRECISION_LORA="--enable_mixed_precision_lora"
-else
-    MIXED_PRECISION_LORA=""
-fi
-
 if [ "$OFFLOAD" == true ]; then
     OFFLOAD="--offload"
 else
@@ -47,6 +41,12 @@ if [ "$LORA" == true ]; then
 else
     ACTOR_LORA_DIM="--actor_lora_dim 0"
     ACTOR_LORA_MODULE_NAME=""
+fi
+
+if [ "$MIXED_PRECISION_LORA" == true ]; then
+    MIXED_PRECISION_LORA="--enable_mixed_precision_lora"
+else
+    MIXED_PRECISION_LORA=""
 fi
 
 if [ "$TEST" == true ]; then
