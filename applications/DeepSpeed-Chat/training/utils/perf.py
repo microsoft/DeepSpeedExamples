@@ -20,7 +20,7 @@ def print_throughput(hf_model, args, e2e_time, gen_exp_time, gen_seq_time, train
 
         gpus_per_model = torch.distributed.get_world_size()
         seq_length = args.max_answer_seq_len
-        batch_size = args.per_device_mini_train_batch_size * gpus_per_model
+        batch_size = args.per_device_training_batch_size * gpus_per_model
         samples_per_second = batch_size / e2e_time
         checkpoint_activations_factor = 4 if args.actor_gradient_checkpointing else 3
         hf_model._num_params = sum(
