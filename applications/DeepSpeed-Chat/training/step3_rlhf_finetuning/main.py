@@ -481,7 +481,7 @@ def main():
         for step, (batch_prompt, batch_unsupervised) in enumerate(
                 zip(prompt_train_dataloader, unsupervised_train_dataloader)):
 
-            start = time.time()
+            # start = time.time()
             batch_prompt = to_device(batch_prompt, device)
 
             # prompts = batch_prompt['prompt']
@@ -535,8 +535,8 @@ def main():
                     random.shuffle(unsup_dataset)
 
                 end = time.time()
-                e2e_time = end - start
                 training_time = end - training_start
+                e2e_time = training_time + trainer.generate_time * args.generation_batches  # it is an approximation, we did not include, e.g., rw forward time etc
 
                 print_rank_0(
                     f'Epoch: {epoch} | Step: {step} | PPO Epoch: {ppo_ep+1} | Actor Loss: {actor_loss_sum/inner_iter} | Critic Loss: {critic_loss_sum/inner_iter} | Unsupervised Loss: {unsup_loss_sum/inner_iter}',

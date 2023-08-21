@@ -36,27 +36,31 @@ def print_throughput(hf_model,
 
         # megatron paper formula
 
-        train_flops_per_iteration = (
-            24 * checkpoint_activations_factor * batch_size * seq_length *
-            num_layers *
-            (hidden_size**2)) * (1.0 + (seq_length / (6.0 * hidden_size)) +
-                                 (vocab_size /
-                                  (16.0 * num_layers * hidden_size)))
+        # train_flops_per_iteration = (
+        #     24 * checkpoint_activations_factor * batch_size * seq_length *
+        #     num_layers *
+        #     (hidden_size**2)) * (1.0 + (seq_length / (6.0 * hidden_size)) +
+        #                          (vocab_size /
+        #                           (16.0 * num_layers * hidden_size)))
+        train_flops_per_iteration = params_in_billions * 2 * batch_size * seq_length * checkpoint_activations_factor
 
+        # train_tflops = train_flops_per_iteration / (train_time *
+        #                                             gpus_per_model * (10**12))
         train_tflops = train_flops_per_iteration / (train_time *
-                                                    gpus_per_model * (10**12))
+                                                    (10**3) * gpus_per_model)
 
         gen_bs = args.per_device_generation_batch_size * gpus_per_model
 
-        gen_flops_per_iteration = (
-            24 * checkpoint_activations_factor * gen_bs * seq_length *
-            num_layers *
-            (hidden_size**2)) * (1.0 + (seq_length / (6.0 * hidden_size)) +
-                                 (vocab_size /
-                                  (16.0 * num_layers * hidden_size)))
+        # gen_flops_per_iteration = (
+        #     24 * gen_bs * seq_length *
+        #     num_layers *
+        #     (hidden_size**2)) * (1.0 + (seq_length / (6.0 * hidden_size)) +
+        #                          (vocab_size /
+        #                           (16.0 * num_layers * hidden_size)))
+        gen_flops_per_iteration = params_in_billions * 2 * gen_bs * seq_length
 
         gen_tflops = gen_flops_per_iteration / (gen_exp_time * gpus_per_model *
-                                                (10**12))
+                                                (10**3))
 
         if hf_config.torch_dtype == "float16":
             num_bytes = 2
@@ -68,7 +72,9 @@ def print_throughput(hf_model,
         gen_bw = (hf_model._num_params *
                   (num_bytes / 1e9)) / gen_exp_time * args.max_answer_seq_len
 
-        total_tflops = train_tflops + gen_tflops * args.generation_batches
+        total_flops_per_iteration = train_flops_per_iteration + gen_flops_per_iteration * args.generation_batches
+        total_tflops = total_flops_per_iteration / (e2e_time * gpus_per_model *
+                                                    (10**3))
 
         print(
             f"End-to-End => Latency: {e2e_time:.2f}s, TFLOPs: {total_tflops:.2f}, Samples/sec: {samples_per_second:.2f}, Time/seq {e2e_time/batch_size:.2f}s, Batch Size: {batch_size}, Sequence Length: {seq_length}"
