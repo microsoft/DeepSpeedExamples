@@ -481,7 +481,6 @@ def main():
         for step, (batch_prompt, batch_unsupervised) in enumerate(
                 zip(prompt_train_dataloader, unsupervised_train_dataloader)):
 
-            # start = time.time()
             batch_prompt = to_device(batch_prompt, device)
 
             # prompts = batch_prompt['prompt']
