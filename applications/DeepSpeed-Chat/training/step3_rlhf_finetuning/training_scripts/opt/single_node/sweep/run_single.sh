@@ -10,9 +10,10 @@ CRITIC_ZERO_STAGE=$4
 ENABLE_HYBRID_ENGINE=$5
 OFFLOAD=$6
 LORA=$7
-OUTPUT=$8
-TEST=$9
-TEST_STOP_STEP=${10}
+MIXED_PRECISION_LORA=$8
+OUTPUT=$9
+TEST=${10}
+TEST_STOP_STEP=${11}
 
 if [ "$ACTOR_ZERO_STAGE" == "" ]; then
     ACTOR_ZERO_STAGE=2
@@ -42,6 +43,12 @@ else
     ACTOR_LORA_MODULE_NAME=""
 fi
 
+if [ "$MIXED_PRECISION_LORA" == true ]; then
+    MIXED_PRECISION_LORA="--enable_mixed_precision_lora"
+else
+    MIXED_PRECISION_LORA=""
+fi
+
 if [ "$TEST" == true ]; then
     TEST="--enable_test_mode"
     TEST_STOP_STEP="--test_stop_step ${TEST_STOP_STEP}"
@@ -63,9 +70,9 @@ cmd="deepspeed --num_nodes=1 main.py \
    --actor_model_name_or_path $ACTOR_MODEL_PATH \
    --critic_model_name_or_path $CRITIC_MODEL_PATH \
    --num_padding_at_beginning 1 \
-   --per_device_train_batch_size 4 \
-   --per_device_mini_train_batch_size 4 \
-   --generation_batch_numbers 1 \
+   --per_device_generation_batch_size 4 \
+   --per_device_training_batch_size 4 \
+   --generation_batches 1 \
    --ppo_epochs 1 \
    --max_answer_seq_len 256 \
    --max_prompt_seq_len 256 \
@@ -83,7 +90,7 @@ cmd="deepspeed --num_nodes=1 main.py \
    --actor_zero_stage ${ACTOR_ZERO_STAGE} \
    --critic_zero_stage ${CRITIC_ZERO_STAGE} \
    --output_dir $OUTPUT \
-    $ENABLE_HYBRID_ENGINE $OFFLOAD $UNPIN_ACTOR_PARAMETERS \
+    $ENABLE_HYBRID_ENGINE $OFFLOAD $MIXED_PRECISION_LORA \
     $ACTOR_LORA_DIM $ACTOR_LORA_MODULE_NAME\
     $TEST $TEST_STOP_STEP"
 
