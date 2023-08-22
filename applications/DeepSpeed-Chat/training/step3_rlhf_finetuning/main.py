@@ -43,7 +43,7 @@ sys.path.append(
 from utils.data.data_utils import create_prompt_dataset, MiniDataset, DataCollatorRLHF, get_unsupervised_data
 from utils.utils import print_rank_0, to_device, save_hf_format, set_random_seed, get_all_reduce_mean, moving_average, save_zero_three_model, load_hf_tokenizer
 from utils.module.lora import convert_lora_to_linear_layer
-from utils.perf import print_throughput
+from utils.perf import print_throughput_step3
 
 writer = None
 
@@ -541,9 +541,9 @@ def main():
                 print_rank_0(
                     f'Epoch: {epoch} | Step: {step} | PPO Epoch: {ppo_ep+1} | Actor Loss: {actor_loss_sum/inner_iter} | Critic Loss: {critic_loss_sum/inner_iter} | Unsupervised Loss: {unsup_loss_sum/inner_iter}',
                     args.global_rank)
-                print_throughput(rlhf_engine.actor.model, args, e2e_time,
-                                 trainer.generate_time, training_time,
-                                 args.global_rank)
+                print_throughput_step3(rlhf_engine.actor.model, args, e2e_time,
+                                       trainer.generate_time, training_time,
+                                       args.global_rank)
                 average_reward = get_all_reduce_mean(average_reward).item()
                 print_rank_0(
                     f"Average reward score: {average_reward/inner_iter}",
