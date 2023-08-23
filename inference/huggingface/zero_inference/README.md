@@ -6,8 +6,7 @@ ZeRO-Inference enables inference computation of massive models (with hundreds of
 This repo is used to showcase ZeRO-Inference's capability of serving economic cases for large generative models. For these models, the major memory consumption originates from model weights and KV cache, limiting the maximum batch size (thus throughput) that can be used in inference. ZeRO-Inference now supports 4-bit quantization of model weights, leading to approximately $4\times$ reduction on its memory usage. This is a generic feature and is model agnostic (requiring no model change). The highly efficient quantization/dequantization kernels have been integrated into the DeepSpeed framework. Additionally, KV cache, as the other limiting factor of improving system throughput, can be offloaded to CPU for computation (e.g.,cpu-cache-compute).
 Using publically available OPT and BLOOM models as examples, we demonstrate how KV cache CPU offloading can be easily enabled for all Hugging Face models through our recipe. Refer to [models](models) for details.
 
-With these two added techniques, we show the significant throughput and batch size improvements of this new ZeRO-Inference release over the previous one. We further show that ZeRO-Inference achieves comparable token generation throughput to the SOTA throughput-oriented inference frameworks.
-Unlike [FlexGen](https://github.com/FMInference/FlexGen) which requires from-scratch model implementation with their APIs, ZeRO-Inference requires `NO` code change for `4-bit` weight quantization and offloading (integrated to DeepSpeed inference framework), and only minor changes to the model code for KV cache offloading.
+With these two added techniques, we show the significant throughput and batch size improvements of this new ZeRO-Inference release over the previous one. We further show that ZeRO-Inference achieves comparable token generation throughput to the SOTA throughput-oriented inference frameworks. Unlike [FlexGen](https://github.com/FMInference/FlexGen) which requires from-scratch model implementation with their APIs, ZeRO-Inference requires `NO` code change for `4-bit` weight quantization and offloading (integrated to DeepSpeed inference framework), and only minor changes to the model code for KV cache offloading.
 
 We plan to release more performance improvements to ZeRO-Inference, such as partial offloading, KV cache quantization, and etc, in the near future. Please check the [Working-In-Progress](#working-in-progress) list and stay tuned.
 
@@ -53,6 +52,8 @@ deepspeed --num_gpus 1 run_model.py --model bigscience/bloom-7b1 --batch-size 8 
 ```
 
 ## Benchmarking
+We use token generation workload for our benchmarking of ZeRO-Inference. We run all our experiments on a single `NVIDIA A6000 GPU` with 48GB of device HBM on a Lambda workstation with 252GB of host CPU memory and a [CS3040 NVMe 2TB SDD](https://www.pny.com/CS3040-M2-NVMe-SSD?sku=M280CS3040-2TB-RB) with throughput of 5600 MB/s sequential reads. We configure a prompt length of 512 tokens and generation length of 32 tokens. 
+
 
 ### 😽 Overall Throughput Improvement of new ZeRO-Inference release 😽
 
@@ -60,33 +61,41 @@ deepspeed --num_gpus 1 run_model.py --model bigscience/bloom-7b1 --batch-size 8 
 
 <img src="images/over_v1.png" alt="democratization"/>
 
- Figure 1: Zero-Inference throughput improvement (speedup) over the previous version for performing throughput-oriented inference on various model sizes on a single NVIDIA A6000 GPU. `NVIDIA A6000 GPU` with 48GB device HBM and 252GB host CPU memory, 252GB host CPU memory with disk throughput of 3200 MB/s sequential reads; prompt=512, gen=32. The significant throughput originates from our faster generation kernel design, KV cache offloading and hybrid computation, as well as efficient weight compression.
+ Figure 1: Zero-Inference throughput improvement (speedup) over the previous version for performing throughput-oriented inference on various model sizes on a single NVIDIA A6000 GPU. `NVIDIA A6000 GPU` with 48GB device HBM and 252GB host CPU memory, with disk throughput of 5600 MB/s sequential reads; prompt=512, gen=32. The significant throughput originates from our faster generation kernel design, KV cache offloading and hybrid computation, as well as efficient weight compression.
 
 </p>
 
 
 ### 🐼 Comparison with SOTA Throughput-Oriented Inference Framework 🐼
 
+We compare ZeRO-Inference with FlexGen, a SOTA inference framework, in terms of generality to support different model families, and token generation throughput.
+
+#### Generality
+Unlike FlexGen which supports only the OPT model family, ZeRO-Inference is designed as a general technique to support different model families. With our new optimizations, we continue to make it easy for model scientists to inference their favorite models using ZeRO-Inference. Our weight quantization optimization is generally applicable to any model without requiring modifcations. For KV cache offloading which requires minor code changes for each model family, we provide the sample changes for the OPT and BLOOM model familes as a guide. 
+
+#### Token Generation Throughput
 For fairness, we selected the same features supported by both FlexGen and our ZeRO-Inference for performance comparison, including KV cache offloading and weight compression (i.e., INT4). Each data point is described using the format of | `throughput` (`batch size` on the last level of memory hierarchy)|. Throughput is measured by `tokens/sec`.
 
-Configuration 1: `NVIDIA A6000 GPU` with 48GB HBM; 252GB host CPU memory with disk throughput of 3200 MB/s sequential reads; prompt=512, gen=32.
+<!-- Configuration 1: `NVIDIA A6000 GPU` with 48GB HBM; 252GB host CPU memory with disk throughput of 3200 MB/s sequential reads; prompt=512, gen=32. -->
 
-Framework   | KV Offload | Weight Compression | OPT-30B  | OPT-66B  | OPT-175B  |
-|---|---|---|---|---|---|
-| FlexGen  | Yes | No | 13.24 (200 on CPU) | 4.15 (80 on CPU) | 0.34 (64 on disk, KV on CPU) |
-| FlexGen with Compression | Yes | Yes | 13.40 (280 on CPU) | 6.24 (96 on CPU) | 1.84 (40 on CPU)|
-| DeepSpeed ZeRO-Inference | Yes | No  |  12.50 (128 on CPU) | 3.40 (40 on CPU)  | 0.38 (32 on disk, KV on CPU) |
-| DeepSpeed ZeRO-Inference with Compression | Yes | Yes | 17.20 (156 on CPU) | 7.30 (64 on CPU) | 2.11 (24 on CPU) |
+<!-- Configuration : `NVIDIA A6000 GPU` with 48GB HBM; 252GB host CPU memory; [CS3040 NVMe 2TB SDD](https://www.pny.com/CS3040-M2-NVMe-SSD?sku=M280CS3040-2TB-RB) with throughput of 5600 MB/s sequential reads; prompt=512, gen=32. -->
+
+Framework   | KV Offload | Weight Compression | OPT-30B  | OPT-66B  | OPT-175B  | BLOOM-176B | 
+|---|---|---|---|---|---|---|
+| FlexGen  | Yes | No | 13.24 (200 on CPU) | 4.15 (80 on CPU) | 0.34 (64 on disk, KV on CPU) | Unsupported | 
+| FlexGen with Compression | Yes | Yes | 13.40 (280 on CPU) | 6.24 (96 on CPU) | 1.84 (40 on CPU)| Unsupported | 
+| DeepSpeed ZeRO-Inference | Yes | No  |  12.50 (128 on CPU) | 3.40 (40 on CPU)  | 0.38 (32 on disk, KV on CPU) | 0.34 (32 on disk, KV on CPU) | 
+| DeepSpeed ZeRO-Inference with Compression | Yes | Yes | 17.20 (156 on CPU) | 7.30 (64 on CPU) | 2.11 (24 on CPU) | 1.31 (24 on CPU) | 
 
 
-Configuration 2: `NVIDIA T4 GPU` with 16GB HBM; 208GB host CPU memory with disk throughput of 1200 MB/s; prompt=512, gen=32.
+<!-- Configuration 2: `NVIDIA T4 GPU` with 16GB HBM; 208GB host CPU memory with disk throughput of 1200 MB/s; prompt=512, gen=32.
 
 Framework   | KV Offload | Weight Compression | OPT-30B  | OPT-66B  | OPT-175B  |
 |---|---|---|---|---|---|
 | FlexGen | Yes | No  | 6.40 (96 on CPU)  |  2.31 (48 on CPU) | 0.14 (64 weight on disk, KV on CPU)  |
 | FlexGen with Compression | Yes | Yes | 6.52 (96 on CPU)  | 3.06 (80 on CPU)  | 0.77 (32 on CPU)  |
 | DeepSpeed ZeRO-Inference | Yes | No | 2.80 (56 on CPU)  | 0.67 (24 on CPU)  |  0.08 (24 weight on disk, KV on CPU) |
-| DeepSpeed ZeRO-Inference with Compression | Yes | Yes |  5.60 (64 on CPU) | 2.45 (48 on CPU)  |  0.54 (16 on CPU) |
+| DeepSpeed ZeRO-Inference with Compression | Yes | Yes |  5.60 (64 on CPU) | 2.45 (48 on CPU)  |  0.54 (16 on CPU) | -->
 
 
 ## Performance Tuning Tips
