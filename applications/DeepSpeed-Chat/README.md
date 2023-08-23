@@ -48,6 +48,7 @@ A fast, affordable, scalable and open system framework for enabling end-to-end R
    - [🐼 Serving Your Model: Plug-in and Test!](#-serving-plug-in-your-final-model-trained-by-deepspeed-chat-and-test-it-out)  
 - [🔥 Training Performance Evaluation 🔥](#-training-performance-evaluation-)
 - [😽 Supported Models 😽](#-supported-models-)
+- [🔬 Build Pipeline Status 🔬](#-build-pipeline-status-)
 - [⚓ Documentation and Tutorial ⚓](#-documentation-and-tutorial-)
 - [🌱 DeepSpeed Chat's Roadmap 🌱](#-deepspeed-chats-roadmap-)
 - [💬 DeepSpeed Chat and DeepSpeed Community 💬](#-deepspeed-chat-and-deepspeed-community-)
@@ -58,6 +59,17 @@ A fast, affordable, scalable and open system framework for enabling end-to-end R
 ## 📰 Latest News 📰
 
 * ***[2023/04] 🚀 [DeepSpeed Chat: Easy, Fast and Affordable RLHF Training of ChatGPT-like Models at All Scales](https://github.com/microsoft/DeepSpeed/tree/master/blogs/deepspeed-chat)*** [[English](https://github.com/microsoft/DeepSpeed/tree/master/blogs/deepspeed-chat/README.md)] [[中文](https://github.com/microsoft/DeepSpeed/tree/master/blogs/deepspeed-chat/chinese/README.md)] [[日本語](https://github.com/microsoft/DeepSpeed/tree/master/blogs/deepspeed-chat/japanese/README.md)]🚀
+
+To cite DeepSpeed Chat, please cite our [arxiv report](https://arxiv.org/abs/2308.01320):
+
+```
+@article{yao2023dschat,
+  title={{DeepSpeed-Chat: Easy, Fast and Affordable RLHF Training of ChatGPT-like Models at All Scales}},
+  author={Zhewei Yao and Reza Yazdani Aminabadi and Olatunji Ruwase and Samyam Rajbhandari and Xiaoxia Wu and Ammar Ahmad Awan and Jeff Rasley and Minjia Zhang and Conglong Li and Connor Holmes and Zhongzhu Zhou and Michael Wyatt and Molly Smith and Lev Kurilenko and Heyang Qin and Masahiro Tanaka and Shuai Che and Shuaiwen Leon Song and Yuxiong He},
+  journal={arXiv preprint arXiv:2308.01320},
+  year={2023}
+}
+```
 
 ## 🚀 What is DeepSpeed Chat 🚀
 
@@ -181,7 +193,7 @@ The train.py script has an easy-to-use command-line interface and can be launche
 cd training/step1_supervised_finetuning/
 
 # Run the training script
-bash training_scripts/single_gpu/run_1.3b.sh
+bash training_scripts/opt/single_gpu/run_1.3b.sh
 
 # Evaluate the model
 bash evaluation_scripts/run_prompt.sh
@@ -198,7 +210,7 @@ bash evaluation_scripts/run_prompt.sh
 cd training/step2_reward_model_finetuning
 
 # Run the training script
-bash training_scripts/single_gpu/run_350m.sh
+bash training_scripts/opt/single_gpu/run_350m.sh
 
 # Evaluate the model
 bash evaluation_scripts/run_eval.sh
@@ -226,7 +238,7 @@ As the most complex step of the entire 3-step InstructGPT pipeline, DeepSpeed Ch
 cd training/step3_rlhf_finetuning/
 
 # Run the training script
-bash training_scripts/single_gpu/run_1.3b.sh
+bash training_scripts/opt/single_gpu/run_1.3b.sh
 ```
 </p></details>
 
@@ -375,6 +387,33 @@ model family | size range
 [codegen](https://huggingface.co/Salesforce/codegen-16B-multi) | 0.35b - 16B
 
 * All performance and accuracy tests have been performed using the OPT model family only. For other models, please see our training_scripts folder on how to change model families.
+
+
+## 🔬 Build Pipeline Status 🔬
+
+| Description | Status |
+| ----------- | ------ |
+| Integrations | [![nv-ds-chat](https://github.com/microsoft/DeepSpeed/actions/workflows/nv-ds-chat.yml/badge.svg?branch=master)](https://github.com/microsoft/DeepSpeed/actions/workflows/nv-ds-chat.yml) |
+
+A DeepSpeed CI workflow runs the DeepSpeed-Chat Step 3 pipeline nightly across the following test configurations:
+
+Models
+```
+Actor:  facebook/opt-125m
+Critic: facebook/opt-125m (trained in DS-Chat Step 2)
+```
+
+Parameters comprising test matrix
+```
+Zero Stage:    2, 3
+Hybrid Engine: True, False
+Offload:       True, False
+LoRA:          True, False
+```
+
+Each configuration (16 total) runs through a limited number of Step 3 non-overflow training steps (i.e. steps where neither actor nor critic overflow) and saves the actor/critic models.
+Assertions are used to check if the training pipeline executed correctly and if the actor and critic models were saved properly.
+
 
 ## ⚓ Documentation and Tutorial ⚓
 
