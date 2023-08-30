@@ -48,6 +48,7 @@ A fast, affordable, scalable and open system framework for enabling end-to-end R
    - [🐼 Serving Your Model: Plug-in and Test!](#-serving-plug-in-your-final-model-trained-by-deepspeed-chat-and-test-it-out)  
 - [🔥 Training Performance Evaluation 🔥](#-training-performance-evaluation-)
 - [😽 Supported Models 😽](#-supported-models-)
+- [🔬 Build Pipeline Status 🔬](#-build-pipeline-status-)
 - [⚓ Documentation and Tutorial ⚓](#-documentation-and-tutorial-)
 - [🌱 DeepSpeed Chat's Roadmap 🌱](#-deepspeed-chats-roadmap-)
 - [💬 DeepSpeed Chat and DeepSpeed Community 💬](#-deepspeed-chat-and-deepspeed-community-)
@@ -58,6 +59,17 @@ A fast, affordable, scalable and open system framework for enabling end-to-end R
 ## 📰 Latest News 📰
 
 * ***[2023/04] 🚀 [DeepSpeed Chat: Easy, Fast and Affordable RLHF Training of ChatGPT-like Models at All Scales](https://github.com/microsoft/DeepSpeed/tree/master/blogs/deepspeed-chat)*** [[English](https://github.com/microsoft/DeepSpeed/tree/master/blogs/deepspeed-chat/README.md)] [[中文](https://github.com/microsoft/DeepSpeed/tree/master/blogs/deepspeed-chat/chinese/README.md)] [[日本語](https://github.com/microsoft/DeepSpeed/tree/master/blogs/deepspeed-chat/japanese/README.md)]🚀
+
+To cite DeepSpeed Chat, please cite our [arxiv report](https://arxiv.org/abs/2308.01320):
+
+```
+@article{yao2023dschat,
+  title={{DeepSpeed-Chat: Easy, Fast and Affordable RLHF Training of ChatGPT-like Models at All Scales}},
+  author={Zhewei Yao and Reza Yazdani Aminabadi and Olatunji Ruwase and Samyam Rajbhandari and Xiaoxia Wu and Ammar Ahmad Awan and Jeff Rasley and Minjia Zhang and Conglong Li and Connor Holmes and Zhongzhu Zhou and Michael Wyatt and Molly Smith and Lev Kurilenko and Heyang Qin and Masahiro Tanaka and Shuai Che and Shuaiwen Leon Song and Yuxiong He},
+  journal={arXiv preprint arXiv:2308.01320},
+  year={2023}
+}
+```
 
 ## 🚀 What is DeepSpeed Chat 🚀
 
@@ -181,7 +193,7 @@ The train.py script has an easy-to-use command-line interface and can be launche
 cd training/step1_supervised_finetuning/
 
 # Run the training script
-bash training_scripts/single_gpu/run_1.3b.sh
+bash training_scripts/opt/single_gpu/run_1.3b.sh
 
 # Evaluate the model
 bash evaluation_scripts/run_prompt.sh
@@ -198,7 +210,7 @@ bash evaluation_scripts/run_prompt.sh
 cd training/step2_reward_model_finetuning
 
 # Run the training script
-bash training_scripts/single_gpu/run_350m.sh
+bash training_scripts/opt/single_gpu/run_350m.sh
 
 # Evaluate the model
 bash evaluation_scripts/run_eval.sh
@@ -226,7 +238,7 @@ As the most complex step of the entire 3-step InstructGPT pipeline, DeepSpeed Ch
 cd training/step3_rlhf_finetuning/
 
 # Run the training script
-bash training_scripts/single_gpu/run_1.3b.sh
+bash training_scripts/opt/single_gpu/run_1.3b.sh
 ```
 </p></details>
 
@@ -238,6 +250,13 @@ Second, you need to add an if condition in function get_raw_dataset in [training
 If you have downloaded huggingface datasets manually, you can add your local path into "--data_path", such as "--data_path ./relative/Dahoas/rm-static" and "--data_path /absolute/Dahoas/rm-static". Remeber you should not make `data/` in your local path, it may cause an exception to `load_dataset`.
 
 One thing to note that some datasets may only have one response instead of two responses. For those datasets, you can only use them in step 1. And in such case, you should add the dataset_name as part of the "--sft_only_data_path" arg instead of the "--data_path" arg. One thing to note is that: If you plan to only do step 1 SFT, adding more single-response datasets is definitely beneficial. However, if you do plan to do steps 2 and 3, then adding too many single-response datasets during SFT could backfire: these data could be different from the data used for steps 2/3, generating different distributions which could cause training instability/worse model quality during step 2/3. That is part of the reason why we focused on trying the datasets with two responses and the preference, and always split a dataset into all 3 steps.
+
+If you have your own dataset in local files, you can also use it by following these rules:
+* Pass "local/jsonfile" as the dataset name to the "--data_path" argument.
+* Put your train data and evaluation data in applications/DeepSpeed-Chat/data/ with name train.json and eval.json.
+* The json data in file should be a single list with each item like ***{"prompt": "Human: I have a question. Assistant:", "chosen": "Good answer.", "rejected": "Bad answer."}***.
+
+What is more, when you use your own dataset files and modified some data in them, pay attention to the parameter "reload" of ***create_prompt_dataset*** function. You should pass a True value to it or the cache files will not refresh.
 
 ### 🐼 Customizing your own RLHF training pipeline using DeepSpeed-Chat’s RLHF APIs
 
@@ -369,6 +388,33 @@ model family | size range
 
 * All performance and accuracy tests have been performed using the OPT model family only. For other models, please see our training_scripts folder on how to change model families.
 
+
+## 🔬 Build Pipeline Status 🔬
+
+| Description | Status |
+| ----------- | ------ |
+| Integrations | [![nv-ds-chat](https://github.com/microsoft/DeepSpeed/actions/workflows/nv-ds-chat.yml/badge.svg?branch=master)](https://github.com/microsoft/DeepSpeed/actions/workflows/nv-ds-chat.yml) |
+
+A DeepSpeed CI workflow runs the DeepSpeed-Chat Step 3 pipeline nightly across the following test configurations:
+
+Models
+```
+Actor:  facebook/opt-125m
+Critic: facebook/opt-125m (trained in DS-Chat Step 2)
+```
+
+Parameters comprising test matrix
+```
+Zero Stage:    2, 3
+Hybrid Engine: True, False
+Offload:       True, False
+LoRA:          True, False
+```
+
+Each configuration (16 total) runs through a limited number of Step 3 non-overflow training steps (i.e. steps where neither actor nor critic overflow) and saves the actor/critic models.
+Assertions are used to check if the training pipeline executed correctly and if the actor and critic models were saved properly.
+
+
 ## ⚓ Documentation and Tutorial ⚓
 
 For more APIs, example scripts, and evaluation results, please refer to
@@ -390,7 +436,7 @@ Our future plan includes but not limited to :
 
 Just like how the success of [the BLOOM model](https://huggingface.co/bigscience/bloom) was supported by both [DeepSpeed Team](https://github.com/bigscience-workshop/Megatron-DeepSpeed) and many [open source contributors](https://huggingface.co/bigscience), we welcome all AI developers/practitioners/researchers to join this on-going effort for DeepSpeed-Chat. To participate:
 - Show your support by leaving a star ⭐ to our [DeepSpeed](https://github.com/microsoft/DeepSpeed) and [DeepSpeedExamples](https://github.com/microsoft/DeepSpeedExamples) GitHub repositories.
-- Follow us on [twitter](https://twitter.com/MSFTDeepSpeed) to get notified about our latest news. For Chinese users, you can also follow 开源社 kaiyuanshe WeChat(微信) 公众号 where we will post our Chinese blogs. For Japanese users, you can also follow our [Japanese twitter account](https://twitter.com/MSFTDeepSpeedJP).
+- Follow us on [twitter](https://twitter.com/MSFTDeepSpeed) to get notified about our latest news. For Chinese users, you can also follow our [Chinese Zhihu account](https://www.zhihu.com/people/deepspeed). For Japanese users, you can also follow our [Japanese twitter account](https://twitter.com/MSFTDeepSpeedJP).
 - Currently we prefer to interact with open source users mainly on GitHub so that it's easier for all users to search for related information. For bug report, please submit a GitHub issue. For contribution, please submit a pull request (PR). For general question/discussion, please open a new discussion or join any existing discussions.
 - We are open to collaborations with universities, research labs, companies, such as working together on deep learning research, applying DeepSpeed to empower real-world AI models and applications, and so on. For such requests (and other requests unsuitable for GitHub), please directly email to deepspeed-info@microsoft.com.
 
