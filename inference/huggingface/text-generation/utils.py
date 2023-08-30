@@ -38,7 +38,7 @@ class DSPipeline():
         # the Deepspeed team made these so it's super fast to load (~1 minute), rather than wait 10-20min loading time.
         self.tp_presharded_models = ["microsoft/bloom-deepspeed-inference-int8", "microsoft/bloom-deepspeed-inference-fp16"]
 
-        self.tokenizer = AutoTokenizer.from_pretrained(model_name, padding_side="left")
+        self.tokenizer = AutoTokenizer.from_pretrained(model_name, padding_side="left", trust_remote_code=True)
         self.tokenizer.pad_token = self.tokenizer.eos_token
 
         if (is_meta):
@@ -47,9 +47,9 @@ class DSPipeline():
             self.repo_root, self.checkpoints_json = self._generate_json(checkpoint_path)
 
             with deepspeed.OnDevice(dtype=torch.float16, device="meta"):
-                self.model = AutoModelForCausalLM.from_config(self.config)
+                self.model = AutoModelForCausalLM.from_config(self.config, trust_remote_code=True)
         else:
-            self.model = AutoModelForCausalLM.from_pretrained(self.model_name)
+            self.model = AutoModelForCausalLM.from_pretrained(self.model_name, trust_remote_code=True)
 
         self.model.eval()
 
