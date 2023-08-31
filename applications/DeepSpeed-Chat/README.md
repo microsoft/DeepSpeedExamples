@@ -382,11 +382,11 @@ model family | size range | details
 [llama2](https://huggingface.co/models?sort=trending&search=meta-llama%2FLlama-2) | 7B, 13B  | We provide full system support and scripts to try 7B and 13B models.*
 [llama2-70b](https://huggingface.co/models?sort=trending&search=meta-llama%2FLlama-2-70b) | 70B  | Llama-2-70B is supported through MixZ++, ZeRO-Offload but not Hybrid Engine.
 [bloom](https://huggingface.co/models?other=bloom) | 0.3B - 176B  | Please create your own scripts. We welcome contributions :)
-[gpt\_neox](https://huggingface.co/models?other=gpt_neox) | 1.3B - 20B | //
-[gptj](https://huggingface.co/models?other=gptj) | 1.4B - 6B | //
-[gpt\_neo](https://huggingface.co/models?other=gpt_neo) | 0.1B - 2.7B | //
-[gpt2](https://huggingface.co/models?other=gpt2) | 0.3B - 1.5B |  //
-[codegen](https://huggingface.co/Salesforce/codegen-16B-multi) | 0.35b - 16B | //
+[gpt\_neox](https://huggingface.co/models?other=gpt_neox) | 1.3B - 20B | "
+[gptj](https://huggingface.co/models?other=gptj) | 1.4B - 6B | "
+[gpt\_neo](https://huggingface.co/models?other=gpt_neo) | 0.1B - 2.7B | "
+[gpt2](https://huggingface.co/models?other=gpt2) | 0.3B - 1.5B |  "
+[codegen](https://huggingface.co/Salesforce/codegen-16B-multi) | 0.35b - 16B | "
 
 * To create a new model training recipe/script, please see our training_scripts folder that contain opt and llama2 scripts. Please note that Llama-2 models have not been fully trained but the scripts have been tested for all the system optimizations including DeepSpeed ZeRO Stage 3, Hybrid Engine, MixZ++, and LoRA. We invite users to try out the Llama-2 scripts and share the results with the community via GitHub and HuggingFace model hub.
 
