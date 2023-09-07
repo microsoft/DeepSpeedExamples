@@ -104,13 +104,10 @@ def write_benchmark_log(filename, model_size, cache_size, hidden_size,
 
 def get_filename(model_name, batch_size, prompt_len, gen_len,
                  cpu_offload, disk_offload, num_nodes, num_gpus_per_node,
-                 use_deepspeed):
-    modelsize = model_name.split('/')[-1].split('-')[-1]
-    if use_deepspeed:
-        filename = "ds-"
-    else:
-        filename = "hf-"
-    filename += f"{modelsize}-bs{batch_size}-prompt{prompt_len}-gen{gen_len}-"
+                 kv_offload, weight_quantize):
+    simple_name = model_name.split('/')[-1]
+    filename = "ds-"
+    filename += f"{simple_name}-bs{batch_size}-prompt{prompt_len}-gen{gen_len}-"
     filename += f"n{num_nodes}x{num_gpus_per_node}-"
     if cpu_offload:
         filename += "cpu"
@@ -118,6 +115,11 @@ def get_filename(model_name, batch_size, prompt_len, gen_len,
         filename += "disk"
     else:
         filename += "gpu"
+    if kv_offload:
+        filename += "-kv_offload"
+    if weight_quantize:
+        filename += "-w_quant"
+        
     return filename
 
 

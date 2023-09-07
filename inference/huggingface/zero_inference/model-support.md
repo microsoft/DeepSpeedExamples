@@ -1,13 +1,12 @@
 # Supporting Hugging Face Models via KV-Cache Offloading to CPU
 
-We apply `non-intrusive` changes to Hugging Face (HF) OPT and BLOOM models to enable KV cache CPU offloading. Similar to FlexGen, kv cache offloading is implemented on the client side.
-To learn more about the exact code change, compare the differences (conditioned on the `kv_offload` flag) in the model files `modeling_opt.py` and `modeling_bloom.py`. The following steps are taken to enable KV cache CPU offloading in our implementation. There could be alternative designs/implementations in these steps which are optimal in different system setups.
+Similar to FlexGen, KV cache offloading is implemented in client mdoels. For demonstration, we enable KV cache CPU offloading for three Hugging Face (HF) models (BLOOM, LLAMA2, and OPT) through `non-intrusive` changes to the modeling files. These changes are available in our [transformers fork](https://github.com/tjruwase/transformers/tree/kvcache-offload-cpu). To learn more about the exact code changes, compare the differences (conditioned on the `kv_offload` flag) in the respective model files (i.e., `modeling_bloom.py`, `modeling_llama.py`, and `modeling_opt.py`). The following steps are taken to enable KV cache CPU offloading in our implementation. There could be alternative designs/implementations in these steps which are optimal in different system setups.
 
-We are detailing our current approach below. With the following five steps, KV cache offloading can be easily enabled through ZeRO-Inference v2.0 for any generative models in Hugging Face.
+We are detailing our current approach below. With the following five steps, KV cache offloading can be easily enabled for any generative models in HF.
 
 ## 1. Specify KV cache offloading to HF model
 
-KV cache offloading is set in the HF model config by `model.config.kv_offload = True` before the model runs inference. The flag is read and passed along in the HF model's forward functions to trigger the offloading behavior in the attention module.
+KV cache offloading is enabled for a HF model by calling the `set_kv_cache_offload()` function before the model runs inference. The function appropriately modifies the HF model's forward functions to trigger the offloading behavior in the attention module.
 
 ## 2. Initialize an empty CPU tensor buffer to hold KV cache
 
