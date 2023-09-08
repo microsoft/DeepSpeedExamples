@@ -25,7 +25,7 @@ from utils import (GB, add_model_hooks, cache_bytes, disable_torch_init,
 from packaging import version
 
 
-assert version.parse(deepspeed.__version__) >= version.parse("0.10.1"), "ZeRO-Inference v2.0 is available only in DeepSpeed 0.10.1+, please upgrade DeepSpeed"
+assert version.parse(deepspeed.__version__) >= version.parse("0.10.3"), "ZeRO-Inference with weight quantization and kv cache offloading is available only in DeepSpeed 0.10.3+, please upgrade DeepSpeed"
 
 def get_model_config(model_name):
     if "175b" in model_name:
