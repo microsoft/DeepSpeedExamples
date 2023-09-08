@@ -3,9 +3,9 @@
 
 ZeRO-Inference enables inference computation of massive models (with hundreds of billions of parameters) on as few as a single GPU by leveraging multi-level hierarchical memory (e.g., GPU, CPU, and NVMe). It delivers efficient computation for `throughput-oriented` inference scenarios despite the latency of fetching model weights from CPU memory or NVMe over PCIe interconnect. We [previewed](https://github.com/microsoft/DeepSpeed/pull/1514) this AI democratization technology in late 2021, and followed up in 2022 with a [paper](https://arxiv.org/abs/2207.00032) and [blog](https://www.deepspeed.ai/2022/09/09/zero-inference.html) describing the first full-feature release in [DeepSpeed versions >= 0..6.6](https://github.com/microsoft/DeepSpeed/tree/v0.6.6). We have been continuously pushing out usability and performance updates ever since, and are pleased to announce a major refresh of this popular DeepSpeed feature. This new release leverages two memory optimizations (weight quantization and KV cache offloading) to deliver up to 20X speedup in inference throughput, and is available in [DeepSpeed versions >= 0.10.2](). 
 
-This repo is used to showcase ZeRO-Inference's capability of serving economic cases for large generative models. For these models, the major memory consumption originates from model weights and KV cache, limiting the maximum batch size (thus throughput) that can be used in inference. ZeRO-Inference now supports 4-bit quantization of model weights, leading to approximately $4\times$ reduction on its memory usage. This is a generic feature and is model agnostic (requiring no model change). The highly efficient quantization/dequantization kernels have been integrated into the DeepSpeed framework. Additionally, KV cache, as the other limiting factor of improving system throughput, can be offloaded to consume CPU memory and computation. We demonstrate the ease of enabling our KV cache offloading to arbitrary models by releasing the modifications for three popular and publicly available HuggingFace models (BLOOM, LLAMA2, and OPT). Refer to [`model-support.md`](model-support.md) for more details.   
+This repo is used to showcase ZeRO-Inference's capability of serving economic cases for large generative models. For these models, the major memory consumption originates from model weights and KV cache, limiting the maximum batch size (thus throughput) that can be used in inference. ZeRO-Inference now provides 4-bit quantization of model weights, leading to approximately $4\times$ reduction on its memory usage and PCIe transfer volume. This is a generic feature and is model agnostic (requiring no model change). The highly efficient quantization/dequantization kernels have been integrated into the DeepSpeed framework. Additionally, KV cache, as the other limiting factor of improving system throughput, can now be offloaded to consume cheaper CPU memory instead of the more expensive HBM capacity. We demonstrate the ease of enabling our KV cache offloading to arbitrary models by releasing the required modifications for three popular and publicly available HuggingFace models (BLOOM, LLAMA2, and OPT). Refer to [`model-support.md`](model-support.md) for more details.   
 
-With these two added techniques, we show the significant throughput and batch size improvements of this new ZeRO-Inference release over the previous one. We further show that ZeRO-Inference achieves comparable token generation throughput to the SOTA throughput-oriented inference frameworks. Unlike [FlexGen](https://github.com/FMInference/FlexGen) which requires from-scratch model implementation with their APIs, ZeRO-Inference requires `NO` code change for `4-bit` quantization and offloading of model weights (integrated to DeepSpeed inference framework), and only minor changes to the model code for KV cache offloading.
+With these two added techniques, we show the significant throughput and batch size improvements of this new ZeRO-Inference release over the previous one. We further show that ZeRO-Inference surpasses the token generation throughput of the SOTA throughput-oriented inference frameworks. Unlike [FlexGen](https://github.com/FMInference/FlexGen) which requires from-scratch model implementation with their APIs, ZeRO-Inference requires `NO` code change for `4-bit` quantization and offloading of model weights (integrated to DeepSpeed inference framework), and only minor changes to the model code for KV cache offloading.
 
 We plan to release more performance improvements to ZeRO-Inference, such as partial offloading, KV cache quantization, and etc, in the near future. Please check the [Working-In-Progress](#working-in-progress) list and stay tuned.
 
@@ -30,7 +30,7 @@ For help on what options are available, please refer to [`run_model.sh`](run_mod
 
 ### Example 1: OPT Models
 
-Here is an example of running the `facebook/opt-13b` model with Zero-Inference using model weights and kv cache cpu offloading:
+Here is an example of running the `facebook/opt-13b` model with Zero-Inference using 16-bit model weights and offloading kv cache to CPU:
 
 ```sh
 deepspeed --num_gpus 1 run_model.py --model facebook/opt-13b --batch-size 8 --prompt-len 512 --gen-len 32 --cpu-offload --kv-offload
@@ -44,11 +44,21 @@ deepspeed --num_gpus 1 run_model.py --model facebook/opt-13b --batch-size 16 --p
 
 ### Example 2: BLOOM Models
 
-Here is an example of running `bigscience/bloom-7b1` with Zero-Inference using model weights and kv cache cpu offloading:
+Here is an example of running `bigscience/bloom-7b1` with Zero-Inference using 4-bit model weights and offloading kv cache to CPU:
 
 ```sh
-deepspeed --num_gpus 1 run_model.py --model bigscience/bloom-7b1 --batch-size 8 --prompt-len 512 --gen-len 32 --cpu-offload --kv-offload
+deepspeed --num_gpus 1 run_model.py --model bigscience/bloom-7b1 --batch-size 8 --prompt-len 512 --gen-len 32 --cpu-offload --quant-bits 4 --kv-offload 
 ```
+
+
+### Example 3: LLAMA2 Models
+
+Here is an example of running `meta-llama/Llama-2-7b-hf` with Zero-Inference using 4-bit model weights and offloading kv cache to CPU:
+
+```sh
+deepspeed --num_gpus 1 run_model.py --model meta-llama/Llama-2-7b-hf` --batch-size 8 --prompt-len 512 --gen-len 32 --cpu-offload --quant-bits 4 --kv-offload
+```
+
 
 ## Benchmarking
 We use token generation workload for our benchmarking of ZeRO-Inference. We run all our experiments on a single `NVIDIA A6000 GPU` with 48GB of device HBM on a Lambda workstation with 252GB of host CPU memory and a [CS3040 NVMe 2TB SDD](https://www.pny.com/CS3040-M2-NVMe-SSD?sku=M280CS3040-2TB-RB) with throughput of 5600 MB/s sequential reads. We configure a prompt length of 512 tokens and generation length of 32 tokens. 
@@ -67,22 +77,22 @@ We use token generation workload for our benchmarking of ZeRO-Inference. We run 
 
 ### 🐼 Comparison with SOTA Throughput-Oriented Inference Framework 🐼
 
-We compare ZeRO-Inference with FlexGen, a SOTA inference framework, in terms of generality to support different model families, and token generation throughput. The results are summarized in the table below. 
+We compare ZeRO-Inference with FlexGen (version 0.1.7), a SOTA inference framework, in terms of generality to support different model families, and token generation throughput. The results are summarized in the table below. 
 
 Framework   | Weight Quantization | KV Cache Offload | OPT-30B  | OPT-66B  | OPT-175B  | BLOOM-176B | LLAMA2-70B
 |---|---|---|---|---|---|---|---|
-| FlexGen  | Yes | No  | 13.40 (bsz=280, cpu_offload) | 6.24 (bsz=96, cpu_offload)  | 1.84 (bsz=40, cpu_offload)  | Unsupported | Unsupported | 
-| FlexGen  | No | Yes  | 10.90 (bsz=200, cpu_offload) | 3.86 (bsz=80, cpu_offload)  | 0.33 (bsz=64, disk_offload) | Unsupported | Unsupported | 
-| FlexGen  | Yes | Yes | 10.90 (bsz=280, cpu_offload) | 5.29 (bsz=100, cpu_offload) | 1.67 (bsz=40, cpu_offload)  | Unsupported | Unsupported | 
-| ZeRO-Inference | Yes | No  |  **21.84** (bsz=24. cpu_offload)  | 7.44 (bsz=16, cpu_offload) | 1.12 (bsz=8, cpu_offload)   | 0.59 (bsz=4, cpu_offload)   | **23.44** (bsz=96, cpu_offload)
-| ZeRO-Inference | No | Yes  |  12.50 (bsz=128, cpu_offload) | 3.59 (bsz=40, cpu_offload) | 0.39 (bsz=32, disk_offload) | 0.33 (bsz=32, disk_offload) |  2.85 (bsz=96, cpu_offload)
-| ZeRO-Inference | Yes | Yes |  17.53 (bsz=128, cpu_offload) | **8.02** (bsz=64, cpu_offload) | **2.09** (bsz=24, cpu_offload)  | **1.25** (bsz=24, cpu_offload)  |  3.60 (bsz=200, cpu_offload)
+| FlexGen  | Yes | No  | 21.97 (bsz=48, cpu_offload) | 5.78 (bsz=24, cpu_offload)  | 1.50 (bsz=16, cpu_offload)  | Unsupported | Unsupported | 
+| FlexGen  | No | Yes  | 13.24 (bsz=200, cpu_offload) | 4.15 (bsz=80, cpu_offload)  | 0.33 (bsz=64, nvme_offload) | Unsupported | Unsupported | 
+| FlexGen  | Yes | Yes | 13.40 (bsz=280, cpu_offload) | 6.24 (bsz=96, cpu_offload) | 1.84 (bsz=40, cpu_offload)  | Unsupported | Unsupported | 
+| ZeRO-Inference | Yes | No  |  **22.74** (bsz=24. cpu_offload)  | 7.68 (bsz=16, cpu_offload) | 1.21 (bsz=8, cpu_offload)   | 0.65 (bsz=4, cpu_offload)   | **24.05** (bsz=96, cpu_offload)
+| ZeRO-Inference | No | Yes  |  12.32 (bsz=96, cpu_offload) | 3.63 (bsz=40, cpu_offload) | 0.47 (bsz=32, nvme_offload) | 0.47 (bsz=32, nvme_offload) |  2.91 (bsz=96, cpu_offload)
+| ZeRO-Inference | Yes | Yes |  19.34 (bsz=128, cpu_offload) | **8.08** (bsz=64, cpu_offload) | **2.26** (bsz=24, cpu_offload)  | **1.33** (bsz=24, cpu_offload)  |  3.65 (bsz=200, cpu_offload)
 
 #### Generality
 Unlike FlexGen which supports only the OPT model family, ZeRO-Inference is designed as a general technique to support different model families. With our new optimizations, we continue to make it easy for model scientists to inference their favorite models using ZeRO-Inference. Our weight quantization optimization is generally applicable to any model without requiring modifcations. For KV cache offloading which requires minor code changes for each model family, we provide the required modifications for three model families (BLOOM, LLAMA2, and OPT) as a guide. 
 
 #### Token Generation Throughput
-For fairness, we evaluate the same set of optimizations supported by both FlexGen and our ZeRO-Inference for performance comparison, specifically 4-bit weight quantization and KV cache offloading to CPU memory.  We consider model sizes that exceed the available 48GB HBM, thus requiring that model weights be offloaded to CPU or NVMe. Each data point is described using the format of | `throughput` (`batch size` and memory used for weights offloading) |. Throughput is measured by `tokens/sec`.
+For fairness, we evaluate the same set of optimizations supported by both FlexGen and our ZeRO-Inference for performance comparison, specifically 4-bit weight quantization and KV cache offloading to CPU memory. We measure the impact of the optimizations individually and collectively. We consider model sizes that exceed the available 48GB HBM, thus requiring that model weights be offloaded to CPU or NVMe. Each data point is described using the format of | `throughput` (`batch size` and the memory used for weights offloading) |. Throughput is measured by `tokens/sec`. Each data point represents the best throughput from a batch size sweep. We observe that for the OPT family of models supported by both frameworks, ZeRO-Inference consistently achieved better generation throughput. 
 
 <!-- Configuration 1: `NVIDIA A6000 GPU` with 48GB HBM; 252GB host CPU memory with disk throughput of 3200 MB/s sequential reads; prompt=512, gen=32. -->
 
