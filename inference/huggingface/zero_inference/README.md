@@ -94,21 +94,6 @@ Unlike FlexGen which supports only the OPT model family, ZeRO-Inference is desig
 #### Token Generation Throughput
 For fairness, we evaluate the same set of optimizations supported by both FlexGen and our ZeRO-Inference for performance comparison, specifically 4-bit weight quantization and KV cache offloading to CPU memory. We measure the impact of the optimizations individually and collectively. We consider model sizes that exceed the available 48GB HBM, thus requiring that model weights be offloaded to CPU or NVMe. Each data point is described using the format of | `throughput` (`batch size` and the memory used for weights offloading) |. Throughput is measured by `tokens/sec`. Each data point represents the best observed throughput from a batch size sweep. We observe that for the OPT family of models supported by both frameworks, ZeRO-Inference consistently achieved better generation throughput. 
 
-<!-- Configuration 1: `NVIDIA A6000 GPU` with 48GB HBM; 252GB host CPU memory with disk throughput of 3200 MB/s sequential reads; prompt=512, gen=32. -->
-
-<!-- Configuration : `NVIDIA A6000 GPU` with 48GB HBM; 252GB host CPU memory; [CS3040 NVMe 2TB SDD](https://www.pny.com/CS3040-M2-NVMe-SSD?sku=M280CS3040-2TB-RB) with throughput of 5600 MB/s sequential reads; prompt=512, gen=32. -->
-
-
-
-<!-- Configuration 2: `NVIDIA T4 GPU` with 16GB HBM; 208GB host CPU memory with disk throughput of 1200 MB/s; prompt=512, gen=32.
-
-Framework   | KV Offload | Weight Compression | OPT-30B  | OPT-66B  | OPT-175B  |
-|---|---|---|---|---|---|
-| FlexGen | Yes | No  | 6.40 (96 on CPU)  |  2.31 (48 on CPU) | 0.14 (64 weight on disk, KV on CPU)  |
-| FlexGen with Compression | Yes | Yes | 6.52 (96 on CPU)  | 3.06 (80 on CPU)  | 0.77 (32 on CPU)  |
-| DeepSpeed ZeRO-Inference | Yes | No | 2.80 (56 on CPU)  | 0.67 (24 on CPU)  |  0.08 (24 weight on disk, KV on CPU) |
-| DeepSpeed ZeRO-Inference with Compression | Yes | Yes |  5.60 (64 on CPU) | 2.45 (48 on CPU)  |  0.54 (16 on CPU) | -->
-
 
 ## Performance Tuning Tips
 
