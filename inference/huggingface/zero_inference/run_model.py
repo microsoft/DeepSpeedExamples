@@ -16,8 +16,8 @@ from deepspeed.accelerator import get_accelerator
 import deepspeed.comm as dist
 from accelerate import init_empty_weights
 from timer import timers
-from transformers import (AutoConfig, AutoTokenizer,
-                          BloomForCausalLM, OPTForCausalLM, LlamaForCausalLM)
+from transformers import (AutoConfig, AutoTokenizer, AutoModelForCausalLM, 
+                          BloomForCausalLM, OPTForCausalLM, LlamaForCausalLM, FalconForCausalLM)
 from transformers.deepspeed import HfDeepSpeedConfig
 from utils import (GB, add_model_hooks, cache_bytes, disable_torch_init,
                    get_filename, get_quant_config, hidden_bytes, meta_to_cpu,
@@ -25,7 +25,7 @@ from utils import (GB, add_model_hooks, cache_bytes, disable_torch_init,
 from packaging import version
 
 
-assert version.parse(deepspeed.__version__) >= version.parse("0.10.3"), "ZeRO-Inference with weight quantization and kv cache offloading is available only in DeepSpeed 0.10.3+, please upgrade DeepSpeed"
+assert version.parse(deepspeed.__version__) >= version.parse("0.10.2"), "ZeRO-Inference with weight quantization and kv cache offloading is available only in DeepSpeed 0.10.3+, please upgrade DeepSpeed"
 
 def get_model_config(model_name):
     if "175b" in model_name:
@@ -36,7 +36,7 @@ def get_model_config(model_name):
         config.num_attention_heads = 96
         config.num_hidden_layers = 96
     else:
-        config = AutoConfig.from_pretrained(model_name)
+        config = AutoConfig.from_pretrained(model_name, trust_remote_code=True)
 
     if 'bloom' in model_name:
         config.model_type = 'bloom'
@@ -122,6 +122,11 @@ def get_ds_model(
         model = LlamaForCausalLM.from_pretrained(
             dummy_weights or model_name, torch_dtype=dtype,
         )
+    elif config.model_type in ["RefinedWeb", "RefinedWebModel"]:
+        model = FalconForCausalLM.from_pretrained(
+            model_name, torch_dtype=torch.bfloat16,
+            # trust_remote_code=True, 
+        )
     else:
         raise ValueError(f"Unexpected model type: {config.model_type}")
 
@@ -157,12 +162,14 @@ def run_generation(
 ):
     # Load tokenizer
     config = get_model_config(model_name)
+    return_token_type_ids = True  # config.model_type != "RefinedWeb"
+    
     if config.model_type == "opt":
         tokenizer = AutoTokenizer.from_pretrained(
             model_name.replace("175b", "66b"), padding_side="left"
         )
     else:
-        tokenizer = AutoTokenizer.from_pretrained(model_name)
+        tokenizer = AutoTokenizer.from_pretrained(model_name, return_token_type_ids=return_token_type_ids)
 
     tokenizer.pad_token = tokenizer.eos_token
 
@@ -207,14 +214,14 @@ def run_generation(
     execute_gen_len = gen_len
     prompts = ["Paris is the capital city of"] * (batch_size // dist.get_world_size())
 
-    def _batch_encode(prompts):
-        input_tokens = tokenizer.batch_encode_plus(prompts, return_tensors="pt", padding="max_length", max_length=prompt_len)
+    def _batch_encode(prompts, return_token_type_ids):
+        input_tokens = tokenizer.batch_encode_plus(prompts, return_tensors="pt", padding="max_length", max_length=prompt_len, return_token_type_ids=return_token_type_ids)
         for t in input_tokens:
             if torch.is_tensor(input_tokens[t]):
                 input_tokens[t] = input_tokens[t].to(torch.cuda.current_device())
         return input_tokens
 
-    input_tokens = _batch_encode(prompts)
+    input_tokens = _batch_encode(prompts, return_token_type_ids)
 
     if kv_offload:
         model.set_kv_cache_offload(True, gen_len, pin_kv_cache, async_kv_offload)
