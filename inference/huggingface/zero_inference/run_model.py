@@ -17,7 +17,8 @@ import deepspeed.comm as dist
 from accelerate import init_empty_weights
 from timer import timers
 from transformers import (AutoConfig, AutoTokenizer, AutoModelForCausalLM, 
-                          BloomForCausalLM, OPTForCausalLM, LlamaForCausalLM, FalconForCausalLM)
+                          BloomForCausalLM, OPTForCausalLM, LlamaForCausalLM,
+                        )
 from transformers.deepspeed import HfDeepSpeedConfig
 from utils import (GB, add_model_hooks, cache_bytes, disable_torch_init,
                    get_filename, get_quant_config, hidden_bytes, meta_to_cpu,
@@ -122,11 +123,6 @@ def get_ds_model(
         model = LlamaForCausalLM.from_pretrained(
             dummy_weights or model_name, torch_dtype=dtype,
         )
-    elif config.model_type in ["RefinedWeb", "RefinedWebModel"]:
-        model = FalconForCausalLM.from_pretrained(
-            model_name, torch_dtype=torch.bfloat16,
-            # trust_remote_code=True, 
-        )
     else:
         raise ValueError(f"Unexpected model type: {config.model_type}")
 
@@ -162,18 +158,21 @@ def run_generation(
 ):
     # Load tokenizer
     config = get_model_config(model_name)
-    return_token_type_ids = True  # config.model_type != "RefinedWeb"
-    
-    if config.model_type == "opt":
-        tokenizer = AutoTokenizer.from_pretrained(
-            model_name.replace("175b", "66b"), padding_side="left"
-        )
-    else:
-        tokenizer = AutoTokenizer.from_pretrained(model_name, return_token_type_ids=return_token_type_ids)
+    return_token_type_ids = True 
+    padding_side = "left" if config.model_type in ["opt"] else "right"
+
+    tokenizer = AutoTokenizer.from_pretrained(
+        model_name, 
+        return_token_type_ids=return_token_type_ids,
+        padding_side=padding_side
+    )
 
     tokenizer.pad_token = tokenizer.eos_token
 
-    dtype = torch.float16
+    if hasattr(config, 'torch_dtype'):
+        dtype = config.torch_dtype
+    else:
+        dtype = torch.float
 
     if dummy:
         filename = os.path.join(
