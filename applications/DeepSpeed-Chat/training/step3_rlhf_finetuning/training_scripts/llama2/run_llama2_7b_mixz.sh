@@ -51,7 +51,7 @@ deepspeed --master_port 12346 main.py \
    --deepspeed --seed 1234 \
    --actor_zero_stage $ACTOR_ZERO_STAGE \
    --critic_zero_stage $CRITIC_ZERO_STAGE \
-   --enable_hybrid_engine \
+   --enable_mixed_precision_lora \
    --actor_lora_dim 64 \
    --critic_lora_dim 64 \
    --critic_lora_module_name "layers." \
