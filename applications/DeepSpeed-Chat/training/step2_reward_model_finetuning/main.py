@@ -174,6 +174,12 @@ def parse_args():
         help=
         "Initial LoRA learning rate (after the potential warmup period) to use."
     )
+    ## bf16
+    parser.add_argument('--no_bf16_to_fp32_loss',
+                        action='store_false',
+                        dest='bf16_to_fp32_loss',
+                        help='Relevant only with bf16 dtype. '
+                             'If specified, loss is calculated in bf16. Otherwise, calculated in fp32.')
     # Evaluation
     parser.add_argument("--eval_interval",
                         type=int,
@@ -228,11 +234,14 @@ def main():
 
     # load_hf_tokenizer will get the correct tokenizer and set padding tokens based on the model family
     tokenizer = load_hf_tokenizer(args.model_name_or_path, fast_tokenizer=True)
+    loss_to_fp32 = (args.dtype == "bf16") and args.bf16_to_fp32_loss
     rm_model = create_critic_model(args.model_name_or_path,
                                    tokenizer,
                                    ds_config,
                                    args.num_padding_at_beginning,
-                                   dropout=args.dropout)
+                                   dropout=args.dropout,
+                                   zero_stage=args.zero_stage,
+                                   loss_to_fp32=loss_to_fp32)
 
     if args.lora_dim > 0:
         rm_model = convert_linear_layer_to_lora(rm_model,

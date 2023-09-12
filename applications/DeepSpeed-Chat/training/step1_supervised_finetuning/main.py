@@ -29,7 +29,7 @@ from utils.data.data_utils import create_prompt_dataset
 from utils.utils import print_rank_0, to_device, save_hf_format, set_random_seed, get_all_reduce_mean, get_optimizer_grouped_parameters, save_zero_three_model, load_hf_tokenizer
 from utils.ds_utils import get_train_ds_config
 from utils.module.lora import convert_linear_layer_to_lora, convert_lora_to_linear_layer, only_optimize_lora_parameters, make_model_gradient_checkpointing_compatible
-from utils.model.model_utils import create_hf_model
+from utils.model.model_utils import create_hf_model, causal_lm_model_to_fp32_loss
 from utils.perf import print_throughput
 
 
@@ -175,6 +175,12 @@ def parse_args():
         help=
         "Initial LoRA learning rate (after the potential warmup period) to use."
     )
+    ## bf16
+    parser.add_argument('--no_bf16_to_fp32_loss',
+                        action='store_false',
+                        dest='bf16_to_fp32_loss',
+                        help='Relevant only with bf16 dtype. '
+                             'If specified, loss is calculated in bf16. Otherwise, calculated in fp32.')
     ## Tensorboard logging
     parser.add_argument('--enable_tensorboard',
                         action='store_true',
@@ -230,6 +236,10 @@ def main():
                             tokenizer,
                             ds_config,
                             dropout=args.dropout)
+
+    if (args.dtype == "bf16") and args.bf16_to_fp32_loss:
+        print_rank_0(f"Using model {model.__class__.__name__} with loss in fp32", args.global_rank)
+        causal_lm_model_to_fp32_loss(model)
 
     if args.lora_dim > 0:
         model = convert_linear_layer_to_lora(model, args.lora_module_name,

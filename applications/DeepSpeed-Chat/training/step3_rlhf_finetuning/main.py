@@ -319,6 +319,13 @@ def parse_args():
         '--enable_mixed_precision_lora',
         action='store_true',
         help='Enable Mixed Precision ZeRO++ for training and generation.')
+    ## bf16
+    parser.add_argument('--no_bf16_to_fp32_loss',
+                        action='store_false',
+                        dest='bf16_to_fp32_loss',
+                        help='Relevant only with bf16 dtype. '
+                             'If specified, loss is calculated in bf16. Otherwise, calculated in fp32. '
+                             'This applies for both actor and critic models.')
     ## Tensorboard logging
     parser.add_argument('--enable_tensorboard',
                         action='store_true',
