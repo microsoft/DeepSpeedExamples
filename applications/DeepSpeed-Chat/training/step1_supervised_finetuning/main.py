@@ -7,7 +7,7 @@ import argparse
 import os
 import math
 import sys
-
+import time
 import torch
 from torch.utils.data import DataLoader, RandomSampler, SequentialSampler
 from torch.utils.data.distributed import DistributedSampler
@@ -26,7 +26,7 @@ from deepspeed import get_accelerator
 sys.path.append(
     os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
 from utils.data.data_utils import create_prompt_dataset
-from utils.utils import print_rank_0, to_device, save_hf_format, set_random_seed, get_all_reduce_mean, get_optimizer_grouped_parameters, save_zero_three_model, load_hf_tokenizer
+from utils.utils import print_rank_0, to_device, save_hf_format, set_random_seed, get_all_reduce_mean, get_optimizer_grouped_parameters, save_zero_three_model, load_hf_tokenizer, print_loss
 from utils.ds_utils import get_train_ds_config
 from utils.module.lora import convert_linear_layer_to_lora, convert_lora_to_linear_layer, only_optimize_lora_parameters, make_model_gradient_checkpointing_compatible
 from utils.model.model_utils import create_hf_model, causal_lm_model_to_fp32_loss
@@ -195,7 +195,7 @@ def parse_args():
     ## Print loss
     parser.add_argument('--print_loss',
                         action='store_true',
-                        help='Prints loss at each step.')
+                        help='Prints loss at deepspeed config steps_per_print interval.')
     parser = deepspeed.add_config_arguments(parser)
     args = parser.parse_args()
 
@@ -347,23 +347,23 @@ def main():
         print_rank_0(
             f"Beginning of Epoch {epoch+1}/{args.num_train_epochs}, Total Micro Batches {len(train_dataloader)}",
             args.global_rank)
+        loss_sum = None
         model.train()
-        import time
         for step, batch in enumerate(train_dataloader):
             start = time.time()
             batch = to_device(batch, device)
             outputs = model(**batch, use_cache=False)
             loss = outputs.loss
-            if args.print_loss:
-                print(
-                    f"Epoch: {epoch}, Step: {step}, Rank: {torch.distributed.get_rank()}, loss = {loss}"
-                )
             model.backward(loss)
             model.step()
             end = time.time()
             if torch.distributed.get_rank() == 0:
                 print_throughput(model.model, args, end - start,
                                  args.global_rank)
+            if args.print_loss:
+                steps_per_print = ds_config['steps_per_print']
+                loss_sum = print_loss(epoch, step, steps_per_print, args.gradient_accumulation_steps,
+                                      loss, loss_sum, args.global_rank)
 
         # Evaluate perplexity on the validation set.
         print_rank_0(

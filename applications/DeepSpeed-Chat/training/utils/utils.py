@@ -6,6 +6,7 @@ import os
 import torch
 import random
 import numpy as np
+from datetime import datetime
 from transformers import set_seed, AutoTokenizer
 import json
 import deepspeed
@@ -273,3 +274,18 @@ def save_zero_three_model(model_ema, global_rank, save_dir, zero_stage=0):
         if global_rank == 0:
             torch.save(output_state_dict, output_model_file)
         del output_state_dict
+
+
+def print_loss(epoch, step, steps_per_print, gas, loss, loss_sum, rank):
+    loss_ = loss.detach()
+    loss_sum = torch.zeros_like(loss_) if loss_sum is None else loss_sum
+    loss_sum += loss_
+    if step > 0 and step % (steps_per_print * gas) == 0:
+        opt_step = step / gas
+        avg_loss = loss_sum / gas
+        print_rank_0(
+            f"[{datetime.now()}] epoch: {epoch} | step: {opt_step} | avg_loss: {avg_loss}", rank)
+    if step > 0 and step % gas == 0:
+        loss_sum.zero_()
+
+    return loss_sum

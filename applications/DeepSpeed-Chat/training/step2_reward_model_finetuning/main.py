@@ -25,7 +25,7 @@ sys.path.append(
     os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
 from utils.model.model_utils import create_critic_model
 from utils.data.data_utils import create_prompt_dataset, DataCollatorReward
-from utils.utils import print_rank_0, to_device, save_hf_format, set_random_seed, get_all_reduce_mean, get_optimizer_grouped_parameters, save_zero_three_model, load_hf_tokenizer
+from utils.utils import print_rank_0, to_device, save_hf_format, set_random_seed, get_all_reduce_mean, get_optimizer_grouped_parameters, save_zero_three_model, load_hf_tokenizer, print_loss
 from utils.ds_utils import get_train_ds_config
 from utils.module.lora import convert_linear_layer_to_lora, convert_lora_to_linear_layer, only_optimize_lora_parameters, make_model_gradient_checkpointing_compatible
 
@@ -200,6 +200,10 @@ def parse_args():
     parser.add_argument("--add_eot_token",
                         action='store_true',
                         help="Add <|endoftext|> as additional special token to tokenizer")
+    ## Print loss
+    parser.add_argument('--print_loss',
+                        action='store_true',
+                        help='Prints loss at deepspeed config steps_per_print interval.')
     parser = deepspeed.add_config_arguments(parser)
     args = parser.parse_args()
 
@@ -375,12 +379,17 @@ def main():
             args.global_rank)
         rm_model.train()
         mean_loss = 0
+        loss_sum = None
         for step, batch in enumerate(train_dataloader):
             batch = to_device(batch, device)
             outputs = rm_model(**batch, use_cache=False)
             loss = outputs["loss"]
             rm_model.backward(loss)
             rm_model.step()
+            if args.print_loss:
+                steps_per_print = ds_config['steps_per_print']
+                loss_sum = print_loss(epoch, step, steps_per_print, args.gradient_accumulation_steps,
+                                      loss, loss_sum, args.global_rank)
             mean_loss += loss.item()
             total_micro_steps += 1
             gas_boundary = (total_micro_steps % args.gradient_accumulation_steps == 0)
