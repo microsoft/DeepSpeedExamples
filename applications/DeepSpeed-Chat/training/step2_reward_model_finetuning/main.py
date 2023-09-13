@@ -144,6 +144,9 @@ def parse_args():
     parser.add_argument('--offload',
                         action='store_true',
                         help='Enable ZeRO Offload techniques.')
+    parser.add_argument('--dtype', type=str, default='fp16',
+                        choices=['fp16', 'bf16'],
+                        help = 'Training data type')
     parser.add_argument(
         '--zero_stage',
         type=int,
@@ -196,6 +199,7 @@ def main():
     args.global_rank = torch.distributed.get_rank()
 
     ds_config = get_train_ds_config(offload=args.offload,
+                                    dtype=args.dtype,
                                     stage=args.zero_stage,
                                     enable_tensorboard=args.enable_tensorboard,
                                     tb_path=args.tensorboard_path,
