@@ -196,6 +196,10 @@ def parse_args():
     parser.add_argument('--tensorboard_path',
                         type=str,
                         default="step2_tensorboard")
+    ## Tokenizer
+    parser.add_argument("--add_eot_token",
+                        action='store_true',
+                        help="Add <|endoftext|> as additional special token to tokenizer")
     parser = deepspeed.add_config_arguments(parser)
     args = parser.parse_args()
 
@@ -233,7 +237,12 @@ def main():
     torch.distributed.barrier()
 
     # load_hf_tokenizer will get the correct tokenizer and set padding tokens based on the model family
-    tokenizer = load_hf_tokenizer(args.model_name_or_path, fast_tokenizer=True)
+    args.end_of_conversation_token = "<|endoftext|>"
+    additional_special_tokens = args.end_of_conversation_token if args.add_eot_token else None
+    tokenizer = load_hf_tokenizer(args.model_name_or_path,
+                                  fast_tokenizer=True,
+                                  add_special_tokens=additional_special_tokens)
+
     loss_to_fp32 = (args.dtype == "bf16") and args.bf16_to_fp32_loss
     rm_model = create_critic_model(args.model_name_or_path,
                                    tokenizer,
