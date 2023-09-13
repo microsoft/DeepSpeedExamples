@@ -365,6 +365,9 @@ def parse_args():
         help=
         "Training non-overflow step at which to terminate training during testing."
     )
+    parser.add_argument('--no_fused_kernels',
+                        action='store_true',
+                        help='Do not use cuda fused kernels.')
 
     parser = deepspeed.add_config_arguments(parser)
     args = parser.parse_args()

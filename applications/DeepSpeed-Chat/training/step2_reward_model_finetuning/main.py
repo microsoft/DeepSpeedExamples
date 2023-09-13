@@ -204,6 +204,11 @@ def parse_args():
     parser.add_argument('--print_loss',
                         action='store_true',
                         help='Prints loss at deepspeed config steps_per_print interval.')
+    ## Debug
+    parser.add_argument('--no_fused_kernels',
+                        action='store_true',
+                        help='Do not use cuda fused kernels.')
+    ## DeepSpeed
     parser = deepspeed.add_config_arguments(parser)
     args = parser.parse_args()
 
@@ -335,7 +340,14 @@ def main():
     optimizer_grouped_parameters = get_optimizer_grouped_parameters(
         rm_model, args.weight_decay, args.lora_learning_rate)
 
-    AdamOptimizer = DeepSpeedCPUAdam if args.offload else FusedAdam
+    if args.offload:
+        AdamOptimizer = DeepSpeedCPUAdam
+    elif args.no_fused_kernels:
+        AdamOptimizer = torch.optim.AdamW
+    else:
+        AdamOptimizer = FusedAdam
+    print_rank_0(f'Using {AdamOptimizer.__name__} optimizer', args.global_rank)
+
     optimizer = AdamOptimizer(optimizer_grouped_parameters,
                               lr=args.learning_rate,
                               betas=(0.9, 0.95))
