@@ -11,10 +11,8 @@ import os
 from transformers import (
     AutoModelForCausalLM, )
 
-sys.path.append(
-    os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
-from utils.model.model_utils import create_hf_model
-from utils.utils import load_hf_tokenizer
+from deepspeed_chat.utils.model.model_utils import create_hf_model
+from deepspeed_chat.utils.utils import load_hf_tokenizer
 
 logger = logging.getLogger(__name__)
 

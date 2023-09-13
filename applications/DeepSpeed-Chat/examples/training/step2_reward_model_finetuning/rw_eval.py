@@ -7,13 +7,10 @@ import argparse
 import os
 import torch
 
-import sys
 
-sys.path.append(
-    os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
-from utils.model.model_utils import create_critic_model
-from utils.utils import to_device
-from utils.utils import load_hf_tokenizer
+from deepspeed_chat.utils.model.model_utils import create_critic_model
+from deepspeed_chat.utils.utils import to_device
+from deepspeed_chat.utils.utils import load_hf_tokenizer
 
 
 def parse_args():
