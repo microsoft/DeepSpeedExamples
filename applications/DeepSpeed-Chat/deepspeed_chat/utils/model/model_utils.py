@@ -12,8 +12,8 @@ from transformers import (
 from huggingface_hub import snapshot_download
 from transformers.deepspeed import HfDeepSpeedConfig
 
-from .reward_model import RewardModel
-from ..utils import load_state_dict_into_model
+from deepspeed_chat.utils.model.reward_model import RewardModel
+from deepspeed_chat.utils.utils import load_state_dict_into_model
 
 
 def create_hf_model(model_class,

@@ -14,7 +14,7 @@ import numpy as np
 import os
 import hashlib
 from itertools import chain
-from . import raw_datasets
+from deepspeed_chat.utils.data import raw_datasets
 
 
 def get_raw_dataset(dataset_name, output_path, seed, local_rank):
