@@ -6,6 +6,7 @@ import os
 import torch
 import random
 import numpy as np
+from datetime import datetime
 from transformers import set_seed, AutoTokenizer
 import json
 import deepspeed
@@ -293,3 +294,45 @@ def save_zero_three_model(model_ema, global_rank, save_dir, zero_stage=0):
         if global_rank == 0:
             torch.save(output_state_dict, output_model_file)
         del output_state_dict
+
+
+class TensorAccumulator:
+
+    def __init__(self):
+        self.sum = None
+        self.cnt = 0
+
+    def add(self, t):
+        t_ = t.detach()
+        if self.sum is None:
+            self.sum = torch.zeros_like(t_)
+        self.sum += t_
+        self.cnt += 1
+
+    def clear(self):
+        self.sum.zero_()
+        self.cnt = 0
+
+    def get_sum(self):
+        return self.sum.item()
+
+    def get_mean(self):
+        return 0. if self.cnt == 0 else self.get_sum() / self.cnt
+
+
+def update_optim_step_mean_loss(loss_accumulator: TensorAccumulator, loss,
+                                step, gas):
+    loss_accumulator.add(loss)
+    optim_step_mean_loss = None
+    if (step + 1) % gas == 0:
+        optim_step_mean_loss = loss_accumulator.get_mean()
+    return optim_step_mean_loss
+
+
+def print_optim_step_mean_loss(loss, epoch, step, steps_per_print, gas, rank):
+    if loss is not None:
+        optim_step = (step + 1) // gas
+        if optim_step % steps_per_print == 0:
+            print_rank_0(
+                f"[{datetime.now()}] epoch: {epoch} | step: {optim_step} | mean_loss: {loss}",
+                rank)
