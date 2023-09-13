@@ -4,8 +4,6 @@
 # DeepSpeed Team
 import torch
 import torch.nn.functional as F
-import sys
-import os
 import time
 import deepspeed
 from deepspeed.runtime.zero.partition_parameters import ZeroParamStatus

@@ -4,9 +4,7 @@
 
 # DeepSpeed Team
 import argparse
-import os
 import math
-import sys
 
 import torch
 from torch.utils.data import DataLoader, RandomSampler, SequentialSampler
