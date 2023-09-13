@@ -10,10 +10,7 @@ import time
 import deepspeed
 from deepspeed.runtime.zero.partition_parameters import ZeroParamStatus
 
-sys.path.append(
-    os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
-
-from utils.utils import print_rank_0
+from deepspeed_chat.utils.utils import print_rank_0
 
 
 def print_all_ranks(tag, value, rank):
