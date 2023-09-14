@@ -115,7 +115,7 @@ INT4 weight quantization can be easily enabled with a few lines of configuration
 
 ### Quantized Initialization
 This is the easiest way to getting started. By providing a few lines of hints in ds_config, the model will be on-the-fly quantized during model initialization (e.g., AutoModel.from_pretrained). All candidate layers will be automatically quantized.
-```
+```python
 ds_config = {
   'weight_quantization': {
       'quantized_initialization': {
@@ -135,7 +135,7 @@ Currently, ZeRO-inference can quantize the weight matrix of nn.Embedding and nn.
 
 ### Post Initialization Quantization
 In this mode, model is first loaded in FP16 format and then convert into INT4. The advantage of enabling this mode is that users will have an overview of the model architecture. Thus, they will have fine-grained control over the quantization decision. For example, which layer should be quantized with which quantization configuration can be controlled. Only a few lines of code changes are needed. Note that we plan to expand this mode to accommodate more formats in the near future.
-```
+```python
 from deepspeed.compression.inference.quantization import _init_group_wise_weight_quantization
 ds_config = {
   'weight_quantization': {
@@ -172,4 +172,5 @@ In running example above, only two fully connected layers (fc1 and fc2) and the 
 ## References
 
 - DeepSpeed [ZeRO-Inference](https://www.deepspeed.ai/2022/09/09/zero-inference.html)
+- Sheng, Ying et al. [FlexGen: High-Throughput Generative Inference of Large Language Models with a Single GPU](https://arxiv.org/abs/2303.06865)
 - Shen, Sheng, et al. "Q-bert: Hessian based ultra low precision quantization of bert." Proceedings of the AAAI Conference on Artificial Intelligence. Vol. 34. No. 05. 2020.
