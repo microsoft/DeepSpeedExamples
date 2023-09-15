@@ -51,7 +51,7 @@ def get_raw_dataset(dataset_name, output_path, seed, local_rank):
             output_path, seed, local_rank, dataset_name)
     elif "mkqa-Chinese" in dataset_name:
         return raw_datasets.MkqaChineseDataset(output_path, seed, local_rank,
-                                               dataset_name)
+                                               "mkqa")
     elif "mkqa-Japanese" in dataset_name:
         return raw_datasets.MkqaJapaneseDataset(output_path, seed, local_rank,
                                                 "mkqa")
