@@ -68,15 +68,14 @@ def load_hf_tokenizer(model_name_or_path, fast_tokenizer=True):
         model_json = os.path.join(model_name_or_path, "config.json")
         if os.path.exists(model_json):
             model_json_file = json.load(open(model_json))
-            # Some models can be converted into huggingface format while it just doesn't have the
-            # "_name_or_path" config and tokenizer is not downloadable from huggingface hub.
-            if "_name_or_path" in model_json_file:
-                model_name = model_json_file["_name_or_path"]
-                return AutoTokenizer.from_pretrained(
-                    model_name, fast_tokenizer=fast_tokenizer)
+            model_name = model_json_file["_name_or_path"]
+            tokenizer = get_tokenizer(model_name,
+                                      fast_tokenizer=fast_tokenizer)
+    else:
+        tokenizer = get_tokenizer(model_name_or_path,
+                                  fast_tokenizer=fast_tokenizer)
 
-    return AutoTokenizer.from_pretrained(model_name_or_path,
-                                         fast_tokenizer=fast_tokenizer)
+    return tokenizer
 
 
 def save_hf_format(model, tokenizer, args, sub_folder=""):
