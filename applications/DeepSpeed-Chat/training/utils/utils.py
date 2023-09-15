@@ -42,6 +42,25 @@ class MovingAverage:
         return self.mean
 
 
+def get_tokenizer(model_name_or_path, fast_tokenizer=True):
+    if "llama" in model_name_or_path:
+        from transformers.models.llama import LlamaTokenizer
+        tokenizer = LlamaTokenizer.from_pretrained(
+            model_name_or_path, fast_tokenizer=fast_tokenizer)
+        if tokenizer.pad_token is None:
+            # assert tokenizer.eos_token is not None
+            # tokenizer.add_special_tokens({'pad_token': tokenizer.eos_token})
+            tokenizer.add_special_tokens({'pad_token': '[PAD]'})
+            tokenizer.padding_side = 'right'
+    else:
+        tokenizer = AutoTokenizer.from_pretrained(
+            model_name_or_path, fast_tokenizer=fast_tokenizer)
+        tokenizer.pad_token = tokenizer.eos_token
+        # make sure tokenizer is right pad in our logic
+        tokenizer.padding_side = 'right'
+    return tokenizer
+
+
 def load_hf_tokenizer(model_name_or_path, fast_tokenizer=True):
     if os.path.exists(model_name_or_path):
         # Locally tokenizer loading has some issue, so we need to force download
