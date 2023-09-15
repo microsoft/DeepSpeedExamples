@@ -43,6 +43,7 @@ class PromptRawDataset(object):
     def get_prompt_and_rejected(self, sample):
         return
 
+
 # English dataset
 class DahoasRmstaticDataset(PromptRawDataset):
 
@@ -341,12 +342,20 @@ class PvduySharegptalpacaoavicunaformatDataset(PromptRawDataset):
         )
         return None
 
+
 class LocalJsonFileDataset(PromptRawDataset):
+
     def __init__(self, output_path, seed, local_rank, dataset_name, chat_path):
         super().__init__(output_path, seed, local_rank, dataset_name)
         self.dataset_name = "local/jsonfile"
         self.dataset_name_clean = "jsonfile"
-        self.raw_datasets = load_dataset('json', data_files={"train": chat_path + '/data/train.json', "eval": chat_path + '/data/eval.json'})
+        self.raw_datasets = load_dataset('json',
+                                         data_files={
+                                             "train":
+                                             chat_path + '/data/train.json',
+                                             "eval":
+                                             chat_path + '/data/eval.json'
+                                         })
 
     def get_train_data(self):
         if self.raw_datasets['train'] is not None:
