@@ -115,7 +115,8 @@ def create_critic_model(model_name_or_path,
                         rlhf_training=False,
                         dropout=None,
                         zero_stage=0,
-                        loss_to_fp32=False):
+                        loss_to_fp32=False,
+                        optimized_reward_loss_calc=False):
     # OPT model family always put a padding token at the beginning of the sequence,
     # we did not see this in other models but not sure if it is a general rule
 
@@ -132,7 +133,8 @@ def create_critic_model(model_name_or_path,
         critic_model,
         tokenizer,
         num_padding_at_beginning=num_padding_at_beginning,
-        loss_to_fp32=loss_to_fp32)
+        loss_to_fp32=loss_to_fp32,
+        opt_loss_calc=optimized_reward_loss_calc)
 
     if rlhf_training:
         # load critic model from checkpoint

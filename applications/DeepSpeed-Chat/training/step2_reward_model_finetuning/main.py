@@ -211,6 +211,10 @@ def parse_args():
     parser.add_argument('--no_fused_kernels',
                         action='store_true',
                         help='Do not use cuda fused kernels.')
+    ## UPH
+    parser.add_argument("--optimized_reward_loss_calc",
+                        action='store_true',
+                        help="Whether to use an optimized approach for RM loss calculation, or legacy flow")
     ## DeepSpeed
     parser = deepspeed.add_config_arguments(parser)
     args = parser.parse_args()
@@ -266,7 +270,8 @@ def main():
                                    args.num_padding_at_beginning,
                                    dropout=args.dropout,
                                    zero_stage=args.zero_stage,
-                                   loss_to_fp32=loss_to_fp32)
+                                   loss_to_fp32=loss_to_fp32,
+                                   optimized_reward_loss_calc=args.optimized_reward_loss_calc)
 
     # Model bigscience/bloom-560m has large variance at ln_f.weight parameter
     # This makes bf16 finetuning hard.
