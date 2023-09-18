@@ -304,3 +304,13 @@ def print_loss(epoch, step, steps_per_print, gas, loss, loss_sum, rank):
         loss_sum.zero_()
 
     return loss_sum
+
+
+def is_hpu():
+    return get_accelerator().device_name() == "hpu"
+
+
+def hpu_mark_step():
+    if is_hpu():
+        import habana_frameworks.torch.core as htcore
+        htcore.mark_step()

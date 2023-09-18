@@ -11,6 +11,7 @@ import os
 import json
 from transformers import pipeline, set_seed
 from transformers import AutoConfig, OPTForCausalLM, AutoTokenizer, AutoModelForCausalLM
+from deepspeed.accelerator import get_accelerator
 
 
 def parse_args():
@@ -54,7 +55,7 @@ def get_generator(path):
     generator = pipeline("text-generation",
                          model=model,
                          tokenizer=tokenizer,
-                         device="cuda:0")
+                         device=get_accelerator().device_name(0))
     return generator
 
 

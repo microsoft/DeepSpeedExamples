@@ -26,7 +26,9 @@ from deepspeed import get_accelerator
 sys.path.append(
     os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
 from utils.data.data_utils import create_prompt_dataset
-from utils.utils import print_rank_0, to_device, save_hf_format, set_random_seed, get_all_reduce_mean, get_optimizer_grouped_parameters, save_zero_three_model, load_hf_tokenizer, print_loss
+from utils.utils import print_rank_0, to_device, save_hf_format, set_random_seed, get_all_reduce_mean, \
+                        get_optimizer_grouped_parameters, save_zero_three_model, load_hf_tokenizer, \
+                        print_loss, is_hpu, hpu_mark_step
 from utils.ds_utils import get_train_ds_config
 from utils.module.lora import convert_linear_layer_to_lora, convert_lora_to_linear_layer, only_optimize_lora_parameters, make_model_gradient_checkpointing_compatible
 from utils.model.model_utils import create_hf_model, causal_lm_model_to_fp32_loss
@@ -208,14 +210,18 @@ def parse_args():
 
 
 def main():
+    if is_hpu():
+        import habana_frameworks.torch.core as htcore
+
     args = parse_args()
 
     if args.local_rank == -1:
         device = torch.device(get_accelerator().device_name())
     else:
-        get_accelerator().set_device(args.local_rank)
-        device = torch.device(get_accelerator().device_name(), args.local_rank)
-        # Initializes the distributed backend which will take care of sychronizing nodes/GPUs
+        if not is_hpu():
+            get_accelerator().set_device(args.local_rank)
+        device = torch.device(get_accelerator().device_name(args.local_rank))
+        # Initializes the distributed backend which will take care of synchronizing nodes/GPUs
         # torch.distributed.init_process_group(backend='nccl')
         deepspeed.init_distributed()
 
@@ -262,6 +268,9 @@ def main():
             model = only_optimize_lora_parameters(model)
             model = make_model_gradient_checkpointing_compatible(model)
 
+    if is_hpu():  # TODO SW-146602: remove this WA when SW-141762 is resolved
+            model.to(dtype=torch.bfloat16, device=get_accelerator().device_name())
+
     # Prepare the data
     train_phase = 1
     train_dataset, eval_dataset = create_prompt_dataset(
@@ -295,8 +304,11 @@ def main():
         losses = 0
         for step, batch in enumerate(eval_dataloader):
             batch = to_device(batch, device)
+            hpu_mark_step()
+
             with torch.no_grad():
                 outputs = model(**batch)
+            hpu_mark_step()
 
             loss = outputs.loss
             losses += loss.float()
@@ -317,7 +329,7 @@ def main():
 
     if args.offload:
         AdamOptimizer = DeepSpeedCPUAdam
-    elif args.no_fused_kernels:
+    elif args.no_fused_kernels or is_hpu():
         AdamOptimizer = torch.optim.AdamW
     else:
         AdamOptimizer = FusedAdam
@@ -367,7 +379,9 @@ def main():
             outputs = model(**batch, use_cache=False)
             loss = outputs.loss
             model.backward(loss)
+            hpu_mark_step()
             model.step()
+            hpu_mark_step()
             end = time.time()
             if torch.distributed.get_rank() == 0:
                 hf_model = model.model if hasattr(model, 'model') else model.module

@@ -25,7 +25,9 @@ sys.path.append(
     os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
 from utils.model.model_utils import create_critic_model
 from utils.data.data_utils import create_prompt_dataset, DataCollatorReward
-from utils.utils import print_rank_0, to_device, save_hf_format, set_random_seed, get_all_reduce_mean, get_optimizer_grouped_parameters, save_zero_three_model, load_hf_tokenizer, print_loss
+from utils.utils import print_rank_0, to_device, save_hf_format, set_random_seed, get_all_reduce_mean, \
+                        get_optimizer_grouped_parameters, save_zero_three_model, load_hf_tokenizer, \
+                        print_loss, is_hpu, hpu_mark_step
 from utils.ds_utils import get_train_ds_config
 from utils.module.lora import convert_linear_layer_to_lora, convert_lora_to_linear_layer, only_optimize_lora_parameters, make_model_gradient_checkpointing_compatible
 
@@ -200,6 +202,7 @@ def parse_args():
     parser.add_argument("--add_eot_token",
                         action='store_true',
                         help="Add <|endoftext|> as additional special token to tokenizer")
+
     ## Print loss
     parser.add_argument('--print_loss',
                         action='store_true',
@@ -216,14 +219,18 @@ def parse_args():
 
 
 def main():
+    if is_hpu():
+        import habana_frameworks.torch.core as htcore
+
     args = parse_args()
 
     if args.local_rank == -1:
         device = torch.device(get_accelerator().device_name())
     else:
-        get_accelerator().set_device(args.local_rank)
-        device = torch.device(get_accelerator().device_name(), args.local_rank)
-        # Initializes the distributed backend which will take care of sychronizing nodes/GPUs
+        if is_hpu():
+            get_accelerator().set_device(args.local_rank)
+        device = torch.device(get_accelerator().device_name(args.local_rank))
+        # Initializes the distributed backend which will take care of synchronizing nodes/GPUs
         # torch.distributed.init_process_group(backend='nccl')
         deepspeed.init_distributed()
 
@@ -280,6 +287,10 @@ def main():
             force_optimize_params.append('v_head.weight')
             rm_model = only_optimize_lora_parameters(rm_model, force_optimize_params)
             rm_model = make_model_gradient_checkpointing_compatible(rm_model)
+
+    # TODO SW-146776: remove this WA once SW-141762 is resolved
+    if is_hpu():
+        rm_model.to(dtype=torch.bfloat16, device=device)
 
     train_phase = 2
     train_dataset, eval_dataset = create_prompt_dataset(
@@ -340,9 +351,10 @@ def main():
     optimizer_grouped_parameters = get_optimizer_grouped_parameters(
         rm_model, args.weight_decay, args.lora_learning_rate)
 
+    # TODO SW-146129: change the file to use HPEX optimizer instead of AdamW on hpu
     if args.offload:
         AdamOptimizer = DeepSpeedCPUAdam
-    elif args.no_fused_kernels:
+    elif args.no_fused_kernels or is_hpu():
         AdamOptimizer = torch.optim.AdamW
     else:
         AdamOptimizer = FusedAdam
@@ -397,7 +409,9 @@ def main():
             outputs = rm_model(**batch, use_cache=False)
             loss = outputs["loss"]
             rm_model.backward(loss)
+            hpu_mark_step()
             rm_model.step()
+            hpu_mark_step()
             if args.print_loss:
                 steps_per_print = ds_config['steps_per_print']
                 loss_sum = print_loss(epoch, step, steps_per_print, args.gradient_accumulation_steps,

@@ -7,12 +7,13 @@ import torch
 import deepspeed
 from deepspeed.ops.adam import FusedAdam
 from deepspeed.ops.adam import DeepSpeedCPUAdam
+from deepspeed.accelerator import get_accelerator
 from transformers import AutoModelForCausalLM, get_scheduler
 
 from utils.ds_utils import get_train_ds_config, get_eval_ds_config
 from utils.module.lora import convert_linear_layer_to_lora, only_optimize_lora_parameters, make_model_gradient_checkpointing_compatible
 from utils.model.model_utils import create_hf_model, create_critic_model
-from utils.utils import get_optimizer_grouped_parameters, print_rank_0
+from utils.utils import get_optimizer_grouped_parameters, print_rank_0, is_hpu
 """
 TODOs:
   * support HF models for critic (for debugging), must be a previously saved ckpt from step-2
@@ -104,16 +105,20 @@ class DeepSpeedRLHFEngine():
                 actor_model = make_model_gradient_checkpointing_compatible(
                     actor_model)
 
+        # TODO SW-146776: remove this WA once SW-141762 is resolved
+        if is_hpu():
+            import habana_frameworks.torch.core as htcore
+            actor_model.to(dtype=torch.bfloat16, device=get_accelerator().device())
+
         # Optimizer
         if self.args.offload:
             AdamOptimizer = DeepSpeedCPUAdam
-        elif self.args.no_fused_kernels:
+        elif self.args.no_fused_kernels or is_hpu():
             AdamOptimizer = torch.optim.AdamW
         else:
             AdamOptimizer = FusedAdam
         print_rank_0(f'Using {AdamOptimizer.__name__} optimizer for actor model', self.args.global_rank)
 
-        AdamOptimizer = DeepSpeedCPUAdam if self.args.offload else FusedAdam
         optim_params = get_optimizer_grouped_parameters(
             actor_model, self.args.actor_weight_decay,
             self.args.actor_lora_learning_rate)
@@ -244,10 +249,15 @@ class DeepSpeedRLHFEngine():
                 critic_model = make_model_gradient_checkpointing_compatible(
                     critic_model)
 
+        # TODO SW-146776: remove this WA once SW-141762 is resolved
+        if is_hpu():
+            critic_model.to(dtype=torch.bfloat16, device=get_accelerator().device())
+
         # Optimizer
+        # TODO SW-147425: change the file to use HPEX optimizer instead of AdamW on hpu
         if self.args.offload:
             AdamOptimizer = DeepSpeedCPUAdam
-        elif self.args.no_fused_kernels:
+        elif self.args.no_fused_kernels or is_hpu():
             AdamOptimizer = torch.optim.AdamW
         else:
             AdamOptimizer = FusedAdam
