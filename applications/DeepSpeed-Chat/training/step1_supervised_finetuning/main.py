@@ -370,8 +370,8 @@ def main():
             model.step()
             end = time.time()
             if torch.distributed.get_rank() == 0:
-                print_throughput(model.model, args, end - start,
-                                 args.global_rank)
+                hf_model = model.model if hasattr(model, 'model') else model.module
+                print_throughput(hf_model, args, end - start, args.global_rank)
             if args.print_loss:
                 steps_per_print = ds_config['steps_per_print']
                 loss_sum = print_loss(epoch, step, steps_per_print, args.gradient_accumulation_steps,
