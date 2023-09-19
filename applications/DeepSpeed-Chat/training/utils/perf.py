@@ -154,6 +154,7 @@ def calculate_flops(checkpoint_activations_factor, batch_size, seq_length,
 
 
 def get_hf_configs(hf_config):
+    print(hf_config)
     num_layers = getattr(hf_config, "num_hidden_layers",
                          getattr(hf_config, "n_layer", None))
     hidden_size = getattr(hf_config, "hidden_size",
