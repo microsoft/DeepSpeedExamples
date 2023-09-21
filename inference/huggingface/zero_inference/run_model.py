@@ -25,7 +25,6 @@ from utils import (GB, add_model_hooks, cache_bytes, disable_torch_init,
                    model_bytes, write_benchmark_log)
 from packaging import version
 
-
 assert version.parse(deepspeed.__version__) >= version.parse("0.10.3"), "ZeRO-Inference with weight quantization and kv cache offloading is available only in DeepSpeed 0.10.3+, please upgrade DeepSpeed"
 
 def get_model_config(model_name):
@@ -157,30 +156,22 @@ def run_generation(
     async_kv_offload,
 ):
     # Load tokenizer
-    config = get_model_config(model_name)
-    return_token_type_ids = True 
-    padding_side = "left" if config.model_type in ["opt"] else "right"
+    config = get_model_config(model_name)    
 
     if config.model_type == "opt":
         tokenizer = AutoTokenizer.from_pretrained(
             model_name.replace("175b", "66b"), 
-            return_token_type_ids=return_token_type_ids,
-            padding_side=padding_side
+            padding_side="left" 
         )
     else:
-        tokenizer = AutoTokenizer.from_pretrained(
-            model_name,
-            return_token_type_ids=return_token_type_ids,
-            padding_side=padding_side
-        )
-
+        tokenizer = AutoTokenizer.from_pretrained(model_name)
 
     tokenizer.pad_token = tokenizer.eos_token
 
-    if hasattr(config, 'torch_dtype'):
-        dtype = config.torch_dtype
+    if getattr(config, 'torch_dtype', None) is None:
+        dtype = torch.float16
     else:
-        dtype = torch.float
+        dtype = config.torch_dtype
 
     if dummy:
         filename = os.path.join(
@@ -221,14 +212,14 @@ def run_generation(
     execute_gen_len = gen_len
     prompts = ["Paris is the capital city of"] * (batch_size // dist.get_world_size())
 
-    def _batch_encode(prompts, return_token_type_ids):
-        input_tokens = tokenizer.batch_encode_plus(prompts, return_tensors="pt", padding="max_length", max_length=prompt_len, return_token_type_ids=return_token_type_ids)
+    def _batch_encode(prompts):
+        input_tokens = tokenizer.batch_encode_plus(prompts, return_tensors="pt", padding="max_length", max_length=prompt_len)
         for t in input_tokens:
             if torch.is_tensor(input_tokens[t]):
                 input_tokens[t] = input_tokens[t].to(torch.cuda.current_device())
         return input_tokens
 
-    input_tokens = _batch_encode(prompts, return_token_type_ids)
+    input_tokens = _batch_encode(prompts)
 
     if kv_offload:
         model.set_kv_cache_offload(True, gen_len, pin_kv_cache, async_kv_offload)
@@ -251,7 +242,6 @@ def run_generation(
         timer.start(sync_func=get_accelerator().synchronize)
         with torch.no_grad():
             set_model_stage(model, "prefill")
-            # output_ids = model.generate(input_ids=input_ids, **generate_kwargs)
             output_ids = model.generate(**input_tokens, **generate_kwargs)
             prefill_timings.append(model.__duration__)
         timer.stop(sync_func=get_accelerator().synchronize)
