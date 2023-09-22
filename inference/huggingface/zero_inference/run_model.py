@@ -20,7 +20,7 @@ from transformers import (AutoConfig, AutoTokenizer, AutoModelForCausalLM,
                           BloomForCausalLM, OPTForCausalLM, LlamaForCausalLM,
                         )
 from transformers.deepspeed import HfDeepSpeedConfig
-from utils import (GB, add_model_hooks, cache_bytes, disable_torch_init,
+from utils import (GB, add_model_hooks, cache_bytes,
                    get_filename, get_quant_config, hidden_bytes, meta_to_cpu,
                    model_bytes, write_benchmark_log)
 from packaging import version
@@ -154,6 +154,7 @@ def run_generation(
     quant_group_size,
     pin_kv_cache,
     async_kv_offload,
+    loops,
 ):
     # Load tokenizer
     config = get_model_config(model_name)    
@@ -238,7 +239,7 @@ def run_generation(
     generate_kwargs = dict(max_new_tokens=execute_gen_len, do_sample=False)
     prefill_timings = []
     timer = timers("generate-forward")
-    for _ in range(2):
+    for _ in range(loops):
         timer.start(sync_func=get_accelerator().synchronize)
         with torch.no_grad():
             set_model_stage(model, "prefill")
@@ -333,6 +334,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", type=str, default="facebook/opt-1.3b", help="model name or path; currently only supports OPT and BLOOM models")
     parser.add_argument("--dummy", action="store_true", help="Use dummy weights for benchmark purposes.")
+    parser.add_argument("--loops", type=int, default=3,  help="Number of token generation iterations")
     parser.add_argument("--batch-size", type=int, default=1)
     parser.add_argument("--prompt-len", type=int, default=512,  help="prompt length")
     parser.add_argument("--gen-len", type=int, default=32,  help="number of tokens to generate")
@@ -373,4 +375,5 @@ if __name__ == "__main__":
         args.quant_group_size,
         args.pin_kv_cache,
         args.async_kv_offload,
+        args.loops
     )
