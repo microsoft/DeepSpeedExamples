@@ -44,6 +44,7 @@ from utils.data.data_utils import create_prompt_dataset, MiniDataset, DataCollat
 from utils.utils import print_rank_0, to_device, save_hf_format, set_random_seed, get_all_reduce_mean, moving_average, save_zero_three_model, load_hf_tokenizer
 from utils.module.lora import convert_lora_to_linear_layer
 from utils.perf import print_throughput_step3
+from deepspeed.accelerator import get_accelerator
 
 writer = None
 
@@ -420,10 +421,10 @@ def main():
     args = parse_args()
 
     if args.local_rank == -1:
-        device = torch.device("cuda")
+        device = torch.device(get_accelerator().device_name())
     else:
-        torch.cuda.set_device(args.local_rank)
-        device = torch.device("cuda", args.local_rank)
+        get_accelerator().set_device(args.local_rank)
+        device = torch.device(get_accelerator().device_name(), args.local_rank)
         # Initializes the distributed backend which will take care of sychronizing nodes/GPUs
         deepspeed.init_distributed()
 
@@ -543,7 +544,7 @@ def main():
                 print_rank_0(
                     f'Epoch: {epoch} | Step: {step} | PPO Epoch: {ppo_ep+1} | Actor Loss: {actor_loss_sum/inner_iter} | Critic Loss: {critic_loss_sum/inner_iter} | Unsupervised Loss: {unsup_loss_sum/inner_iter}',
                     args.global_rank)
-                print_throughput_step3(rlhf_engine.actor.model,
+                print_throughput_step3(rlhf_engine.actor.module,
                                        rlhf_engine.critic, args, e2e_time,
                                        trainer.generate_time, training_time,
                                        args.global_rank)
