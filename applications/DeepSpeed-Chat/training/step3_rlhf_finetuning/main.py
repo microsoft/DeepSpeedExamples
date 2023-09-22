@@ -44,6 +44,7 @@ from utils.data.data_utils import create_prompt_dataset, MiniDataset, DataCollat
 from utils.utils import print_rank_0, to_device, save_hf_format, set_random_seed, get_all_reduce_mean, moving_average, save_zero_three_model, load_hf_tokenizer
 from utils.module.lora import convert_lora_to_linear_layer
 from utils.perf import print_throughput_step3
+from deepspeed.accelerator import get_accelerator
 
 writer = None
 
@@ -240,6 +241,9 @@ def parse_args():
     parser.add_argument('--offload',
                         action='store_true',
                         help='Enable ZeRO Offload techniques.')
+    parser.add_argument('--dtype', type=str, default='fp16',
+                        choices=['fp16', 'bf16'],
+                        help = 'Training data type')
     parser.add_argument(
         '--offload_reference_model',
         action='store_true',
@@ -417,10 +421,10 @@ def main():
     args = parse_args()
 
     if args.local_rank == -1:
-        device = torch.device("cuda")
+        device = torch.device(get_accelerator().device_name())
     else:
-        torch.cuda.set_device(args.local_rank)
-        device = torch.device("cuda", args.local_rank)
+        get_accelerator().set_device(args.local_rank)
+        device = torch.device(get_accelerator().device_name(), args.local_rank)
         # Initializes the distributed backend which will take care of sychronizing nodes/GPUs
         deepspeed.init_distributed()
 
