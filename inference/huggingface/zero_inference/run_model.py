@@ -60,7 +60,6 @@ def get_model_config(model_name):
 
 def get_ds_model(
     model_name,
-    dtype,
     cpu_offload,
     disk_offload,
     offload_dir,
