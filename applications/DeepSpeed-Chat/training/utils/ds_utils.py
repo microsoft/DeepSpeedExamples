@@ -3,7 +3,6 @@
 
 # DeepSpeed Team
 
-import torch
 import deepspeed.comm as dist
 from deepspeed.accelerator import get_accelerator
 

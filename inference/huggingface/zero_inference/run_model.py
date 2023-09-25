@@ -27,6 +27,21 @@ from packaging import version
 
 assert version.parse(deepspeed.__version__) >= version.parse("0.10.3"), "ZeRO-Inference with weight quantization and kv cache offloading is available only in DeepSpeed 0.10.3+, please upgrade DeepSpeed"
 
+def get_tokenizer(model_name, config):
+    if config.model_type == "opt":
+        # opt175b is not available on HF (at this time),
+        # so as a hack we use opt66b which has similar tokenizer. 
+        tokenizer = AutoTokenizer.from_pretrained(
+            model_name.replace("175b", "66b"), 
+            padding_side="left" 
+        )
+    else:
+        tokenizer = AutoTokenizer.from_pretrained(model_name)
+
+    tokenizer.pad_token = tokenizer.eos_token
+
+    return tokenizer
+
 def get_model_config(model_name):
     if "175b" in model_name:
         config = AutoConfig.from_pretrained("facebook/opt-66b")
@@ -57,8 +72,12 @@ def get_ds_model(
     config = get_model_config(model_name)
     hidden_size = config.hidden_size
     deepspeed.init_distributed("nccl")
-    rank = dist.get_rank()
     pin_memory = bool(args.pin_memory)
+
+    if getattr(config, 'torch_dtype', None) is None:
+        dtype = torch.float16
+    else:
+        dtype = config.torch_dtype
 
     ds_config = {
         "fp16": {
@@ -159,20 +178,7 @@ def run_generation(
     # Load tokenizer
     config = get_model_config(model_name)    
 
-    if config.model_type == "opt":
-        tokenizer = AutoTokenizer.from_pretrained(
-            model_name.replace("175b", "66b"), 
-            padding_side="left" 
-        )
-    else:
-        tokenizer = AutoTokenizer.from_pretrained(model_name)
-
-    tokenizer.pad_token = tokenizer.eos_token
-
-    if getattr(config, 'torch_dtype', None) is None:
-        dtype = torch.float16
-    else:
-        dtype = config.torch_dtype
+    tokenizer = get_tokenizer(model_name, config)
 
     if dummy:
         filename = os.path.join(
@@ -200,7 +206,6 @@ def run_generation(
     with torch.no_grad():
         model = get_ds_model(
             model_name,
-            dtype,
             cpu_offload,
             disk_offload,
             offload_dir,
