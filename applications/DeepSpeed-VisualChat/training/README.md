@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="../assets/model.png" width="900"/>
+<img src="../assets/model.png" width="500"/>
 
 </div>
 
@@ -24,13 +24,17 @@ which shows an example to fine-tune a LLaMA-2-7B LLM together with a CLIP-large 
 Please refer to [Chat](../chat/README.md) or [Eval](../eval/README.md) for evaluation. 
 
 <div align="center">
-<img src="../assets/banner.png" alt="Cats"/>
+<img src="../assets/banner.png" width="500" alt="Cats"/>
 </div>
 
-<div align="center">
-<img src="../assets/ceos.png" alt="CEOs"/>
-</div>
+-----
 
 <div align="center">
-<img src="../assets/friends.png" alt="Friends"/>
+<img src="../assets/ceos.png"  width="500" alt="CEOs"/>
+</div>
+
+------
+
+<div align="center">
+<img src="../assets/friends.png" width="500" alt="Friends"/>
 </div>
