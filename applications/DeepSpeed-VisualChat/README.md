@@ -6,20 +6,20 @@ An easy-to-use, scalable, and efficient multi-modal training pipeline for multi-
 ## Table of Contents
 
 - [📰 Latest News 📰](#-latest-news-)
-- [🚀 What is DeepSpeed VisualChat 🚀️](#-what-is-deepspeed-visualchat-)
+- [🚀 What is DeepSpeed-VisualChat 🚀️](#-what-is-deepspeed-visualchat-)
 - [🧨 Capabilities 🧨](#-capabilities-)
 - [⚓ Get Started, Tutorial, and Documentation ⚓](#-get-started-tutorial-documentation-)
-- [🌱 DeepSpeed VisualChat's Roadmap 🌱](#-deepspeed-visualchats-roadmap-)
-- [💬 DeepSpeed VisualChat and DeepSpeed Community 💬](#-deepspeed-visualchat-and-deepspeed-community-)
+- [🌱 DeepSpeed-VisualChat's Roadmap 🌱](#-deepspeed-visualchats-roadmap-)
+- [💬 DeepSpeed-VisualChat and DeepSpeed Community 💬](#-deepspeed-visualchat-and-deepspeed-community-)
 - [🙏 Acknowledgement and Citation 🙏](#-acknowledgement-and-citation-)
 
 <!-- markdown-toc end -->
 
 ## 📰 Latest News 📰
 
-* ***[2023/09] [DeepSpeed VisualChat: Enabling Multi-Round Multi-Image Interleave Chat for All Scales](TODO)***
+* ***[2023/09] [DeepSpeed-VisualChat: Enabling Multi-Round Multi-Image Interleave Chat for All Scales](TODO)***
 
-To cite DeepSpeed VisualChat, please cite our [arxiv report](https://arxiv.org/abs/2309.14327):
+To cite DeepSpeed-VisualChat, please cite our [arxiv report](https://arxiv.org/abs/2309.14327):
 
 ```
 @article{yao2023deepspeed-visualchat,
@@ -30,21 +30,21 @@ To cite DeepSpeed VisualChat, please cite our [arxiv report](https://arxiv.org/a
 }
 ```
 
-## 🚀 What is DeepSpeed VisualChat 🚀
+## 🚀 What is DeepSpeed-VisualChat 🚀
 <div align="center">
 
-<img src="assets/hero-figure.png" alt="DeepSpeed VisualChat Banner!"/>
-Figure 1. On the left is a DeepSpeed-VisualChat model, featuring an innovative attention design. On the right is an example of DeepSpeed VisualChat.
+<img src="assets/hero-figure.png" alt="DeepSpeed-VisualChat Banner!"/>
+Figure 1. On the left is a DeepSpeed-VisualChat model, featuring an innovative attention design. On the right is an example of DeepSpeed-VisualChat.
 
 </div>
 
 ---
 
-With increasing interest in enabling the multi-modal capabilities of large language models, DeepSpeed is proud to announce a new training pipeline, named ***DeepSpeed VisualChat***. This is designed for enabling a multi-round, multi-image interleave chat framework. It enhances the language model with image understanding and reasoning capabilities. Unlike the majority of open-sourced multi-modal projects, the primary focus of DeepSpeed VisualChat is to provide a multi-round, multi-image interleave chat experience, as illustrated in Figure 1.
+With increasing interest in enabling the multi-modal capabilities of large language models, DeepSpeed is proud to announce a new training pipeline, named ***DeepSpeed-VisualChat***. This is designed for enabling a multi-round, multi-image interleave chat framework. It enhances the language model with image understanding and reasoning capabilities. Unlike the majority of open-sourced multi-modal projects, the primary focus of DeepSpeed-VisualChat is to provide a multi-round, multi-image interleave chat experience, as illustrated in Figure 1.
 
-To improve model quality without introducing new parameters, DeepSpeed VisualChat incorporates a new multi-modal causal attention mechanism, which is adept at better aligning visual and text features. Additionally, to overcome the scarcity of interleaved text-and-image inputs in most available open-sourced datasets, we employ various data blending techniques on existing datasets.
+To improve model quality without introducing new parameters, DeepSpeed-VisualChat incorporates a new multi-modal causal attention mechanism, which is adept at better aligning visual and text features. Additionally, to overcome the scarcity of interleaved text-and-image inputs in most available open-sourced datasets, we employ various data blending techniques on existing datasets.
 
-Thanks to the scalable, efficient, and user-friendly nature of the DeepSpeed ecosystem, we have the capability to train using a 2B visual encoder from QWen-VL (one is additionally refined from OpenClip) and a 70B language decoder from LLaMA-2. This showcases the extraordinary scalability of the DeepSpeed VisualChat framework.
+Thanks to the scalable, efficient, and user-friendly nature of the DeepSpeed ecosystem, we have the capability to train using a 2B visual encoder from QWen-VL (one is additionally refined from OpenClip) and a 70B language decoder from LLaMA-2. This showcases the extraordinary scalability of the DeepSpeed-VisualChat framework.
 
 
 
@@ -89,13 +89,13 @@ Please refer to
   - [**Helper**](./helper/README.md)
 
 
-## 🌱 DeepSpeed VisualChat's Roadmap 🌱
+## 🌱 DeepSpeed-VisualChat's Roadmap 🌱
 
 Our future plan includes but not limited to :
 - [ ] Support more models
 - [ ] Demonstrate how to training larger models with higher model quality
 
-## 💬 DeepSpeed VisualChat and DeepSpeed Community 💬
+## 💬 DeepSpeed-VisualChat and DeepSpeed Community 💬
 
 Just like how the success of [the BLOOM model](https://huggingface.co/bigscience/bloom) was supported by both [DeepSpeed Team](https://github.com/bigscience-workshop/Megatron-DeepSpeed) and many [open source contributors](https://huggingface.co/bigscience), we welcome all AI developers/practitioners/researchers to join this on-going effort for DeepSpeed-Chat. To participate:
 - Show your support by leaving a star ⭐ to our [DeepSpeed](https://github.com/microsoft/DeepSpeed) and [DeepSpeedExamples](https://github.com/microsoft/DeepSpeedExamples) GitHub repositories.
