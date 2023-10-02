@@ -7,7 +7,6 @@ An easy-to-use, scalable, and efficient multi-modal training pipeline for multi-
 
 - [📰 Latest News 📰](#-latest-news-)
 - [🚀 What is DeepSpeed-VisualChat 🚀️](#-what-is-deepspeed-visualchat-)
-- [🧨 Capabilities 🧨](#-capabilities-)
 - [⚓ Get Started, Tutorial, and Documentation ⚓](#-get-started-tutorial-documentation-)
 - [🌱 DeepSpeed-VisualChat's Roadmap 🌱](#-deepspeed-visualchats-roadmap-)
 - [💬 DeepSpeed-VisualChat and DeepSpeed Community 💬](#-deepspeed-visualchat-and-deepspeed-community-)
