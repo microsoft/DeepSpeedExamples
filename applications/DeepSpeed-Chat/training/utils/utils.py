@@ -10,6 +10,7 @@ from transformers import set_seed, AutoTokenizer
 import json
 import deepspeed
 from deepspeed.runtime.zero.partition_parameters import ZeroParamStatus
+from deepspeed.accelerator import get_accelerator
 import torch.nn as nn
 
 
@@ -68,7 +69,8 @@ def load_hf_tokenizer(model_name_or_path, fast_tokenizer=True):
         model_json = os.path.join(model_name_or_path, "config.json")
         if os.path.exists(model_json):
             model_json_file = json.load(open(model_json))
-            model_name = model_json_file["_name_or_path"]
+            model_name = model_json_file.get("_name_or_path",
+                                             model_name_or_path)
             tokenizer = get_tokenizer(model_name,
                                       fast_tokenizer=fast_tokenizer)
     else:
@@ -102,7 +104,7 @@ def set_random_seed(seed):
         random.seed(seed)
         np.random.seed(seed)
         torch.manual_seed(seed)
-        torch.cuda.manual_seed_all(seed)
+        get_accelerator().manual_seed_all(seed)
 
 
 def get_all_reduce_mean(tensor):
@@ -208,9 +210,12 @@ def get_optimizer_grouped_parameters(
             0.0,
         },
     ]
-    if not optimizer_grouped_parameters[1]["params"]:
-        optimizer_grouped_parameters.pop(1)
-    return optimizer_grouped_parameters
+
+    non_empty_groups = []
+    for group in optimizer_grouped_parameters:
+        if group["params"]:
+            non_empty_groups.append(group)
+    return non_empty_groups
 
 
 def _z3_params_to_fetch(param_list):

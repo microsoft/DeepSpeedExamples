@@ -19,6 +19,7 @@ from transformers import (
 
 import deepspeed
 from deepspeed.ops.adam import DeepSpeedCPUAdam, FusedAdam
+from deepspeed.accelerator import get_accelerator
 
 sys.path.append(
     os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
@@ -137,13 +138,21 @@ def parse_args():
         '--gradient_checkpointing',
         action='store_true',
         help='Enable HF gradient checkpointing for Actor model.')
-    parser.add_argument('--disable_dropout',
-                        action='store_true',
-                        help='Disable the dropout of the model.')
+    parser.add_argument(
+        "--dropout",
+        type=float,
+        default=None,
+        help="If dropout configured, use it. "
+        "Otherwise, keep the default dropout configuration of the model.")
     # deepspeed features
     parser.add_argument('--offload',
                         action='store_true',
                         help='Enable ZeRO Offload techniques.')
+    parser.add_argument('--dtype',
+                        type=str,
+                        default='fp16',
+                        choices=['fp16', 'bf16'],
+                        help='Training data type')
     parser.add_argument(
         '--zero_stage',
         type=int,
@@ -185,10 +194,10 @@ def main():
     args = parse_args()
 
     if args.local_rank == -1:
-        device = torch.device("cuda")
+        device = torch.device(get_accelerator().device_name())
     else:
-        torch.cuda.set_device(args.local_rank)
-        device = torch.device("cuda", args.local_rank)
+        get_accelerator().set_device(args.local_rank)
+        device = torch.device(get_accelerator().device_name(), args.local_rank)
         # Initializes the distributed backend which will take care of sychronizing nodes/GPUs
         # torch.distributed.init_process_group(backend='nccl')
         deepspeed.init_distributed()
@@ -196,6 +205,7 @@ def main():
     args.global_rank = torch.distributed.get_rank()
 
     ds_config = get_train_ds_config(offload=args.offload,
+                                    dtype=args.dtype,
                                     stage=args.zero_stage,
                                     enable_tensorboard=args.enable_tensorboard,
                                     tb_path=args.tensorboard_path,
@@ -216,7 +226,7 @@ def main():
                                    tokenizer,
                                    ds_config,
                                    args.num_padding_at_beginning,
-                                   disable_dropout=args.disable_dropout)
+                                   dropout=args.dropout)
 
     if args.lora_dim > 0:
         rm_model = convert_linear_layer_to_lora(rm_model,
