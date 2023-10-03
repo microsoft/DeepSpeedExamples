@@ -6,19 +6,19 @@ running the code in distributed manner, allowing for easily applying fp16 quanti
 
 ## DeepSpeed Optimizations
 
-Applying fp16 quantization and Zero stage 1 memory optimization we were able to reduce the required memory. The table bellow summarizes the results of running resnet 50 on one
-node 16 V100 GPUs:
+Applying fp16 quantization and Zero stage 1 memory optimization we were able to reduce the required memory. The table bellow summarizes the results of running resnet 50 on a DGX-1
+node (with 16 V100 GPUs):
 
-Optimization level | Allocated Memory (GB) | Improvement (%)
--------------------|-------------------
-Baseline| ? | -
-Baseline with DS activated | 1.66 | -
-DS + fp16 | 1.04 | ?
-Ds + fp16 + Zero 1 | 0.81 | ?
-------------------|-------------------
+| Optimization level | Allocated Memory (GB) | Improvement (%) |
+|-------------------|-------------------|---------|
+|Baseline| ? | -|
+|Baseline with DS activated | 1.66 | -|
+|DS + fp16 | 1.04 | ?|
+|Ds + fp16 + Zero 1 | 0.81 | ?|
+|------------------|-------------------|--------------|
 
 Furthermore, the memory optimization had no adverse impact on accuracy, a point illustrated by the graph below.
-![resnet-plot](C:\Users\pagolnar\OneDrive - Microsoft\Reports-presentations\Resnet-plot)
+![resnet-plot](C:\Users\pagolnar\OneDrive - Microsoft\Reports-presentations\Resnet-plot.png)
 
 ## Requirements
 
