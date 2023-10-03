@@ -1,4 +1,4 @@
-## DeepSpeed-VisualChat: Enabling Multi-Round Multi-Image Interleave Chat for All Scales
+## DeepSpeed-VisualChat: Enabling Multi-Round Multi-Image Chat for All Scales
 
 An easy-to-use, scalable, and efficient multi-modal training pipeline for multi-round multi-image interleave chat experience.
 
@@ -16,9 +16,9 @@ An easy-to-use, scalable, and efficient multi-modal training pipeline for multi-
 
 ## 📰 Latest News 📰
 
-* ***[2023/09] [DeepSpeed-VisualChat: Enabling Multi-Round Multi-Image Interleave Chat for All Scales](TODO)***
+* ***[2023/10] [DeepSpeed-VisualChat: Improve Your Chat Experience with Multi-Round Multi-Image Inputs](https://github.com/microsoft/DeepSpeed/tree/master/blogs/deepspeed-visualchat/10-03-2023/README.md)***
 
-To cite DeepSpeed-VisualChat, please cite our [arxiv report](https://arxiv.org/abs/2309.14327):
+⭐ If you find our [DeepSpeed](https://github.com/microsoft/DeepSpeed) and [DeepSpeedExamples](https://github.com/microsoft/DeepSpeedExamples) repositories beneficial, please give them a star on GitHub! To cite DeepSpeed-VisualChat, please cite our [arxiv report](https://arxiv.org/abs/2309.14327):
 
 ```
 @article{yao2023deepspeed-visualchat,
