@@ -1,7 +1,7 @@
 # ImageNet training with DeepSpeed
 
 This example activated DeepSpeed on the implementation of training a set of popular model architectures on ImageNet dataset. The models include ResNet, AlexNet, and VGG, and the
-baseline implementation could be found at pytorch examples [Github repository](https://github.com/pytorch/examples/tree/main/imagenet). DeepSpeed activation allows for ease in
+baseline implementation could be found at pytorch examples [Github repository](https://github.com/pytorch/examples/tree/main/imagenet). Parts of this README is also borrowed from the original repo. DeepSpeed activation allows for ease in
 running the code in distributed manner, allowing for easily applying fp16 quantization benefitting Zero stage1 memory reduction.
 
 ## DeepSpeed Optimizations
@@ -87,7 +87,7 @@ optional arguments:
   --num_gpus NUM GPU    Num GPUs to use.
   --num_nodes NUM NODES Num nodes to use
   --multiprocessing-distributed
-                        Use multi-processing distributed training to launch N processes per node, which has N GPUs. This is the fastest way to use PyTorch for either single node or multi node data parallel
+                        use multi-processing distributed training to launch N processes per node, which has N GPUs. This is the fastest way to use PyTorch for either single node or multi node data parallel
                         training
   --dummy               use fake data to benchmark
 
