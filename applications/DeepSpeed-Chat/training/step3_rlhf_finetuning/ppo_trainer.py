@@ -9,6 +9,7 @@ import os
 import time
 import deepspeed
 from deepspeed.runtime.zero.partition_parameters import ZeroParamStatus
+from deepspeed.accelerator import get_accelerator
 
 sys.path.append(
     os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
@@ -18,7 +19,8 @@ from utils.utils import print_rank_0
 
 def print_all_ranks(tag, value, rank):
     world_size = torch.distributed.get_world_size()
-    all_tensor = torch.zeros(world_size, dtype=torch.float32).cuda()
+    all_tensor = torch.zeros(world_size, dtype=torch.float32).to(
+        get_accelerator().current_device_name())
     all_tensor[rank] = value
     torch.distributed.all_reduce(all_tensor, op=torch.distributed.ReduceOp.SUM)
     print_rank_0(f'{tag} {all_tensor}', rank)
@@ -75,7 +77,7 @@ class DeepSpeedPPOTrainer():
         # This has been added due to a probability/nan error that happens after
         # meta-llama/Llama-2-7b-hf enabled do_sample:
         # https://huggingface.co/meta-llama/Llama-2-7b-hf/commit/6fdf2e60f86ff2481f2241aaee459f85b5b0bbb9
-        if self.actor_model.model.config.model_type == "llama":
+        if self.actor_model.module.config.model_type == "llama":
             kwargs = dict(do_sample=False)
         else:
             kwargs = dict()
@@ -242,6 +244,11 @@ class DeepSpeedPPOTrainer():
         return actor_loss, critic_loss
 
     def get_overflow(self):
+        # Overflow is not expected when using bf16
+        # Therefore, DeepSpeed's BF16_Optimizer does not maintain an overflow indication
+        if self.args.dtype == "bf16":
+            return False, False
+
         actor_overflow = self.actor_model.optimizer.overflow
         critic_overflow = self.critic_model.optimizer.overflow
 
