@@ -9,15 +9,14 @@ running the code in distributed manner, allowing for easily applying fp16 quanti
 Applying fp16 quantization and Zero stage 1 memory optimization we were able to reduce the required memory. The table bellow summarizes the results of running resnet 50 on a DGX-1
 node (with 16 V100 GPUs):
 
-| Optimization level | Allocated Memory (GB) | Improvement (%) |
+| Optimization level | Allocated Memory (GB) | Mem. Consumption Improvement (%) |
 |-------------------|-------------------|---------|
-|Baseline| ? | -|
-|Baseline with DS activated | 1.66 | -|
-|DS + fp16 | 1.04 | ?|
-|Ds + fp16 + Zero 1 | 0.81 | ?|
+|Baseline | 1.66 | -|
+|DS + fp16 | 1.04 | 37.3|
+|Ds + fp16 + Zero 1 | 0.81 | 51.2|
 
 Furthermore, the memory optimization had no adverse impact on accuracy, a point illustrated by the graph below.
-![resnet-plot](Resnet-plot.png)
+![resnet-plot](resnetplot.png)
 
 ## Requirements
 
@@ -36,26 +35,22 @@ run_ds_fp16_z1.sh: fp16 and Zero1 are activated
 
 The default learning rate schedule starts at 0.1 and decays by a factor of 10 every 30 epochs. This is appropriate for ResNet and models with batch normalization, but too high for AlexNet and VGG. Use 0.01 as the initial learning rate for AlexNet or VGG:
 
-```bash
-python main.py -a alexnet --lr 0.01 [imagenet-folder with train and val folders]
-```
 
 ## Use Dummy Data
 
 ImageNet dataset is large and time-consuming to download. To get started quickly, run `main.py` using dummy data by "--dummy". It's also useful for training speed benchmark. Note that the loss or accuracy is useless in this case.
 
-```bash
-python main.py -a resnet18 --dummy
-```
 
 ## Usage
 
 ```bash
-usage: main.py [-h] [-a ARCH] [-j N] [--epochs N] [--start-epoch N] [-b N] [--lr LR] [--momentum M] [--wd W] [-p N] [--resume PATH] [-e] [--pretrained] [--world-size WORLD_SIZE]
-               [--seed SEED] [--gpu GPU] [--multiprocessing-distributed] [--dummy]
+usage: deepspeed main.py [-h] [-a ARCH] [-j N] [--epochs N] [--start-epoch N] [-b N] [--lr LR] [--momentum M] [--wd W] [-p N] [--resume PATH] [-e] [--pretrained] [--world-size WORLD_SIZE]
+[--num_gpus NUM GPU] [--num_nodes NUM NODES] [--seed SEED] [--gpu GPU] [--multiprocessing-distributed]
+	       [--deepspeed] [--deepspeed_config] [CONFIG FILE]
+
+[--dummy]
                [DIR]
 
-PyTorch-DeepSpeed ImageNet Training
 
 positional arguments:
   DIR                   path to dataset (default: imagenet)
@@ -89,9 +84,16 @@ optional arguments:
 			node rank for distributed training
   --seed SEED           seed for initializing training.
   --gpu GPU             GPU id to use.
+  --num_gpus NUM GPU    Num GPUs to use.
+  --num_nodes NUM NODES Num nodes to use
   --multiprocessing-distributed
                         Use multi-processing distributed training to launch N processes per node, which has N GPUs. This is the fastest way to use PyTorch for either single node or multi node data parallel
                         training
   --dummy               use fake data to benchmark
+
+
+example:
+Running resnet50 on single GPU:
+deepspeed --num_nodes=1 --num_gpus=1 main.py -a resnet50 --deepspeed --deepspeed_config config/ds_config.json --dummy
 
 ```
