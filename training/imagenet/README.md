@@ -71,9 +71,9 @@ optional arguments:
   --momentum M          momentum
   --wd W, --weight-decay W
                         weight decay (default: 1e-4)
-  -p N, --print-freq N  print frequency (default: 10)
+  --print-freq N, -p N  print frequency (default: 10)
   --resume PATH         path to latest checkpoint (default: none)
-  -e, --evaluate        evaluate model on validation set
+  --evaluate, -e        evaluate model on validation set
   --pretrained          use pre-trained model
   --world-size WORLD_SIZE
                         number of nodes for distributed training
