@@ -60,6 +60,7 @@ class DeepSpeedPPOTrainer():
         self.end_of_conversation_token_id = self.tokenizer(
             args.end_of_conversation_token)['input_ids'][-1]
         self.z3_enabled = args.actor_zero_stage == 3
+        self.compute_fp32_loss = self.args.compute_fp32_loss
 
         # Those value can be changed
         self.kl_ctl = 0.1
@@ -139,6 +140,9 @@ class DeepSpeedPPOTrainer():
 
         logits = output.logits
         logits_ref = output_ref.logits
+        if self.compute_fp32_loss:
+            logits = logits.to(torch.float)
+            logits_ref = logits_ref.to(torch.float)
 
         self.generate_time = generate_end - generate_start
 
@@ -244,6 +248,11 @@ class DeepSpeedPPOTrainer():
         return actor_loss, critic_loss
 
     def get_overflow(self):
+        # Overflow is not expected when using bf16
+        # Therefore, DeepSpeed's BF16_Optimizer does not maintain an overflow indication
+        if self.args.dtype == "bf16":
+            return False, False
+
         actor_overflow = self.actor_model.optimizer.overflow
         critic_overflow = self.critic_model.optimizer.overflow
 
@@ -266,6 +275,9 @@ class DeepSpeedPPOTrainer():
             old_values - self.cliprange_value,
             old_values + self.cliprange_value,
         )
+        if self.compute_fp32_loss:
+            values = values.float()
+            values_clipped = values_clipped.float()
         vf_loss1 = (values - returns)**2
         vf_loss2 = (values_clipped - returns)**2
         vf_loss = 0.5 * torch.sum(

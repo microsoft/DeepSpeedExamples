@@ -29,7 +29,7 @@ from utils.data.data_utils import create_prompt_dataset
 from utils.utils import print_rank_0, to_device, save_hf_format, set_random_seed, get_all_reduce_mean, get_optimizer_grouped_parameters, save_zero_three_model, load_hf_tokenizer
 from utils.ds_utils import get_train_ds_config
 from utils.module.lora import convert_linear_layer_to_lora, convert_lora_to_linear_layer, only_optimize_lora_parameters, make_model_gradient_checkpointing_compatible
-from utils.model.model_utils import create_hf_model
+from utils.model.model_utils import create_hf_model, causal_lm_model_to_fp32_loss
 from utils.perf import print_throughput
 
 
@@ -139,16 +139,21 @@ def parse_args():
     parser.add_argument('--gradient_checkpointing',
                         action='store_true',
                         help='Enable HF gradient checkpointing for model.')
-    parser.add_argument('--disable_dropout',
-                        action='store_true',
-                        help='Disable the dropout of the model.')
+    parser.add_argument(
+        "--dropout",
+        type=float,
+        default=None,
+        help="If dropout configured, use it. "
+        "Otherwise, keep the default dropout configuration of the model.")
     # deepspeed features
     parser.add_argument('--offload',
                         action='store_true',
                         help='Enable ZeRO Offload techniques.')
-    parser.add_argument('--dtype', type=str, default='fp16',
+    parser.add_argument('--dtype',
+                        type=str,
+                        default='fp16',
                         choices=['fp16', 'bf16'],
-                        help = 'Training data type')
+                        help='Training data type')
     parser.add_argument(
         '--zero_stage',
         type=int,
@@ -173,6 +178,12 @@ def parse_args():
         help=
         "Initial LoRA learning rate (after the potential warmup period) to use."
     )
+    ## low precision
+    parser.add_argument(
+        '--compute_fp32_loss',
+        action='store_true',
+        help='Relevant for low precision dtypes (fp16, bf16, etc.). '
+        'If specified, loss is calculated in fp32.')
     ## Tensorboard logging
     parser.add_argument('--enable_tensorboard',
                         action='store_true',
@@ -227,7 +238,13 @@ def main():
                             args.model_name_or_path,
                             tokenizer,
                             ds_config,
-                            disable_dropout=args.disable_dropout)
+                            dropout=args.dropout)
+
+    if args.compute_fp32_loss:
+        print_rank_0(
+            f"Using model {model.__class__.__name__} with loss in fp32",
+            args.global_rank)
+        causal_lm_model_to_fp32_loss(model)
 
     if args.lora_dim > 0:
         model = convert_linear_layer_to_lora(model, args.lora_module_name,

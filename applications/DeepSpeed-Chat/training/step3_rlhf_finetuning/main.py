@@ -241,9 +241,11 @@ def parse_args():
     parser.add_argument('--offload',
                         action='store_true',
                         help='Enable ZeRO Offload techniques.')
-    parser.add_argument('--dtype', type=str, default='fp16',
+    parser.add_argument('--dtype',
+                        type=str,
+                        default='fp16',
                         choices=['fp16', 'bf16'],
-                        help = 'Training data type')
+                        help='Training data type')
     parser.add_argument(
         '--offload_reference_model',
         action='store_true',
@@ -266,12 +268,20 @@ def parse_args():
         '--critic_gradient_checkpointing',
         action='store_true',
         help='Enable HF gradient checkpointing for Critic model.')
-    parser.add_argument('--disable_actor_dropout',
-                        action='store_true',
-                        help='Disable the dropout of the actor model.')
-    parser.add_argument('--disable_critic_dropout',
-                        action='store_true',
-                        help='Disable the dropout of the critical model.')
+    parser.add_argument(
+        "--actor_dropout",
+        type=float,
+        default=None,
+        help="If actor dropout configured, use it. "
+        "Otherwise, keep the default dropout configuration of the actor model."
+    )
+    parser.add_argument(
+        "--critic_dropout",
+        type=float,
+        default=None,
+        help="If critic dropout configured, use it. "
+        "Otherwise, keep the default dropout configuration of the critic model."
+    )
     ## LoRA for efficient training setting
     parser.add_argument("--actor_lora_dim",
                         type=int,
@@ -315,6 +325,13 @@ def parse_args():
         '--enable_mixed_precision_lora',
         action='store_true',
         help='Enable Mixed Precision ZeRO++ for training and generation.')
+    ## low precision
+    parser.add_argument(
+        '--compute_fp32_loss',
+        action='store_true',
+        help='Relevant for low precision dtypes (fp16, bf16, etc.). '
+        'If specified, loss is calculated in fp32.'
+        'This applies for both actor and critic models.')
     ## Tensorboard logging
     parser.add_argument('--enable_tensorboard',
                         action='store_true',
@@ -562,13 +579,13 @@ def main():
                                       average_reward / inner_iter,
                                       global_step=step)
                     writer.add_scalar('actor_loss',
-                                      actor_loss,
+                                      actor_loss.item(),
                                       global_step=step)
                     writer.add_scalar('actor_loss_sum',
                                       actor_loss_sum,
                                       global_step=step)
                     writer.add_scalar('critic_loss',
-                                      critic_loss,
+                                      critic_loss.item(),
                                       global_step=step)
                     writer.add_scalar('critic_loss_sum',
                                       critic_loss_sum,
