@@ -98,8 +98,8 @@ class RewardModel(nn.Module):
             else:
                 # Check if there is any padding otherwise take length of sequence
                 r_inds = (rejected_id == self.PAD_ID).nonzero()
-                r_ind = r_inds[self.num_padding_at_beginning].item() if len(
-                    r_inds) > self.num_padding_at_beginning else seq_len
+                r_ind = r_inds[self.num_padding_at_beginning].item(
+                ) if len(r_inds) > self.num_padding_at_beginning else seq_len
                 end_ind = max(c_ind, r_ind)
                 divergence_ind = check_divergence[0]
             assert divergence_ind > 0
