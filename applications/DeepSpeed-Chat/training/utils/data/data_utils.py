@@ -175,6 +175,17 @@ def create_dataset_split(current_dataset, raw_dataset, train_phase, tokenizer,
                     0)
                 chosen_token["attention_mask"] = chosen_token[
                     "attention_mask"].squeeze(0)
+
+                # In the SFT stage, it's essential that the source part doesn't contribute to the loss calculation, 
+                # only the completion part should be considered. Set ignore index to labels to -100, so that loss function will ignore the loss of source part.
+                # The specific value, -100, is the default value for ignore index in `toch.nn.CrossEntropyLoss`
+                # see https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html#torch.nn.CrossEntropyLoss for more details
+                prompt_sentence = raw_dataset.get_prompt(tmp_data)
+                prompt_token = tokenizer(prompt_sentence, add_special_tokens=False)
+                prompt_token_len = min(max_seq_len, len(prompt_token["input_ids"]))
+                chosen_token["labels"] = chosen_token["input_ids"].clone()
+                chosen_token["labels"][:prompt_token_len] = -100
+
                 chosen_dataset.append(chosen_token)
 
     elif train_phase == 2:
