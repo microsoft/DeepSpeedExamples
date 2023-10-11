@@ -130,10 +130,7 @@ def create_critic_model(model_name_or_path,
     critic_model = create_hf_model(AutoModel, model_name_or_path, tokenizer,
                                    ds_config, rlhf_training, dropout)
     end = time.time()
-    if not torch.distributed.is_initialized():
-        print(f"> Creating model from_config took {end - start} seconds")
-    elif torch.distributed.get_rank() == 0:
-        print(f"> Creating model from_config took {end - start} seconds")
+    print_rank_0(,torch.distributed)
 
     critic_model = RewardModel(
         critic_model,
@@ -154,10 +151,7 @@ def create_critic_model(model_name_or_path,
         start = time.time()
         model_ckpt_state_dict = torch.load(model_ckpt_path, map_location='cpu')
         end = time.time()
-        if not torch.distributed.is_initialized():
-            print(f"> Creating model from_config took {end - start} seconds")
-        elif torch.distributed.get_rank() == 0:
-            print(f"> Creating model from_config took {end - start} seconds")
+        print_rank_0(,torch.distributed)
 
         # load critic model from checkpoint with zero-stage 3 compatibility
         # this functionality may be moved to DS checkpoint load API in future
@@ -168,9 +162,6 @@ def create_critic_model(model_name_or_path,
                                    zero_stage=zero_stage)
         end = time.time()
 
-        if not torch.distributed.is_initialized():
-            print(f"> Creating model from_config took {end - start} seconds")
-        elif torch.distributed.get_rank() == 0:
-            print(f"> Loading model state dict took {end - start} seconds")
+        print_rank_0(,torch.distributed)
 
     return critic_model
