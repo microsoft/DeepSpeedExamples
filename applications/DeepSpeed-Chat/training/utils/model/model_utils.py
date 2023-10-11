@@ -14,7 +14,7 @@ from transformers.deepspeed import HfDeepSpeedConfig
 
 from .reward_model import RewardModel
 from ..utils import load_state_dict_into_model
-
+from ..utils import print_rank_0
 
 def configure_dropout(model_config, dropout):
     if dropout is not None:
@@ -130,7 +130,7 @@ def create_critic_model(model_name_or_path,
     critic_model = create_hf_model(AutoModel, model_name_or_path, tokenizer,
                                    ds_config, rlhf_training, dropout)
     end = time.time()
-    print_rank_0(,torch.distributed)
+    print_rank_0(f">Creating model from_config took {end - start} seconds", None)
 
     critic_model = RewardModel(
         critic_model,
@@ -151,7 +151,7 @@ def create_critic_model(model_name_or_path,
         start = time.time()
         model_ckpt_state_dict = torch.load(model_ckpt_path, map_location='cpu')
         end = time.time()
-        print_rank_0(,torch.distributed)
+        print_rank_0(f">Creating model from_config took {end - start} seconds", None)
 
         # load critic model from checkpoint with zero-stage 3 compatibility
         # this functionality may be moved to DS checkpoint load API in future
@@ -162,6 +162,6 @@ def create_critic_model(model_name_or_path,
                                    zero_stage=zero_stage)
         end = time.time()
 
-        print_rank_0(,torch.distributed)
+        print_rank_0(f">Creating model from_config took {end - start} seconds", None)
 
     return critic_model
