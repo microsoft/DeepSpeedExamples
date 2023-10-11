@@ -3,11 +3,13 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # DeepSpeed Team
-ACTOR_MODEL_PATH=$1
-CRITIC_MODEL_PATH=$2
+#ACTOR_MODEL_PATH=$1
+ACTOR_MODEL_PATH=bigscience/bloom-7b1
+CRITIC_MODEL_PATH=bigscience/bloom-560m
 ACTOR_ZERO_STAGE=$3
 CRITIC_ZERO_STAGE=$4
 OUTPUT=$5
+echo $OUTPUT
 if [ "$OUTPUT" == "" ]; then
     OUTPUT=./output
 fi
