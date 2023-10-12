@@ -15,10 +15,11 @@ import torch.nn as nn
 
 
 def print_rank_0(msg, rank=None):
-    if rank is not None and rank <=0:
+    if rank is not None and rank <= 0:
         print(msg)
     elif is_rank_0():
         print(msg)
+
 
 def is_rank_0():
     """Check whether it is rank 0."""
