@@ -437,6 +437,7 @@ def create_datasets(args, tokenizer, train_phase=3):
 def main():
     args = parse_args()
 
+    args.local_rank = int(os.getenv("RANK"))
     if args.local_rank == -1:
         device = torch.device(get_accelerator().device_name())
     else:
