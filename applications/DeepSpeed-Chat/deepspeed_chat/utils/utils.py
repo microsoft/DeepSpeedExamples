@@ -10,12 +10,26 @@ from transformers import set_seed, AutoTokenizer
 import json
 import deepspeed
 from deepspeed.runtime.zero.partition_parameters import ZeroParamStatus
+from deepspeed.accelerator import get_accelerator
 import torch.nn as nn
 
 
-def print_rank_0(msg, rank=0):
-    if rank <= 0:
+def print_rank_0(msg, rank=None):
+    if rank is not None and rank <= 0:
         print(msg)
+    elif is_rank_0():
+        print(msg)
+
+
+def is_rank_0():
+    """Check whether it is rank 0."""
+    if torch.distributed.is_initialized():
+        if torch.distributed.get_rank() == 0:
+            return True
+        else:
+            return False
+    else:
+        return True
 
 
 def to_device(batch, device):
@@ -62,18 +76,27 @@ def get_tokenizer(model_name_or_path, fast_tokenizer=True):
     return tokenizer
 
 
-def load_hf_tokenizer(model_name_or_path, fast_tokenizer=True):
+def load_hf_tokenizer(model_name_or_path,
+                      fast_tokenizer=True,
+                      add_special_tokens=None):
     if os.path.exists(model_name_or_path):
         # Locally tokenizer loading has some issue, so we need to force download
         model_json = os.path.join(model_name_or_path, "config.json")
         if os.path.exists(model_json):
             model_json_file = json.load(open(model_json))
-            model_name = model_json_file["_name_or_path"]
+            model_name = model_json_file.get("_name_or_path",
+                                             model_name_or_path)
             tokenizer = get_tokenizer(model_name,
                                       fast_tokenizer=fast_tokenizer)
     else:
         tokenizer = get_tokenizer(model_name_or_path,
                                   fast_tokenizer=fast_tokenizer)
+
+    if add_special_tokens is not None:
+        add_special_tokens = [add_special_tokens] if isinstance(add_special_tokens, str) \
+            else add_special_tokens
+        tokenizer.add_special_tokens(
+            {'additional_special_tokens': add_special_tokens})
 
     return tokenizer
 
@@ -102,7 +125,7 @@ def set_random_seed(seed):
         random.seed(seed)
         np.random.seed(seed)
         torch.manual_seed(seed)
-        torch.cuda.manual_seed_all(seed)
+        get_accelerator().manual_seed_all(seed)
 
 
 def get_all_reduce_mean(tensor):
@@ -172,15 +195,18 @@ def get_optimizer_grouped_parameters(
     model,
     weight_decay,
     lora_lr=5e-4,
-    no_decay_name_list=["bias", "LayerNorm.weight"],
+    no_decay_name_list=[
+        "bias", "layer_norm.weight", "layernorm.weight", "norm.weight",
+        "ln_f.weight"
+    ],
     lora_name_list=["lora_right_weight", "lora_left_weight"],
 ):
     optimizer_grouped_parameters = [
         {
             "params": [
                 p for n, p in model.named_parameters()
-                if (not any(nd in n for nd in no_decay_name_list)
-                    and p.requires_grad and not any(nd in n
+                if (not any(nd in n.lower() for nd in no_decay_name_list)
+                    and p.requires_grad and not any(nd in n.lower()
                                                     for nd in lora_name_list))
             ],
             "weight_decay":
@@ -189,8 +215,8 @@ def get_optimizer_grouped_parameters(
         {
             "params": [
                 p for n, p in model.named_parameters()
-                if (not any(nd in n for nd in no_decay_name_list)
-                    and p.requires_grad and any(nd in n
+                if (not any(nd in n.lower() for nd in no_decay_name_list)
+                    and p.requires_grad and any(nd in n.lower()
                                                 for nd in lora_name_list))
             ],
             "weight_decay":
@@ -201,16 +227,19 @@ def get_optimizer_grouped_parameters(
         {
             "params": [
                 p for n, p in model.named_parameters()
-                if (any(nd in n
+                if (any(nd in n.lower()
                         for nd in no_decay_name_list) and p.requires_grad)
             ],
             "weight_decay":
             0.0,
         },
     ]
-    if not optimizer_grouped_parameters[1]["params"]:
-        optimizer_grouped_parameters.pop(1)
-    return optimizer_grouped_parameters
+
+    non_empty_groups = []
+    for group in optimizer_grouped_parameters:
+        if group["params"]:
+            non_empty_groups.append(group)
+    return non_empty_groups
 
 
 def _z3_params_to_fetch(param_list):
