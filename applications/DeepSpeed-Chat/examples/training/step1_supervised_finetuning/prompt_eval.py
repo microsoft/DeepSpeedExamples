@@ -5,8 +5,6 @@
 import argparse
 import logging
 import torch
-import sys
-import os
 
 from transformers import (
     AutoModelForCausalLM, )

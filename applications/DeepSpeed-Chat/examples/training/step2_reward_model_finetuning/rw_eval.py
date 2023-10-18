@@ -4,7 +4,6 @@
 
 # DeepSpeed Team
 import argparse
-import os
 import torch
 
 
