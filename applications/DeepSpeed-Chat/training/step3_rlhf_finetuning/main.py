@@ -33,12 +33,12 @@ from transformers import (
 
 import deepspeed
 
-from deepspeed_chat.rlhf.ppo_trainer import DeepSpeedPPOTrainer, DeepSpeedPPOTrainerUnsupervised
-from deepspeed_chat.rlhf.rlhf_engine import DeepSpeedRLHFEngine
-from deepspeed_chat.utils.data.data_utils import create_prompt_dataset, MiniDataset, DataCollatorRLHF, get_unsupervised_data
-from deepspeed_chat.utils.utils import print_rank_0, to_device, save_hf_format, set_random_seed, get_all_reduce_mean, moving_average, save_zero_three_model, load_hf_tokenizer
-from deepspeed_chat.utils.module.lora import convert_lora_to_linear_layer
-from deepspeed_chat.utils.perf import print_throughput_step3
+from dschat.rlhf.ppo_trainer import DeepSpeedPPOTrainer, DeepSpeedPPOTrainerUnsupervised
+from dschat.rlhf.rlhf_engine import DeepSpeedRLHFEngine
+from dschat.utils.data.data_utils import create_prompt_dataset, MiniDataset, DataCollatorRLHF, get_unsupervised_data
+from dschat.utils.utils import print_rank_0, to_device, save_hf_format, set_random_seed, get_all_reduce_mean, moving_average, save_zero_three_model, load_hf_tokenizer
+from dschat.utils.module.lora import convert_lora_to_linear_layer
+from dschat.utils.perf import print_throughput_step3
 from deepspeed.accelerator import get_accelerator
 
 writer = None

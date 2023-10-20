@@ -9,8 +9,8 @@ import torch
 from transformers import (
     AutoModelForCausalLM, )
 
-from deepspeed_chat.utils.model.model_utils import create_hf_model
-from deepspeed_chat.utils.utils import load_hf_tokenizer
+from dschat.utils.model.model_utils import create_hf_model
+from dschat.utils.utils import load_hf_tokenizer
 from deepspeed import get_accelerator
 
 logger = logging.getLogger(__name__)

@@ -9,7 +9,7 @@ import deepspeed
 from deepspeed.runtime.zero.partition_parameters import ZeroParamStatus
 from deepspeed.accelerator import get_accelerator
 
-from deepspeed_chat.utils.utils import print_rank_0
+from dschat.utils.utils import print_rank_0
 
 
 def print_all_ranks(tag, value, rank):

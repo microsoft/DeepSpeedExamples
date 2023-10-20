@@ -14,7 +14,7 @@ import numpy as np
 import os
 import hashlib
 from itertools import chain
-from deepspeed_chat.utils.data import raw_datasets
+from dschat.utils.data import raw_datasets
 from deepspeed.accelerator import get_accelerator
 
 

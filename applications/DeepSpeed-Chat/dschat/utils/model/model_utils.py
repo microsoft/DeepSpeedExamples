@@ -12,8 +12,8 @@ from transformers import (
 from huggingface_hub import snapshot_download
 from transformers.deepspeed import HfDeepSpeedConfig
 
-from deepspeed_chat.utils.model.reward_model import RewardModel
-from deepspeed_chat.utils.utils import load_state_dict_into_model, print_rank_0
+from dschat.utils.model.reward_model import RewardModel
+from dschat.utils.utils import load_state_dict_into_model, print_rank_0
 
 
 def configure_dropout(model_config, dropout):
