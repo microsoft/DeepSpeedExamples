@@ -1,12 +1,12 @@
 # Lora-enhanced distillation on Stable Diffusion model
 
-This repository contains the implementation of Lora-enhanced distillation applied to the Stable Diffusion (SD) model. By combining the LoRA technique with distillation, we've achieved remarkable results, including a significant reduction in inference time and a 50% decrease in memory consumption. Importantly, this integration of LoRA-enhanced distillation maintains image quality and alignment with the provided prompt. For additional details on this work, please consult our technical report [add link].
+This repository contains the implementation of Lora-enhanced distillation applied to the Stable Diffusion (SD) model. By combining the LoRA technique with distillation, we've achieved remarkable results, including a significant reduction in inference time and a 50% decrease in memory consumption. Importantly, this integration of LoRA-enhanced distillation maintains image quality and alignment with the provided prompt. For additional details on this work, please consult our technical report [TODO: add link].
 
-In this implementation, we have adapted the dreambooth finetuning code [https://github.com/huggingface/diffusers/tree/main/examples/dreambooth#dreambooth-training-example] as our baseline. Below, you'll find information regarding input data, training, and inference.
+In this implementation, we have adapted the dreambooth finetuning [code](https://github.com/huggingface/diffusers/tree/main/examples/dreambooth#dreambooth-training-example) as our baseline. Below, you'll find information regarding input data, training, and inference.
 
 ## Installation
 
-You need to have huggingface diffusers[https://github.com/huggingface/diffusers] insualled on your machine. Then install the requirements.
+You need to have huggingface [diffusers](https://github.com/huggingface/diffusers) installed on your machine. Then install the requirements:
 
 <pre>
 pip install -r requirements.txt
@@ -15,7 +15,7 @@ pip install -r requirements.txt
 ## Training
 
 ### Training Data
-Our training data includes a significant dataset of pre-generated images by SD [https://github.com/poloclub/diffusiondb]. You are not required to download the input data. Instead, you can specify or modify it within the training code (`train_sd_distill_lora.py`) as needed.To train the model, follow these steps:
+Our training data includes a significant dataset of pre-generated images by [SD](https://github.com/poloclub/diffusiondb). You are not required to download the input data. Instead, you can specify or modify it within the training code (`train_sd_distill_lora.py`) as needed.To train the model, follow these steps:
 
 ### Training Script
 
