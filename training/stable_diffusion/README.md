@@ -8,9 +8,9 @@ In this implementation, we have adapted the dreambooth finetuning code [https://
 
 You need to have huggingface diffusers[https://github.com/huggingface/diffusers] insualled on your machine. Then install the requirements.
 
-```bash
+<pre>
 pip install -r requirements.txt
-
+</pre>
 
 ## Training
 
@@ -24,8 +24,9 @@ Our training data includes a significant dataset of pre-generated images by SD [
 
 Here's an example command to run the training script:
 
-```bash
+<pre>
 bash mytrainbash.sh
+</pre>
 
 Make sure to customize the training parameters in the script to suit your specific requirements.
 
@@ -38,5 +39,6 @@ For inference, you can use the `inf-loop.py` Python code. Follow these steps:
 
 Here's an example command to run the inference script:
 
-```bash
+<pre>
 python inf_txt2img_loop.py
+</pre>
