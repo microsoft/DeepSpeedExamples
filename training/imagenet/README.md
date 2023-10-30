@@ -16,7 +16,7 @@ node (with 16 V100 GPUs):
 |Ds + fp16 + Zero 1 | 0.81 | 51.2|
 
 Furthermore, the memory optimization had no adverse impact on accuracy, a point illustrated by the graph below.
-![resnet-plot](resnetplot.png)
+![resnet-plot](assets/resnetplot.png)
 
 ## Requirements
 
