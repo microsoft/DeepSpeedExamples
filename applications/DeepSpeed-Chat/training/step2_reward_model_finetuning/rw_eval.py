@@ -6,7 +6,6 @@
 import argparse
 import torch
 
-
 from dschat.utils.model.model_utils import create_critic_model
 from dschat.utils.utils import to_device, load_hf_tokenizer
 from deepspeed import get_accelerator
