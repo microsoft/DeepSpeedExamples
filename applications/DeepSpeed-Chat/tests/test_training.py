@@ -85,3 +85,5 @@ def test_ds_chat(zero_stage, hybrid_engine, offload, lora):
                        ), "Actor model was not saved during step 3 training."
     assert file_exists(f"{output_path}/critic/", "pytorch_model.bin"
                        ), "Critic model was not saved during step 3 training."
+
+    os.chdir(wd)
