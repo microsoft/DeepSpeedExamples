@@ -123,6 +123,7 @@ pip install deepspeed>=0.9.0
 git clone https://github.com/microsoft/DeepSpeedExamples.git
 cd DeepSpeedExamples/applications/DeepSpeed-Chat/
 pip install -r requirements.txt
+pip install -e .
 ```
 
 ### 🐼 One Single Script Completes All Three Steps of RLHF Training and Generate Your First ChatGPT Model
