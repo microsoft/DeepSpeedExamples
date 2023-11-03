@@ -201,6 +201,11 @@ def parse_args():
     parser.add_argument('--tensorboard_path',
                         type=str,
                         default="step2_tensorboard")
+    ## Tokenizer
+    parser.add_argument(
+        "--add_eot_token",
+        action='store_true',
+        help="Add <|endoftext|> as additional special token to tokenizer")
     parser = deepspeed.add_config_arguments(parser)
     args = parser.parse_args()
 
@@ -238,7 +243,11 @@ def main():
     torch.distributed.barrier()
 
     # load_hf_tokenizer will get the correct tokenizer and set padding tokens based on the model family
-    tokenizer = load_hf_tokenizer(args.model_name_or_path, fast_tokenizer=True)
+    args.end_of_conversation_token = "<|endoftext|>"
+    additional_special_tokens = args.end_of_conversation_token if args.add_eot_token else None
+    tokenizer = load_hf_tokenizer(args.model_name_or_path,
+                                  fast_tokenizer=True,
+                                  add_special_tokens=additional_special_tokens)
     rm_model = create_critic_model(args.model_name_or_path,
                                    tokenizer,
                                    ds_config,
@@ -247,12 +256,25 @@ def main():
                                    zero_stage=args.zero_stage,
                                    compute_fp32_loss=args.compute_fp32_loss)
 
+    # Model bigscience/bloom-560m has large variance at ln_f.weight parameter
+    # This makes bf16 finetuning hard.
+    # In general, since we are replacing the model head, it makes sense to reset
+    # the LN that precedes it.
+    force_optimize_params = []
+    if "bigscience/bloom-" in args.model_name_or_path:
+        torch.nn.init.ones_(rm_model.rwtransformer.ln_f.weight)
+        torch.nn.init.zeros_(rm_model.rwtransformer.ln_f.bias)
+        force_optimize_params.extend(
+            ['rwtransformer.ln_f.weight', 'rwtransformer.ln_f.bias'])
+
     if args.lora_dim > 0:
         rm_model = convert_linear_layer_to_lora(rm_model,
                                                 args.lora_module_name,
                                                 args.lora_dim)
         if args.only_optimize_lora:
-            rm_model = only_optimize_lora_parameters(rm_model)
+            force_optimize_params.append('v_head.weight')
+            rm_model = only_optimize_lora_parameters(rm_model,
+                                                     force_optimize_params)
             rm_model = make_model_gradient_checkpointing_compatible(rm_model)
 
     train_phase = 2
