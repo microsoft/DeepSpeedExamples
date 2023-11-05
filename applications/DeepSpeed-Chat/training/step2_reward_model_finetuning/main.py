@@ -25,7 +25,9 @@ sys.path.append(
     os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
 from utils.model.model_utils import create_critic_model
 from utils.data.data_utils import create_prompt_dataset, DataCollatorReward
-from utils.utils import print_rank_0, to_device, save_hf_format, set_random_seed, get_all_reduce_mean, get_optimizer_grouped_parameters, save_zero_three_model, load_hf_tokenizer
+from utils.utils import print_rank_0, to_device, save_hf_format, set_random_seed, get_all_reduce_mean, \
+    get_optimizer_grouped_parameters, save_zero_three_model, load_hf_tokenizer, TensorAccumulator, \
+    update_optim_step_mean_loss, print_optim_step_mean_loss
 from utils.ds_utils import get_train_ds_config
 from utils.module.lora import convert_linear_layer_to_lora, convert_lora_to_linear_layer, only_optimize_lora_parameters, make_model_gradient_checkpointing_compatible
 
@@ -206,6 +208,11 @@ def parse_args():
         "--add_eot_token",
         action='store_true',
         help="Add <|endoftext|> as additional special token to tokenizer")
+    ## Print loss
+    parser.add_argument(
+        '--print_loss',
+        action='store_true',
+        help='Prints loss at deepspeed config steps_per_print interval.')
     parser = deepspeed.add_config_arguments(parser)
     args = parser.parse_args()
 
@@ -340,8 +347,8 @@ def main():
                               lr=args.learning_rate,
                               betas=(0.9, 0.95))
 
-    num_update_steps_per_epoch = math.ceil(
-        len(train_dataloader) / args.gradient_accumulation_steps)
+    gas = args.gradient_accumulation_steps
+    num_update_steps_per_epoch = math.ceil(len(train_dataloader) / gas)
 
     lr_scheduler = get_scheduler(
         name=args.lr_scheduler_type,
@@ -380,18 +387,22 @@ def main():
             f"Beginning of Epoch {epoch+1}/{args.num_train_epochs}, Total Micro Batches {len(train_dataloader)}",
             args.global_rank)
         rm_model.train()
-        mean_loss = 0
+        loss_sum = TensorAccumulator()
         for step, batch in enumerate(train_dataloader):
             batch = to_device(batch, device)
             outputs = rm_model(**batch, use_cache=False)
             loss = outputs["loss"]
             rm_model.backward(loss)
             rm_model.step()
-            mean_loss += loss.item()
+            mean_loss = update_optim_step_mean_loss(loss_sum, loss, step, gas)
+            if args.print_loss:
+                print_optim_step_mean_loss(mean_loss, epoch, step,
+                                           ds_config['steps_per_print'], gas,
+                                           args.global_rank)
+
             total_micro_steps += 1
-            gas_boundary = (total_micro_steps %
-                            args.gradient_accumulation_steps == 0)
-            total_steps = total_micro_steps // args.gradient_accumulation_steps
+            gas_boundary = (total_micro_steps % gas == 0)
+            total_steps = total_micro_steps // gas
             if args.eval_interval and gas_boundary and (
                     total_steps % args.eval_interval == 0):
                 print_rank_0(f"Iter {total_steps}: Evaluating reward",
@@ -405,7 +416,7 @@ def main():
                 rm_model.train()
 
         print_rank_0(
-            f"Epoch {epoch+1}/{args.num_train_epochs} with loss {mean_loss/(step+1)}",
+            f"Epoch {epoch+1}/{args.num_train_epochs} with loss {loss_sum.get_mean()}",
             args.global_rank)
         # Evaluate reward_loss on the validation set.
         print_rank_0(
