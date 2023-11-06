@@ -357,9 +357,11 @@ class DataCollatorReward:
         batch["input_ids"] = torch.cat([f[0]
                                         for f in data] + [f[2] for f in data],
                                        dim=0)
+        batch["input_ids"] = batch["input_ids"].reshape(len(data) * 2, -1)
         batch["attention_mask"] = torch.cat([f[1] for f in data] +
                                             [f[3] for f in data],
                                             dim=0)
+        batch["attention_mask"] = batch["attention_mask"].reshape(len(data) * 2, -1)
         return batch
 
 
