@@ -4,9 +4,7 @@
 
 # DeepSpeed Team
 import argparse
-import os
 import math
-import sys
 
 import torch
 from torch.utils.data import DataLoader, RandomSampler, SequentialSampler
@@ -21,13 +19,11 @@ import deepspeed
 from deepspeed.ops.adam import DeepSpeedCPUAdam, FusedAdam
 from deepspeed.accelerator import get_accelerator
 
-sys.path.append(
-    os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
-from utils.model.model_utils import create_critic_model
-from utils.data.data_utils import create_prompt_dataset, DataCollatorReward
-from utils.utils import print_rank_0, to_device, save_hf_format, set_random_seed, get_all_reduce_mean, get_optimizer_grouped_parameters, save_zero_three_model, load_hf_tokenizer
-from utils.ds_utils import get_train_ds_config
-from utils.module.lora import convert_linear_layer_to_lora, convert_lora_to_linear_layer, only_optimize_lora_parameters, make_model_gradient_checkpointing_compatible
+from dschat.utils.model.model_utils import create_critic_model
+from dschat.utils.data.data_utils import create_prompt_dataset, DataCollatorReward
+from dschat.utils.utils import print_rank_0, to_device, save_hf_format, set_random_seed, get_all_reduce_mean, get_optimizer_grouped_parameters, save_zero_three_model, load_hf_tokenizer
+from dschat.utils.ds_utils import get_train_ds_config
+from dschat.utils.module.lora import convert_linear_layer_to_lora, convert_lora_to_linear_layer, only_optimize_lora_parameters, make_model_gradient_checkpointing_compatible
 
 
 def parse_args():
@@ -201,6 +197,11 @@ def parse_args():
     parser.add_argument('--tensorboard_path',
                         type=str,
                         default="step2_tensorboard")
+    ## Tokenizer
+    parser.add_argument(
+        "--add_eot_token",
+        action='store_true',
+        help="Add <|endoftext|> as additional special token to tokenizer")
     parser = deepspeed.add_config_arguments(parser)
     args = parser.parse_args()
 
@@ -238,7 +239,11 @@ def main():
     torch.distributed.barrier()
 
     # load_hf_tokenizer will get the correct tokenizer and set padding tokens based on the model family
-    tokenizer = load_hf_tokenizer(args.model_name_or_path, fast_tokenizer=True)
+    args.end_of_conversation_token = "<|endoftext|>"
+    additional_special_tokens = args.end_of_conversation_token if args.add_eot_token else None
+    tokenizer = load_hf_tokenizer(args.model_name_or_path,
+                                  fast_tokenizer=True,
+                                  add_special_tokens=additional_special_tokens)
     rm_model = create_critic_model(args.model_name_or_path,
                                    tokenizer,
                                    ds_config,
@@ -247,12 +252,25 @@ def main():
                                    zero_stage=args.zero_stage,
                                    compute_fp32_loss=args.compute_fp32_loss)
 
+    # Model bigscience/bloom-560m has large variance at ln_f.weight parameter
+    # This makes bf16 finetuning hard.
+    # In general, since we are replacing the model head, it makes sense to reset
+    # the LN that precedes it.
+    force_optimize_params = []
+    if "bigscience/bloom-" in args.model_name_or_path:
+        torch.nn.init.ones_(rm_model.rwtransformer.ln_f.weight)
+        torch.nn.init.zeros_(rm_model.rwtransformer.ln_f.bias)
+        force_optimize_params.extend(
+            ['rwtransformer.ln_f.weight', 'rwtransformer.ln_f.bias'])
+
     if args.lora_dim > 0:
         rm_model = convert_linear_layer_to_lora(rm_model,
                                                 args.lora_module_name,
                                                 args.lora_dim)
         if args.only_optimize_lora:
-            rm_model = only_optimize_lora_parameters(rm_model)
+            force_optimize_params.append('v_head.weight')
+            rm_model = only_optimize_lora_parameters(rm_model,
+                                                     force_optimize_params)
             rm_model = make_model_gradient_checkpointing_compatible(rm_model)
 
     train_phase = 2
