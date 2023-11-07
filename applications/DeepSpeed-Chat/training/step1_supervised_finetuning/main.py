@@ -4,9 +4,7 @@
 
 # DeepSpeed Team
 import argparse
-import os
 import math
-import sys
 
 import torch
 from torch.utils.data import DataLoader, RandomSampler, SequentialSampler
@@ -23,14 +21,12 @@ import deepspeed
 from deepspeed.ops.adam import DeepSpeedCPUAdam, FusedAdam
 from deepspeed import get_accelerator
 
-sys.path.append(
-    os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
-from utils.data.data_utils import create_prompt_dataset
-from utils.utils import print_rank_0, to_device, save_hf_format, set_random_seed, get_all_reduce_mean, get_optimizer_grouped_parameters, save_zero_three_model, load_hf_tokenizer
-from utils.ds_utils import get_train_ds_config
-from utils.module.lora import convert_linear_layer_to_lora, convert_lora_to_linear_layer, only_optimize_lora_parameters, make_model_gradient_checkpointing_compatible
-from utils.model.model_utils import create_hf_model, causal_lm_model_to_fp32_loss
-from utils.perf import print_throughput
+from dschat.utils.data.data_utils import create_prompt_dataset
+from dschat.utils.utils import print_rank_0, to_device, save_hf_format, set_random_seed, get_all_reduce_mean, get_optimizer_grouped_parameters, save_zero_three_model, load_hf_tokenizer
+from dschat.utils.ds_utils import get_train_ds_config
+from dschat.utils.module.lora import convert_linear_layer_to_lora, convert_lora_to_linear_layer, only_optimize_lora_parameters, make_model_gradient_checkpointing_compatible
+from dschat.utils.model.model_utils import create_hf_model, causal_lm_model_to_fp32_loss
+from dschat.utils.perf import print_throughput
 
 
 def parse_args():
@@ -191,6 +187,11 @@ def parse_args():
     parser.add_argument('--tensorboard_path',
                         type=str,
                         default="step1_tensorboard")
+    ## Tokenizer
+    parser.add_argument(
+        "--add_eot_token",
+        action='store_true',
+        help="Add <|endoftext|> as additional special token to tokenizer")
     ## Print loss
     parser.add_argument('--print_loss',
                         action='store_true',
@@ -233,7 +234,12 @@ def main():
     torch.distributed.barrier()
 
     # load_hf_tokenizer will get the correct tokenizer and set padding tokens based on the model family
-    tokenizer = load_hf_tokenizer(args.model_name_or_path, fast_tokenizer=True)
+    args.end_of_conversation_token = "<|endoftext|>"
+    additional_special_tokens = args.end_of_conversation_token if args.add_eot_token else None
+    tokenizer = load_hf_tokenizer(args.model_name_or_path,
+                                  fast_tokenizer=True,
+                                  add_special_tokens=additional_special_tokens)
+
     model = create_hf_model(AutoModelForCausalLM,
                             args.model_name_or_path,
                             tokenizer,
@@ -293,14 +299,14 @@ def main():
             losses += loss.float()
         losses = losses / (step + 1)
         try:
-            perplexity = torch.exp(losses)
-        except OverflowError:
-            perplexity = float("inf")
-        try:
-            perplexity = get_all_reduce_mean(perplexity).item()
+            losses = get_all_reduce_mean(losses)
         except:
             pass
-        return perplexity
+        try:
+            perplexity = torch.exp(losses).item()
+        except OverflowError:
+            perplexity = float("inf")
+        return perplexity, losses.item()
 
     # Split weights in two groups, one with weight decay and the other not.
     optimizer_grouped_parameters = get_optimizer_grouped_parameters(
@@ -336,8 +342,8 @@ def main():
     print_rank_0(
         f"***** Evaluating perplexity, Epoch {0}/{args.num_train_epochs} *****",
         args.global_rank)
-    perplexity = evaluation(model, eval_dataloader)
-    print_rank_0(f"ppl: {perplexity}", args.global_rank)
+    perplexity, eval_loss = evaluation(model, eval_dataloader)
+    print_rank_0(f"ppl: {perplexity}, loss: {eval_loss}", args.global_rank)
 
     for epoch in range(args.num_train_epochs):
         print_rank_0(
@@ -365,8 +371,8 @@ def main():
         print_rank_0(
             f"***** Evaluating perplexity, Epoch {epoch+1}/{args.num_train_epochs} *****",
             args.global_rank)
-        perplexity = evaluation(model, eval_dataloader)
-        print_rank_0(f"ppl: {perplexity}", args.global_rank)
+        perplexity, eval_loss = evaluation(model, eval_dataloader)
+        print_rank_0(f"ppl: {perplexity}, loss: {eval_loss}", args.global_rank)
         model.tput_timer.update_epoch_count()
 
     if args.output_dir is not None:
