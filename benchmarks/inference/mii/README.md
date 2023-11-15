@@ -33,7 +33,7 @@ The scripts mentioned below were used for generating the plots featured in our b
 
 ## Running an End-to-End Example
 
-To quickly experience the end-to-end process of running our benchmark and generating plots, you can use the `run_example.sh` Bash file. This script is designed to execute the benchmark with a specific configuration, providing a hassle-free way to observe the performance under defined parameters.
+To quickly experience the end-to-end process of running our benchmark and generating plots, you can use the `run_example.sh` Bash file. This script is designed to execute the benchmark with a specific configuration, providing a hassle-free way to observe the performance under defined parameters. The resulting plots will be saved in the charts directory. We have also included these plots in the chart_example directory as a reference.
 
 ### Configuration Details:
 
