@@ -11,7 +11,7 @@ python server.py [options] start
 
 Use the -h option to view all available options. To stop the server, use this command:
 
-```bash
+```bash		     
 python server.py stop
 ```
 
@@ -30,3 +30,18 @@ The scripts mentioned below were used for generating the plots featured in our b
 - `plot_th_lat.py`: This script generates charts for throughput and latency across different model sizes and client counts.
 - `plot_effective_throughput.py`: Use this to chart effective throughput.
 - `plot_latency_percentile.py`: This script will plot the 50th, 90th, and 95th percentile latencies.
+
+## Running an End-to-End Example
+
+To quickly experience the end-to-end process of running our benchmark and generating plots, you can use the `run_example.sh` Bash file. This script is designed to execute the benchmark with a specific configuration, providing a hassle-free way to observe the performance under defined parameters.
+
+### Configuration Details:
+
+- **Parameter Size:** 7 billion
+- **Tensor Parallelism:** 1
+- **Max New Tokens:** 60, 128
+- **Prompt Length:** 1200, 2600
+
+```bash		     
+bash run_example.sh
+```
