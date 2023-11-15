@@ -41,6 +41,7 @@ To quickly experience the end-to-end process of running our benchmark and genera
 - **Tensor Parallelism:** 1
 - **Max New Tokens:** 60, 128
 - **Prompt Length:** 1200, 2600
+- **GPU:** NVIDIA A6000
 
 ```bash		     
 bash run_example.sh
