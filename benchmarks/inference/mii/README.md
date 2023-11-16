@@ -33,15 +33,13 @@ The scripts mentioned below were used for generating the plots featured in our b
 
 ## Running an End-to-End Example
 
-To quickly experience the end-to-end process of running our benchmark and generating plots, you can use the `run_example.sh` Bash file. This script is designed to execute the benchmark with a specific configuration, providing a hassle-free way to observe the performance under defined parameters. The resulting plots will be saved in the charts directory. We have also included these plots in the chart_example directory as a reference.
+To quickly experience the end-to-end process of running our benchmark and getting results, you can use the `run_example.sh`. This script is designed to execute the benchmark with a specific configuration. The following plots will be generated in the charts directory. These plots show the performance for the configuration below as depicted in figure 8 of our [blog post](https://github.com/microsoft/DeepSpeed/tree/master/blogs/deepspeed-fastgen#f-other-hardware-platforms)
 
-### Configuration Details:
+<div align="center">
+  <img src="A6000_benchmarks_example.png" alt="" width="800"/><br>
 
-- **Parameter Size:** 7 billion
-- **Tensor Parallelism:** 1
-- **Max New Tokens:** 60, 128
-- **Prompt Length:** 1200, 2600
-- **GPU:** NVIDIA A6000
+  *Figure 1: Throughput-latency curve and effective throughput of Llama 2 7b using A6000. A normal distribution was applied to prompt and generation lengths with averages of 2600 and 60, respectively, and a 30% variance*<br>
+  </div>
 
 ```bash		     
 bash run_example.sh
