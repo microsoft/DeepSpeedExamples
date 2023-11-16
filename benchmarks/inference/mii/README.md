@@ -36,7 +36,7 @@ The scripts mentioned below were used for generating the plots featured in our b
 To quickly experience the end-to-end process of running our benchmark and getting results, you can use the `run_example.sh`. This script is designed to execute the benchmark with a specific configuration. The plots below will be generated in the charts directory. These plots show the performance for a specific configuration as depicted in figure 8 of our blog [post](https://github.com/microsoft/DeepSpeed/tree/master/blogs/deepspeed-fastgen#f-other-hardware-platforms)
 
 <div align="center">
-  <img src="A6000_benchmarks_example.pdf" alt="" width="800"/><br>
+  <img src="A6000_benchmarks_example.png" alt="" width="800"/><br>
 
   *Figure 1: Throughput-latency curve and effective throughput of Llama 2 7b using A6000. Runs the client with 60 generation steps and input prompt length of 2600.*<br>
   </div>
