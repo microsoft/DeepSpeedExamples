@@ -39,7 +39,7 @@ To quickly experience the end-to-end process of running our benchmark and gettin
   <img src="A6000_benchmarks_example.png" alt="" width="800"/><br>
 
   *Figure 1: Throughput-latency curve and effective throughput of Llama 2 7b using A6000. Runs the client with 60 generation steps and input prompt length of 2600.*<br>
-  </div>
+</div>
 
 ```bash		     
 bash run_example.sh
