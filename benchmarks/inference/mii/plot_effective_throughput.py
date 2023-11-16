@@ -21,13 +21,16 @@ tp_sizes_test = {
     "7b": [1]
 }
 
-prompt_gen_pairs = [
+prompt_gen_pairs_all = [
     (1200, 60),
     (1200, 128),
     (2600, 60),
     (2600, 128),
 ]
 
+prompt_gen_pairs_test = [
+    (2600, 60)
+]
 
 def get_args():
     parser = argparse.ArgumentParser()
@@ -160,8 +163,10 @@ if __name__ == "__main__":
 
     if args.test:
         tp_sizes = tp_sizes_test
+        prompt_gen_pairs = prompt_gen_pairs_test
     else:
         tp_sizes = tp_sizes_all
+        prompt_gen_pairs = prompt_gen_pairs_all
 
     for model_size, tps in tp_sizes.items():
         for tp in tps:

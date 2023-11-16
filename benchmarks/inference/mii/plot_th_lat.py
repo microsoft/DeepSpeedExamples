@@ -17,7 +17,11 @@ tp_sizes_all = {
     "70b": [4, 8],
 }
 
-prompt_gen_pairs = [
+prompt_gen_pairs_test = [
+    (2600, 60)
+]
+
+prompt_gen_pairs_all = [
     (1200, 60),
     (1200, 128),
     (2600, 60),
@@ -91,7 +95,6 @@ def output_charts(model_size, tp, bs, prompt, gen, log_dir, out_dir):
     plt.legend()
     plt.grid(True)
     plt.tight_layout()
-    # plt.show()
     out_file = out_dir / f"th_lat_curve_llama{model_size}_tp{tp}_p{prompt}g{gen}.png"
     print(f"Saving {out_file}")
     plt.savefig(out_file)
@@ -101,9 +104,10 @@ if __name__ == "__main__":
     args = get_args()
     if args.test:
         tp_sizes = tp_sizes_test
+        prompt_gen_pairs = prompt_gen_pairs_test
     else:
-        print("No test")
         tp_sizes = tp_sizes_all
+        prompt_gen_pairs = prompt_gen_pairs_test_all
 
     for model_size, tps in tp_sizes.items():
         for tp in tps:
