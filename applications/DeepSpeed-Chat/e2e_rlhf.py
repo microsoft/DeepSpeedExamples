@@ -146,7 +146,7 @@ def verify_model(args, step_num):
     if not os.path.isfile(model_file):
         error_str = f"Step {step_num} model has not been trained. Train it with:\n"
         #error_str += f"python3 e2e_rlhf.py --step {step_num}"
-        error_str += sys.executable.split('/')[-1] + ' ' + sys.argv[0] + f" --step {step_num}"
+        error_str += f"{sys.executable.split('/')[-1]} {sys.argv[0]} --step {step_num}"
         error_str += f" --{model_type[step_num]}-model {model_size}"
         raise RuntimeError(error_str)
 
@@ -196,7 +196,7 @@ def main(args):
         cmd = get_cmd(args, step_num)
         launch_cmd(args, step_num, cmd)
 
-        step_time = int(time.time() - start_time)
+        step_time = int(time.time() - step_start_time)
         time_str = str(datetime.timedelta(seconds=step_time))
         print(f"---=== Finished Step {step_num} in {time_str} ===---")
 
