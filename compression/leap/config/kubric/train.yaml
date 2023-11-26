@@ -1,0 +1,72 @@
+exp_name: 'base2'
+exp_group: 'leap'
+output_dir: './output/'
+log_dir: './log'
+workers: 8
+print_freq: 100
+vis_freq: 500
+eval_vis_freq: 20
+seed: 0
+
+# dataset config
+dataset:
+  name: 'kubric'
+  category: 'general'
+  task: 'singlesequence'
+  img_size: 448
+  img_size_render: 224
+  num_frame: 5
+  mask_images: True
+  augmentation: False
+
+# network config
+model:
+  # backbone
+  backbone_name: 'dinov2'
+  backbone_type: 'vitb14'
+  backbone_fix: True
+  backbone_out_dim: 256
+  # encoder
+  encoder_layers: 2
+  # pe transformer
+  neck_layers: 2
+  # lifting
+  lifting_layers: 4
+  latent_res: 16
+  # rendering
+  volume_res: 64
+  render_feat_dim: 16
+  # others
+  rot_representation: 'quat'
+
+# render config
+render:
+  n_pts_per_ray: 64
+  volume_size: 1.0  #  in meters
+  min_depth: 0.5
+  max_depth: 2.0
+  camera_z: 1.5 # camera pose T_z
+  k_size: 5
+
+# loss config
+loss:
+  weight_render_rgb: 1.0
+  weight_render_mask: 5.0
+  weight_perceptual: 0.0
+
+# training config
+train:
+  resume: False
+  lr: 0.0001
+  weight_decay: 0.005
+  schedular_warmup_iter: 500
+  total_iteration: 200000
+  batch_size: 1
+  accumulation_step: 2
+  normalize_img: True
+  grad_max: 5.0
+
+# test config
+test:
+  batch_size: 1
+  compute_metric: True

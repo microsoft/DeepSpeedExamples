@@ -1,0 +1,90 @@
+exp_name: 'base_res224_lr2x_percploss-0.1_res32_encoder-nonfix-1e-5_no-neck_no-feat-render-loss'
+exp_group: 'leap-omniobject3d'
+output_dir: './output/'
+log_dir: './log'
+workers: 4
+print_freq: 100
+vis_freq: 500
+eval_vis_freq: 20
+seed: 42
+
+# dataset config
+dataset:
+  name: 'omniobject3d'
+  category: 'general'
+  task: 'singlesequence'
+  img_size: 224
+  img_size_render: 112
+  num_frame: 5
+  mask_images: True
+  augmentation: False
+  train_all_frame: False
+
+# network config
+model:
+  norm_first: False
+  # backbone
+  backbone_name: 'dinov2'
+  backbone_type: 'vitb14'
+  backbone_fix: False
+  backbone_out_dim: 768
+  # encoder
+  encoder_layers: 2
+  # pe transformer
+  use_neck: False
+  neck_scale: 'constant_1' #'channel' #'constant_1'
+  neck_layers: 2
+  pe_with_spatial_pe: False
+  # lifting
+  lifting_TXdecoder_permute: False
+  use_pe_lifting: False
+  lifting_use_conv3d: False
+  lifting_layers: 4
+  latent_res: 16
+  # rendering
+  volume_res: 64
+  render_feat_dim: 16
+  render_feat_raw: False
+  # others
+  rot_representation: 'quat'
+  use_flash_attn: False
+
+# render config
+render:
+  n_pts_per_ray: 64
+  volume_size: 2.0
+  min_depth: 3.0
+  max_depth: 5.0
+  camera_z: 4.0 # camera pose T_z
+  k_size: 5
+
+
+# loss config
+loss:
+  weight_render_rgb: 1.0
+  weight_render_mask: 5.0
+  weight_perceptual: 0.1
+  iter_perceptual: 10000
+  weight_feat_render: 1.0
+
+# training config
+train:
+  resume: True
+  lr: 0.0002
+  lr_embeddings: 0.0001
+  lr_backbone: 0.00001  # 0.00002
+  weight_decay: 0.005
+  schedular_warmup_iter: 500
+  total_iteration: 200000
+  batch_size: 4
+  accumulation_step: 1
+  normalize_img: True
+  grad_max: 5.0
+  use_amp: False
+  use_rand_view: False
+  use_uncanonicalized_pose: False
+
+# test config
+test:
+  batch_size: 1
+  compute_metric: True
