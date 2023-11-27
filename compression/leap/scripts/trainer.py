@@ -72,14 +72,16 @@ def train_epoch(config, loader, dataset, model, optimizer, scheduler, scaler,
             #         print(f"Parameter: {name}, Gradient mean: {param.grad.mean().item()}")
             # __import__('pdb').set_trace()
             if (batch_idx+1) % config.train.accumulation_step == 0:
-                torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=config.train.grad_max, norm_type=2.0)
+                torch.nn.utils.clip_grad_norm_(model.module.parameters(), max_norm=config.train.grad_max, norm_type=2.0)
                 # for name, param in model.named_parameters():
                 #     if param.grad is not None:
                 #         print(f"Parameter: {name}, Gradient mean: {param.grad.mean().item()}")
-                optimizer.step()
-                optimizer.zero_grad()
-                scheduler.step()
-
+                # optimizer.step()
+                # optimizer.zero_grad()
+                # scheduler.step()
+                model.backward(loss)
+                model.step()
+        
         time_meters.add_loss_value('Loss time', time.time() - end)
         time_meters.add_loss_value('Batch time', time.time() - batch_end)
 

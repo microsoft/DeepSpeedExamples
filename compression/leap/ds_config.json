@@ -21,7 +21,7 @@
     },
 
     "fp16":{
-      "enabled": true
+      "enabled": false
     },
 
     "gradient_clipping": 1.0,

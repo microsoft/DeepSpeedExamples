@@ -59,7 +59,7 @@ def main():
         dist_utils.dist_init(int(os.environ["LOCAL_RANK"]))
     local_rank = dist.get_rank()
     torch.cuda.set_device(local_rank)
-    
+    deepspeed.init_distributed()
     
    # set wandb
     wandb_run = []
@@ -76,7 +76,7 @@ def main():
         })
     else:
         wandb_run = None
-
+    torch.distributed.barrier()
     # get model
     model = LEAP(config).to(device)
     perceptual_loss = VGGPerceptualLoss().to(device)
@@ -111,7 +111,15 @@ def main():
         device_ids = range(torch.cuda.device_count())
         print("using {} cuda".format(len(device_ids)))
         find_unused = True if (not config.model.backbone_fix) else False
-        model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[local_rank], find_unused_parameters=find_unused)
+        
+        model, optimizer, _, scheduler = deepspeed.initialize(
+                    model=model,
+                    optimizer=optimizer,
+                    args=args,
+                    lr_scheduler=scheduler,
+                    dist_init_required=True)        
+        
+        #model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[local_rank], find_unused_parameters=find_unused)
         device_num = len(device_ids)
         ddp = True
 

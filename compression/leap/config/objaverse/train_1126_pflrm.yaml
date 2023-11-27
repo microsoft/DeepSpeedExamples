@@ -1,4 +1,4 @@
-exp_name: '6encoder_12liftlayer_res224_acc8'
+exp_name: '4encoder_8liftlayer_res224'
 exp_group: 'leap-objaverseXL'
 output_dir: './output/'
 log_dir: './log'
@@ -13,9 +13,9 @@ dataset:
   name: 'objaverse'
   category: 'general'
   task: 'singlesequence'
-  img_size: 224
-  img_size_render: 112
-  num_frame: 5
+  img_size: 518
+  img_size_render: 259
+  num_frame: 4
   mask_images: True
   augmentation: False
   train_all_frame: False
@@ -29,19 +29,18 @@ model:
   backbone_fix: False
   backbone_out_dim: 768 ###<=======================hugging-face hidden-size
   module_camera_feature: True ####<=====================magic thing 
-  # encoder
-  encoder_layers: 6
+  backbone_path_size: 14  ####<=====================magic thing 
   # pe transformer
   use_neck: False
   neck_scale: 'constant_1' #'channel' #'constant_1'
   neck_layers: 2
   pe_with_spatial_pe: False
-  # lifting
-  lifting_TXdecoder_permute: False
-  use_pe_lifting: False
+  # single_stream_transformer
   lifting_use_conv3d: False
-  lifting_layers: 12
-  latent_res: 24
+  hidden_size: 1024
+  layers: 24
+  heads: 16
+  latent_res: 32
   # rendering
   volume_res: 96
   render_feat_dim: 3
@@ -70,14 +69,14 @@ loss:
 # training config
 train:
   resume: False
-  lr: 0.000025
-  lr_embeddings: 0.000025
+  lr: 0.0001
+  lr_embeddings: 0.0001
   lr_backbone: 0.000005  # 0.00002
   weight_decay: 0.0005
   schedular_warmup_iter: 500
   total_iteration: 200000
-  batch_size: 1
-  accumulation_step: 8
+  batch_size: 2
+  accumulation_step: 2
   normalize_img: True
   grad_max: 5.0
   use_amp: False

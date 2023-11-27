@@ -43,6 +43,8 @@ config.model.backbone_name = 'dinov2'
 config.model.backbone_type = 'vitb14'
 config.model.backbone_fix = False
 config.model.backbone_out_dim = 256
+config.model.module_camera_feature = True
+config.model.backbone_path_size = 14
 # encoder
 config.model.encoder_layers = 3
 # pe transformer
@@ -54,7 +56,8 @@ config.model.pe_with_spatial_pe = False
 config.model.lifting_TXdecoder_permute = False
 config.model.use_pe_lifting = False
 config.model.lifting_use_conv3d = False
-config.model.lifting_layers = 6
+config.model.layers = 6
+config.model.heads = 1
 config.model.latent_res = 32
 # rendering
 config.model.volume_res = 64

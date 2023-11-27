@@ -77,7 +77,7 @@ class Objaverse(Dataset):
         self.K = torch.tensor([[self.image_height * focal_length, 0., self.image_height / 2.0],
                                 [0., self.image_height * focal_length, self.image_width / 2.0],
                                 [0., 0., 1.]])
-
+        self.K_intrinsic = torch.tensor([0.5 / math.tan(0.5 * 49.1), 0.5 / math.tan(0.5 * 49.1), self.image_height / 2.0, self.image_width / 2.0])
         # split data for traing and testing
         self.data_split = {}
         self._load_dataset()
@@ -205,6 +205,7 @@ class Objaverse(Dataset):
             'cam_poses_cv2': cam_poses_cv2,                                         # uncanonicalized camera poses in cv2
             'cam_poses_cv2_canonicalized': cam_poses_cv2_canonicalized,             # canonicalized camera poses in cv2
             'cam_poses_rel_cv2': cam_poses_rel_cv2,                                 # relative camera poses in cv2
+            'camera_intri': self.K_intrinsic.repeat(self.num_frames_per_seq,1),
             'seq_name': seq_name,
         }
 
