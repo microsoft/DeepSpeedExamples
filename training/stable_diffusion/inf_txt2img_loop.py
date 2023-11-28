@@ -46,11 +46,11 @@ for prompt in prompts:
     generator = torch.Generator("cuda").manual_seed(seed)
     pipe_new = deepspeed.init_inference(pipe_new, mp_size=world_size, dtype=torch.half)
     image_new = pipe_new(prompt, num_inference_steps=50, guidance_scale=args.guidance_scale, generator=generator).images[0]
-    image_new.save(args.out_dir+"NEW__seed_"+str(seed)+"_"+prompt[0:100]+".png")
+    image_new.save(args.out_dir+"/NEW__seed_"+str(seed)+"_"+prompt[0:100]+".png")
 
     #--- baseline image
     pipe_baseline = StableDiffusionPipelineBaseline.from_pretrained(args.b_model, torch_dtype=torch.float16).to("cuda")
     generator = torch.Generator("cuda").manual_seed(seed)                                              
     pipe_baseline = deepspeed.init_inference(pipe_baseline, mp_size=world_size, dtype=torch.half)
     image_baseline = pipe_baseline(prompt, num_inference_steps=50, guidance_scale=args.guidance_scale, generator=generator).images[0]
-    image_baseline.save(args.out_dir+"BASELINE_seed_"+str(seed)+"_"+prompt[0:100]+".png")
+    image_baseline.save(args.out_dir+"/BASELINE_seed_"+str(seed)+"_"+prompt[0:100]+".png")
