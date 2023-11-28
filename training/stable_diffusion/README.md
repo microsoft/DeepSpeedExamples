@@ -40,5 +40,5 @@ For inference, you can use the `inf-loop.py` Python code. Follow these steps:
 Here's an example command to run the inference script:
 
 <pre>
-python inf_txt2img_loop.py
+deepspeed inf_txt2img_loop.py
 </pre>
