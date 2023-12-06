@@ -476,7 +476,7 @@ def create_experiment_dir(checkpoint_dir: pathlib.Path,
     try:
         gitdiff = sh.git.diff(_fg=False, _tty_out=False)
         with (exp_dir / "gitdiff.log").open("w") as handle:
-            handle.write(gitdiff.stdout)
+            handle.write(gitdiff)
     except sh.ErrorReturnCode_129:
         logger.info("Seems like the code is not running from"
                     " within a git repo, so diff will"
