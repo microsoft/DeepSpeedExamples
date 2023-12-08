@@ -13,7 +13,6 @@ from torch.utils.data.distributed import DistributedSampler
 from transformers import (
     AutoModelForCausalLM,
     SchedulerType,
-    default_data_collator,
     get_scheduler,
 )
 
@@ -27,8 +26,6 @@ from dschat.utils.ds_utils import get_train_ds_config, get_eval_ds_config
 from dschat.utils.module.lora import convert_linear_layer_to_lora, convert_lora_to_linear_layer, only_optimize_lora_parameters, make_model_gradient_checkpointing_compatible
 from dschat.utils.model.model_utils import create_hf_model, causal_lm_model_to_fp32_loss
 from dschat.utils.perf import print_throughput
-
-import copy
 
 
 def parse_args():
@@ -96,14 +93,20 @@ def parse_args():
                         default=1,
                         help="Total number of training epochs to perform.")
     # Reference: https://github.com/eric-mitchell/direct-preference-optimization/blob/main/trainers.py
-    parser.add_argument("--beta",
-                        type=float,
-                        default=1e-1,
-                        help="Temperature parameter for the DPO loss, typically something in the range of 0.1 to 0.5. We ignore the reference model as beta -> 0.")
-    parser.add_argument("--label_smoothing",
-                        type=float,
-                        default=0.0,
-                        help="conservativeness for DPO loss, which assumes that preferences are noisy (flipped with probability label_smoothing)")
+    parser.add_argument(
+        "--beta",
+        type=float,
+        default=1e-1,
+        help=
+        "Temperature parameter for the DPO loss, typically something in the range of 0.1 to 0.5. We ignore the reference model as beta -> 0."
+    )
+    parser.add_argument(
+        "--label_smoothing",
+        type=float,
+        default=0.0,
+        help=
+        "conservativeness for DPO loss, which assumes that preferences are noisy (flipped with probability label_smoothing)"
+    )
     parser.add_argument(
         "--gradient_accumulation_steps",
         type=int,
@@ -156,9 +159,10 @@ def parse_args():
                         default='fp16',
                         choices=['fp16', 'bf16'],
                         help='Training data type')
-    parser.add_argument('--offload_reference_model',
-                        action='store_true',
-                        help='Enable ZeRO Offload techniques for reference model.')
+    parser.add_argument(
+        '--offload_reference_model',
+        action='store_true',
+        help='Enable ZeRO Offload techniques for reference model.')
     parser.add_argument(
         '--zero_stage',
         type=int,
@@ -210,6 +214,7 @@ def parse_args():
 
     return args
 
+
 # Reference: https://github.com/huggingface/trl/blob/main/trl/trainer/dpo_trainer.py
 def get_batch_logps(logits, input_ids, label_mask):
     labels = input_ids.clone() * label_mask
@@ -218,7 +223,9 @@ def get_batch_logps(logits, input_ids, label_mask):
     labels = labels[:, 1:]
     label_mask = label_mask[:, 1:]
     logits = logits[:, :-1, :]
-    per_token_logps = torch.gather(logits.log_softmax(-1), dim=2, index=labels.unsqueeze(2)).squeeze(2)
+    per_token_logps = torch.gather(logits.log_softmax(-1),
+                                   dim=2,
+                                   index=labels.unsqueeze(2)).squeeze(2)
     return (per_token_logps * label_mask).sum(-1)
 
 
@@ -287,10 +294,10 @@ def main():
         'train_batch_size'] = args.per_device_train_batch_size * torch.distributed.get_world_size(
         ) * args.gradient_accumulation_steps
     ref_model = create_hf_model(AutoModelForCausalLM,
-                            args.model_name_or_path,
-                            tokenizer,
-                            ref_ds_eval_config,
-                            dropout=args.dropout)
+                                args.model_name_or_path,
+                                tokenizer,
+                                ref_ds_eval_config,
+                                dropout=args.dropout)
     # End of DS config for ref model
 
     if args.compute_fp32_loss:
@@ -340,26 +347,30 @@ def main():
             rejected_input_ids = batch['input_ids'][batch_size:]
             label_mask = (batch['input_ids'] != tokenizer.pad_token_id).int()
             for i in range(batch_size):
-                divergence_ind = (chosen_input_ids[i] != rejected_input_ids[i]).nonzero().squeeze(-1)
-                if len(divergence_ind)> 0:
+                divergence_ind = (chosen_input_ids[i] !=
+                                  rejected_input_ids[i]).nonzero().squeeze(-1)
+                if len(divergence_ind) > 0:
                     divergence_ind = divergence_ind[0]
                 else:
                     divergence_ind = 0
                 label_mask[i][:divergence_ind] = 0
-                label_mask[i+batch_size][:divergence_ind] = 0
+                label_mask[i + batch_size][:divergence_ind] = 0
             with torch.no_grad():
                 outputs = model(**batch)
                 ref_outputs = ref_model(**batch)
 
-            logps = get_batch_logps(outputs.logits, batch['input_ids'], label_mask)
-            ref_logps = get_batch_logps(ref_outputs.logits, batch['input_ids'], label_mask)
+            logps = get_batch_logps(outputs.logits, batch['input_ids'],
+                                    label_mask)
+            ref_logps = get_batch_logps(ref_outputs.logits, batch['input_ids'],
+                                        label_mask)
 
             chosen_logps = logps[:batch_size]
             rejected_logps = logps[batch_size:]
             ref_chosen_logps = ref_logps[:batch_size]
             ref_rejected_logps = ref_logps[batch_size:]
 
-            logits = args.beta * ((chosen_logps - ref_chosen_logps) - (rejected_logps - ref_rejected_logps))
+            logits = args.beta * ((chosen_logps - ref_chosen_logps) -
+                                  (rejected_logps - ref_rejected_logps))
             loss = (- torch.nn.functional.logsigmoid(logits) * (1 - args.label_smoothing) - \
                         torch.nn.functional.logsigmoid(-logits) * args.label_smoothing).mean(0)
             losses += loss.float()
@@ -369,8 +380,10 @@ def main():
         except:
             pass
         chosen_rewards = args.beta * (chosen_logps - ref_chosen_logps).detach()
-        rejected_rewards = args.beta * (rejected_logps - ref_rejected_logps).detach()
-        return chosen_rewards.mean().item(), rejected_rewards.mean().item(), losses.item()
+        rejected_rewards = args.beta * (rejected_logps -
+                                        ref_rejected_logps).detach()
+        return chosen_rewards.mean().item(), rejected_rewards.mean().item(
+        ), losses.item()
 
     # Split weights in two groups, one with weight decay and the other not.
     optimizer_grouped_parameters = get_optimizer_grouped_parameters(
@@ -397,8 +410,7 @@ def main():
         config=ds_config,
         lr_scheduler=lr_scheduler,
         dist_init_required=True)
-    ref_model, *_ = deepspeed.initialize(model=ref_model,
-                                         config=ref_ds_config)
+    ref_model, *_ = deepspeed.initialize(model=ref_model, config=ref_ds_config)
     ref_model.eval()
 
     if args.gradient_checkpointing:
@@ -409,8 +421,11 @@ def main():
     print_rank_0(
         f"***** Evaluating rewards, Epoch {0}/{args.num_train_epochs} *****",
         args.global_rank)
-    chosen_rewards, rejected_rewards, eval_loss = evaluation(model, ref_model, tokenizer, eval_dataloader)
-    print_rank_0(f"chosen: {chosen_rewards}, rejected: {rejected_rewards}, loss: {eval_loss}", args.global_rank)
+    chosen_rewards, rejected_rewards, eval_loss = evaluation(
+        model, ref_model, tokenizer, eval_dataloader)
+    print_rank_0(
+        f"chosen: {chosen_rewards}, rejected: {rejected_rewards}, loss: {eval_loss}",
+        args.global_rank)
 
     for epoch in range(args.num_train_epochs):
         print_rank_0(
@@ -426,26 +441,30 @@ def main():
             rejected_input_ids = batch['input_ids'][batch_size:]
             label_mask = (batch['input_ids'] != tokenizer.pad_token_id).int()
             for i in range(batch_size):
-                divergence_ind = (chosen_input_ids[i] != rejected_input_ids[i]).nonzero().squeeze(-1)
-                if len(divergence_ind)> 0:
+                divergence_ind = (chosen_input_ids[i] !=
+                                  rejected_input_ids[i]).nonzero().squeeze(-1)
+                if len(divergence_ind) > 0:
                     divergence_ind = divergence_ind[0]
                 else:
                     divergence_ind = 0
                 label_mask[i][:divergence_ind] = 0
-                label_mask[i+batch_size][:divergence_ind] = 0
+                label_mask[i + batch_size][:divergence_ind] = 0
             outputs = model(**batch, use_cache=False)
             with torch.no_grad():
                 ref_outputs = ref_model(**batch)
 
-            logps = get_batch_logps(outputs.logits, batch['input_ids'], label_mask)
-            ref_logps = get_batch_logps(ref_outputs.logits, batch['input_ids'], label_mask)
+            logps = get_batch_logps(outputs.logits, batch['input_ids'],
+                                    label_mask)
+            ref_logps = get_batch_logps(ref_outputs.logits, batch['input_ids'],
+                                        label_mask)
 
             chosen_logps = logps[:batch_size]
             rejected_logps = logps[batch_size:]
             ref_chosen_logps = ref_logps[:batch_size]
             ref_rejected_logps = ref_logps[batch_size:]
 
-            logits = args.beta * ((chosen_logps - ref_chosen_logps) - (rejected_logps - ref_rejected_logps))
+            logits = args.beta * ((chosen_logps - ref_chosen_logps) -
+                                  (rejected_logps - ref_rejected_logps))
             loss = (- torch.nn.functional.logsigmoid(logits) * (1 - args.label_smoothing) - \
                         torch.nn.functional.logsigmoid(-logits) * args.label_smoothing).mean(0)
             if args.print_loss:
@@ -463,8 +482,11 @@ def main():
         print_rank_0(
             f"***** Evaluating rewards, Epoch {epoch+1}/{args.num_train_epochs} *****",
             args.global_rank)
-        chosen_rewards, rejected_rewards, eval_loss = evaluation(model, ref_model, tokenizer, eval_dataloader)
-        print_rank_0(f"chosen: {chosen_rewards}, rejected: {rejected_rewards}, loss: {eval_loss}", args.global_rank)
+        chosen_rewards, rejected_rewards, eval_loss = evaluation(
+            model, ref_model, tokenizer, eval_dataloader)
+        print_rank_0(
+            f"chosen: {chosen_rewards}, rejected: {rejected_rewards}, loss: {eval_loss}",
+            args.global_rank)
         model.tput_timer.update_epoch_count()
 
     if args.output_dir is not None:
