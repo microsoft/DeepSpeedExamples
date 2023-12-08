@@ -3,8 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # DeepSpeed Team
-
-# Note that usually LoRA needs to use larger learning rate
 OUTPUT=$1
 ZERO_STAGE=$2
 if [ "$OUTPUT" == "" ]; then
@@ -15,8 +13,8 @@ if [ "$ZERO_STAGE" == "" ]; then
 fi
 mkdir -p $OUTPUT
 
-deepspeed --num_gpus 1 main.py --model_name_or_path facebook/opt-1.3b \
-   --gradient_accumulation_steps 8 --lora_dim 128 --zero_stage $ZERO_STAGE \
+deepspeed --num_gpus 1 main.py --model_name_or_path facebook/opt-350m \
+   --weight_decay 0.1 --dropout 0.0 --gradient_accumulation_steps 4 --zero_stage $ZERO_STAGE \
    --enable_tensorboard \
    --tensorboard_path $OUTPUT \
    --deepspeed --output_dir $OUTPUT &> $OUTPUT/training.log
