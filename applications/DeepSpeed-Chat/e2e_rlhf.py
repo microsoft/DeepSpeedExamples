@@ -145,7 +145,6 @@ def verify_model(args, step_num):
     model_file = os.path.join(output_dir, "pytorch_model.bin")
     if not os.path.isfile(model_file):
         error_str = f"Step {step_num} model has not been trained. Train it with:\n"
-        #error_str += f"python3 e2e_rlhf.py --step {step_num}"
         error_str += f"{sys.executable.split('/')[-1]} {sys.argv[0]} --step {step_num}"
         error_str += f" --{model_type[step_num]}-model {model_size}"
         raise RuntimeError(error_str)
