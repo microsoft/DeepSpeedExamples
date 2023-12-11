@@ -4,9 +4,7 @@
 
 # DeepSpeed Team
 import argparse
-import os
 import math
-import sys
 
 import torch
 from torch.utils.data import DataLoader, RandomSampler, SequentialSampler
@@ -19,14 +17,13 @@ from transformers import (
 
 import deepspeed
 from deepspeed.ops.adam import DeepSpeedCPUAdam, FusedAdam
+from deepspeed.accelerator import get_accelerator
 
-sys.path.append(
-    os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
-from utils.model.model_utils import create_critic_model
-from utils.data.data_utils import create_prompt_dataset, DataCollatorReward
-from utils.utils import print_rank_0, to_device, save_hf_format, set_random_seed, get_all_reduce_mean, get_optimizer_grouped_parameters, save_zero_three_model, load_hf_tokenizer
-from utils.ds_utils import get_train_ds_config
-from utils.module.lora import convert_linear_layer_to_lora, convert_lora_to_linear_layer, only_optimize_lora_parameters, make_model_gradient_checkpointing_compatible
+from dschat.utils.model.model_utils import create_critic_model
+from dschat.utils.data.data_utils import create_prompt_dataset, DataCollatorReward
+from dschat.utils.utils import print_rank_0, to_device, save_hf_format, set_random_seed, get_all_reduce_mean, get_optimizer_grouped_parameters, save_zero_three_model, load_hf_tokenizer
+from dschat.utils.ds_utils import get_train_ds_config
+from dschat.utils.module.lora import convert_linear_layer_to_lora, convert_lora_to_linear_layer, only_optimize_lora_parameters, make_model_gradient_checkpointing_compatible
 
 
 def parse_args():
@@ -137,13 +134,21 @@ def parse_args():
         '--gradient_checkpointing',
         action='store_true',
         help='Enable HF gradient checkpointing for Actor model.')
-    parser.add_argument('--disable_dropout',
-                        action='store_true',
-                        help='Disable the dropout of the model.')
+    parser.add_argument(
+        "--dropout",
+        type=float,
+        default=None,
+        help="If dropout configured, use it. "
+        "Otherwise, keep the default dropout configuration of the model.")
     # deepspeed features
     parser.add_argument('--offload',
                         action='store_true',
                         help='Enable ZeRO Offload techniques.')
+    parser.add_argument('--dtype',
+                        type=str,
+                        default='fp16',
+                        choices=['fp16', 'bf16'],
+                        help='Training data type')
     parser.add_argument(
         '--zero_stage',
         type=int,
@@ -168,6 +173,23 @@ def parse_args():
         help=
         "Initial LoRA learning rate (after the potential warmup period) to use."
     )
+
+    # Evaluation
+    parser.add_argument("--eval_interval",
+                        type=int,
+                        default=0,
+                        help="If > 0, perform evaluation at this interval")
+    parser.add_argument("--eval_iters",
+                        type=int,
+                        default=100,
+                        help="Maximum evaluation iterations")
+    ## low precision
+    parser.add_argument(
+        '--compute_fp32_loss',
+        action='store_true',
+        help='Relevant for low precision dtypes (fp16, bf16, etc.). '
+        'If specified, loss is calculated in fp32.')
+
     ## Tensorboard logging
     parser.add_argument('--enable_tensorboard',
                         action='store_true',
@@ -175,6 +197,11 @@ def parse_args():
     parser.add_argument('--tensorboard_path',
                         type=str,
                         default="step2_tensorboard")
+    ## Tokenizer
+    parser.add_argument(
+        "--add_eot_token",
+        action='store_true',
+        help="Add <|endoftext|> as additional special token to tokenizer")
     parser = deepspeed.add_config_arguments(parser)
     args = parser.parse_args()
 
@@ -185,10 +212,10 @@ def main():
     args = parse_args()
 
     if args.local_rank == -1:
-        device = torch.device("cuda")
+        device = torch.device(get_accelerator().device_name())
     else:
-        torch.cuda.set_device(args.local_rank)
-        device = torch.device("cuda", args.local_rank)
+        get_accelerator().set_device(args.local_rank)
+        device = torch.device(get_accelerator().device_name(), args.local_rank)
         # Initializes the distributed backend which will take care of sychronizing nodes/GPUs
         # torch.distributed.init_process_group(backend='nccl')
         deepspeed.init_distributed()
@@ -196,6 +223,7 @@ def main():
     args.global_rank = torch.distributed.get_rank()
 
     ds_config = get_train_ds_config(offload=args.offload,
+                                    dtype=args.dtype,
                                     stage=args.zero_stage,
                                     enable_tensorboard=args.enable_tensorboard,
                                     tb_path=args.tensorboard_path,
@@ -211,19 +239,38 @@ def main():
     torch.distributed.barrier()
 
     # load_hf_tokenizer will get the correct tokenizer and set padding tokens based on the model family
-    tokenizer = load_hf_tokenizer(args.model_name_or_path, fast_tokenizer=True)
+    args.end_of_conversation_token = "<|endoftext|>"
+    additional_special_tokens = args.end_of_conversation_token if args.add_eot_token else None
+    tokenizer = load_hf_tokenizer(args.model_name_or_path,
+                                  fast_tokenizer=True,
+                                  add_special_tokens=additional_special_tokens)
     rm_model = create_critic_model(args.model_name_or_path,
                                    tokenizer,
                                    ds_config,
                                    args.num_padding_at_beginning,
-                                   disable_dropout=args.disable_dropout)
+                                   dropout=args.dropout,
+                                   zero_stage=args.zero_stage,
+                                   compute_fp32_loss=args.compute_fp32_loss)
+
+    # Model bigscience/bloom-560m has large variance at ln_f.weight parameter
+    # This makes bf16 finetuning hard.
+    # In general, since we are replacing the model head, it makes sense to reset
+    # the LN that precedes it.
+    force_optimize_params = []
+    if "bigscience/bloom-" in args.model_name_or_path:
+        torch.nn.init.ones_(rm_model.rwtransformer.ln_f.weight)
+        torch.nn.init.zeros_(rm_model.rwtransformer.ln_f.bias)
+        force_optimize_params.extend(
+            ['rwtransformer.ln_f.weight', 'rwtransformer.ln_f.bias'])
 
     if args.lora_dim > 0:
         rm_model = convert_linear_layer_to_lora(rm_model,
                                                 args.lora_module_name,
                                                 args.lora_dim)
         if args.only_optimize_lora:
-            rm_model = only_optimize_lora_parameters(rm_model)
+            force_optimize_params.append('v_head.weight')
+            rm_model = only_optimize_lora_parameters(rm_model,
+                                                     force_optimize_params)
             rm_model = make_model_gradient_checkpointing_compatible(rm_model)
 
     train_phase = 2
@@ -244,37 +291,40 @@ def main():
                                   collate_fn=data_collator,
                                   sampler=train_sampler,
                                   batch_size=args.per_device_train_batch_size)
-    eval_sampler = SequentialSampler(eval_dataset)
     eval_dataloader = DataLoader(eval_dataset,
                                  collate_fn=data_collator,
                                  sampler=eval_sampler,
                                  batch_size=args.per_device_eval_batch_size)
 
-    def evaluation_reward(model, eval_dataloader):
+    def evaluation_reward(model, dataloader, eval_iters):
         model.eval()
         correct_predictions = 0
         total_predictions = 0
-        scores = 0
-        for step, batch in enumerate(eval_dataloader):
-            batch = to_device(batch, device)
+        chosen_scores = 0.
+        rejected_scores = 0.
+        for _step, _batch in enumerate(dataloader):
+            _batch = to_device(_batch, device)
             with torch.no_grad():
-                outputs = model(**batch)
+                _outputs = model(**_batch)
 
-            chosen = outputs["chosen_mean_scores"]
-            rejected = outputs["rejected_mean_scores"]
+            chosen = _outputs["chosen_mean_scores"]
+            rejected = _outputs["rejected_mean_scores"]
             correct_predictions += (chosen > rejected).sum()
             total_predictions += chosen.shape[0]
-            scores += outputs["chosen_mean_scores"].mean().float()
-            if step == 99:  # For faster evaluation and debugging
+            chosen_scores += _outputs["chosen_mean_scores"].mean().float()
+            rejected_scores += _outputs["rejected_mean_scores"].mean().float()
+            if (_step + 1) == eval_iters:
                 break
-        acc = correct_predictions / total_predictions
-        scores = scores / (step + 1)
+        _acc = correct_predictions / total_predictions
+        chosen_scores = chosen_scores / (_step + 1)
+        rejected_scores = rejected_scores / (_step + 1)
         try:
-            acc = get_all_reduce_mean(acc).item()
-            scores = get_all_reduce_mean(scores).item()
+            _acc = get_all_reduce_mean(_acc).item()
+            chosen_scores = get_all_reduce_mean(chosen_scores).item()
+            rejected_scores = get_all_reduce_mean(rejected_scores).item()
         except:
             pass
-        return scores, acc
+        return chosen_scores, rejected_scores, _acc
 
     # Split weights in two groups, one with weight decay and the other not.
     optimizer_grouped_parameters = get_optimizer_grouped_parameters(
@@ -312,11 +362,14 @@ def main():
     print_rank_0(
         f"***** Evaluating reward, Epoch {0}/{args.num_train_epochs} *****",
         args.global_rank)
-    reward_score, acc = evaluation_reward(rm_model, eval_dataloader)
+    reward_score, reject_score, acc = evaluation_reward(
+        rm_model, eval_dataloader, args.eval_iters)
     print_rank_0(
-        f"chosen_last_scores (higher is better) : {reward_score}, acc (higher is better) : {acc}",
-        args.global_rank)
+        f"chosen_last_scores (higher is better) : {reward_score}, "
+        f"rejected_last_scores (lower is better) : {reject_score}, "
+        f"acc (higher is better) : {acc}", args.global_rank)
 
+    total_micro_steps = 0
     for epoch in range(args.num_train_epochs):
         print_rank_0(
             f"Beginning of Epoch {epoch+1}/{args.num_train_epochs}, Total Micro Batches {len(train_dataloader)}",
@@ -330,6 +383,22 @@ def main():
             rm_model.backward(loss)
             rm_model.step()
             mean_loss += loss.item()
+            total_micro_steps += 1
+            gas_boundary = (total_micro_steps %
+                            args.gradient_accumulation_steps == 0)
+            total_steps = total_micro_steps // args.gradient_accumulation_steps
+            if args.eval_interval and gas_boundary and (
+                    total_steps % args.eval_interval == 0):
+                print_rank_0(f"Iter {total_steps}: Evaluating reward",
+                             args.global_rank)
+                reward_score, reject_score, acc = evaluation_reward(
+                    rm_model, eval_dataloader, args.eval_iters)
+                print_rank_0(
+                    f"Iter {total_steps}: c_scores: {reward_score}, r_scores: {reject_score}, "
+                    f"diff: {reward_score - reject_score}, acc: {acc}",
+                    args.global_rank)
+                rm_model.train()
+
         print_rank_0(
             f"Epoch {epoch+1}/{args.num_train_epochs} with loss {mean_loss/(step+1)}",
             args.global_rank)
@@ -337,10 +406,12 @@ def main():
         print_rank_0(
             f"***** Evaluating reward, Epoch {epoch+1}/{args.num_train_epochs} *****",
             args.global_rank)
-        reward_score, acc = evaluation_reward(rm_model, eval_dataloader)
+        reward_score, reject_score, acc = evaluation_reward(
+            rm_model, eval_dataloader, args.eval_iters)
         print_rank_0(
-            f"chosen_last_scores (higher is better) : {reward_score}, acc (higher is better) : {acc}",
-            args.global_rank)
+            f"chosen_last_scores (higher is better) : {reward_score}, "
+            f"rejected_last_scores (lower is better) : {reject_score}, "
+            f"acc (higher is better) : {acc}", args.global_rank)
         rm_model.tput_timer.update_epoch_count()
 
     if args.output_dir is not None:

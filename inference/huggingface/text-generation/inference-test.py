@@ -24,7 +24,8 @@ pipe = DSPipeline(model_name=args.model,
                   dtype=data_type,
                   is_meta=args.use_meta_tensor,
                   device=args.local_rank,
-                  checkpoint_path=args.checkpoint_path)
+                  checkpoint_path=args.checkpoint_path,
+                  trust_remote_code=args.trust_remote_code)
 
 if args.local_rank == 0:
     print(f"initialization time: {(time.time()-t0) * 1000}ms")
@@ -52,7 +53,7 @@ else:
                                     quantize_groups=args.quantize_groups,
                                     **ds_kwargs
                                     )
-  
+
 if args.local_rank == 0:
     see_memory_usage("after init_inference", True)
 
@@ -91,4 +92,3 @@ if args.local_rank == 0:
         print(f"\nin={i}\nout={o}\n{'-'*60}")
     if args.test_performance:
         Performance.print_perf_stats(map(lambda t: t / args.max_new_tokens, times), pipe.model.config, args.dtype, args.batch_size)
-

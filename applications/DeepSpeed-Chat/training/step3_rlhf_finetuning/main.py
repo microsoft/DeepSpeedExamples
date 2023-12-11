@@ -33,17 +33,14 @@ from transformers import (
 
 import deepspeed
 
-from ppo_trainer import DeepSpeedPPOTrainer, DeepSpeedPPOTrainerUnsupervised
-from rlhf_engine import DeepSpeedRLHFEngine
-
-import sys
-
-sys.path.append(
-    os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
-from utils.data.data_utils import create_prompt_dataset, MiniDataset, DataCollatorRLHF, get_unsupervised_data
-from utils.utils import print_rank_0, to_device, save_hf_format, set_random_seed, get_all_reduce_mean, moving_average, save_zero_three_model, load_hf_tokenizer
-from utils.module.lora import convert_lora_to_linear_layer
-from utils.perf import print_throughput_step3
+from dschat.rlhf.ppo_trainer import DeepSpeedPPOTrainer, DeepSpeedPPOTrainerUnsupervised
+from dschat.rlhf.rlhf_engine import DeepSpeedRLHFEngine
+from dschat.utils.data.data_utils import create_prompt_dataset, MiniDataset, DataCollatorRLHF, get_unsupervised_data
+from dschat.utils.utils import print_rank_0, to_device, save_hf_format, set_random_seed, get_all_reduce_mean, moving_average, save_zero_three_model, load_hf_tokenizer, \
+    ExponentialMovingAverage
+from dschat.utils.module.lora import convert_lora_to_linear_layer
+from dschat.utils.perf import print_throughput_step3
+from deepspeed.accelerator import get_accelerator
 
 writer = None
 
@@ -240,6 +237,11 @@ def parse_args():
     parser.add_argument('--offload',
                         action='store_true',
                         help='Enable ZeRO Offload techniques.')
+    parser.add_argument('--dtype',
+                        type=str,
+                        default='fp16',
+                        choices=['fp16', 'bf16'],
+                        help='Training data type')
     parser.add_argument(
         '--offload_reference_model',
         action='store_true',
@@ -262,12 +264,20 @@ def parse_args():
         '--critic_gradient_checkpointing',
         action='store_true',
         help='Enable HF gradient checkpointing for Critic model.')
-    parser.add_argument('--disable_actor_dropout',
-                        action='store_true',
-                        help='Disable the dropout of the actor model.')
-    parser.add_argument('--disable_critic_dropout',
-                        action='store_true',
-                        help='Disable the dropout of the critical model.')
+    parser.add_argument(
+        "--actor_dropout",
+        type=float,
+        default=None,
+        help="If actor dropout configured, use it. "
+        "Otherwise, keep the default dropout configuration of the actor model."
+    )
+    parser.add_argument(
+        "--critic_dropout",
+        type=float,
+        default=None,
+        help="If critic dropout configured, use it. "
+        "Otherwise, keep the default dropout configuration of the critic model."
+    )
     ## LoRA for efficient training setting
     parser.add_argument("--actor_lora_dim",
                         type=int,
@@ -306,11 +316,18 @@ def parse_args():
     parser.add_argument('--enable_ema',
                         action='store_true',
                         help='Enable EMA checkpoint for the model.')
-    ## Mixed Precision LoRA
+    ## Mixed Precision ZeRO++
     parser.add_argument(
         '--enable_mixed_precision_lora',
         action='store_true',
-        help='Enable Mixed Precision LoRA for training and generation.')
+        help='Enable Mixed Precision ZeRO++ for training and generation.')
+    ## low precision
+    parser.add_argument(
+        '--compute_fp32_loss',
+        action='store_true',
+        help='Relevant for low precision dtypes (fp16, bf16, etc.). '
+        'If specified, loss is calculated in fp32.'
+        'This applies for both actor and critic models.')
     ## Tensorboard logging
     parser.add_argument('--enable_tensorboard',
                         action='store_true',
@@ -318,6 +335,11 @@ def parse_args():
     parser.add_argument('--tensorboard_path',
                         type=str,
                         default="step3_tensorboard")
+    ## Tokenizer
+    parser.add_argument(
+        "--add_eot_token",
+        action='store_true',
+        help="Add <|endoftext|> as additional special token to tokenizer")
     ## Actor/critic model overflow alignment
     parser.add_argument(
         '--align_overflow',
@@ -327,6 +349,11 @@ def parse_args():
     parser.add_argument('--print_answers',
                         action='store_true',
                         help='Print prompt and answers during training')
+    parser.add_argument(
+        "--print_answers_interval",
+        type=int,
+        default=1,
+        help="If --print_answers enabled, controls the printing interval.")
     ## Testing
     parser.add_argument(
         '--enable_test_mode',
@@ -417,10 +444,10 @@ def main():
     args = parse_args()
 
     if args.local_rank == -1:
-        device = torch.device("cuda")
+        device = torch.device(get_accelerator().device_name())
     else:
-        torch.cuda.set_device(args.local_rank)
-        device = torch.device("cuda", args.local_rank)
+        get_accelerator().set_device(args.local_rank)
+        device = torch.device(get_accelerator().device_name(), args.local_rank)
         # Initializes the distributed backend which will take care of sychronizing nodes/GPUs
         deepspeed.init_distributed()
 
@@ -438,8 +465,12 @@ def main():
     torch.distributed.barrier()
 
     # load_hf_tokenizer will get the correct tokenizer and set padding tokens based on the model family
+    args.end_of_conversation_token = "<|endoftext|>"
+    additional_special_tokens = args.end_of_conversation_token if args.add_eot_token else None
     tokenizer = load_hf_tokenizer(args.actor_model_name_or_path,
-                                  fast_tokenizer=True)
+                                  fast_tokenizer=True,
+                                  add_special_tokens=additional_special_tokens)
+
     prompt_train_dataloader, unsupervised_train_dataloader, num_total_iters = create_datasets(
         args=args, tokenizer=tokenizer, train_phase=3)
 
@@ -451,14 +482,12 @@ def main():
         num_total_iters=num_total_iters,
         args=args)
 
-    # Mixed Precision LoRA
+    # Mixed Precision ZeRO++
     if args.enable_mixed_precision_lora:
         assert args.actor_lora_dim > 0, "Mixed Precision LoRA requires LoRA to be enabled"
         assert args.actor_zero_stage == 3, "Mixed Precision LoRA requires Zero stage 3"
         rlhf_engine.actor.optimizer.quantize_nontrainable_params()
-        print_rank_0("Mixed Precision LoRA enabled")
-
-    args.end_of_conversation_token = "<|endoftext|>"
+        print_rank_0("Mixed Precision ZeRO++ enabled")
 
     ppo_trainer = DeepSpeedPPOTrainerUnsupervised if unsupervised_training_enabled else DeepSpeedPPOTrainer
     trainer = ppo_trainer(rlhf_engine, args)
@@ -470,9 +499,13 @@ def main():
                                      args.per_device_training_batch_size)
 
     # Train!
-    print_rank_0("***** Running training *****", args.global_rank)
+    print_rank_0(
+        f"***** Running training (total_iters={num_total_iters}) *****",
+        args.global_rank)
 
     non_overflow_step_count = 0
+    step_average_reward = 0.
+    ema_reward_score = ExponentialMovingAverage()
 
     for epoch in range(args.num_train_epochs):
         print_rank_0(
@@ -540,13 +573,19 @@ def main():
                 print_rank_0(
                     f'Epoch: {epoch} | Step: {step} | PPO Epoch: {ppo_ep+1} | Actor Loss: {actor_loss_sum/inner_iter} | Critic Loss: {critic_loss_sum/inner_iter} | Unsupervised Loss: {unsup_loss_sum/inner_iter}',
                     args.global_rank)
-                print_throughput_step3(rlhf_engine.actor.model,
+                print_throughput_step3(rlhf_engine.actor.module,
                                        rlhf_engine.critic, args, e2e_time,
                                        trainer.generate_time, training_time,
                                        args.global_rank)
+
                 average_reward = get_all_reduce_mean(average_reward).item()
+                step_average_reward += average_reward / args.gradient_accumulation_steps_actor
+                if (step + 1) % args.gradient_accumulation_steps_actor == 0:
+                    ema_reward_score.update(step_average_reward)
+                    step_average_reward = 0.
+
                 print_rank_0(
-                    f"Average reward score: {average_reward/inner_iter}",
+                    f"Average reward score: {average_reward/inner_iter} | EMA reward score: {ema_reward_score.get()}",
                     args.global_rank)
                 print_rank_0(
                     "-------------------------------------------------------------------------------------",
@@ -558,13 +597,13 @@ def main():
                                       average_reward / inner_iter,
                                       global_step=step)
                     writer.add_scalar('actor_loss',
-                                      actor_loss,
+                                      actor_loss.item(),
                                       global_step=step)
                     writer.add_scalar('actor_loss_sum',
                                       actor_loss_sum,
                                       global_step=step)
                     writer.add_scalar('critic_loss',
-                                      critic_loss,
+                                      critic_loss.item(),
                                       global_step=step)
                     writer.add_scalar('critic_loss_sum',
                                       critic_loss_sum,
