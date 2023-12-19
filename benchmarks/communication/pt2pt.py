@@ -14,7 +14,7 @@ from communication.constants import *
 from deepspeed.accelerator import get_accelerator
 
 
-def timed_pt2pt(input, args):
+def timed_pt2pt(input, start_event, end_event, args):
     if args.dist == 'torch':
         import torch.distributed as dist
     elif args.dist == 'deepspeed':
@@ -36,7 +36,7 @@ def timed_pt2pt(input, args):
     sync_all()
 
     # time the actual comm op trials times and average it
-    pre = time.perf_counter()
+    start_event.record()
     for i in range(args.trials):
         if dist.get_rank() == 0:
             if args.async_op:
@@ -49,8 +49,9 @@ def timed_pt2pt(input, args):
             else:
                 dist.recv(input, src=0)
 
+    end_event.record()
     sync_all()
-    duration = time.perf_counter() - pre
+    duration = start_event.elapsed_time(end_event) / 1000
 
     # maintain and clean performance data
     avg_duration = duration / args.trials
@@ -76,6 +77,9 @@ def run_pt2pt(local_rank, args):
     print_header(args, 'pt2pt')
     global_rank = dist.get_rank()
     world_size = dist.get_world_size()
+
+    start_event = torch.cuda.Event(enable_timing=True)
+    end_event = torch.cuda.Event(enable_timing=True)
 
     if args.scan:
         # Create list of message sizes

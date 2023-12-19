@@ -14,7 +14,7 @@ from communication.constants import *
 from deepspeed.accelerator import get_accelerator
 
 
-def timed_all_reduce(input, args):
+def timed_all_reduce(input, start_event, end_event, args):
     if args.dist == 'torch':
         import torch.distributed as dist
     elif args.dist == 'deepspeed':
@@ -27,11 +27,12 @@ def timed_all_reduce(input, args):
     sync_all()
 
     # time the actual comm op trials times and average it
-    pre = time.perf_counter()
+    start_event.record()
     for i in range(args.trials):
         dist.all_reduce(input, async_op=args.async_op)
+    end_event.record()
     sync_all()
-    duration = time.perf_counter() - pre
+    duration = start_event.elapsed_time(end_event) / 1000
 
     # maintain and clean performance data
     avg_duration = duration / args.trials
@@ -58,6 +59,9 @@ def run_all_reduce(local_rank, args):
 
     world_size = dist.get_world_size()
     global_rank = dist.get_rank()
+
+    start_event = torch.cuda.Event(enable_timing=True)
+    end_event = torch.cuda.Event(enable_timing=True)
 
     if args.scan:
         M_LIST = []
