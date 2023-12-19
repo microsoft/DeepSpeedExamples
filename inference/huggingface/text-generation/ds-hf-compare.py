@@ -1,5 +1,7 @@
 import torch
+import intel_extension_for_pytorch
 import deepspeed
+import intel_extension_for_deepspeed
 from transformers import pipeline
 from difflib import SequenceMatcher
 from argparse import ArgumentParser
