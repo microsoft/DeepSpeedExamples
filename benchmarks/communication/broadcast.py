@@ -14,7 +14,7 @@ from communication.constants import *
 from deepspeed.accelerator import get_accelerator
 
 
-def timed_broadcast(input, start_event, end_event args):
+def timed_broadcast(input, start_event, end_event, args):
     if args.dist == 'torch':
         import torch.distributed as dist
     elif args.dist == 'deepspeed':
