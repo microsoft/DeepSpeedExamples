@@ -96,7 +96,7 @@ def run_all_gather(local_rank, args):
                 else:
                     raise e
             sync_all()
-            timed_all_gather(input, output, args)
+            timed_all_gather(input, output, start_event, end_event, args)
     else:
         # all_gather_into_tensor saves memory
         if ((args.dist == 'torch' or args.dist == 'deepspeed') and dist.has_all_gather_into_tensor()):
@@ -130,7 +130,7 @@ def run_all_gather(local_rank, args):
                 raise e
 
         sync_all()
-        timed_all_gather(input, output, args)
+        timed_all_gather(input, output, start_event, end_event, args)
 
 
 if __name__ == "__main__":

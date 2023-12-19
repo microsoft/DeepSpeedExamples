@@ -105,7 +105,7 @@ def run_pt2pt(local_rank, args):
                 else:
                     raise e
             sync_all()
-            timed_pt2pt(input, args)
+            timed_pt2pt(input, start_event, end_event, args)
     else:
         # Send the biggest message size our GPUs can fit. If you're facing OOM errors, reduce the mem_factor
         # Don't need output tensor, so double mem_factor
@@ -125,7 +125,7 @@ def run_pt2pt(local_rank, args):
                 sync_all()
                 return
         sync_all()
-        timed_pt2pt(input, args)
+        timed_pt2pt(input, start_event, end_event, args)
 
 
 if __name__ == "__main__":

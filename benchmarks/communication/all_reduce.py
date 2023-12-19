@@ -86,7 +86,7 @@ def run_all_reduce(local_rank, args):
                 else:
                     raise e
             sync_all()
-            timed_all_reduce(input, args)
+            timed_all_reduce(input, start_event, end_event, args)
     else:
         # Send the biggest message size our GPUs can fit. If you're facing OOM errors, reduce the mem_factor
         # Don't need output tensor, so we double mem_factor
@@ -108,7 +108,7 @@ def run_all_reduce(local_rank, args):
             else:
                 raise e
         sync_all()
-        timed_all_reduce(input, args)
+        timed_all_reduce(input, start_event, end_event, args)
 
 
 if __name__ == "__main__":

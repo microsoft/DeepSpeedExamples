@@ -87,7 +87,7 @@ def run_all_to_all(local_rank, args):
                 else:
                     raise e
             sync_all()
-            timed_all_to_all(input, output, args)
+            timed_all_to_all(input, output, start_event, end_event, args)
     else:
         # Send the biggest message size our GPUs can fit. If you're facing OOM errors, reduce the mem_factor
         elements_per_gpu = max_numel(comm_op='all_to_all',
@@ -122,7 +122,7 @@ def run_all_to_all(local_rank, args):
                     print(f"Before AllToAll Input List at rank {global_rank}: {input}")
                 dist.barrier()
 
-        timed_all_to_all(input, output, args)
+        timed_all_to_all(input, output, start_event, end_event, args)
 
         if args.debug:
             for i in range(world_size):
