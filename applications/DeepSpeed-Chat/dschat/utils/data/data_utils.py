@@ -162,7 +162,7 @@ class PromptDataset(Dataset):
 
 
 def create_dataset_split(current_dataset, raw_dataset, train_phase, tokenizer,
-                         end_of_conversation_token, max_seq_len):
+                         end_of_conversation_token, max_seq_len, add_eot_token=True):
     prompt_dataset = []
     chosen_dataset = []
     reject_dataset = []
@@ -172,7 +172,8 @@ def create_dataset_split(current_dataset, raw_dataset, train_phase, tokenizer,
             chosen_sentence = raw_dataset.get_prompt_and_chosen(
                 tmp_data)  # the accept response
             if chosen_sentence is not None:
-                chosen_sentence += end_of_conversation_token
+                if add_eot_token is True:
+                    chosen_sentence += end_of_conversation_token
                 chosen_token = tokenizer(chosen_sentence,
                                          max_length=max_seq_len,
                                          padding="max_length",
@@ -195,8 +196,9 @@ def create_dataset_split(current_dataset, raw_dataset, train_phase, tokenizer,
             reject_sentence = raw_dataset.get_prompt_and_rejected(
                 tmp_data)  # the accept response
             if chosen_sentence is not None and reject_sentence is not None:
-                chosen_sentence += end_of_conversation_token  # the accept response
-                reject_sentence += end_of_conversation_token
+                if add_eot_token is True:
+                    chosen_sentence += end_of_conversation_token  # the accept response
+                    reject_sentence += end_of_conversation_token
                 chosen_token = tokenizer(chosen_sentence,
                                          max_length=max_seq_len,
                                          padding="max_length",
@@ -207,12 +209,7 @@ def create_dataset_split(current_dataset, raw_dataset, train_phase, tokenizer,
                                          padding="max_length",
                                          truncation=True,
                                          return_tensors="pt")
-                chosen_token["input_ids"] = chosen_token["input_ids"]
-                chosen_token["attention_mask"] = chosen_token["attention_mask"]
                 chosen_dataset.append(chosen_token)
-
-                reject_token["input_ids"] = reject_token["input_ids"]
-                reject_token["attention_mask"] = reject_token["attention_mask"]
                 reject_dataset.append(reject_token)
         print(
             f'Creating dataset {raw_dataset.dataset_name_clean} for {train_phase=} size={len(chosen_dataset)}'
@@ -241,7 +238,7 @@ def create_dataset_split(current_dataset, raw_dataset, train_phase, tokenizer,
 
 def create_dataset(local_rank, dataset_name, data_split, output_path,
                    train_phase, seed, tokenizer, end_of_conversation_token,
-                   max_seq_len, rebuild):
+                   max_seq_len, rebuild, add_eot_token=True):
     raw_dataset = get_raw_dataset(dataset_name, output_path, seed, local_rank)
     train_dataset = raw_dataset.get_train_data()
     train_index = get_raw_dataset_split_index(local_rank, output_path,
@@ -253,7 +250,7 @@ def create_dataset(local_rank, dataset_name, data_split, output_path,
     train_dataset = create_dataset_split(train_dataset, raw_dataset,
                                          train_phase, tokenizer,
                                          end_of_conversation_token,
-                                         max_seq_len)
+                                         max_seq_len, add_eot_token=add_eot_token)
 
     eval_dataset = raw_dataset.get_eval_data()
     eval_index = get_raw_dataset_split_index(local_rank, output_path,
@@ -264,7 +261,7 @@ def create_dataset(local_rank, dataset_name, data_split, output_path,
     eval_dataset = Subset(eval_dataset, eval_index)
     eval_dataset = create_dataset_split(eval_dataset, raw_dataset, train_phase,
                                         tokenizer, end_of_conversation_token,
-                                        max_seq_len)
+                                        max_seq_len, add_eot_token=add_eot_token)
     return train_dataset, eval_dataset
 
 
@@ -277,11 +274,14 @@ def create_prompt_dataset(local_rank,
                           tokenizer,
                           max_seq_len,
                           end_of_conversation_token="<|endoftext|>",
-                          sft_only_data_path=[],
-                          reload=False):
+                          sft_only_data_path=None,
+                          reload=False,
+                          add_eot_token=True):
     """
     Creates the prompt dataset
     """
+    if sft_only_data_path is None:
+        sft_only_data_path = []
     os.makedirs(output_path, exist_ok=True)
     fname = "_".join(data_path)
     sft_cache_key = "_".join(sft_only_data_path)
@@ -311,7 +311,8 @@ def create_prompt_dataset(local_rank,
                 tokenizer,
                 end_of_conversation_token,
                 max_seq_len,
-                rebuild=reload)
+                rebuild=reload,
+                add_eot_token=add_eot_token)
         else:  # Blending datasets.
             train_datasets = []
             eval_datasets = []
@@ -328,7 +329,8 @@ def create_prompt_dataset(local_rank,
                     tokenizer,
                     end_of_conversation_token,
                     max_seq_len,
-                    rebuild=reload)
+                    rebuild=reload,
+                    add_eot_token=add_eot_token)
                 train_datasets.append(train_dataset)
                 eval_datasets.append(eval_dataset)
                 train_size += len(train_dataset)
@@ -357,7 +359,8 @@ def create_prompt_dataset(local_rank,
                     tokenizer,
                     end_of_conversation_token,
                     max_seq_len,
-                    rebuild=reload)
+                    rebuild=reload,
+                    add_eot_token=add_eot_token)
                 sft_train_datasets.append(sft_train_dataset)
                 sft_eval_datasets.append(sft_eval_dataset)
                 sft_train_size += len(sft_train_dataset)

@@ -277,7 +277,7 @@ def main():
     train_dataset, eval_dataset = create_prompt_dataset(
         args.local_rank, args.data_path, args.data_split,
         args.data_output_path, train_phase, args.seed, tokenizer,
-        args.max_seq_len)
+        args.max_seq_len, add_eot_token=args.add_eot_token)
 
     # DataLoaders creation:
     data_collator = DataCollatorReward()
