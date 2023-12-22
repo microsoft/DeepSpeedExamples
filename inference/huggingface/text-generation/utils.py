@@ -114,7 +114,7 @@ class DSPipeline():
             if torch.is_tensor(input_tokens[t]):
                 input_tokens[t] = input_tokens[t].to(self.device)
 
-        self.model.xpu().to(self.device)
+        self.model.to(self.device)
 
         if isinstance(self.tokenizer, LlamaTokenizerFast):
             # NOTE: Check if Llamma can work w/ **input_tokens
