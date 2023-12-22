@@ -8,6 +8,7 @@ import intel_extension_for_pytorch
 import time
 from utils import DSPipeline, Performance
 from deepspeed.runtime.utils import see_memory_usage
+from deepspeed.accelerator import get_accelerator
 from arguments import parser
 
 args = parser.parse_args()
@@ -79,13 +80,13 @@ iters = 30 if args.test_performance else 2 # warmup
 times = []
 for i in range(iters):
     # torch.cuda.synchronize()
-    deepspeed.accelerator.runtime.synchronize()
+    get_accelerator().synchronize()
     start = time.time()
     outputs = pipe(inputs,
             num_tokens=args.max_new_tokens,
             do_sample=(not args.greedy))
     # torch.cuda.synchronize()
-    deepspeed.accelerator.runtime.synchronize()
+    get_accelerator().synchronize()
     end = time.time()
     times.append(end - start)
 print(f"generation time is {times[1]} sec")
@@ -96,4 +97,4 @@ if args.local_rank == 0:
     if args.test_performance:
         Performance.print_perf_stats(map(lambda t: t / args.max_new_tokens, times), pipe.model.config, args.dtype, args.batch_size)
 
- 
+print("Done !")

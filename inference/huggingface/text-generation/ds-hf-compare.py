@@ -5,6 +5,7 @@ import intel_extension_for_deepspeed
 from transformers import pipeline
 from difflib import SequenceMatcher
 from argparse import ArgumentParser
+from deepspeed.accelerator import get_accelerator
 
 parser = ArgumentParser()
 
@@ -75,7 +76,8 @@ else:
     inputs = test_inputs
 
 data_type = getattr(torch, args.dtype)
-pipe = pipeline('text-generation', args.model, torch_dtype=data_type, device=0)
+# pipe = pipeline('text-generation', args.model, torch_dtype=data_type, device=0)
+pipe = pipeline('text-generation', args.model, torch_dtype=data_type, device=torch.device(get_accelerator().device_name(0)))
 
 base_out_list = []
 match_count=0

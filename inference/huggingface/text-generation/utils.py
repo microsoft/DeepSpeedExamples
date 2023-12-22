@@ -7,9 +7,12 @@ import io
 from pathlib import Path
 import json
 import deepspeed
+import intel_extension_for_deepspeed
 import torch
+import intel_extension_for_pytorch
 from huggingface_hub import snapshot_download
 from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer, LlamaTokenizerFast
+from deepspeed.accelerator import get_accelerator
 
 class DSPipeline():
     '''
@@ -34,7 +37,8 @@ class DSPipeline():
         elif device < 0:
             self.device = torch.device("cpu")
         else:
-            self.device = torch.device(f"cuda:{device}")
+            # self.device = torch.device(f"cuda:{device}")
+            self.device = torch.device(get_accelerator().device_name(device))
 
         # the Deepspeed team made these so it's super fast to load (~1 minute), rather than wait 10-20min loading time.
         self.tp_presharded_models = ["microsoft/bloom-deepspeed-inference-int8", "microsoft/bloom-deepspeed-inference-fp16"]
@@ -110,7 +114,7 @@ class DSPipeline():
             if torch.is_tensor(input_tokens[t]):
                 input_tokens[t] = input_tokens[t].to(self.device)
 
-        self.model.cuda().to(self.device)
+        self.model.xpu().to(self.device)
 
         if isinstance(self.tokenizer, LlamaTokenizerFast):
             # NOTE: Check if Llamma can work w/ **input_tokens
