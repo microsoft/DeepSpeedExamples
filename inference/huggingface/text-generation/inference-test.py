@@ -1,10 +1,8 @@
 from transformers import AutoModelForCausalLM, AutoTokenizer, AutoConfig
 import deepspeed
-import intel_extension_for_deepspeed
 import math
 import os
 import torch
-import intel_extension_for_pytorch
 import time
 from utils import DSPipeline, Performance
 from deepspeed.runtime.utils import see_memory_usage

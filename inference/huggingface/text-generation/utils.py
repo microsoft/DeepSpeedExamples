@@ -7,9 +7,7 @@ import io
 from pathlib import Path
 import json
 import deepspeed
-import intel_extension_for_deepspeed
 import torch
-import intel_extension_for_pytorch
 from huggingface_hub import snapshot_download
 from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer, LlamaTokenizerFast
 from deepspeed.accelerator import get_accelerator
