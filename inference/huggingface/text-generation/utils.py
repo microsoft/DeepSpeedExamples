@@ -35,7 +35,6 @@ class DSPipeline():
         elif device < 0:
             self.device = torch.device("cpu")
         else:
-            # self.device = torch.device(f"cuda:{device}")
             self.device = torch.device(get_accelerator().device_name(device))
 
         # the Deepspeed team made these so it's super fast to load (~1 minute), rather than wait 10-20min loading time.
