@@ -92,3 +92,4 @@ if args.local_rank == 0:
         print(f"\nin={i}\nout={o}\n{'-'*60}")
     if args.test_performance:
         Performance.print_perf_stats(map(lambda t: t / args.max_new_tokens, times), pipe.model.config, args.dtype, args.batch_size)
+        
