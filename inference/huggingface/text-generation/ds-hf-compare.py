@@ -8,7 +8,7 @@ from deepspeed.accelerator import get_accelerator
 parser = ArgumentParser()
 
 parser.add_argument("--model", required=True, type=str, help="model_name")
-parser.add_argument("--dtype", default="float16", type=str, choices=["float32", "float16", "int8", "bf16"], help="data-type")
+parser.add_argument("--dtype", default="float16", type=str, choices=["float32", "float16", "int8", "bfloat16"], help="data-type")
 parser.add_argument("--num_inputs", default=1, type=int, help="number of test inputs")
 parser.add_argument("--min_length", default=200, type=int, help="minimum tokens generated")
 parser.add_argument("--max_length", default=300, type=int, help="maximum tokens generated")
