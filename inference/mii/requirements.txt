@@ -1,1 +1,1 @@
-deepspeed-mii>=0.1.4
+deepspeed-mii>=0.1.3
