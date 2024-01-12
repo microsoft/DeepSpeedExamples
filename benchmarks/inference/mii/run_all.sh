@@ -6,18 +6,35 @@ TP_SIZES["7b"]="1"
 TP_SIZES["13b"]="1:2:4"
 TP_SIZES["70b"]="4:8"
 
+# model dependent parameters
+# LLAMA-2
+MAX_PROMPT_LENGTH=4000
+PROMPT_LENGTH_LIST=(2600 1200)
+MAX_NEW_TOKENS_LIST=(60 128)
+
+# Falcon
+# MAX_PROMPT_LENGTH=2000
+# PROMPT_LENGTH_LIST=(1900 1200)
+# MAX_NEW_TOKENS_LIST=(60 128)
+
 for PARAM_SIZE in ${PARAM_SIZES[@]}; do
+    MODEL_NAME=meta-llama/Llama-2-${PARAM_SIZE}-hf
+    # MODEL_NAME=tiiuae/falcon-${PARAM_SIZE}
     
     IFS=':' read -ra TP_VALUES <<< ${TP_SIZES[${PARAM_SIZE}]}
     for TP in ${TP_VALUES[@]}; do
         DEPLOYMENT_NAME=llama2-${PARAM_SIZE}-tp${TP}-b${RAGGED_BATCH_SIZE}
-        python server.py --model_name meta-llama/Llama-2-${PARAM_SIZE}-hf -d ${DEPLOYMENT_NAME} -m ${TP} -b ${RAGGED_BATCH_SIZE} start
+        # DEPLOYMENT_NAME=falcon-${PARAM_SIZE}-tp${TP}-b${RAGGED_BATCH_SIZE}
 
-        DEPLOYMENT_NAME=${DEPLOYMENT_NAME} PROMPT_LENGTH=2600 MAX_NEW_TOKENS=60 bash ./run_benchmark_client.sh
-        DEPLOYMENT_NAME=${DEPLOYMENT_NAME} PROMPT_LENGTH=2600 MAX_NEW_TOKENS=128 bash ./run_benchmark_client.sh
-        DEPLOYMENT_NAME=${DEPLOYMENT_NAME} PROMPT_LENGTH=1200 MAX_NEW_TOKENS=60 bash ./run_benchmark_client.sh
-        DEPLOYMENT_NAME=${DEPLOYMENT_NAME} PROMPT_LENGTH=1200 MAX_NEW_TOKENS=128 bash ./run_benchmark_client.sh
-
+        echo "Starting server"
+        python server.py --model_name ${MODEL_NAME} -d ${DEPLOYMENT_NAME} -m ${TP} -b ${RAGGED_BATCH_SIZE} start
+        
+        for PROMPT_LENGTH in ${PROMPT_LENGTH_LIST[@]}; do
+            for MAX_NEW_TOKENS in ${MAX_NEW_TOKENS_LIST[@]}; do
+                source ./run_benchmark_client.sh
+            done
+        done
+        
         echo "Stopping server"
         python server.py -d ${DEPLOYMENT_NAME} stop
         sleep 120

@@ -22,7 +22,6 @@ import requests
 
 from postprocess_results import get_summary, ResponseDetails
 
-MAX_PROMPT_LENGTH = 4000
 PROMPT_LENGTH_VAR = 0.3
 MAX_NEW_TOKENS_VAR = 0.3
 
@@ -33,6 +32,15 @@ def parse_args():
                         type=int,
                         default=60,
                         help="min and max num tokens argument for huggingface")
+    parser.add_argument("-p",
+                        "--max_prompt_length",
+                        type=int,
+                        default=60,
+                        help="Maximum prompt length allowed")
+    parser.add_argument("-m",
+                        "--model_name",
+                        type=str,
+                        default="model")
     parser.add_argument("-d",
                         "--deployment_name",
                         type=str,
@@ -197,7 +205,7 @@ def _run_parallel(deployment_name, warmup, barrier, query_queue, result_queue, c
     print(f"Worker ({pid}) finished. session_id: {session_id}")
 
 
-def run_client(client_num, deployment_name, prompt_length, max_new_tokens, num_queries, warmup, stream, vllm, use_thread=False):
+def run_client(client_num, model_name, deployment_name, prompt_length, max_new_tokens, max_prompt_length, num_queries, warmup, stream, vllm, use_thread=False):
     """
     Run MII client for benchmarking. The scenario is a bit complicated:
     1. The main process puts `num_queries` queries into the input queue
@@ -228,10 +236,9 @@ def run_client(client_num, deployment_name, prompt_length, max_new_tokens, num_q
     for p in processes:
         p.start()
 
-    tokenizer = AutoTokenizer.from_pretrained("meta-llama/Llama-2-7b-hf")
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
     query_generator = RandomQueryGenerator(all_text, tokenizer, seed=42)
-    MAX_PROMPT_LENGTH = 4000
-    request_text = query_generator.get_random_request_text(prompt_length, prompt_length*PROMPT_LENGTH_VAR, MAX_PROMPT_LENGTH, num_queries + warmup*client_num)
+    request_text = query_generator.get_random_request_text(prompt_length, prompt_length*PROMPT_LENGTH_VAR, max_prompt_length, num_queries + warmup*client_num)
 
     for t in request_text:
         req_max_new_tokens = int(np.random.normal(max_new_tokens, MAX_NEW_TOKENS_VAR*max_new_tokens))
@@ -262,9 +269,9 @@ if __name__ == "__main__":
     if args.out_json_path is not None and not args.out_json_path.parent.exists():
         raise ValueError(f"Parent directory of {args.out_json_path}")
 
-    response_details = run_client(args.client_num, args.deployment_name,
+    response_details = run_client(args.client_num, args.model_name, args.deployment_name,
                             args.prompt_length,
-                            args.max_new_tokens, args.num_queries, args.warmup,
+                            args.max_new_tokens, args.max_prompt_length, args.num_queries, args.warmup,
                             args.stream, args.vllm, args.use_thread)
 
     args_dict = vars(args)
