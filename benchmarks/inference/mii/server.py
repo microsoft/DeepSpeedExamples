@@ -2,82 +2,118 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # DeepSpeed Team
+import subprocess
+import time
+
 import mii
-import argparse
-
-from mii.constants import DeploymentType
-
 from deepspeed.inference import RaggedInferenceEngineConfig, DeepSpeedTPConfig
 from deepspeed.inference.v2.ragged import DSStateManagerConfig
 
-def start_server(model_name,
-                 deployment_name,
-                 task,
-                 tensor_parallel,
-                 replica_num,
-                 max_ragged_batch_size):
-    tp_config = DeepSpeedTPConfig(tp_size=tensor_parallel)
-    mgr_config = DSStateManagerConfig(max_ragged_batch_size=max_ragged_batch_size, max_ragged_sequence_count=max_ragged_batch_size)
-    inference_config = RaggedInferenceEngineConfig(tensor_parallel=tp_config,
-                                                   state_manager=mgr_config)
+from utils import parse_args
 
-    mii.serve(
-        model_name,
-        deployment_name=deployment_name,
-        tensor_parallel=tensor_parallel,
-        task=task,
-        inference_engine_config=inference_config,
-        replica_num=replica_num
+
+def start_server(
+    model, deployment_name, tp_size, num_replicas, max_ragged_batch_size, vllm
+):
+    if vllm:
+        start_vllm_server(model=model, tp_size=tp_size)
+    else:
+        start_mii_server(
+            model=model,
+            deployment_name=deployment_name,
+            tp_size=tp_size,
+            num_replicas=num_replicas,
+            max_ragged_batch_size=max_ragged_batch_size,
+        )
+
+
+def start_vllm_server(model: str, tp_size: int) -> None:
+    vllm_cmd = (
+        "python",
+        "-m",
+        "vllm.entrypoints.api_server",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "26500",
+        "--tensor-parallel-size",
+        str(tp_size),
+        "--model",
+        model,
+    )
+    p = subprocess.Popen(vllm_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    start_time = time.time()
+    timeout_after = 60 * 2  # 2 minutes
+    while True:
+        line = p.stderr.readline().decode("utf-8")
+        if "Application startup complete" in line:
+            break
+        time.sleep(1)
+        if time.time() - start_time > timeout_after:
+            p.terminate()
+            stop_vllm_server()
+            raise TimeoutError("Timed out waiting for VLLM server to start")
+
+
+def start_mii_server(
+    model, deployment_name, tp_size, num_replicas, max_ragged_batch_size
+):
+    tp_config = DeepSpeedTPConfig(tp_size=tp_size)
+    mgr_config = DSStateManagerConfig(
+        max_ragged_batch_size=max_ragged_batch_size,
+        max_ragged_sequence_count=max_ragged_batch_size,
+    )
+    inference_config = RaggedInferenceEngineConfig(
+        tensor_parallel=tp_config, state_manager=mgr_config
     )
 
-def stop_server(deployment_name):
+    mii.serve(
+        model,
+        deployment_name=deployment_name,
+        tensor_parallel=tp_size,
+        inference_engine_config=inference_config,
+        replica_num=num_replicas,
+    )
+
+
+def stop_server(deployment_name, vllm):
+    if vllm:
+        stop_vllm_server()
+    else:
+        stop_mii_server(deployment_name)
+
+
+def stop_vllm_server():
+    vllm_cmd = ("pkill", "-f", "vllm.entrypoints.api_server")
+    p = subprocess.Popen(vllm_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    p.wait()
+
+
+def stop_mii_server(deployment_name):
     mii.client(deployment_name).terminate_server()
 
 
-def parse_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--model_name",
-                        type=str,
-                        default="meta-llama/Llama-2-7b-hf",
-                        help="Name of the model in the model_files to benchmark")
-    parser.add_argument("-d",
-                        "--deployment_name",
-                        type=str,
-                        default="benchmark_deployment")
-    parser.add_argument("-t", "--task", type=str,
-                        help="Task type. Currently only text-generation is supported",
-                        default="text-generation")
-    parser.add_argument("-m",
-                        "--tensor_parallel",
-                        type=int,
-                        help="Degree of tensor (model) parallelism",
-                        default=1)
-    parser.add_argument("-b",
-                        "--ragged_batch_size",
-                        type=int,
-                        help="Max batch size for ragged batching",
-                        default=768)
-    parser.add_argument("-r",
-                        "--replica_num",
-                        type=int,
-                        help="Number of replicas for load balancing",
-                        default=1)
-    parser.add_argument("cmd", help="start, stop, or restart")
-    return parser.parse_args()
-
-
 if __name__ == "__main__":
-    args = parse_args()
+    args = parse_args(server_args=True)
 
     if args.cmd == "start":
-        start_server(args.model_name,
-                     args.deployment_name,
-                     args.task,
-                     args.tensor_parallel,
-                     args.replica_num,
-                     args.ragged_batch_size)
+        start_server(
+            model=args.model,
+            deployment_name=args.deployment_name,
+            tp_size=args.tp_size,
+            num_replicas=args.num_replicas,
+            max_ragged_batch_size=args.max_ragged_batch_size,
+            vllm=args.vllm,
+        )
     elif args.cmd == "stop":
-        print("running stop")
-        stop_server(args.deployment_name)
+        stop_server(deployment_name=args.deployment_name, vllm=args.vllm)
     else:
-        raise ValueError(f"Unknown command: {args.cmd}")
+        stop_server(deployment_name=args.deployment_name, vllm=args.vllm)
+        start_server(
+            model=args.model,
+            deployment_name=args.deployment_name,
+            tp_size=args.tp_size,
+            num_replicas=args.num_replicas,
+            max_ragged_batch_size=args.max_ragged_batch_size,
+            vllm=args.vllm,
+        )
