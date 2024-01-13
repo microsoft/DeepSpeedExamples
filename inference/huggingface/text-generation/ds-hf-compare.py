@@ -14,7 +14,7 @@ parser.add_argument("--min_length", default=200, type=int, help="minimum tokens 
 parser.add_argument("--max_length", default=300, type=int, help="maximum tokens generated")
 parser.add_argument("--print_outputs", action='store_true', help="print generated text outputs")
 parser.add_argument("--local_rank", type=int, default=0, help="local rank")
-parser.add_argument("--use_kernel", action='store_true', default=False, help="enable kernel-injection")
+parser.add_argument("--use_kernel", default=True, help="enable kernel-injection")
 args = parser.parse_args()
 
 def string_similarity(str1, str2):
@@ -86,8 +86,7 @@ for prompt in inputs:
     base_out_list += pipe(prompt, do_sample=False, min_length=args.min_length, max_length=args.max_length)
 
 # Initialize the model with DeepSpeed
-pipe.model = deepspeed.init_inference(pipe.model, dtype=data_type, 
-                                      replace_with_kernel_inject=False if get_accelerator().device_name()=='cpu' else args.use_kernel)
+pipe.model = deepspeed.init_inference(pipe.model, dtype=data_type, replace_with_kernel_inject=args.use_kernel)
 
 # Run the DeepSpeed model and compare outputs
 for prompt, base_out in zip(inputs, base_out_list):
