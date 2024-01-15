@@ -110,4 +110,4 @@ for prompt, base_out in zip(inputs, base_out_list):
         similarity = string_similarity(base_out['generated_text'], ds_out[0]['generated_text'])
         if args.print_outputs: print(f"The similarity ratio is: {similarity*100}%")
 
-print(f"Matches: {match_count}\nMismatches: {mismatch_count}")
+print_0(f"Matches: {match_count}\nMismatches: {mismatch_count}")
