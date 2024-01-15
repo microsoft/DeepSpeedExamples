@@ -94,9 +94,9 @@ if args.local_rank == 0:
 pipe.model = deepspeed.init_inference(pipe.model, dtype=data_type, replace_with_kernel_inject=args.use_kernel)
 
 # Run the DeepSpeed model and compare outputs
-if args.local_rank == 0:
-    for prompt, base_out in zip(inputs, base_out_list):
-        ds_out = pipe(prompt, do_sample=False, min_length=args.min_length, max_length=args.max_length)
+for prompt, base_out in zip(inputs, base_out_list):
+    ds_out = pipe(prompt, do_sample=False, min_length=args.min_length, max_length=args.max_length)
+    if args.local_rank == 0:
         if args.print_outputs:
             print(f"baseline output: {base_out}")
             print(f"deepspeed output: {ds_out}")
@@ -109,5 +109,5 @@ if args.local_rank == 0:
             mismatch_count += 1
         similarity = string_similarity(base_out['generated_text'], ds_out[0]['generated_text'])
         if args.print_outputs: print(f"The similarity ratio is: {similarity*100}%")
-        
-    print(f"Matches: {match_count}\nMismatches: {mismatch_count}")
+
+print(f"Matches: {match_count}\nMismatches: {mismatch_count}")
