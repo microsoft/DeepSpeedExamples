@@ -53,7 +53,7 @@ def parse_args(
     client_parser.add_argument("--warmup", type=int, default=1)
     client_parser.add_argument("--use_thread", action="store_true")
     client_parser.add_argument("--stream", action="store_true")
-    client_parser.add_argument("--out_json_path", type=Path, default=None)
+    client_parser.add_argument("--out_json_dir", type=Path, default="./results/")
 
     # Create the parser, inheriting from the server and/or client parsers
     parents = []
@@ -91,15 +91,25 @@ def get_args_product(
 
 
 def get_results_path(args: argparse.Namespace) -> Path:
+    if args.vllm:
+        lib_path = "vllm"
+    else:
+        lib_path = "fastgen"
     return Path(
-        f"results/{args.model}",
-        "-tp{args.tp_size}",
-        "-bs{args.max_ragged_batch_size}",
-        "-replicas{args.num_replicas}",
-        "-prompt{args.mean_prompt_length}",
-        "-gen{args.mean_max_new_tokens}",
-        "-clients{args.num_clients}",
-        ".json",
+        args.out_json_dir,
+        f"{lib_path}/",
+        "-".join(
+            (
+                args.model.replace("/", "_"),
+                f"tp{args.tp_size}",
+                f"bs{args.max_ragged_batch_size}",
+                f"replicas{args.num_replicas}",
+                f"prompt{args.mean_prompt_length}",
+                f"gen{args.mean_max_new_tokens}",
+                f"clients{args.num_clients}",
+            )
+        )
+        + ".json",
     )
 
 
@@ -117,9 +127,7 @@ def output_summary(args, response_details):
         + f"First token received: {ps.first_token_latency:.3f} s"
     )
 
-    out_json_path = args.out_json_path
-    if out_json_path is None:
-        out_json_path = get_results_path(args)
+    out_json_path = get_results_path(args)
 
     os.makedirs(out_json_path.parent, exist_ok=True)
 
