@@ -89,6 +89,7 @@ def output_charts(model_size, tp, bs, prompt, gen, log_dir, out_dir):
 
 
 if __name__ == "__main__":
+    raise NotImplementedError("This script is not up to date")
     args = get_args()
 
     for model_size, tps in tp_sizes.items():

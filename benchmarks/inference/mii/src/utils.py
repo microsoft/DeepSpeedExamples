@@ -113,9 +113,8 @@ def get_results_path(args: argparse.Namespace) -> Path:
     )
 
 
-def output_summary(args, response_details):
-    args_dict = vars(args)
-    ps = get_summary(args_dict, response_details)
+def print_summary(args, response_details):
+    ps = get_summary(vars(args), response_details)
     print(
         f"Deployment: {args.deployment_name} Clients: {args.num_clients}, "
         + f"Prompt (mean): {args.mean_prompt_length} tokens, "
@@ -127,8 +126,10 @@ def output_summary(args, response_details):
         + f"First token received: {ps.first_token_latency:.3f} s"
     )
 
-    out_json_path = get_results_path(args)
 
+def save_json_results(args, response_details):
+    args_dict = vars(args)
+    out_json_path = get_results_path(args)
     os.makedirs(out_json_path.parent, exist_ok=True)
 
     with open(out_json_path, "w") as f:

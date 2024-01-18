@@ -229,6 +229,7 @@ def display_results(model_size, tp, bs, sla_token_gen, prompt, gen, log_dir, out
 
 
 if __name__ == "__main__":
+    raise NotImplementedError("This script is not up to date")
     args = get_args()
 
     if args.test:

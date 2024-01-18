@@ -17,7 +17,7 @@ import requests
 
 from postprocess_results import ResponseDetails
 
-from utils import parse_args, output_summary, get_args_product, CLIENT_PARAMS
+from utils import parse_args, print_summary, get_args_product, CLIENT_PARAMS
 
 
 def call_mii(client, input_tokens, max_new_tokens, stream):
@@ -263,10 +263,7 @@ def run_client(args):
 if __name__ == "__main__":
     args = parse_args(client_args=True)
 
-    if args.out_json_path is not None and not args.out_json_path.parent.exists():
-        raise ValueError(f"Parent directory of {args.out_json_path}")
-
     for client_args in get_args_product(args, which=CLIENT_PARAMS):
         response_details = run_client(client_args)
 
-        output_summary(client_args, response_details)
+        print_summary(client_args, response_details)

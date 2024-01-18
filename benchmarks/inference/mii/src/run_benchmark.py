@@ -1,6 +1,7 @@
 from utils import (
     parse_args,
-    output_summary,
+    print_summary,
+    save_json_results,
     get_args_product,
     SERVER_PARAMS,
     CLIENT_PARAMS,
@@ -27,7 +28,8 @@ def run_benchmark() -> None:
 
         for client_args in get_args_product(server_args, which=CLIENT_PARAMS):
             response_details = run_client(client_args)
-            output_summary(client_args, response_details)
+            print_summary(client_args, response_details)
+            save_json_results(client_args, response_details)
 
         stop_server(server_args)
 
