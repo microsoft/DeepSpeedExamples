@@ -4,16 +4,15 @@ from postprocess_results import get_summary, ResponseDetails
 import json
 from datetime import datetime
 from dataclasses import asdict
+import itertools
+from typing import Iterator, List
+import copy
+import os
 
 # For these arguments, users can provide multiple values when running the
 # benchmark. The benchmark will iterate over all possible combinations.
-SERVER_PARAMS = ["tp_size", "max_ragged_batch_size", "replica_num"]
-CLIENT_PARAMS = [
-    "mean_prompt_length",
-    "mean_max_new_tokens",
-    "num_clients",
-    "num_requests",
-]
+SERVER_PARAMS = ["tp_size", "max_ragged_batch_size", "num_replicas"]
+CLIENT_PARAMS = ["mean_prompt_length", "mean_max_new_tokens", "num_clients"]
 
 
 def parse_args(
@@ -30,7 +29,7 @@ def parse_args(
     )
     server_parser.add_argument("--num_replicas", type=int, nargs="+", default=[1])
     server_parser.add_argument(
-        "--cmd", type=str, choices=["start", "stop", "restart"], default="start"
+        "cmd", type=str, nargs="?", choices=["start", "stop", "restart"]
     )
 
     # Client args
@@ -41,8 +40,13 @@ def parse_args(
     client_parser.add_argument(
         "--mean_max_new_tokens", type=int, nargs="+", default=[60]
     )
-    client_parser.add_argument("--num_clients", type=int, nargs="+", default=[2])
-    client_parser.add_argument("--num_requests", type=int, nargs="+", default=[512])
+    client_parser.add_argument(
+        "--num_clients",
+        type=int,
+        nargs="+",
+        default=[1, 2, 4, 6, 8, 12, 16, 20, 24, 28, 32],
+    )
+    client_parser.add_argument("--num_requests", type=int, default=512)
     client_parser.add_argument("--max_prompt_length", type=int, default=4000)
     client_parser.add_argument("--prompt_length_var", type=float, default=0.3)
     client_parser.add_argument("--max_new_tokens_var", type=float, default=0.3)
@@ -61,47 +65,42 @@ def parse_args(
     # Common args
     parser = argparse.ArgumentParser(parents=parents)
     parser.add_argument("--model", type=str, default="meta-llama/Llama-2-7b-hf")
-    parser.add_argument("--deployment_name", type=str, default=None)
+    parser.add_argument(
+        "--deployment_name", type=str, default="mii-benchmark-deployment"
+    )
     parser.add_argument("--vllm", action="store_true")
-    parser.add_argument("--use_defaults", action="store_true")
+    parser.add_argument("--no_model_defaults", action="store_true")
 
     # Parse arguments
     args = parser.parse_args()
 
-    if server_args and not client_args:
-        # If running server, make sure only single values were passed for parameters
-        for param in SERVER_PARAMS:
-            if len(getattr(args, param)) > 1:
-                raise ValueError(
-                    f"Cannot specify multiple values for {param} when running server"
-                )
-            setattr(args, param, getattr(args, param)[0])
-
-    if client_args and not server_args:
-        # If running client, make sure only single values were passed for parameters
-        for param in CLIENT_PARAMS:
-            if len(getattr(args, param)) > 1:
-                raise ValueError(
-                    f"Cannot specify multiple values for {param} when running client"
-                )
-            setattr(args, param, getattr(args, param)[0])
-
-    if not (client_args and server_args):
-        # Generate deployment name if not provided
-        if args.deployment_name is None:
-            args.deployment_name = get_deployment_name(
-                model=args.model,
-                tp_size=args.tp_size,
-                max_ragged_batch_size=args.max_ragged_batch_size,
-            )
-
     return args
 
 
-def get_deployment_name(
-    model: str, tp_size: int, max_ragged_batch_size: int, num_replicas: int
-) -> str:
-    return f"{model}-tp{tp_size}-b{max_ragged_batch_size}-r{num_replicas}"
+def get_args_product(
+    args: argparse.Namespace, which: List[str] = None
+) -> Iterator[argparse.Namespace]:
+    if which is None:
+        return copy.deepcopy(args)
+    arg_values_product = itertools.product(*[getattr(args, k) for k in which])
+    for arg_values in arg_values_product:
+        args_copy = copy.deepcopy(args)
+        for k, v in zip(which, arg_values):
+            setattr(args_copy, k, v)
+        yield args_copy
+
+
+def get_results_path(args: argparse.Namespace) -> Path:
+    return Path(
+        f"results/{args.model}",
+        "-tp{args.tp_size}",
+        "-bs{args.max_ragged_batch_size}",
+        "-replicas{args.num_replicas}",
+        "-prompt{args.mean_prompt_length}",
+        "-gen{args.mean_max_new_tokens}",
+        "-clients{args.num_clients}",
+        ".json",
+    )
 
 
 def output_summary(args, response_details):
@@ -118,14 +117,17 @@ def output_summary(args, response_details):
         + f"First token received: {ps.first_token_latency:.3f} s"
     )
 
-    if args.out_json_path is not None:
-        with open(args.out_json_path, "w") as f:
-            args_dict["out_json_path"] = str(
-                args.out_json_path
-            )  # Path is not JSON serializable
-            data = {
-                "args": args_dict,
-                "time": str(datetime.now()),
-                "response_details": [asdict(r) for r in response_details],
-            }
-            json.dump(data, f, indent=2)
+    out_json_path = args.out_json_path
+    if out_json_path is None:
+        out_json_path = get_results_path(args)
+
+    os.makedirs(out_json_path.parent, exist_ok=True)
+
+    with open(out_json_path, "w") as f:
+        args_dict["out_json_path"] = str(out_json_path)  # Path is not JSON serializable
+        data = {
+            "args": args_dict,
+            "time": str(datetime.now()),
+            "response_details": [asdict(r) for r in response_details],
+        }
+        json.dump(data, f, indent=2)

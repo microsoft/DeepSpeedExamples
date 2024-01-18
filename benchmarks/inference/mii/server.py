@@ -9,12 +9,17 @@ import mii
 from deepspeed.inference import RaggedInferenceEngineConfig, DeepSpeedTPConfig
 from deepspeed.inference.v2.ragged import DSStateManagerConfig
 
-from utils import parse_args
+from utils import parse_args, SERVER_PARAMS
 
 
-def start_server(
-    model, deployment_name, tp_size, num_replicas, max_ragged_batch_size, vllm
-):
+def start_server(args):
+    vllm = args.vllm
+    model = args.model
+    deployment_name = args.deployment_name
+    tp_size = args.tp_size
+    num_replicas = args.num_replicas
+    max_ragged_batch_size = args.max_ragged_batch_size
+
     if vllm:
         start_vllm_server(model=model, tp_size=tp_size)
     else:
@@ -76,7 +81,10 @@ def start_mii_server(
     )
 
 
-def stop_server(deployment_name, vllm):
+def stop_server(args):
+    vllm = args.vllm
+    deployment_name = args.deployment_name
+
     if vllm:
         stop_vllm_server()
     else:
@@ -96,24 +104,21 @@ def stop_mii_server(deployment_name):
 if __name__ == "__main__":
     args = parse_args(server_args=True)
 
+    # Make sure only single values were passed for parameters, multiple values
+    # can be used with the run_benchmark.py script
+    for param in SERVER_PARAMS:
+        if len(getattr(args, param)) > 1:
+            raise ValueError(
+                f"Cannot specify multiple values for {param} when running server"
+            )
+        setattr(args, param, getattr(args, param)[0])
+
     if args.cmd == "start":
-        start_server(
-            model=args.model,
-            deployment_name=args.deployment_name,
-            tp_size=args.tp_size,
-            num_replicas=args.num_replicas,
-            max_ragged_batch_size=args.max_ragged_batch_size,
-            vllm=args.vllm,
-        )
+        start_server(args)
     elif args.cmd == "stop":
-        stop_server(deployment_name=args.deployment_name, vllm=args.vllm)
+        stop_server(args)
+    elif args.cmd == "restart":
+        stop_server(args)
+        start_server(args)
     else:
-        stop_server(deployment_name=args.deployment_name, vllm=args.vllm)
-        start_server(
-            model=args.model,
-            deployment_name=args.deployment_name,
-            tp_size=args.tp_size,
-            num_replicas=args.num_replicas,
-            max_ragged_batch_size=args.max_ragged_batch_size,
-            vllm=args.vllm,
-        )
+        raise ValueError(f"Invalid command {args.cmd}")

@@ -17,7 +17,7 @@ import requests
 
 from postprocess_results import ResponseDetails
 
-from utils import parse_args, output_summary
+from utils import parse_args, output_summary, get_args_product, CLIENT_PARAMS
 
 
 def call_mii(client, input_tokens, max_new_tokens, stream):
@@ -165,21 +165,7 @@ def _run_parallel(
     print(f"Worker ({pid}) finished. session_id: {session_id}")
 
 
-def run_client(
-    num_clients,
-    model,
-    deployment_name,
-    mean_prompt_length,
-    mean_max_new_tokens,
-    num_requests,
-    warmup,
-    max_prompt_length,
-    prompt_length_var,
-    max_new_tokens_var,
-    stream,
-    vllm,
-    use_thread,
-):
+def run_client(args):
     """
     Run MII client for benchmarking. The scenario is a bit complicated:
     1. The main process puts `num_requests` queries into the input queue
@@ -190,6 +176,21 @@ def run_client(
     5b. The main process takes the results from the result queue (in parallel with 5a)
     6. The main process marks the end time after receiving `num_requests' results
     """
+
+    # Unpack arguments
+    model = args.model
+    deployment_name = args.deployment_name
+    mean_prompt_length = args.mean_prompt_length
+    mean_max_new_tokens = args.mean_max_new_tokens
+    num_clients = args.num_clients
+    num_requests = args.num_requests
+    warmup = args.warmup
+    max_prompt_length = args.max_prompt_length
+    prompt_length_var = args.prompt_length_var
+    max_new_tokens_var = args.max_new_tokens_var
+    stream = args.stream
+    vllm = args.vllm
+    use_thread = args.use_thread
 
     if use_thread:
         runnable_cls = threading.Thread
@@ -265,20 +266,7 @@ if __name__ == "__main__":
     if args.out_json_path is not None and not args.out_json_path.parent.exists():
         raise ValueError(f"Parent directory of {args.out_json_path}")
 
-    response_details = run_client(
-        num_clients=args.num_clients,
-        model=args.model,
-        deployment_name=args.deployment_name,
-        mean_prompt_length=args.mean_prompt_length,
-        mean_max_new_tokens=args.mean_max_new_tokens,
-        num_requests=args.num_requests,
-        warmup=args.warmup,
-        max_prompt_length=args.max_prompt_length,
-        prompt_length_var=args.prompt_length_var,
-        max_new_tokens_var=args.max_new_tokens_var,
-        stream=args.stream,
-        vllm=args.vllm,
-        use_thread=args.use_thread,
-    )
+    for client_args in get_args_product(args, which=CLIENT_PARAMS):
+        response_details = run_client(client_args)
 
-    output_summary(args, response_details)
+        output_summary(client_args, response_details)
