@@ -1,3 +1,11 @@
+# Copyright (c) Microsoft Corporation.
+# SPDX-License-Identifier: Apache-2.0
+
+# DeepSpeed Team
+
+from client import run_client
+from model_defaults import MODEL_DEFAULTS
+from server import start_server, stop_server
 from utils import (
     parse_args,
     print_summary,
@@ -6,9 +14,6 @@ from utils import (
     SERVER_PARAMS,
     CLIENT_PARAMS,
 )
-from server import start_server, stop_server
-from client import run_client
-from model_defaults import MODEL_DEFAULTS
 
 
 def run_benchmark() -> None:

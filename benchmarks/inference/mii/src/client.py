@@ -1,22 +1,25 @@
-import os
-import time
-import random
-import queue
-import multiprocessing
-import threading
-from typing import List, Iterable
-import numpy as np
+# Copyright (c) Microsoft Corporation.
+# SPDX-License-Identifier: Apache-2.0
 
-from transformers import AutoTokenizer
-from random_query_generator import RandomQueryGenerator
-from sample_input import all_text
-import time
-import json
+# DeepSpeed Team
+
 import asyncio
+import json
+import multiprocessing
+import os
+import queue
+import random
 import requests
+import threading
+import time
+from typing import List, Iterable
+
+import numpy as np
+from transformers import AutoTokenizer
 
 from postprocess_results import ResponseDetails
-
+from random_query_generator import RandomQueryGenerator
+from sample_input import all_text
 from utils import parse_args, print_summary, get_args_product, CLIENT_PARAMS
 
 

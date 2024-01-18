@@ -1,7 +1,11 @@
+# Copyright (c) Microsoft Corporation.
+# SPDX-License-Identifier: Apache-2.0
+
+# DeepSpeed Team
+
+import numpy as np
 import torch
 import random
-import numpy as np
-import time
 
 
 class RandomQueryGenerator:

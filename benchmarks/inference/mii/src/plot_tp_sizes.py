@@ -1,3 +1,8 @@
+# Copyright (c) Microsoft Corporation.
+# SPDX-License-Identifier: Apache-2.0
+
+# DeepSpeed Team
+
 import glob
 import matplotlib.pyplot as plt
 import argparse
@@ -104,6 +109,7 @@ def output_charts(model_size, tps, bs, prompt, gen, log_dir, out_dir):
 
 
 if __name__ == "__main__":
+    raise NotImplementedError("This script is not up to date")
     args = get_args()
 
     for model_size, tps in tp_sizes.items():

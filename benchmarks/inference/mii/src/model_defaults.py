@@ -1,3 +1,8 @@
+# Copyright (c) Microsoft Corporation.
+# SPDX-License-Identifier: Apache-2.0
+
+# DeepSpeed Team
+
 MODEL_DEFAULTS = {
     "meta-llama/Llama-2-7b-hf": {
         "max_prompt_length": 4000,

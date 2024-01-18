@@ -1,3 +1,8 @@
+# Copyright (c) Microsoft Corporation.
+# SPDX-License-Identifier: Apache-2.0
+
+# DeepSpeed Team
+
 # Run benchmark
 python ./src/run_benchmark.py \
         --model meta-llama/Llama-2-7b-hf \

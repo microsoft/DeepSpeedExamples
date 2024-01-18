@@ -1,13 +1,20 @@
+# Copyright (c) Microsoft Corporation.
+# SPDX-License-Identifier: Apache-2.0
+
+# DeepSpeed Team
+
 import argparse
-from pathlib import Path
-from postprocess_results import get_summary, ResponseDetails
-import json
-from datetime import datetime
-from dataclasses import asdict
-import itertools
-from typing import Iterator, List
 import copy
+import itertools
+import json
 import os
+
+from dataclasses import asdict
+from datetime import datetime
+from pathlib import Path
+from typing import Iterator, List
+
+from postprocess_results import get_summary, ResponseDetails
 
 # For these arguments, users can provide multiple values when running the
 # benchmark. The benchmark will iterate over all possible combinations.
