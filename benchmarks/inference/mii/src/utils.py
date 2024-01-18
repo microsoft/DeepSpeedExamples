@@ -132,7 +132,7 @@ def output_summary(args, response_details):
     os.makedirs(out_json_path.parent, exist_ok=True)
 
     with open(out_json_path, "w") as f:
-        args_dict["out_json_path"] = str(out_json_path)  # Path is not JSON serializable
+        args_dict["out_json_dir"] = str(out_json_path)  # Path is not JSON serializable
         data = {
             "args": args_dict,
             "time": str(datetime.now()),
