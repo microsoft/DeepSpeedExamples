@@ -12,7 +12,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 
-from .postprocess_results import read_json, get_summary
+from postprocess_results import read_json, get_summary
 
 
 def get_args():
