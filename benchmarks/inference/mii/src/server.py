@@ -47,7 +47,9 @@ def start_vllm_server(model: str, tp_size: int) -> None:
         "--model",
         model,
     )
-    p = subprocess.Popen(vllm_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    p = subprocess.Popen(
+        vllm_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, close_fds=True
+    )
     start_time = time.time()
     timeout_after = 60 * 5  # 5 minutes
     while True:
@@ -108,15 +110,6 @@ def stop_mii_server(deployment_name):
 
 if __name__ == "__main__":
     args = parse_args(server_args=True)
-
-    # Make sure only single values were passed for parameters, multiple values
-    # can be used with the run_benchmark.py script
-    for param in SERVER_PARAMS:
-        if len(getattr(args, param)) > 1:
-            raise ValueError(
-                f"Cannot specify multiple values for {param} when running server"
-            )
-        setattr(args, param, getattr(args, param)[0])
 
     if args.cmd == "start":
         start_server(args)

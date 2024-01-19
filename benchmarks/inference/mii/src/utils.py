@@ -142,15 +142,15 @@ def parse_args(
     # Set default values for model-specific parameters
     if args.model in MODEL_DEFAULTS:
         for k, v in MODEL_DEFAULTS[args.model].items():
-            if getattr(args, k) is None:
+            if hasattr(args, k) and getattr(args, k) is None:
                 setattr(args, k, v)
 
     # Grab any remaining default values not specified for a model
     for k, v in ARG_DEFAULTS.items():
-        if getattr(args, k) is None:
+        if hasattr(args, k) and getattr(args, k) is None:
             setattr(args, k, v)
 
-    if not (server_args and client_args):
+    if server_args and not client_args:
         # If we are not running the benchmark, we need to make sure to only have one value for the server args
         for k in SERVER_PARAMS:
             if not isinstance(getattr(args, k), int):
