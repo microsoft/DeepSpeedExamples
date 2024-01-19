@@ -4,7 +4,7 @@
 # DeepSpeed Team
 
 # Run benchmark
-python ./src/run_benchmark.py \
+python ./run_benchmark.py \
         --model meta-llama/Llama-2-7b-hf \
         --tp_size 1 \
         --num_replicas 1 \

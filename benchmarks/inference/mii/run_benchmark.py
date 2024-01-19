@@ -3,9 +3,9 @@
 
 # DeepSpeed Team
 
-from client import run_client
-from server import start_server, stop_server
-from utils import (
+from src.client import run_client
+from src.server import start_server, stop_server
+from src.utils import (
     get_args_product,
     parse_args,
     print_summary,
