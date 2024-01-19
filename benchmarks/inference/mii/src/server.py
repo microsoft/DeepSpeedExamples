@@ -54,8 +54,7 @@ def start_vllm_server(model: str, tp_size: int) -> None:
         line = p.stderr.readline().decode("utf-8")
         if "Application startup complete" in line:
             break
-        time.sleep(1)
-        if "ERROR" in line:
+        if "error" in line.lower():
             p.terminate()
             stop_vllm_server()
             raise RuntimeError(f"Error starting VLLM server: {line}")
@@ -63,6 +62,7 @@ def start_vllm_server(model: str, tp_size: int) -> None:
             p.terminate()
             stop_vllm_server()
             raise TimeoutError("Timed out waiting for VLLM server to start")
+        time.sleep(0.01)
 
 
 def start_mii_server(

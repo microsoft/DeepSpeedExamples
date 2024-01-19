@@ -18,7 +18,6 @@ MODEL_DEFAULTS = {
         "mean_prompt_length": (1200, 2600),
         "mean_max_new_tokens": (60, 128),
         "tp_size": 1,
-        "num_replicas": (1, 8),
     },
     "meta-llama/Llama-13b-hf": {
         "max_prompt_length": 4000,
