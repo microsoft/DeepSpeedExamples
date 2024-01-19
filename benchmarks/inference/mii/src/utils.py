@@ -14,6 +14,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Iterator, List
 
+from defaults import ARG_DEFAULTS, MODEL_DEFAULTS
 from postprocess_results import get_summary, ResponseDetails
 
 # For these arguments, users can provide multiple values when running the
@@ -30,37 +31,87 @@ def parse_args(
 
     # Server args
     server_parser = argparse.ArgumentParser(add_help=False)
-    server_parser.add_argument("--tp_size", type=int, nargs="+", default=[1])
     server_parser.add_argument(
-        "--max_ragged_batch_size", type=int, nargs="+", default=[768]
+        "--tp_size", type=int, nargs="+", default=None, help="Tensor parallelism size"
     )
-    server_parser.add_argument("--num_replicas", type=int, nargs="+", default=[1])
     server_parser.add_argument(
-        "cmd", type=str, nargs="?", choices=["start", "stop", "restart"]
+        "--max_ragged_batch_size",
+        type=int,
+        nargs="+",
+        default=None,
+        help="Max batch size for ragged batching",
+    )
+    server_parser.add_argument(
+        "--num_replicas",
+        type=int,
+        nargs="+",
+        default=None,
+        help="Number of MII model replicas",
+    )
+    server_parser.add_argument(
+        "cmd",
+        type=str,
+        nargs="?",
+        choices=["start", "stop", "restart"],
+        help="Command for running server.py to manually start/stop/restart a server",
     )
 
     # Client args
     client_parser = argparse.ArgumentParser(add_help=False)
     client_parser.add_argument(
-        "--mean_prompt_length", type=int, nargs="+", default=[2600]
+        "--max_prompt_length", type=int, default=None, help="Max length a prompt can be"
     )
     client_parser.add_argument(
-        "--mean_max_new_tokens", type=int, nargs="+", default=[60]
+        "--mean_prompt_length",
+        type=int,
+        nargs="+",
+        default=None,
+        help="Mean prompt length in tokens",
+    )
+    client_parser.add_argument(
+        "--mean_max_new_tokens",
+        type=int,
+        nargs="+",
+        default=None,
+        help="Mean number of new tokens to generate per prompt",
     )
     client_parser.add_argument(
         "--num_clients",
         type=int,
         nargs="+",
         default=[1, 2, 4, 6, 8, 12, 16, 20, 24, 28, 32],
+        help="Number of concurrent clients",
     )
-    client_parser.add_argument("--num_requests", type=int, default=512)
-    client_parser.add_argument("--max_prompt_length", type=int, default=4000)
-    client_parser.add_argument("--prompt_length_var", type=float, default=0.3)
-    client_parser.add_argument("--max_new_tokens_var", type=float, default=0.3)
-    client_parser.add_argument("--warmup", type=int, default=1)
-    client_parser.add_argument("--use_thread", action="store_true")
-    client_parser.add_argument("--stream", action="store_true")
-    client_parser.add_argument("--out_json_dir", type=Path, default="./results/")
+    client_parser.add_argument(
+        "--num_requests",
+        type=int,
+        default=512,
+        help="Number of requests to process by clients",
+    )
+    client_parser.add_argument(
+        "--prompt_length_var", type=float, default=0.3, help="Variance of prompt length"
+    )
+    client_parser.add_argument(
+        "--max_new_tokens_var",
+        type=float,
+        default=0.3,
+        help="Variance of max new tokens",
+    )
+    client_parser.add_argument(
+        "--warmup", type=int, default=1, help="Number of warmup requests to process"
+    )
+    client_parser.add_argument(
+        "--use_thread", action="store_true", help="Use threads instead of processes"
+    )
+    client_parser.add_argument(
+        "--stream", action="store_true", help="Stream generated tokens"
+    )
+    client_parser.add_argument(
+        "--out_json_dir",
+        type=Path,
+        default="./results/",
+        help="Directory to save result JSON files",
+    )
 
     # Create the parser, inheriting from the server and/or client parsers
     parents = []
@@ -71,15 +122,39 @@ def parse_args(
 
     # Common args
     parser = argparse.ArgumentParser(parents=parents)
-    parser.add_argument("--model", type=str, default="meta-llama/Llama-2-7b-hf")
     parser.add_argument(
-        "--deployment_name", type=str, default="mii-benchmark-deployment"
+        "--model", type=str, default="meta-llama/Llama-2-7b-hf", help="Model name"
     )
-    parser.add_argument("--vllm", action="store_true")
-    parser.add_argument("--no_model_defaults", action="store_true")
+    parser.add_argument(
+        "--deployment_name",
+        type=str,
+        default="mii-benchmark-deployment",
+        help="Deployment name for MII server",
+    )
+    parser.add_argument("--vllm", action="store_true", help="Use VLLM instead of MII")
+    parser.add_argument(
+        "--overwrite_results", action="store_true", help="Overwrite existing results"
+    )
 
     # Parse arguments
     args = parser.parse_args()
+
+    # Set default values for model-specific parameters
+    if args.model in MODEL_DEFAULTS:
+        for k, v in MODEL_DEFAULTS[args.model].items():
+            if getattr(args, k) is None:
+                setattr(args, k, v)
+
+    # Grab any remaining default values not specified for a model
+    for k, v in ARG_DEFAULTS.items():
+        if getattr(args, k) is None:
+            setattr(args, k, v)
+
+    if not (server_args and client_args):
+        # If we are not running the benchmark, we need to make sure to only have one value for the server args
+        for k in SERVER_PARAMS:
+            if not isinstance(getattr(args, k), int):
+                setattr(args, k, getattr(args, k)[0])
 
     return args
 
@@ -89,6 +164,9 @@ def get_args_product(
 ) -> Iterator[argparse.Namespace]:
     if which is None:
         return copy.deepcopy(args)
+    for k in which:
+        if isinstance(getattr(args, k), int):
+            setattr(args, k, [getattr(args, k)])
     arg_values_product = itertools.product(*[getattr(args, k) for k in which])
     for arg_values in arg_values_product:
         args_copy = copy.deepcopy(args)
@@ -120,7 +198,9 @@ def get_results_path(args: argparse.Namespace) -> Path:
     )
 
 
-def print_summary(args, response_details):
+def print_summary(
+    args: argparse.Namespace, response_details: List[ResponseDetails]
+) -> None:
     ps = get_summary(vars(args), response_details)
     print(
         f"Deployment: {args.deployment_name} Clients: {args.num_clients}, "
@@ -134,7 +214,9 @@ def print_summary(args, response_details):
     )
 
 
-def save_json_results(args, response_details):
+def save_json_results(
+    args: argparse.Namespace, response_details: List[ResponseDetails]
+) -> None:
     args_dict = vars(args)
     out_json_path = get_results_path(args)
     os.makedirs(out_json_path.parent, exist_ok=True)
@@ -147,3 +229,7 @@ def save_json_results(args, response_details):
             "response_details": [asdict(r) for r in response_details],
         }
         json.dump(data, f, indent=2)
+
+
+def results_exist(args: argparse.Namespace) -> bool:
+    return get_results_path(args).exists()
