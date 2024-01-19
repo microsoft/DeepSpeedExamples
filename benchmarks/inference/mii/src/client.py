@@ -17,10 +17,10 @@ from typing import List, Iterable
 import numpy as np
 from transformers import AutoTokenizer
 
-from postprocess_results import ResponseDetails
-from random_query_generator import RandomQueryGenerator
-from sample_input import all_text
-from utils import parse_args, print_summary, get_args_product, CLIENT_PARAMS
+from .postprocess_results import ResponseDetails
+from .random_query_generator import RandomQueryGenerator
+from .sample_input import all_text
+from .utils import parse_args, print_summary, get_args_product, CLIENT_PARAMS
 
 
 def call_mii(client, input_tokens, max_new_tokens, stream):

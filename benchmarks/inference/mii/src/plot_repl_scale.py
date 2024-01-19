@@ -9,7 +9,7 @@ import argparse
 from pathlib import Path
 import numpy as np
 
-from postprocess_results import read_json, get_summary
+from .postprocess_results import read_json, get_summary
 
 bs = 768
 

@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from postprocess_results import read_json, get_tokenizer
+from .postprocess_results import read_json, get_tokenizer
 
 RAGGED_BATCH_SIZE = 768
 SLA_PROMPT_TOKENS_PER_SEC = 512

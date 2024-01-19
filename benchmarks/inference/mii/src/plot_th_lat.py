@@ -3,14 +3,16 @@
 
 # DeepSpeed Team
 
-import glob
-import matplotlib.pyplot as plt
 import argparse
-from pathlib import Path
-import numpy as np
-from postprocess_results import read_json, get_summary
+import glob
 import os
 import re
+from pathlib import Path
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+from .postprocess_results import read_json, get_summary
 
 
 def get_args():

@@ -14,8 +14,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Iterator, List
 
-from defaults import ARG_DEFAULTS, MODEL_DEFAULTS
-from postprocess_results import get_summary, ResponseDetails
+from .defaults import ARG_DEFAULTS, MODEL_DEFAULTS
+from .postprocess_results import get_summary, ResponseDetails
 
 # For these arguments, users can provide multiple values when running the
 # benchmark. The benchmark will iterate over all possible combinations.

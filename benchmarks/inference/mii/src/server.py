@@ -10,7 +10,7 @@ import mii
 from deepspeed.inference import RaggedInferenceEngineConfig, DeepSpeedTPConfig
 from deepspeed.inference.v2.ragged import DSStateManagerConfig
 
-from utils import parse_args, SERVER_PARAMS
+from .utils import parse_args, SERVER_PARAMS
 
 
 def start_server(args):

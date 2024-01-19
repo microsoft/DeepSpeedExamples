@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import itertools
 
-from postprocess_results import read_json, get_token_latency
+from .postprocess_results import read_json, get_token_latency
 
 bs = 768
 SKIP_HEAD_TOKEN_NUM = 2
