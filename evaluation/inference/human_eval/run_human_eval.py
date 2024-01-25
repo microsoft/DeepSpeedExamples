@@ -40,8 +40,7 @@ print("Initializing DeepSpeed-MII Pipeline")
 mii_pipe = mii.pipeline(args.model)
 
 print("Loading Problems")
-#problems = read_problems("human-eval/data/HumanEval.jsonl.gz")
-problems = read_problems("human-eval/data/HumanEvalTest.jsonl.gz")
+problems = read_problems("human-eval/data/HumanEval.jsonl.gz")
 
 print("Generating Base Samples")
 base_samples = generate_samples(generate_base_completion)
