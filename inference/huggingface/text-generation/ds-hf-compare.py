@@ -14,7 +14,7 @@ parser.add_argument("--min_length", default=200, type=int, help="minimum tokens 
 parser.add_argument("--max_length", default=300, type=int, help="maximum tokens generated")
 parser.add_argument("--print_outputs", action='store_true', help="print generated text outputs")
 parser.add_argument("--local_rank", type=int, default=0, help="local rank")
-parser.add_argument("--use_kernel", default=True, help="enable kernel-injection")
+parser.add_argument("--use_kernel", action='store_true', help="enable kernel-injection")
 args = parser.parse_args()
 
 def print_0(output):
