@@ -9,9 +9,7 @@ from deepspeed import module_inject
 from transformers.models.wav2vec2.modeling_wav2vec2 import Wav2Vec2EncoderLayer
 from deepspeed.accelerator import get_accelerator
 
-# librispeech_eval = load_dataset("librispeech_asr", "clean", split="test")
-data_path = "~/my_project/DSE/HuggingFace/DataSets/librispeech_asr"
-librispeech_eval = load_from_disk(data_path)
+librispeech_eval = load_dataset("librispeech_asr", "clean", split="test")
 
 # Get local gpu rank from torch.distributed/deepspeed launcher
 local_rank = int(os.getenv('LOCAL_RANK', '0'))
@@ -23,11 +21,8 @@ print(
     .format(local_rank,
             world_size))
 
-# model = Wav2Vec2ForCTC.from_pretrained("facebook/wav2vec2-base-960h")
-# processor = Wav2Vec2Processor.from_pretrained("facebook/wav2vec2-base-960h")
-model_path = "/home/zixuwang/my_project/DSE/HuggingFace/Models/wav2vec2"
-model = Wav2Vec2ForCTC.from_pretrained(model_path)
-processor = Wav2Vec2Processor.from_pretrained(model_path)
+model = Wav2Vec2ForCTC.from_pretrained("facebook/wav2vec2-base-960h")
+processor = Wav2Vec2Processor.from_pretrained("facebook/wav2vec2-base-960h")
 
 model = deepspeed.init_inference(model,
                                  mp_size=world_size,
