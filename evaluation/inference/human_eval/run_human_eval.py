@@ -15,15 +15,15 @@ parser.add_argument("--num-samples-per-task", type=int, default=20, help="number
 parser.add_argument("--local_rank", type=int, default=int(os.getenv("LOCAL_RANK", "0")), help="local rank")
 args = parser.parse_args()
 
-def generate_base_completion(problem_prompt: str) -> str:
-    return base_pipe(problem_prompt, do_sample=True)[0]["generated_text"]
+def generate_base_completion(pipe, problem_prompt: str) -> str:
+    return pipe(problem_prompt, do_sample=True)[0]["generated_text"]
 
-def generate_mii_completion(problem_prompt: str) -> str:
-    return mii_pipe(problem_prompt, max_new_tokens=args.max_tokens)[0].generated_text
+def generate_mii_completion(pipe, problem_prompt: str) -> str:
+    return pipe(problem_prompt, max_new_tokens=args.max_tokens)[0].generated_text
 
-def generate_samples(generation_function):
+def generate_samples(pipe, generation_function):
     samples = [
-        dict(task_id=task_id, completion=generation_function(problems[task_id]["prompt"])) for task_id in problems
+        dict(task_id=task_id, completion=generation_function(pipe, problems[task_id]["prompt"])) for task_id in problems
         for _ in range(args.num_samples_per_task)
     ]
     return samples
@@ -39,7 +39,7 @@ base_pipe = pipeline(model=args.model,
                         return_full_text=False)
 
 print("Generating Base Samples")
-base_samples = generate_samples(generate_base_completion)
+base_samples = generate_samples(base_pipe, generate_base_completion)
 
 print("Base Pipeline Teardown")
 del base_pipe
@@ -49,7 +49,7 @@ print("Initializing DeepSpeed-MII Pipeline")
 mii_pipe = mii.pipeline(args.model)
 
 print("Generating MII Samples")
-mii_samples = generate_samples(generate_mii_completion)
+mii_samples = generate_samples(mii_pipe, generate_mii_completion)
 
 print("MII Pipeline Teardown")
 mii_pipe.destroy()
