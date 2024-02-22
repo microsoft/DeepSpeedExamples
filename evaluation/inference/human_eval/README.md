@@ -27,10 +27,10 @@ Additional DeepSpeed-MII installation details can be found [here](https://github
 
 ## Run the Evaluation
 
-The following command shows how to run a benchmark using the `facebook/opt-6.7b` model:
+The following command shows how to run a benchmark using the `codellama/CodeLlama-7b-Python-hf` model:
 
 ```bash
-python run_human_eval.py --model facebook/opt-6.7b --max-tokens 256 --num-samples-per-task 10
+python run_human_eval.py --model codellama/CodeLlama-7b-Python-hf --max-tokens 512 --num-samples-per-task 20
 ```
 
 ## Run Evaluation on Samples
