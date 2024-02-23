@@ -48,7 +48,7 @@ def parse_args():
 def get_tokenizer():
     global tokenizer
     if tokenizer is None:
-        tokenizer = AutoTokenizer.from_pretrained("meta-llama/Llama-2-7b-hf")
+        tokenizer = AutoTokenizer.from_pretrained("NousResearch/Llama-2-7b-hf")
     return tokenizer
 
 

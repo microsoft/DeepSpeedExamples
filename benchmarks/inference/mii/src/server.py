@@ -85,6 +85,7 @@ def start_mii_server(
         tensor_parallel=tp_size,
         inference_engine_config=inference_config,
         replica_num=num_replicas,
+        quantization_mode='wf6af16',
     )
 
 
