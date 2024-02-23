@@ -41,10 +41,10 @@ def call_mii(client, input_tokens, max_new_tokens, stream):
     if stream:
         output_tokens = []
         client.generate(
-            input_tokens,min_new_tokens=max_new_tokens,  max_new_tokens=max_new_tokens, streaming_fn=callback
+            input_tokens, min_new_tokens=max_new_tokens, ignore_eos=True, max_new_tokens=max_new_tokens, streaming_fn=callback
         )
     else:
-        result = client.generate(input_tokens, max_new_tokens=max_new_tokens)
+        result = client.generate(input_tokens, min_new_tokens=max_new_tokens, ignore_eos=True, max_new_tokens=max_new_tokens)
         output_tokens = result[0].generated_text
 
     return ResponseDetails(
