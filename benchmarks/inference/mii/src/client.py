@@ -17,10 +17,15 @@ from typing import List, Iterable
 import numpy as np
 from transformers import AutoTokenizer
 
-from .postprocess_results import ResponseDetails
-from .random_query_generator import RandomQueryGenerator
-from .sample_input import all_text
-from .utils import parse_args, print_summary, get_args_product, CLIENT_PARAMS
+#from .postprocess_results import ResponseDetails
+#from .random_query_generator import RandomQueryGenerator
+#from .sample_input import all_text
+#from .utils import parse_args, print_summary, get_args_product, CLIENT_PARAMS
+
+from postprocess_results import ResponseDetails
+from random_query_generator import RandomQueryGenerator
+from sample_input import all_text
+from utils import parse_args, print_summary, get_args_product, CLIENT_PARAMS
 
 
 def call_mii(client, input_tokens, max_new_tokens, stream):
@@ -116,6 +121,53 @@ def call_vllm(input_tokens, max_new_tokens, stream=True):
         raise NotImplementedError("Not implemented for non-streaming")
 
 
+## TODO (lekurile): Create AML call function
+def call_aml(input_tokens, max_new_tokens, stream=False):
+    # TODO (lekurile): Hardcoded for now
+    api_url = 'https://alexander256v100-utiwh.southcentralus.inference.ml.azure.com/score'
+    api_key = ''
+    if not api_key:
+        raise Exception("A key should be provided to invoke the endpoint")
+    headers = {'Content-Type':'application/json', 'Authorization':('Bearer '+ api_key), 'azureml-model-deployment': 'mistralai-mixtral-8x7b-v01-4' }
+    token_gen_time = []
+    print(f"\ninput_tokens = {input_tokens}")
+    pload = {
+        "input_data": {
+            "input_string": [
+                input_tokens,
+            ],
+            "parameters": {
+                "max_new_tokens": max_new_tokens,
+                "do_sample": True,
+                "return_full_text": False
+            }
+        }
+    }
+
+    def get_response(response: requests.Response) -> List[str]:
+        data = json.loads(response.content)
+        #print(f"data = {data}")
+        output = data[0]["0"]
+        return output
+
+    start_time = time.time()
+    response = requests.post(api_url, headers=headers, json=pload, stream=stream)
+    print(f"response = {response}")
+
+    output = get_response(response)
+    print(f"output = {output}")
+
+    return ResponseDetails(
+        generated_tokens=output,
+        prompt=input_tokens,
+        start_time=start_time,
+        end_time=time.time(),
+        model_time=0,
+        token_gen_time=token_gen_time,
+    )
+## TODO (lekurile): Create AML call function
+
+
 def _run_parallel(
     deployment_name,
     warmup,
@@ -125,13 +177,14 @@ def _run_parallel(
     num_clients,
     stream,
     vllm,
+    aml,
 ):
     pid = os.getpid()
     session_id = f"test_session_p{pid}_t{threading.get_ident()}"
 
     event_loop = asyncio.new_event_loop()
     asyncio.set_event_loop(event_loop)
-    if not vllm:
+    if not (vllm or aml):
         import mii
 
         client = mii.client(deployment_name)
@@ -144,6 +197,8 @@ def _run_parallel(
 
         if vllm:
             call_vllm(input_tokens, req_max_new_tokens, stream)
+        elif aml:
+            call_aml(input_tokens, req_max_new_tokens)
         else:
             call_mii(client, input_tokens, req_max_new_tokens, stream)
 
@@ -158,6 +213,8 @@ def _run_parallel(
             # Set max_new_tokens following normal distribution
             if vllm:
                 r = call_vllm(input_tokens, req_max_new_tokens)
+            elif aml:
+                r = call_aml(input_tokens, req_max_new_tokens)
             else:
                 r = call_mii(client, input_tokens, req_max_new_tokens, stream)
 
@@ -193,6 +250,7 @@ def run_client(args):
     max_new_tokens_var = args.max_new_tokens_var
     stream = args.stream
     vllm = args.vllm
+    aml = args.aml
     use_thread = args.use_thread
 
     if use_thread:
@@ -220,6 +278,7 @@ def run_client(args):
                 num_clients,
                 stream,
                 vllm,
+                aml,
             ),
         )
         for i in range(num_clients)

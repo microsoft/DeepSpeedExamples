@@ -14,8 +14,10 @@ from datetime import datetime
 from pathlib import Path
 from typing import Iterator, List
 
-from .defaults import ARG_DEFAULTS, MODEL_DEFAULTS
-from .postprocess_results import get_summary, ResponseDetails
+#from .defaults import ARG_DEFAULTS, MODEL_DEFAULTS
+#from .postprocess_results import get_summary, ResponseDetails
+from defaults import ARG_DEFAULTS, MODEL_DEFAULTS
+from postprocess_results import get_summary, ResponseDetails
 
 # For these arguments, users can provide multiple values when running the
 # benchmark. The benchmark will iterate over all possible combinations.
@@ -131,7 +133,8 @@ def parse_args(
         default="mii-benchmark-deployment",
         help="Deployment name for MII server",
     )
-    parser.add_argument("--vllm", action="store_true", help="Use VLLM instead of MII")
+    parser.add_argument("--vllm", action="store_true", help="Use VLLM")
+    parser.add_argument("--aml", action="store_true", help="Use AML")
     parser.add_argument(
         "--overwrite_results", action="store_true", help="Overwrite existing results"
     )
@@ -178,6 +181,8 @@ def get_args_product(
 def get_results_path(args: argparse.Namespace) -> Path:
     if args.vllm:
         lib_path = "vllm"
+    elif args.aml:
+        lib_path = "aml"
     else:
         lib_path = "fastgen"
     return Path(
