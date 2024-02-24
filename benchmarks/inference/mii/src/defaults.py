@@ -31,6 +31,18 @@ MODEL_DEFAULTS = {
         "mean_max_new_tokens": (60, 128),
         "tp_size": (4, 8),
     },
+    "NousResearch/Llama-2-13b-hf": {
+        "max_prompt_length": 4000,
+        "mean_prompt_length": (20, 100),
+        "mean_max_new_tokens": (20, 500),
+        "tp_size": (1, ),
+    },
+    "NousResearch/Llama-2-70b-hf": {
+        "max_prompt_length": 4000,
+        "mean_prompt_length": (1200, 2600),
+        "mean_max_new_tokens": (60, 128),
+        "tp_size": (4, 8),
+    },
     "tiiuae/falcon-40B": {
         "max_prompt_length": 2000,
         "mean_prompt_length": (1200, 1900),
