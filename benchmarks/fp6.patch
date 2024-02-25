@@ -1,0 +1,93 @@
+diff --git a/benchmarks/inference/mii/run_all.sh b/benchmarks/inference/mii/run_all.sh
+index 095b3ae..4852630 100644
+--- a/benchmarks/inference/mii/run_all.sh
++++ b/benchmarks/inference/mii/run_all.sh
+@@ -3,13 +3,18 @@
+ 
+ # DeepSpeed Team
+ 
+-MODELS=(meta-llama/Llama-2-7b-hf meta-llama/Llama-2-13b-hf meta-llama/Llama-2-70b-hf tiiuae/falcon-40B tiiuae/falcon-180B microsoft/phi-2 mistralai/Mixtral-8x7B-v0.1)
++# MODELS=(meta-llama/Llama-2-7b-hf meta-llama/Llama-2-13b-hf meta-llama/Llama-2-70b-hf tiiuae/falcon-40B tiiuae/falcon-180B microsoft/phi-2 mistralai/Mixtral-8x7B-v0.1)
++# MODELS=(meta-llama/Llama-2-7b-hf)
++MODELS=(meta-llama/Llama-2-70b-hf)
++# MODELS=(mistralai/Mixtral-8x7B-v0.1)
++# MODELS=(tiiuae/falcon-40B)
+ 
+ for MODEL in ${MODELS[@]}; do
+-    python ./run_benchmark.py --model ${MODEL} --stream
+-    python ./run_benchmark.py --model ${MODEL} --stream --vllm
++    python ./run_benchmark.py --model ${MODEL} --stream --out_json_dir ./results/FP6/
++    # python ./run_benchmark.py --model ${MODEL} --stream --out_json_dir ./results/FP16/
++    # python ./run_benchmark.py --model ${MODEL} --stream --vllm
+ done
+ 
+-# Extra runs for Mixtral with non-default settings
+-python ./run_benchmark.py --model mistralai/Mixtral-8x7B-v0.1 --stream --tp_size 4 --mean_prompt_length 500 --mean_max_new_tokens 150 500 1024
+-python ./run_benchmark.py --model mistralai/Mixtral-8x7B-v0.1 --stream --tp_size 4 --mean_prompt_length 500 --mean_max_new_tokens 150 500 1024 --vllm
+\ No newline at end of file
++# # Extra runs for Mixtral with non-default settings
++# python ./run_benchmark.py --model mistralai/Mixtral-8x7B-v0.1 --stream --tp_size 4 --mean_prompt_length 500 --mean_max_new_tokens 150 500 1024
++# python ./run_benchmark.py --model mistralai/Mixtral-8x7B-v0.1 --stream --tp_size 4 --mean_prompt_length 500 --mean_max_new_tokens 150 500 1024 --vllm
+\ No newline at end of file
+diff --git a/benchmarks/inference/mii/src/defaults.py b/benchmarks/inference/mii/src/defaults.py
+index 79ce91c..92f3f17 100644
+--- a/benchmarks/inference/mii/src/defaults.py
++++ b/benchmarks/inference/mii/src/defaults.py
+@@ -27,9 +27,10 @@ MODEL_DEFAULTS = {
+     },
+     "meta-llama/Llama-2-70b-hf": {
+         "max_prompt_length": 4000,
+-        "mean_prompt_length": (1200, 2600),
+-        "mean_max_new_tokens": (60, 128),
+-        "tp_size": (4, 8),
++        "mean_prompt_length": (500),
++        "mean_max_new_tokens": (1500),
++        "tp_size": (2, 4, 8),
++        # "tp_size": (4, 8),
+     },
+     "tiiuae/falcon-40B": {
+         "max_prompt_length": 2000,
+diff --git a/benchmarks/inference/mii/src/plot_th_lat.py b/benchmarks/inference/mii/src/plot_th_lat.py
+index 9aa292c..bc62bb0 100644
+--- a/benchmarks/inference/mii/src/plot_th_lat.py
++++ b/benchmarks/inference/mii/src/plot_th_lat.py
+@@ -57,7 +57,7 @@ def output_charts(model, tp_size, bs, replicas, prompt, gen, log_dir, out_dir):
+ 
+     if len(vllm_throughputs) > 0:
+         plt.scatter(
+-            vllm_throughputs, vllm_latencies, label=f"vLLM", marker="x", color="orange"
++            vllm_throughputs, vllm_latencies, label=f"DS-FastGen FP16", marker="x", color="orange"
+         )
+         fit_vllm_x_list = np.arange(min(vllm_throughputs), max(vllm_throughputs), 0.01)
+         vllm_vllm_model = np.polyfit(vllm_throughputs, vllm_latencies, 3)
+@@ -73,7 +73,7 @@ def output_charts(model, tp_size, bs, replicas, prompt, gen, log_dir, out_dir):
+     plt.scatter(
+         mii_throughputs,
+         mii_latencies,
+-        label=f"DeepSpeed FastGen",
++        label=f"DS-FastGen FP6",
+         marker="o",
+         color="blue",
+     )
+@@ -88,7 +88,9 @@ def output_charts(model, tp_size, bs, replicas, prompt, gen, log_dir, out_dir):
+         linestyle="--",
+     )
+ 
+-    plt.title(f"Model {model}, Prompt: {prompt}, Generation: {gen}, TP: {tp_size}")
++    # plt.title(f"Model {model}, Prompt: {prompt}, Generation: {gen}, TP: {tp_size}")
++    model_tag = "Llama-2-70b"
++    plt.title(f"Model {model_tag}, Prompt: {prompt}, Generation: {gen}, TP: {tp_size}")
+     plt.xlabel("Throughput (queries/s)", fontsize=14)
+     plt.ylabel("Latency", fontsize=14)
+     plt.legend()
+diff --git a/benchmarks/inference/mii/src/server.py b/benchmarks/inference/mii/src/server.py
+index d0ecaba..2a59601 100644
+--- a/benchmarks/inference/mii/src/server.py
++++ b/benchmarks/inference/mii/src/server.py
+@@ -85,6 +85,7 @@ def start_mii_server(
+         tensor_parallel=tp_size,
+         inference_engine_config=inference_config,
+         replica_num=num_replicas,
++        quantization_mode='wf6af16',
+     )
+ 
