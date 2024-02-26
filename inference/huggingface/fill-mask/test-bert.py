@@ -8,7 +8,7 @@ from deepspeed.accelerator import get_accelerator
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--model", "-m", type=str, help="hf model name")
-parser.add_argument("--dtype", type=str, default="fp16", help="fp16 or fp32 or bfloat16")
+parser.add_argument("--dtype", type=str, default="fp16", help="fp16 or fp32 or bf16")
 parser.add_argument("--local_rank", type=int, default=0, help="local rank")
 parser.add_argument("--trials", type=int, default=8, help="number of trials")
 parser.add_argument("--kernel_inject", action="store_true", help="inject kernels on")
