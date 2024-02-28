@@ -24,10 +24,10 @@ python run_benchmark.py --tp_size 1 2
 ```
 
 By default the benchmark runs with DeepSpeed-MII as the backend inference
-server. To change the backend to vLLM, provide the `--vllm` flag:
+server. To change the backend to vLLM, provide the `--backend vllm` arg:
 
 ```bash
-python run_benchmark.py --vllm
+python run_benchmark.py --backend vllm
 ```
 
 The run_all.sh script performs benchmarks across various models, client numbers,
