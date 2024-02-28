@@ -131,7 +131,6 @@ def call_vllm(
     )
 
 
-## TODO (lekurile): Create AML call function
 def call_aml(
     input_tokens: str, max_new_tokens: int, args: argparse.Namespace
 ) -> ResponseDetails:
@@ -197,7 +196,6 @@ def _run_parallel(
         print(f"warmup queue size: {query_queue.qsize()} ({pid})", flush=True)
         input_tokens, req_max_new_tokens = query_queue.get(timeout=1.0)
         _ = call_fn(input_tokens, req_max_new_tokens, args)
-        # call_fastgen(client, input_tokens, req_max_new_tokens, stream)
 
     barrier.wait()
 
@@ -208,7 +206,6 @@ def _run_parallel(
             input_tokens, req_max_new_tokens = query_queue.get(timeout=1.0)
 
             r = call_fn(input_tokens, req_max_new_tokens, args)
-            # r = call_fastgen(client, input_tokens, req_max_new_tokens, stream)
 
             result_queue.put(r)
     except queue.Empty:
