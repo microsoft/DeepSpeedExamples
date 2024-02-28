@@ -147,7 +147,7 @@ def parse_args(
         "--deployment_name",
         type=str,
         default=None,
-        help="When using FastGen backend, specifies which model deployment to use",
+        help="When using FastGen backend, specifies which model deployment to use. When using AML backend, specifies the name of the deployment",
     )
     parser.add_argument(
         "--backend",
