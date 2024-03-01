@@ -121,7 +121,6 @@ if __name__ == "__main__":
 
     result_params = get_result_sets(args)
 
-    # Generate plots
     for model, tp_size, bs, replicas, prompt, gen in result_params:
         output_charts(
             args=args,

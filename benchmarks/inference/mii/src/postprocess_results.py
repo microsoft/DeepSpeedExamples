@@ -176,7 +176,7 @@ def get_result_sets(args: argparse.Namespace) -> set():
     # Warning messages about skipped sets
     for key, backend_set in backend_sets.items():
         difference = backend_set.difference(result_params)
-        if bool(difference):
+        if difference:
             print(f"WARNING: backend {key} has result combinations that are not present in all backends:")
             print(tabulate(difference, headers=["model", "tp_size", "bs", "replicas", "prompt", "gen"]))
 
