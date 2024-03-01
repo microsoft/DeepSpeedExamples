@@ -5,6 +5,8 @@
 
 import argparse
 import json
+import re
+import os
 from dataclasses import dataclass
 from functools import reduce
 from pathlib import Path
@@ -147,3 +149,33 @@ if __name__ == "__main__":
         + f"Token generation latency: {ps.token_gen_latency:.3f} s/token, "
         + f"First token received: {ps.first_token_latency:.3f} s"
     )
+
+def get_result_sets(args: argparse.Namespace) -> set():
+    result_params = None
+    result_re = re.compile(
+        r"(.+)-tp(\d+)-bs(\d+)-replicas(\d+)-prompt(\d+)-gen(\d+)-clients.*.json"
+    )
+
+    backend_sets = {}
+
+    # Generate backend sets
+    for backend in args.backend:
+        for f in os.listdir(os.path.join(args.log_dir, backend)):
+            match = result_re.match(f)
+            if match:
+                backend_sets.setdefault(f'{backend}', set()).add(match.groups())
+
+    # Intersection between all sets
+    for backend_set in backend_sets.values():
+        if result_params == None:
+            result_params = backend_set
+        else:
+            result_params = result_params.intersection(backend_set)
+
+    # Warning messages about skipped sets
+    for key, backend_set in backend_sets.items():
+        difference = backend_set.difference(result_params)
+        if bool(difference):
+            print(f"WARNING: backend {key} has result combinations that are not present in all backends:\n{difference}")
+
+    return result_params

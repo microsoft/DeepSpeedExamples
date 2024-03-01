@@ -12,7 +12,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 
-from postprocess_results import read_json, get_summary
+from postprocess_results import read_json, get_summary, get_result_sets
 
 
 def get_args():
@@ -105,7 +105,7 @@ def output_charts(model, tp_size, bs, replicas, prompt, gen, log_dir, out_dir):
         plt.scatter(
             aml_throughputs,
             aml_latencies,
-            label=f"AML {aml_endpoint_name.capitalize()}:{aml_deployment_name}",
+            label=f"AML {aml_endpoint_name.capitalize()}",
             marker="o",
             color="purple",
         )
@@ -141,15 +141,7 @@ if __name__ == "__main__":
     if not args.log_dir.exists():
         raise ValueError(f"Log dir {args.log_dir} does not exist")
 
-    result_params = set()
-    result_re = re.compile(
-        r"(.+)-tp(\d+)-bs(\d+)-replicas(\d+)-prompt(\d+)-gen(\d+)-clients.*.json"
-    )
-
-    for f in os.listdir(os.path.join(args.log_dir, args.backend[1])):
-        match = result_re.match(f)
-        if match:
-            result_params.add(match.groups())
+    result_params = get_result_sets(args)
 
     for model, tp_size, bs, replicas, prompt, gen in result_params:
         output_charts(
