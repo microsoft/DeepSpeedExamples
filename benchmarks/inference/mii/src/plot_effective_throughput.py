@@ -27,6 +27,7 @@ prompt_gen_pairs_all = [
     (2600, 60),
     (2600, 128),
 ]
+# TODO: Remove hardcoded values, generalize, source from logs
 
 prompt_gen_pairs_test = [(2600, 60)]
 
@@ -237,6 +238,8 @@ if __name__ == "__main__":
     raise NotImplementedError("This script is not up to date")
     args = get_args()
 
+    # TODO: Generalize this
+    # TODO: carry over code from plot_th_lat.py
     if args.test:
         tp_sizes = tp_sizes_test
         prompt_gen_pairs = prompt_gen_pairs_test
@@ -248,6 +251,7 @@ if __name__ == "__main__":
         for tp in tps:
             for prompt, gen in prompt_gen_pairs:
                 for sla_token_gen in SLA_GEN_TOKENS_PER_SEC:
+                    # TODO: standardize names
                     display_results(
                         model_size,
                         tp,
