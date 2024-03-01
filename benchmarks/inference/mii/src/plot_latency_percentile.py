@@ -111,7 +111,7 @@ def output_charts(args, model, tp_size, bs, replicas, prompt, gen, log_dir, out_
         label_x = ["P50", "P90", "P95"]
         plt.xticks([1, 2.5, 4], label_x)
 
-        plt.title(f"Model {model}, Clients: {client_num}, Prompt: {prompt}, Gen: {gen}, TP: {tp_size}")
+        plt.title(f"Model: {model}, Clients: {client_num}, Prompt: {prompt}, Gen: {gen}, TP: {tp_size}")
         plt.savefig(out_file)
         print(f"Saved {out_file}")
 
