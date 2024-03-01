@@ -7,6 +7,7 @@ import argparse
 import json
 import re
 import os
+from tabulate import tabulate
 from dataclasses import dataclass
 from functools import reduce
 from pathlib import Path
@@ -176,6 +177,7 @@ def get_result_sets(args: argparse.Namespace) -> set():
     for key, backend_set in backend_sets.items():
         difference = backend_set.difference(result_params)
         if bool(difference):
-            print(f"WARNING: backend {key} has result combinations that are not present in all backends:\n{difference}")
+            print(f"WARNING: backend {key} has result combinations that are not present in all backends:")
+            print(tabulate(difference, headers=["model", "tp_size", "bs", "replicas", "prompt", "gen"]))
 
     return result_params
