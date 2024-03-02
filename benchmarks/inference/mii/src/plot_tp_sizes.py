@@ -11,23 +11,6 @@ import numpy as np
 
 from .postprocess_results import read_json, get_summary
 
-bs = 768
-
-tp_sizes = {
-    # "7b": [1],
-    "13b": [1, 2, 4],
-    # "70b": [4, 8],
-}
-
-prompt_gen_pairs = [
-    (1200, 60),
-    (1200, 128),
-    (2600, 60),
-    (2600, 128),
-    (2600, 256),
-]
-
-
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--log_dir", type=Path, default="logs.release")
@@ -109,8 +92,26 @@ def output_charts(model_size, tps, bs, prompt, gen, log_dir, out_dir):
 
 
 if __name__ == "__main__":
-    raise NotImplementedError("This script is not up to date")
+    #raise NotImplementedError("This script is not up to date")
     args = get_args()
+
+
+    #bs = 768
+    #
+    #tp_sizes = {
+    #    # "7b": [1],
+    #    "13b": [1, 2, 4],
+    #    # "70b": [4, 8],
+    #}
+    #
+    #prompt_gen_pairs = [
+    #    (1200, 60),
+    #    (1200, 128),
+    #    (2600, 60),
+    #    (2600, 128),
+    #    (2600, 256),
+    #]
+
 
     for model_size, tps in tp_sizes.items():
         for prompt, gen in prompt_gen_pairs:

@@ -179,5 +179,6 @@ def get_result_sets(args: argparse.Namespace) -> set():
         if difference:
             print(f"WARNING: backend {key} has result combinations that are not present in all backends:")
             print(tabulate(difference, headers=["model", "tp_size", "bs", "replicas", "prompt", "gen"]))
+            print("")
 
     return result_params
