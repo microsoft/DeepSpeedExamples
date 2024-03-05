@@ -121,7 +121,7 @@ def output_charts(model, tp_size, bs, replicas, prompt, gen, log_dir, out_dir):
         )
 
     # Generic plot formatting
-    plt.title(f"Model {model}, Prompt: {prompt}, Generation: {gen}, TP: {tp_size}")
+    plt.title(f"Model: {model}, Prompt: {prompt}, Generation: {gen}, TP: {tp_size}")
     plt.xlabel("Throughput (queries/s)", fontsize=14)
     plt.ylabel("Latency (s)", fontsize=14)
     plt.legend()
