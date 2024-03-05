@@ -13,8 +13,8 @@ from postprocess_results import read_json, get_summary, get_result_sets
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--backend", type=str, choices=["aml", "fastgen", "vllm"], default=["aml", "fastgen", "vllm"], \
-                        nargs="+", help="Specify the backends to generate plots for")
+    parser.add_argument("--backend", type=str, choices=["fastgen"], default=["fastgen"], \
+                        nargs=1, help="Specify the single backend to generate plots for")
     parser.add_argument("--clients_per_replica", type=int, required=False, default=None, help="Optional \
                         argument to specify explicit clients/replica to generate plot for")
     parser.add_argument("--log_dir", type=Path, default="./results")
@@ -84,7 +84,7 @@ def output_charts(args, model, tp_size, bs, replica_nums, prompt, gen, log_dir, 
             plt.ylabel("Throughput (queries/s)", fontsize=14)
             plt.grid(True)
             plt.tight_layout()
-            out_file = out_dir / f"repl_scale_{model}_tp{tp_size}_p{prompt}g{gen}_c{c}.png"
+            out_file = out_dir / f"repl_scale_{model}_tp{tp_size}_p{prompt}g{gen}_c_per_r{c}.png"
             plt.savefig(out_file)
 
 
