@@ -9,6 +9,7 @@ import argparse
 from pathlib import Path
 import numpy as np
 import re
+from collections import defaultdict
 
 from postprocess_results import read_json, get_summary, get_result_sets
 
@@ -97,22 +98,18 @@ def output_charts(args, model, tp_list, bs, replicas, prompt, gen, log_dir, out_
 if __name__ == "__main__":
     args = get_args()
 
-    tp_sets = {}
-
+    tp_sets = defaultdict(lambda: defaultdict(set))
     result_params = get_result_sets(args)
 
     # Find all tp_sizes across same sets
     for model, tp_size, bs, replicas, prompt, gen in result_params:
         key = f'{model}_{bs}_{replicas}_{prompt}_{gen}'
-        set_dict = tp_sets.setdefault(f'{model}_{bs}_{replicas}_{prompt}_{gen}', dict())
-        set_dict.setdefault(f'config', set()).add((model, bs, replicas, prompt, gen))
-        tp_list = set_dict.setdefault(f'tp_list', list())
-        if tp_size not in tp_list:
-            tp_list.append(int(tp_size))
+        tp_sets[key]['config'].add((model, bs, replicas, prompt, gen))
+        tp_sets[key]['tp_list'].add(int(tp_size))
 
     for tp_set in tp_sets.values():
         for model, bs, replicas, prompt, gen in tp_set['config']:
-            tp_list = sorted(list(tp_set['tp_list']))
+            tp_list = sorted(tp_set['tp_list'])
             output_charts(
                 args=args,
                 model=model,

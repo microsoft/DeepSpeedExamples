@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import argparse
 from pathlib import Path
 import numpy as np
+from collections import defaultdict
 
 from postprocess_results import read_json, get_summary, get_result_sets
 
@@ -91,22 +92,18 @@ def output_charts(args, model, tp_size, bs, replica_nums, prompt, gen, log_dir, 
 if __name__ == "__main__":
     args = get_args()
 
-    replica_sets = {}
-
+    replica_sets = defaultdict(lambda: defaultdict(set))
     result_params = get_result_sets(args)
 
     # Find all replicas across same sets
     for model, tp_size, bs, replicas, prompt, gen in result_params:
         key = f'{model}_{tp_size}_{bs}_{prompt}_{gen}'
-        set_dict = replica_sets.setdefault(f'{model}_{tp_size}_{bs}_{prompt}_{gen}', dict())
-        set_dict.setdefault(f'config', set()).add((model, tp_size, bs, prompt, gen))
-        replicas_list = set_dict.setdefault(f'replicas', list())
-        if replicas not in replicas_list:
-            replicas_list.append(int(replicas))
+        replica_sets[key]['config'].add((model, tp_size, bs, prompt, gen))
+        replica_sets[key]['replicas'].add(int(replicas))
 
     for replica_set in replica_sets.values():
         for model, tp_size, bs, prompt, gen in replica_set['config']:
-            replica_nums = sorted(list(replica_set['replicas']))
+            replica_nums = sorted(replica_set['replicas'])
             output_charts(
                 args=args,
                 model=model,
