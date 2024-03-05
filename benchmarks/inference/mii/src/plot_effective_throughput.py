@@ -17,7 +17,7 @@ def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--backend", type=str, choices=["aml", "fastgen", "vllm"], default=["aml", "fastgen", "vllm"], \
                         nargs="+", help="Specify the backends to generate plots for")
-    parser.add_argument("--log_dir", type=Path, default=".")
+    parser.add_argument("--log_dir", type=Path, default="./results")
     parser.add_argument("--out_dir", type=Path, default="./plots/goodtput")
     parser.add_argument("--sla_prompt_tokens_per_sec", type=int, default=512, help="SLA prompt tokens per second")
     parser.add_argument("--sla_gen_tokens_per_sec", type=int, default=[1, 2, 3, 4, 6, 8], nargs="+", help="SLA generation tokens/s targets")

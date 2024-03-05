@@ -17,10 +17,10 @@ from postprocess_results import read_json, get_summary, get_result_sets
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--log_dir", type=Path, default="./results")
-    parser.add_argument("--out_dir", type=Path, default="./plots/throughput_latency")
     parser.add_argument("--backend", type=str, choices=["aml", "fastgen", "vllm"], default=["aml", "fastgen", "vllm"], \
                         nargs="+", help="Specify the backends to generate plots for")
+    parser.add_argument("--log_dir", type=Path, default="./results")
+    parser.add_argument("--out_dir", type=Path, default="./plots/throughput_latency")
     args = parser.parse_args()
     return args
 

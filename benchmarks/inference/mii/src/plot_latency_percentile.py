@@ -16,12 +16,12 @@ from postprocess_results import read_json, get_token_latency, get_result_sets
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--log_dir", type=Path, default=".")
+    parser.add_argument("--backend", type=str, choices=["aml", "fastgen", "vllm"], default=["aml", "fastgen", "vllm"], \
+                        nargs="+", help="Specify the backends to generate plots for")
+    parser.add_argument("--log_dir", type=Path, default="./results")
     parser.add_argument(
         "--out_dir", type=Path, default="./plots/percentile_token_latency"
     )
-    parser.add_argument("--backend", type=str, choices=["aml", "fastgen", "vllm"], default=["aml", "fastgen", "vllm"], \
-                        nargs="+", help="Specify the backends to generate plots for")
     parser.add_argument("--skip_head_token_num", type=int, default=1, help="Specify number of head tokens to skip")
     parser.add_argument("--skip_request_num", type=int, default=1, help="Specify number of requests to skip")
     args = parser.parse_args()
