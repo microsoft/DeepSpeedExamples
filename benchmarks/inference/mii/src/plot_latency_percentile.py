@@ -64,12 +64,21 @@ def output_charts(args, model, tp_size, bs, replicas, prompt, gen, log_dir, out_
                'fastgen': {'bar_x': [1.3, 2.8, 4.3], 'label': 'DeepSpeed-FastGen', 'color': 'blue'}}
 
     latencies = {}
+    client_num_dict = {}
     for backend in args.backend:
         file_pattern = f"{log_dir}/{backend}/{result_file_pattern}"
         latencies[backend] = extract_values(args, file_pattern)
-        client_num_list = sorted(list(latencies[backend].keys()))
+        client_num_dict[backend] = set(sorted(list(latencies[backend].keys())))
 
-    for client_num in client_num_list:
+    # Intersection of clients across all backends
+    client_num_set = set()
+    for backend in args.backend:
+        if not client_num_set:
+            client_num_set = client_num_dict[backend]
+        else:
+            client_num_set = client_num_set.intersection(client_num_dict[backend])
+
+    for client_num in client_num_set:
         plt.figure()
         percentile = 95
 
