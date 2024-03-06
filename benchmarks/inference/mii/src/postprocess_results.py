@@ -13,6 +13,7 @@ from functools import reduce
 from pathlib import Path
 from statistics import mean
 from typing import List
+from collections import defaultdict
 
 import numpy as np
 from transformers import AutoTokenizer
@@ -157,14 +158,14 @@ def get_result_sets(args: argparse.Namespace) -> set():
         r"(.+)-tp(\d+)-bs(\d+)-replicas(\d+)-prompt(\d+)-gen(\d+)-clients.*.json"
     )
 
-    backend_sets = {}
+    backend_sets = defaultdict(set)
 
     # Generate backend sets
     for backend in args.backend:
         for f in os.listdir(os.path.join(args.log_dir, backend)):
             match = result_re.match(f)
             if match:
-                backend_sets.setdefault(f'{backend}', set()).add(match.groups())
+                backend_sets[backend].add(match.groups())
 
     # Intersection between all sets
     for backend_set in backend_sets.values():
