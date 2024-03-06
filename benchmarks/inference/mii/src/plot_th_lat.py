@@ -54,6 +54,8 @@ def output_charts(model, tp_size, bs, replicas, prompt, gen, log_dir, out_dir):
 
     result_file_pattern = f"{model}-tp{tp_size}-bs{bs}-replicas{replicas}-prompt{prompt}-gen{gen}-clients*.json"
 
+    plt.figure()
+
     # Plotting the scatter plot
     # vLLM plot formatting
     if "vllm" in args.backend:
