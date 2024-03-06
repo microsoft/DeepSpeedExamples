@@ -61,9 +61,11 @@ def output_charts(args, model, tp_list, bs, replicas, prompt, gen, log_dir, out_
         if len(mii_throughputs) == 0:
             continue
 
-        # TODO (lekurile): model_size assumes size is in billions, generalize (holdover)
-        model_size = re.match('.*?(\d+[b|B])', model).groups()[0]
+        model_size = re.match('.*?(\d+[b|B|m|M])', model).groups()[0]
         n_params = int(model_size[:-1])
+        if model_size[-1].lower() == 'm':
+            # Scale n_params approriately for millions
+            n_params = n_params / 1000
         tflops_per_query = n_params * (int(prompt) + int(gen)) * 2 * 1e-3
         mii_tflops = [th * tflops_per_query / tp for th in mii_throughputs]
 
