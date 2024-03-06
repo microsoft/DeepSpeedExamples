@@ -117,7 +117,7 @@ def extract_values(file_pattern, sla_token_gen, validate_func, sla_prompt_tokens
     return goodputs, good_ratios
 
 
-def output_charts(model, tp_size, bs, replicas, sla_token_gen, prompt, gen, log_dir, out_dir):
+def output_charts(args, model, tp_size, bs, replicas, sla_token_gen, prompt, gen, log_dir, out_dir):
     if not log_dir.exists():
         print(f"Log directory {log_dir} does not exist")
         return
@@ -136,8 +136,8 @@ def output_charts(model, tp_size, bs, replicas, sla_token_gen, prompt, gen, log_
         (validate_token_ema_latency_SLA, (args.ema_span,), f"ema{args.ema_span}"),
     ]
 
-    labels = {'fastgen': 'DeepSpeed-FastGen', 'vllm': 'vLLM'}
-    markers = {'fastgen': 'o', 'vllm': 'x'}
+    plt_cfg = {'vllm': {'label': 'vLLM', 'marker': 'x', 'color': 'orange'},\
+               'fastgen': {'label': 'DeepSpeed-FastGen', 'marker': 'o', 'color': 'blue'}}
 
     for f in validate_funcs:
         plt.figure()
@@ -154,8 +154,9 @@ def output_charts(model, tp_size, bs, replicas, sla_token_gen, prompt, gen, log_
             plt.scatter(
                 client_num_list,
                 goodputs_list,
-                label=labels[backend],
-                marker=markers[backend],
+                label=plt_cfg[backend]['label'],
+                marker=plt_cfg[backend]['marker'],
+                color=plt_cfg[backend]['color'],
             )
 
             fit_x_list = np.arange(min(client_num_list), max(client_num_list), 0.1)
@@ -166,6 +167,7 @@ def output_charts(model, tp_size, bs, replicas, sla_token_gen, prompt, gen, log_
                 model_fn(fit_x_list),
                 alpha=0.5,
                 linestyle="--",
+                color=plt_cfg[backend]['color'],
             )
 
         title = (
@@ -197,6 +199,7 @@ if __name__ == "__main__":
     for model, tp_size, bs, replicas, prompt, gen in result_params:
         for sla_token_gen in args.sla_gen_tokens_per_sec:
              output_charts(
+                args=args,
                 model=model,
                 tp_size=tp_size,
                 bs=bs,

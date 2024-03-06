@@ -60,37 +60,26 @@ def output_charts(args, model, tp_size, bs, replicas, prompt, gen, log_dir, out_
 
     result_file_pattern = f"{model}-tp{tp_size}-bs{bs}-replicas{replicas}-prompt{prompt}-gen{gen}-clients*.json"
 
-    if "vllm" in args.backend:
-        vllm_file_pattern = f"{log_dir}/vllm/{result_file_pattern}"
-        vllm_latencies = extract_values(args, vllm_file_pattern)
-        client_num_list = sorted(list(vllm_latencies.keys()))
+    plt_cfg = {'vllm': {'bar_x': [1, 2.5, 4], 'label': 'vLLM', 'color': 'orange'},\
+               'fastgen': {'bar_x': [1.3, 2.8, 4.3], 'label': 'DeepSpeed-FastGen', 'color': 'blue'}}
 
-    if "fastgen" in args.backend:
-        mii_file_pattern = f"{log_dir}/fastgen/{result_file_pattern}"
-        mii_latencies = extract_values(args, mii_file_pattern)
-        client_num_list = sorted(list(mii_latencies.keys()))
+    latencies = {}
+    for backend in args.backend:
+        file_pattern = f"{log_dir}/{backend}/{result_file_pattern}"
+        latencies[backend] = extract_values(args, file_pattern)
+        client_num_list = sorted(list(latencies[backend].keys()))
 
     for client_num in client_num_list:
         plt.figure()
         percentile = 95
 
-        if "vllm" in args.backend:
-            P50_vllm_val = np.percentile(vllm_latencies[client_num], 50)
-            P90_vllm_val = np.percentile(vllm_latencies[client_num], 90)
-            P95_vllm_val = np.percentile(vllm_latencies[client_num], 95)
-            x1 = [1, 2.5, 4]
-            y1 = [P50_vllm_val, P90_vllm_val, P95_vllm_val]
-            plt.bar(x1, y1, width=0.3, label="vLLM", align="center", color="orange")
-
-        if "fastgen" in args.backend:
-            P50_mii_val = np.percentile(mii_latencies[client_num], 50)
-            P90_mii_val = np.percentile(mii_latencies[client_num], 90)
-            P95_mii_val = np.percentile(mii_latencies[client_num], 95)
-            x2 = [1.3, 2.8, 4.3]
-            y2 = [P50_mii_val, P90_mii_val, P95_mii_val]
-            plt.bar(
-                x2, y2, width=0.3, label="DeepSpeed-FastGen", align="center", color="blue"
-            )
+        for backend in args.backend:
+            print(f"Generating data for plot, {backend=}")
+            P50_val = np.percentile(latencies[backend][client_num], 50)
+            P90_val = np.percentile(latencies[backend][client_num], 90)
+            P95_val = np.percentile(latencies[backend][client_num], 95)
+            y = [P50_val, P90_val, P95_val]
+            plt.bar(plt_cfg[backend]['bar_x'], y, width=0.3, label=plt_cfg[backend]['label'], align="center", color=plt_cfg[backend]['color'])
 
         out_file = (
             out_dir
