@@ -2,9 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # DeepSpeed Team
-export TRANSFORMERS_CACHE=/data/blob/
-export HF_HOME=/data/blob/
-export HF_DATASETS_CACHE=/data/blob/
+
 MODELS=(NousResearch/Llama-2-13b-hf)
 
 for MODEL in ${MODELS[@]}; do
