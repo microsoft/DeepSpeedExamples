@@ -16,7 +16,7 @@ from postprocess_results import read_json, get_token_latency, get_result_sets
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--backend", type=str, choices=["aml", "fastgen", "vllm"], default=["aml", "fastgen", "vllm"], \
+    parser.add_argument("--backend", type=str, choices=["fastgen", "vllm"], default=["fastgen", "vllm"], \
                         nargs="+", help="Specify the backends to generate plots for")
     parser.add_argument("--log_dir", type=Path, default="./results")
     parser.add_argument(
@@ -70,10 +70,6 @@ def output_charts(args, model, tp_size, bs, replicas, prompt, gen, log_dir, out_
         mii_latencies = extract_values(args, mii_file_pattern)
         client_num_list = sorted(list(mii_latencies.keys()))
 
-    if "aml" in args.backend:
-        # TODO (lekurile): Add AML code here if/when streaming is supported
-        raise NotImplementedError("Percentile latency analysis is not supported for AML.")
-
     for client_num in client_num_list:
         plt.figure()
         percentile = 95
@@ -96,10 +92,6 @@ def output_charts(args, model, tp_size, bs, replicas, prompt, gen, log_dir, out_
                 x2, y2, width=0.3, label="DeepSpeed-FastGen", align="center", color="blue"
             )
 
-        if "aml" in args.backend:
-            # TODO (lekurile): Add AML code here if/when streaming is supported
-            raise NotImplementedError("Percentile latency analysis is not supported for AML.")
-
         out_file = (
             out_dir
             / f"p{percentile}_token_latency_{model}_c{client_num}_tp{tp_size}_p{prompt}g{gen}.png"
@@ -118,6 +110,8 @@ def output_charts(args, model, tp_size, bs, replicas, prompt, gen, log_dir, out_
 
 if __name__ == "__main__":
     args = get_args()
+
+    assert "aml" not in args.backend, "Percentile latency analysis is not supported for AML."
 
     result_params = get_result_sets(args)
 

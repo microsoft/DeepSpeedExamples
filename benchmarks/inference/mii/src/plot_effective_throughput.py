@@ -15,7 +15,7 @@ from postprocess_results import read_json, get_tokenizer, get_result_sets
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--backend", type=str, choices=["aml", "fastgen", "vllm"], default=["aml", "fastgen", "vllm"], \
+    parser.add_argument("--backend", type=str, choices=["fastgen", "vllm"], default=["fastgen", "vllm"], \
                         nargs="+", help="Specify the backends to generate plots for")
     parser.add_argument("--log_dir", type=Path, default="./results")
     parser.add_argument("--out_dir", type=Path, default="./plots/goodtput")
@@ -196,10 +196,6 @@ def output_charts(model, tp_size, bs, replicas, sla_token_gen, prompt, gen, log_
                 linestyle="--",
             )
 
-        if "aml" in args.backend:
-            # TODO (lekurile): Add AML code here if/when streaming is supported
-            raise NotImplementedError("Effective throughput analysis is not supported for AML.")
-
         title = (
             f"Effective throughput (SLA prompt: {args.sla_prompt_tokens_per_sec} tokens/s, generation: {sla_token_gen} tokens/s)\n"
             + f"Model: {model} Prompt: {prompt}, Generation: {gen}, TP: {tp_size}"
@@ -221,6 +217,8 @@ def output_charts(model, tp_size, bs, replicas, sla_token_gen, prompt, gen, log_
 
 if __name__ == "__main__":
     args = get_args()
+
+    assert "aml" not in args.backend, "Effective throughput analysis is not supported for AML."
 
     result_params = get_result_sets(args)
 
