@@ -136,62 +136,34 @@ def output_charts(model, tp_size, bs, replicas, sla_token_gen, prompt, gen, log_
         (validate_token_ema_latency_SLA, (args.ema_span,), f"ema{args.ema_span}"),
     ]
 
-    for f in validate_funcs:
-        plt.figure(figsize=(7, 4))
+    labels = {'fastgen': 'DeepSpeed-FastGen', 'vllm': 'vLLM'}
+    markers = {'fastgen': 'o', 'vllm': 'x'}
 
-        if "fastgen" in args.backend:
-            mii_file_pattern = f"{log_dir}/fastgen/{result_file_pattern}"
-            mii_goodputs, mii_good_ratios = extract_values(
-                mii_file_pattern, sla_token_gen, f, args.sla_prompt_tokens_per_sec
+    for f in validate_funcs:
+        plt.figure()
+
+        for backend in args.backend:
+            file_pattern = f"{log_dir}/{backend}/{result_file_pattern}"
+            goodputs, good_ratios = extract_values(
+                file_pattern, sla_token_gen, f, args.sla_prompt_tokens_per_sec
             )
-            client_num_list = sorted(list(mii_goodputs.keys()))
-            mii_goodputs_list = [mii_goodputs[client_num] for client_num in client_num_list]
+            client_num_list = sorted(list(goodputs.keys()))
+            goodputs_list = [goodputs[client_num] for client_num in client_num_list]
 
             # Plotting the scatter plot
             plt.scatter(
                 client_num_list,
-                mii_goodputs_list,
-                label=f"DeepSpeed-FastGen",
-                marker="o",
-                color="blue",
+                goodputs_list,
+                label=labels[backend],
+                marker=markers[backend],
             )
 
             fit_x_list = np.arange(min(client_num_list), max(client_num_list), 0.1)
-            mii_fit_model = np.polyfit(client_num_list, mii_goodputs_list, 4)
-            mii_model_fn = np.poly1d(mii_fit_model)
+            fit_model = np.polyfit(client_num_list, goodputs_list, 4)
+            model_fn = np.poly1d(fit_model)
             plt.plot(
                 fit_x_list,
-                mii_model_fn(fit_x_list),
-                color="blue",
-                alpha=0.5,
-                linestyle="--",
-            )
-
-        if "vllm" in args.backend:
-            vllm_file_pattern = f"{log_dir}/vllm/{result_file_pattern}"
-            vllm_goodputs, vllm_good_ratios = extract_values(
-                vllm_file_pattern, sla_token_gen, f, args.sla_prompt_tokens_per_sec
-            )
-            client_num_list = sorted(list(vllm_goodputs.keys()))
-            vllm_goodputs_list = [
-                vllm_goodputs[client_num] for client_num in client_num_list
-            ]
-
-            plt.scatter(
-                client_num_list,
-                vllm_goodputs_list,
-                label=f"vLLM",
-                marker="x",
-                color="orange",
-            )
-
-            fit_x_list = np.arange(min(client_num_list), max(client_num_list), 0.1)
-            vllm_fit_model = np.polyfit(client_num_list, vllm_goodputs_list, 4)
-            vllm_model_fn = np.poly1d(vllm_fit_model)
-            plt.plot(
-                fit_x_list,
-                vllm_model_fn(fit_x_list),
-                color="orange",
+                model_fn(fit_x_list),
                 alpha=0.5,
                 linestyle="--",
             )
