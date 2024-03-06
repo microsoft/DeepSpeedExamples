@@ -55,10 +55,10 @@ def output_charts(args, model, tp_list, bs, replicas, prompt, gen, log_dir, out_
 
     for tp in tp_list:
         result_file_pattern = f"{model}-tp{tp}-bs{bs}-replicas{replicas}-prompt{prompt}-gen{gen}-clients*.json"
-        mii_file_pattern = f"{log_dir}/{args.backend[0]}/{result_file_pattern}"
-        _, mii_throughputs, mii_latencies = extract_values(mii_file_pattern)
+        file_pattern = f"{log_dir}/{args.backend[0]}/{result_file_pattern}"
+        _, throughputs, latencies = extract_values(file_pattern)
 
-        if len(mii_throughputs) == 0:
+        if len(throughputs) == 0:
             continue
 
         model_size = re.match('.*?(\d+[b|B|m|M])', model).groups()[0]
@@ -67,17 +67,17 @@ def output_charts(args, model, tp_list, bs, replicas, prompt, gen, log_dir, out_
             # Scale n_params approriately for millions
             n_params = n_params / 1000
         tflops_per_query = n_params * (int(prompt) + int(gen)) * 2 * 1e-3
-        mii_tflops = [th * tflops_per_query / tp for th in mii_throughputs]
+        tflops = [th * tflops_per_query / tp for th in throughputs]
 
         plt.scatter(
-            mii_tflops, mii_latencies, label=f"TP={tp}", marker="o"
+            tflops, latencies, label=f"TP={tp}", marker="o"
         )
-        fit_mii_x_list = np.arange(min(mii_tflops), max(mii_tflops), 0.01)
-        mii_fit_model = np.polyfit(mii_tflops, mii_latencies, 3)
-        mii_model_fn = np.poly1d(mii_fit_model)
+        fit_x_list = np.arange(min(tflops), max(tflops), 0.01)
+        fit_model = np.polyfit(tflops, latencies, 3)
+        model_fn = np.poly1d(fit_model)
         plt.plot(
-            fit_mii_x_list,
-            mii_model_fn(fit_mii_x_list),
+            fit_x_list,
+            model_fn(fit_x_list),
             alpha=0.5,
             linestyle="--",
         )
