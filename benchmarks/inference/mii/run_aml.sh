@@ -3,16 +3,16 @@
 
 # DeepSpeed Team
 
-# Run benchmark
+# Run benchmark against AML endpoint
 python ./run_benchmark.py \
-        --model meta-llama/Llama-2-7b-hf \
-        --tp_size 1 \
-        --num_replicas 1 \
-        --max_ragged_batch_size 768 \
+        --model <model name> \
+        --deployment_name <aml deployment name> \
+        --aml_api_url <aml endpoint URL> \
+        --aml_api_key <aml API key> \
         --mean_prompt_length 2600 \
         --mean_max_new_tokens 60 \
-        --stream \
-        --backend fastgen \
+        --num_requests 256 \
+        --backend aml
 
 ### Gernerate the plots
 python ./src/plot_th_lat.py
