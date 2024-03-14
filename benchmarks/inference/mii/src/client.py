@@ -132,7 +132,10 @@ def call_vllm(
 
 
 def call_aml(
-    input_tokens: str, max_new_tokens: int, args: argparse.Namespace, start_time=None
+    input_tokens: str,
+    max_new_tokens: int,
+    args: argparse.Namespace,
+    start_time: Union[None, float] = None,
 ) -> ResponseDetails:
     if args.stream:
         raise NotImplementedError("Not implemented for streaming")
@@ -161,7 +164,7 @@ def call_aml(
         return output
 
     token_gen_time = []
-    if start_time == None:
+    if start_time is None:
         start_time = time.time()
     response = requests.post(args.aml_api_url, headers=headers, json=pload, timeout=180)
     # Sometimes the AML endpoint will return an error, so we send the request again
