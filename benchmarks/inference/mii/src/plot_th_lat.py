@@ -7,6 +7,7 @@ import argparse
 import glob
 import os
 import re
+import json
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -17,10 +18,11 @@ from postprocess_results import read_json, get_summary, get_result_sets
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--backend", type=str, choices=["aml", "fastgen", "vllm"], default=["aml", "fastgen", "vllm"], \
-                        nargs="+", help="Specify the backends to generate plots for")
+    parser.add_argument("--data_dirs", type=str, nargs="+", \
+                        help="Specify the data directories to generate plots for")
     parser.add_argument("--log_dir", type=Path, default="./results")
     parser.add_argument("--out_dir", type=Path, default="./plots/throughput_latency")
+    parser.add_argument("--model_name", type=str, default="", help="Optional model name override")
     args = parser.parse_args()
     return args
 
@@ -42,11 +44,7 @@ def extract_values(file_pattern):
         throughputs.append(summary.throughput)
         latencies.append(summary.latency)
 
-        if "aml" in args.backend:
-            extra_args["aml_api_url"] = prof_args["aml_api_url"]
-            extra_args["deployment_name"] = prof_args["deployment_name"]
-
-    return clients, throughputs, latencies, extra_args
+    return clients, throughputs, latencies
 
 
 def output_charts(model, tp_size, bs, replicas, prompt, gen, log_dir, out_dir):
@@ -58,69 +56,117 @@ def output_charts(model, tp_size, bs, replicas, prompt, gen, log_dir, out_dir):
 
     # Plotting the scatter plot
     # vLLM plot formatting
-    if "vllm" in args.backend:
-        vllm_file_pattern = f"{log_dir}/vllm/{result_file_pattern}"
-        _, vllm_throughputs, vllm_latencies, _ = extract_values(vllm_file_pattern)
-        if len(vllm_throughputs) > 0:
-            plt.scatter(
-                vllm_throughputs, vllm_latencies, label=f"vLLM", marker="x", color="orange"
-            )
-            fit_vllm_x_list = np.arange(min(vllm_throughputs), max(vllm_throughputs), 0.01)
-            vllm_vllm_model = np.polyfit(vllm_throughputs, vllm_latencies, 3)
-            vllm_model_fn = np.poly1d(vllm_vllm_model)
-            plt.plot(
-                fit_vllm_x_list,
-                vllm_model_fn(fit_vllm_x_list),
-                color="orange",
-                alpha=0.5,
-                linestyle="--",
+
+    for data_dir in args.data_dirs:
+        file_pattern = f"{log_dir}/{data_dir}/{result_file_pattern}"
+        _, throughputs, latencies = extract_values(file_pattern)
+
+
+        plot_config = glob.glob(f"{log_dir}/{data_dir}/plot_config.json")[0]
+
+        with open(plot_config, "r") as f:
+            plot_config = json.load(f)
+
+        latencies = sorted(latencies)
+        throughputs = sorted(throughputs)
+
+        for i, latency in enumerate(latencies):
+            if latency > 10:
+                latencies = latencies[:i-1]
+                throughputs = throughputs[:i-1]
+                break
+
+        if plot_config["config"]["scatter"]:
+            plot_fn = plt.scatter
+        else:
+            plot_fn = plt.plot
+
+        if len(throughputs) > 0:
+            #plt.scatter(
+            plot_fn(
+                throughputs,
+                latencies,
+                label=plot_config["config"]["label"],
+                marker=plot_config["config"]["marker"],
+                color=plot_config["config"]["color"],
+                linestyle=plot_config["config"]["linestyle"]
             )
 
-    # FastGen plot formatting
-    if "fastgen" in args.backend:
-        mii_file_pattern = f"{log_dir}/fastgen/{result_file_pattern}"
-        _, mii_throughputs, mii_latencies, _ = extract_values(mii_file_pattern)
-        plt.scatter(
-            mii_throughputs,
-            mii_latencies,
-            label=f"DeepSpeed FastGen",
-            marker="o",
-            color="blue",
-        )
-        fit_mii_x_list = np.arange(min(mii_throughputs), max(mii_throughputs), 0.01)
-        mii_fit_model = np.polyfit(mii_throughputs, mii_latencies, 3)
-        mii_model_fn = np.poly1d(mii_fit_model)
-        plt.plot(
-            fit_mii_x_list,
-            mii_model_fn(fit_mii_x_list),
-            color="blue",
-            alpha=0.5,
-            linestyle="--",
-        )
+            if plot_config["config"]["scatter"]:
+                fit_x_list = np.arange(min(throughputs), max(throughputs), 0.01)
+                data_model = np.polyfit(throughputs, latencies, plot_config["config"]["polyfit_degree"])
+                model_fn = np.poly1d(data_model)
+                plt.plot(
+                    fit_x_list,
+                    model_fn(fit_x_list),
+                    color=plot_config["config"]["color"],
+                    alpha=0.5,
+                    linestyle=plot_config["config"]["linestyle"],
+                )
 
-    # AML plot formatting
-    if "aml" in args.backend:
-        aml_file_pattern = f"{log_dir}/aml/{result_file_pattern}"
-        _, aml_throughputs, aml_latencies, aml_args = extract_values(aml_file_pattern)
-        aml_endpoint_name = re.match('^https://(.+?)\.', aml_args["aml_api_url"]).groups()[0]
-        aml_deployment_name = aml_args["deployment_name"]
-        plt.scatter(
-            aml_throughputs,
-            aml_latencies,
-            label=f"AML {aml_endpoint_name.capitalize()}",
-            marker="o",
-            color="purple",
-        )
-        fit_aml_x_list = np.arange(min(aml_throughputs), max(aml_throughputs), 0.01)
-        aml_fit_model = np.polyfit(aml_throughputs, aml_latencies, 3)
-        aml_model_fn = np.poly1d(aml_fit_model)
-        plt.plot(
-            fit_aml_x_list,
-            aml_model_fn(fit_aml_x_list),
-            color="purple",
-            alpha=0.5,
-            linestyle="--",
-        )
+    # if "vllm" in args.data_dirs:
+    #     vllm_file_pattern = f"{log_dir}/vllm/{result_file_pattern}"
+    #     _, vllm_throughputs, vllm_latencies = extract_values(vllm_file_pattern)
+    #     if len(vllm_throughputs) > 0:
+    #         plt.scatter(
+    #             vllm_throughputs, vllm_latencies, label=f"vLLM", marker="x", color="orange"
+    #         )
+    #         fit_vllm_x_list = np.arange(min(vllm_throughputs), max(vllm_throughputs), 0.01)
+    #         vllm_vllm_model = np.polyfit(vllm_throughputs, vllm_latencies, 3)
+    #         vllm_model_fn = np.poly1d(vllm_vllm_model)
+    #         plt.plot(
+    #             fit_vllm_x_list,
+    #             vllm_model_fn(fit_vllm_x_list),
+    #             color="orange",
+    #             alpha=0.5,
+    #             linestyle="--",
+    #         )
+
+    # # FastGen plot formatting
+    # if "fastgen" in args.data_dirs:
+    #     mii_file_pattern = f"{log_dir}/fastgen/{result_file_pattern}"
+    #     _, mii_throughputs, mii_latencies = extract_values(mii_file_pattern)
+    #     plt.scatter(
+    #         mii_throughputs,
+    #         mii_latencies,
+    #         label=f"DeepSpeed FastGen",
+    #         marker="o",
+    #         color="blue",
+    #     )
+    #     fit_mii_x_list = np.arange(min(mii_throughputs), max(mii_throughputs), 0.01)
+    #     mii_fit_model = np.polyfit(mii_throughputs, mii_latencies, 3)
+    #     mii_model_fn = np.poly1d(mii_fit_model)
+    #     plt.plot(
+    #         fit_mii_x_list,
+    #         mii_model_fn(fit_mii_x_list),
+    #         color="blue",
+    #         alpha=0.5,
+    #         linestyle="--",
+    #     )
+
+    # # AML plot formatting
+    # if "aml" in args.data_dirs:
+    #     aml_file_pattern = f"{log_dir}/aml/{result_file_pattern}"
+    #     _, aml_throughputs, aml_latencies = extract_values(aml_file_pattern)
+    #     #aml_endpoint_name = re.match('^https://(.+?)\.', aml_args["aml_api_url"]).groups()[0]
+    #     #aml_deployment_name = aml_args["deployment_name"]
+    #     plt.scatter(
+    #         aml_throughputs,
+    #         aml_latencies,
+    #         label=f"AML {aml_endpoint_name.capitalize()}",
+    #         marker="o",
+    #         color="purple",
+    #     )
+    #     fit_aml_x_list = np.arange(min(aml_throughputs), max(aml_throughputs), 0.01)
+    #     aml_fit_model = np.polyfit(aml_throughputs, aml_latencies, 3)
+    #     aml_model_fn = np.poly1d(aml_fit_model)
+    #     plt.plot(
+    #         fit_aml_x_list,
+    #         aml_model_fn(fit_aml_x_list),
+    #         color="purple",
+    #         alpha=0.5,
+    #         linestyle="--",
+    #     )
 
     # Generic plot formatting
     plt.title(f"Model: {model}, Prompt: {prompt}, Generation: {gen}, TP: {tp_size}")

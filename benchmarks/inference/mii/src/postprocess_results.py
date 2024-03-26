@@ -161,7 +161,7 @@ def get_result_sets(args: argparse.Namespace) -> set():
     backend_sets = defaultdict(set)
 
     # Generate backend sets
-    for backend in args.backend:
+    for backend in args.data_dirs:
         for f in os.listdir(os.path.join(args.log_dir, backend)):
             match = result_re.match(f)
             if match:
