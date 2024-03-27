@@ -1,0 +1,8 @@
+config:
+  label: "vLLM"
+  color: "purple"
+  marker: "o"
+  linestyle: "--"
+  polyfit_degree: 3
+  scatter: false
+  y_max : 10
