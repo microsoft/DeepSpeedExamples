@@ -158,27 +158,27 @@ def get_result_sets(args: argparse.Namespace) -> set():
         r"(.+)-tp(\d+)-bs(\d+)-replicas(\d+)-prompt(\d+)-gen(\d+)-clients.*.json"
     )
 
-    backend_sets = defaultdict(set)
+    data_sets = defaultdict(set)
 
-    # Generate backend sets
-    for backend in args.data_dirs:
-        for f in os.listdir(os.path.join(args.log_dir, backend)):
+    # Generate data sets
+    for data in args.data_dirs:
+        for f in os.listdir(os.path.join(args.log_dir, data)):
             match = result_re.match(f)
             if match:
-                backend_sets[backend].add(match.groups())
+                data_sets[data].add(match.groups())
 
     # Intersection between all sets
-    for backend_set in backend_sets.values():
+    for data_set in data_sets.values():
         if result_params == None:
-            result_params = backend_set
+            result_params = data_set
         else:
-            result_params = result_params.intersection(backend_set)
+            result_params = result_params.intersection(data_set)
 
     # Warning messages about skipped sets
-    for key, backend_set in backend_sets.items():
-        difference = backend_set.difference(result_params)
+    for key, data_set in data_sets.items():
+        difference = data_set.difference(result_params)
         if difference:
-            print(f"WARNING: backend {key} has result combinations that are not present in all backends:")
+            print(f"WARNING: data {key} has result combinations that are not present in all data sets:")
             print(tabulate(difference, headers=["model", "tp_size", "bs", "replicas", "prompt", "gen"]))
             print("")
 

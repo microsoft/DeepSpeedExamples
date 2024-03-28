@@ -44,7 +44,7 @@ def extract_values(file_pattern):
         throughputs.append(summary.throughput)
         latencies.append(summary.latency)
 
-    return clients, throughputs, latencies
+    return clients, throughputs, latencies, prof_args
 
 
 def output_charts(model, tp_size, bs, replicas, prompt, gen, log_dir, out_dir):
@@ -56,51 +56,103 @@ def output_charts(model, tp_size, bs, replicas, prompt, gen, log_dir, out_dir):
 
     for data_dir in args.data_dirs:
         file_pattern = f"{log_dir}/{data_dir}/{result_file_pattern}"
-        _, throughputs, latencies = extract_values(file_pattern)
+        _, throughputs, latencies, prof_args = extract_values(file_pattern)
 
-        plot_config = glob.glob(f"{log_dir}/{data_dir}/plot_config.yaml")[0]
+        kwargs = {}
+        kwargs["label"] = str(data_dir)
+        kwargs["marker"] = "o"
+        kwargs["linestyle"] = "--"
 
-        plot_config = yaml.safe_load(Path(plot_config).read_text())
+        fit_kwargs = {}
+        fit_kwargs["linestyle"] = "--"
+        plot_fit_line = True
+
+        polyfit_degree = 3
+        plot_fn = plt.scatter
+
+        plot_config = glob.glob(f"{log_dir}/{data_dir}/plot_config.yaml")
 
         latencies = sorted(latencies)
         throughputs = sorted(throughputs)
 
-        if "y_max" in plot_config["config"].keys():
-            for i, latency in enumerate(latencies):
-                if latency > plot_config["config"]["y_max"]:
-                    latencies = latencies[:i]
-                    throughputs = throughputs[:i]
-                    break
+        if plot_config:
+            plot_config = plot_config[0]
+            plot_config = yaml.safe_load(Path(plot_config).read_text())
+            plot_keys = plot_config["config"].keys()
 
-        if plot_config["config"]["scatter"]:
-            plot_fn = plt.scatter
-        else:
-            plot_fn = plt.plot
+            # If x_max specified, clip data
+            if "x_max" in plot_keys:
+                for i, throughput in enumerate(throughputs):
+                    if throughput > plot_config["config"]["x_max"]:
+                        latencies = latencies[:i]
+                        throughputs = throughputs[:i]
+                        break
+
+            # If y_max specified, clip data
+            if "y_max" in plot_keys:
+                for i, latency in enumerate(latencies):
+                    if latency > plot_config["config"]["y_max"]:
+                        latencies = latencies[:i]
+                        throughputs = throughputs[:i]
+                        break
+
+            # Set polyfit degree
+            polyfit_degree = plot_config["config"].get("polyfit_degree", polyfit_degree)
+
+            # Select plot type
+            if polyfit_degree == 0:
+                plot_fn = plt.plot
+                plot_fit_line = False
+
+            # Main plot kwargs
+            if "label" in plot_keys:
+                kwargs["label"] = plot_config["config"]["label"]
+            if "marker" in plot_keys:
+                kwargs["marker"] = plot_config["config"]["marker"]
+            if "color" in plot_keys:
+                kwargs["color"] = plot_config["config"]["color"]
+            if "linestyle" in plot_keys:
+                kwargs["linestyle"] = plot_config["config"]["linestyle"]
+
+            # Fit line kwargs
+            if "color" in plot_keys:
+                fit_kwargs["color"] = plot_config["config"]["color"]
+            if "linestyle" in plot_keys:
+                fit_kwargs["linestyle"] = plot_config["config"]["linestyle"]
 
         if len(throughputs) > 0:
-            plot_fn(
+            plot = plot_fn(
                 throughputs,
                 latencies,
-                label=plot_config["config"]["label"],
-                marker=plot_config["config"]["marker"],
-                color=plot_config["config"]["color"],
-                linestyle=plot_config["config"]["linestyle"]
+                **kwargs,
             )
 
-            if plot_config["config"]["scatter"]:
+            if plot_fn == plt.plot:
+                plot_color = plot[0].get_color()
+            else:
+                plot_color = plot.get_facecolor()[0]
+
+            if plot_fit_line:
+                if not "color" in fit_kwargs.keys():
+                    fit_kwargs["color"] = plot_color
+
                 fit_x_list = np.arange(min(throughputs), max(throughputs), 0.01)
-                data_model = np.polyfit(throughputs, latencies, plot_config["config"]["polyfit_degree"])
+                data_model = np.polyfit(throughputs, latencies, polyfit_degree)
                 model_fn = np.poly1d(data_model)
                 plt.plot(
                     fit_x_list,
                     model_fn(fit_x_list),
-                    color=plot_config["config"]["color"],
                     alpha=0.5,
-                    linestyle=plot_config["config"]["linestyle"],
+                    **fit_kwargs,
                 )
 
     # Generic plot formatting
-    plt.title(f"Model: {model}, Prompt: {prompt}, Generation: {gen}, TP: {tp_size}")
+    if args.model_name:
+        model_label = args.model_name
+    else:
+        model_label = model
+
+    plt.title(f"Model: {model_label}, Prompt: {prompt}, Generation: {gen}, TP: {tp_size}")
     plt.xlabel("Throughput (queries/s)", fontsize=14)
     plt.ylabel("Latency (s)", fontsize=14)
     plt.legend()
