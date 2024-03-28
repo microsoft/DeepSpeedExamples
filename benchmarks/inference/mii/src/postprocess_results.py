@@ -162,7 +162,7 @@ def get_result_sets(args: argparse.Namespace) -> set():
 
     # Generate data sets
     for data in args.data_dirs:
-        for f in os.listdir(os.path.join(args.log_dir, data)):
+        for f in os.listdir(os.path.join(data)):
             match = result_re.match(f)
             if match:
                 data_sets[data].add(match.groups())

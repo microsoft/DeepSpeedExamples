@@ -20,7 +20,6 @@ def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--data_dirs", type=str, nargs="+", \
                         help="Specify the data directories to generate plots for")
-    parser.add_argument("--log_dir", type=Path, default="./results")
     parser.add_argument("--out_dir", type=Path, default="./plots/throughput_latency")
     parser.add_argument("--model_name", type=str, default="", help="Optional model name override")
     args = parser.parse_args()
@@ -47,7 +46,7 @@ def extract_values(file_pattern):
     return clients, throughputs, latencies, prof_args
 
 
-def output_charts(model, tp_size, bs, replicas, prompt, gen, log_dir, out_dir):
+def output_charts(model, tp_size, bs, replicas, prompt, gen, out_dir):
     out_dir.mkdir(parents=True, exist_ok=True)
 
     result_file_pattern = f"{model}-tp{tp_size}-bs{bs}-replicas{replicas}-prompt{prompt}-gen{gen}-clients*.json"
@@ -55,7 +54,7 @@ def output_charts(model, tp_size, bs, replicas, prompt, gen, log_dir, out_dir):
     plt.figure()
 
     for data_dir in args.data_dirs:
-        file_pattern = f"{log_dir}/{data_dir}/{result_file_pattern}"
+        file_pattern = f"{data_dir}/{result_file_pattern}"
         _, throughputs, latencies, prof_args = extract_values(file_pattern)
 
         kwargs = {}
@@ -70,7 +69,7 @@ def output_charts(model, tp_size, bs, replicas, prompt, gen, log_dir, out_dir):
         polyfit_degree = 3
         plot_fn = plt.scatter
 
-        plot_config = glob.glob(f"{log_dir}/{data_dir}/plot_config.yaml")
+        plot_config = glob.glob(f"{data_dir}/plot_config.yaml")
 
         latencies = sorted(latencies)
         throughputs = sorted(throughputs)
@@ -169,9 +168,6 @@ def output_charts(model, tp_size, bs, replicas, prompt, gen, log_dir, out_dir):
 if __name__ == "__main__":
     args = get_args()
 
-    if not args.log_dir.exists():
-        raise ValueError(f"Log dir {args.log_dir} does not exist")
-
     result_params = get_result_sets(args)
 
     for model, tp_size, bs, replicas, prompt, gen in result_params:
@@ -182,6 +178,5 @@ if __name__ == "__main__":
             replicas=replicas,
             prompt=prompt,
             gen=gen,
-            log_dir=args.log_dir,
             out_dir=args.out_dir,
         )
