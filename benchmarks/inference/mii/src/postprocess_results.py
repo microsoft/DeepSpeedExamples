@@ -160,9 +160,19 @@ def get_result_sets(args: argparse.Namespace) -> set():
 
     data_sets = defaultdict(set)
 
+    if hasattr(args, "data_dirs"):
+        data_set_dirs = args.data_dirs
+    elif hasattr(args, "backend"):
+        data_set_dirs = args.backend
+
     # Generate data sets
-    for data in args.data_dirs:
-        for f in os.listdir(os.path.join(data)):
+    for data in data_set_dirs:
+        if hasattr(args, "log_dir"):
+            os_path = os.path.join(args.log_dir, data)
+        else:
+            os_path = os.path.join(data)
+
+        for f in os.listdir(os_path):
             match = result_re.match(f)
             if match:
                 data_sets[data].add(match.groups())
