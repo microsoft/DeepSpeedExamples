@@ -66,14 +66,13 @@ The `plot_th_lat.py` throughput-latency plot generation script is generalized fo
 
 The script uses an **_optional_** `plot_config.yaml` that resides within each result directory and allows for overrides in the plot formatting. An example config file may look like this:
 ```yaml
-config:
-  label: "vLLM"
-  color: "purple"
-  marker: "o"
-  linestyle: "--"
-  polyfit_degree: 0
-  x_max : 30
-  y_max : 10
+label: "vLLM"
+color: "purple"
+marker: "o"
+linestyle: "--"
+polyfit_degree: 0
+x_max : 30
+y_max : 10
 ```
 
 Each of the config parameters is optional, allowing for overriding of only the specific plot aspects required, however, all parameters may also be provided.

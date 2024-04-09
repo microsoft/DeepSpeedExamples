@@ -77,12 +77,12 @@ def output_charts(model, tp_size, bs, replicas, prompt, gen, out_dir):
         if plot_config:
             plot_config = plot_config[0]
             plot_config = yaml.safe_load(Path(plot_config).read_text())
-            plot_keys = plot_config["config"].keys()
+            plot_keys = plot_config.keys()
 
             # If x_max specified, clip data
             if "x_max" in plot_keys:
                 for i, throughput in enumerate(throughputs):
-                    if throughput > plot_config["config"]["x_max"]:
+                    if throughput > plot_config["x_max"]:
                         latencies = latencies[:i]
                         throughputs = throughputs[:i]
                         break
@@ -90,34 +90,33 @@ def output_charts(model, tp_size, bs, replicas, prompt, gen, out_dir):
             # If y_max specified, clip data
             if "y_max" in plot_keys:
                 for i, latency in enumerate(latencies):
-                    if latency > plot_config["config"]["y_max"]:
+                    if latency > plot_config["y_max"]:
                         latencies = latencies[:i]
                         throughputs = throughputs[:i]
                         break
 
             # Set polyfit degree
-            polyfit_degree = plot_config["config"].get("polyfit_degree", polyfit_degree)
+            polyfit_degree = plot_config.get("polyfit_degree", polyfit_degree)
 
             # Select plot type
             if polyfit_degree == 0:
-                plot_fn = plt.plot
                 plot_fit_line = False
 
             # Main plot kwargs
             if "label" in plot_keys:
-                kwargs["label"] = plot_config["config"]["label"]
+                kwargs["label"] = plot_config["label"]
             if "marker" in plot_keys:
-                kwargs["marker"] = plot_config["config"]["marker"]
+                kwargs["marker"] = plot_config["marker"]
             if "color" in plot_keys:
-                kwargs["color"] = plot_config["config"]["color"]
+                kwargs["color"] = plot_config["color"]
             if "linestyle" in plot_keys:
-                kwargs["linestyle"] = plot_config["config"]["linestyle"]
+                kwargs["linestyle"] = plot_config["linestyle"]
 
             # Fit line kwargs
             if "color" in plot_keys:
-                fit_kwargs["color"] = plot_config["config"]["color"]
+                fit_kwargs["color"] = plot_config["color"]
             if "linestyle" in plot_keys:
-                fit_kwargs["linestyle"] = plot_config["config"]["linestyle"]
+                fit_kwargs["linestyle"] = plot_config["linestyle"]
 
         if len(throughputs) > 0:
             plot = plot_fn(
@@ -131,19 +130,20 @@ def output_charts(model, tp_size, bs, replicas, prompt, gen, out_dir):
             else:
                 plot_color = plot.get_facecolor()[0]
 
-            if plot_fit_line:
-                if not "color" in fit_kwargs.keys():
-                    fit_kwargs["color"] = plot_color
+            if not "color" in fit_kwargs.keys():
+                fit_kwargs["color"] = plot_color
 
-                fit_x_list = np.arange(min(throughputs), max(throughputs), 0.01)
-                data_model = np.polyfit(throughputs, latencies, polyfit_degree)
-                model_fn = np.poly1d(data_model)
-                plt.plot(
-                    fit_x_list,
-                    model_fn(fit_x_list),
-                    alpha=0.5,
-                    **fit_kwargs,
-                )
+            fit_x_list = np.arange(min(throughputs), max(throughputs), 0.01)
+            data_model = np.polyfit(throughputs, latencies, polyfit_degree)
+            model_fn = np.poly1d(data_model)
+            x = fit_x_list if plot_fit_line else throughputs
+            y = model_fn(fit_x_list) if plot_fit_line else latencies
+            plt.plot(
+                x,
+                y,
+                alpha=0.5,
+                **fit_kwargs,
+            )
 
     # Generic plot formatting
     if args.model_name:
