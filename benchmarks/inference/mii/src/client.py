@@ -275,7 +275,7 @@ def run_client(args):
     tokenizer = AutoTokenizer.from_pretrained(args.model)
 
     # make sure max_prompt_length is longer than the target prompt length
-    args.max_prompt_length = max(args.max_prompt_length, int(args.mean_prompt_length * (1 + args.prompt_length_var)+1))
+    args.max_prompt_length = max(args.max_prompt_length, int(args.mean_prompt_length * 3))
     # check if the all_text is longer than the max prompt length, if not expand it
     global all_text
     while len(tokenizer.tokenize(all_text)) < args.max_prompt_length:
