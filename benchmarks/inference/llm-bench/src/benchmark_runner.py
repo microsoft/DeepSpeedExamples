@@ -37,6 +37,7 @@ class BenchmarkRunner():
         self.config = benchmark_config
         self.client_config = client_config
         self.client_class = client_classes[self.config.api]
+        self.client_obj = self.client_class(self.client_config)
 
         self.runnable_cls = multiprocessing.Process
         self.barrier_cls = multiprocessing.Barrier
@@ -52,7 +53,8 @@ class BenchmarkRunner():
         warmup_prompts = self.config.warmup_requests * num_clients
         workload_prompts = self.config.num_requests_per_client * num_clients
         for prompt in prompt_generator(warmup_prompts + workload_prompts):
-            self.query_queue.put(prompt)
+            prepared_request = self.client_obj.prepare_request(prompt)
+            self.query_queue.put(prepared_request)
         logger.info(f"Generated {warmup_prompts} warmup and {workload_prompts} workload prompts.")
 
     def _launch_clients(self, num_clients):
@@ -95,22 +97,18 @@ class BenchmarkRunner():
         client = client_class(client_config)
 
         for _ in range(warmup_requests):
-            prompt = query_queue.get(timeout=1.0)
-            request_kwargs = client.prepare_request(prompt)
-            raw_response = client.send_request(request_kwargs)
-            response = client.process_response(raw_response)
+            request_kwargs = query_queue.get(timeout=1.0)
+            _ = client.send_request(request_kwargs)
 
         barrier.wait() # Barrier 1 for client process
         try:
-            while not query_queue.empty():
-                prompt = query_queue.get(timeout=1.0)
-                request_kwargs = client.prepare_request(prompt)
+            while True:
+                request_kwargs = query_queue.get(timeout=1.0)
                 start_time = time.time()
                 raw_response = client.send_request(request_kwargs)
                 end_time = time.time()
-                response = client.process_response(raw_response)
-                response.request_time = end_time - start_time
-                result_queue.put_nowait(response)
+                request_time = end_time - start_time
+                result_queue.put_nowait((raw_response, request_time))
         except queue.Empty:
             pass
 
@@ -161,7 +159,7 @@ class BenchmarkRunner():
         return response_details
 
     def run(self):
-        self.client_class.start_service(self.client_config)
+        self.client_obj.start_service()
         for num_clients, prompt_config in self._benchmark_settings():
             logger.info(f"Running benchmark with {num_clients} client(s) and prompt config: {prompt_config}")
             self._clear_queues()
@@ -170,8 +168,7 @@ class BenchmarkRunner():
             self._launch_clients(num_clients=num_clients)
             #self._process_repsonses()
             rd = self._save_results(prompt_config=prompt_config, num_clients=num_clients)
-            print(len(rd))
-        self.client_class.stop_service(self.client_config)
+        self.client_obj.stop_service()
         
 
 if __name__ == "__main__":

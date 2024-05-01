@@ -16,16 +16,15 @@ class AzureMLClientConfig(BaseConfigModel):
 
 class AzureMLClient(BaseClient):
     def __init__(self, config: AzureMLClientConfig) -> None:
+        super().__init__(config)
         self.api_url = config.api_url
         self.api_key = config.api_key
         self.deployment_name = config.deployment_name
 
-    @staticmethod
-    def start_service(config: AzureMLClientConfig) -> Status:
+    def start_service(self) -> Status:
         pass
 
-    @staticmethod
-    def stop_service(config: AzureMLClientConfig) -> Status:
+    def stop_service(self) -> Status:
         pass
 
     def prepare_request(self, prompt: Prompt) -> Dict[str, Any]:

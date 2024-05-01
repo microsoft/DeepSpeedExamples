@@ -17,37 +17,36 @@ class FastGenClientConfig(BaseConfigModel):
 
 class FastGenClient(BaseClient):
     def __init__(self, config: FastGenClientConfig):
+        super().__init__(config)
         import mii
         self.mii_client = mii.client(config.deployment_name)
         self.streaming = config.streaming
 
-    @staticmethod
-    def start_service(config: FastGenClientConfig) -> Status:
+    def start_service(self) -> Status:
         import mii
         from deepspeed.inference import RaggedInferenceEngineConfig, DeepSpeedTPConfig
         from deepspeed.inference.v2.ragged import DSStateManagerConfig
 
         tp_config = DeepSpeedTPConfig(tp_size=config.tp_size)
         mgr_config = DSStateManagerConfig(
-            max_ragged_batch_size=config.max_ragged_batch_size,
-            max_ragged_sequence_count=config.max_ragged_batch_size,
+            max_ragged_batch_size=self.config.max_ragged_batch_size,
+            max_ragged_sequence_count=self.config.max_ragged_batch_size,
         )
         inference_config = RaggedInferenceEngineConfig(
             tensor_parallel=tp_config, state_manager=mgr_config
         )
         mii.serve(
-            config.model,
-            deployment_name=config.deployment_name,
-            tensor_parallel=config.tp_size,
+            self.config.model,
+            deployment_name=self.config.deployment_name,
+            tensor_parallel=self.config.tp_size,
             inference_engine_config=inference_config,
-            replica_num=config.num_replicas,
-            quantization_mode=config.quantization_mode
+            replica_num=self.config.num_replicas,
+            quantization_mode=self.config.quantization_mode
         )
 
-    @staticmethod
-    def stop_service(config: FastGenClientConfig) -> Status:
+    def stop_service(self) -> Status:
         import mii
-        mii.client(config.deployment_name).terminate_server()
+        mii.client(self.config.deployment_name).terminate_server()
 
     def _streaming_callback(self, raw_response) -> None:
         self.streaming_response_tokens.append(raw_response[0].generated_text)

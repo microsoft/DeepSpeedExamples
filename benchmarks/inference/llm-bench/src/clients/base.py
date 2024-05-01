@@ -8,18 +8,15 @@ from ..config import BaseConfigModel
 from typing import Any, Dict
 
 class BaseClient(ABC):
+    def __init__(self, config:BaseConfigModel):
+        self.config = config
+
     @abstractmethod
-    def __init__(self):
+    def start_service(self) -> Status:
         pass
 
-    @staticmethod
     @abstractmethod
-    def start_service(config: BaseConfigModel) -> Status:
-        pass
-
-    @staticmethod
-    @abstractmethod
-    def stop_service(config: BaseConfigModel) -> Status:
+    def stop_service(self) -> Status:
         pass
 
     @abstractmethod

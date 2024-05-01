@@ -14,15 +14,10 @@ class DummyClientConfig(BaseConfigModel):
     pass
 
 class DummyClient(BaseClient):
-    def __init__(self, config: DummyClientConfig) -> None:
-        pass
-
-    @staticmethod
-    def start_service(config: DummyClientConfig) -> Status:
+    def start_service(self) -> Status:
         return Status("OK")
 
-    @staticmethod
-    def stop_service(config: DummyClientConfig) -> Status:
+    def stop_service(self) -> Status:
         return Status("OK")
 
     def prepare_request(self, prompt: Prompt) -> Dict[str, Any]:
@@ -30,7 +25,6 @@ class DummyClient(BaseClient):
 
     def send_request(self, request_kwargs: Dict[str,Any]) -> Any:
         time.sleep(random.uniform(1, 2))
-        #time.sleep(1)
         return request_kwargs["input_text"]*2
 
     def process_response(self, raw_response: Any) -> Response:

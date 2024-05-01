@@ -16,11 +16,7 @@ class vLLMClientConfig(BaseConfigModel):
     port: int = 26500
 
 class vLLMClient(BaseClient):
-    def __init__(self, config: vLLMClientConfig) -> None:
-        pass
-
-    @staticmethod
-    def start_service(config: vLLMClientConfig) -> Status:
+    def start_service(self) -> Status:
         vllm_cmd = (
             "python",
             "-m",
@@ -28,11 +24,11 @@ class vLLMClient(BaseClient):
             "--host",
             "127.0.0.1",
             "--port",
-            str(config.port),
+            str(self.config.port),
             "--tensor-parallel-size",
-            str(config.tp_size),
+            str(self.config.tp_size),
             "--model",
-            config.model,
+            self.config.model,
         )
         p = subprocess.Popen(
             vllm_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, close_fds=True
@@ -53,8 +49,7 @@ class vLLMClient(BaseClient):
                 raise TimeoutError("Timed out waiting for VLLM server to start")
             time.sleep(0.01)
 
-    @staticmethod
-    def stop_service(config: vLLMClientConfig) -> Status:
+    def stop_service(self) -> Status:
         vllm_cmd = ("pkill", "-f", "vllm.entrypoints.api_server")
         p = subprocess.Popen(vllm_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         p.wait()
