@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class Status(str, Enum):
     OK = "OK"
     FAIL = "FAIL"

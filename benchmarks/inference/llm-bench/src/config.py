@@ -1,5 +1,6 @@
 from pydantic import BaseModel, ConfigDict
 
+
 class BaseConfigModel(BaseModel):
     model_config = ConfigDict(
         validate_default=True,
@@ -8,5 +9,5 @@ class BaseConfigModel(BaseModel):
         populate_by_name=True,
         extra="forbid",
         arbitrary_types_allowed=True,
-        #protected_namespaces=(),
+        # protected_namespaces=(),
     )

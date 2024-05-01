@@ -1,7 +1,7 @@
 from .config import BaseConfigModel
 from .prompt import PromptGenerator, PromptConfig
 from .clients import client_classes
-from typing import List, Optional
+from typing import List, Optional, Iterable, Tuple
 from pydantic import Field
 from pathlib import Path
 import multiprocessing
@@ -9,7 +9,9 @@ import threading
 import queue
 import time
 import yaml
+import json
 import itertools
+import os
 from tqdm import tqdm
 from loguru import logger
 
@@ -31,8 +33,11 @@ class BenchmarkConfig(BaseConfigModel):
     max_new_tokens_var: float = 0.3
     streaming: bool = False
 
-class BenchmarkRunner():
-    def __init__(self, benchmark_config: BaseConfigModel, client_config: BaseConfigModel) -> None:
+
+class BenchmarkRunner:
+    def __init__(
+        self, benchmark_config: BaseConfigModel, client_config: BaseConfigModel
+    ) -> None:
         logger.info("Initializing Benchmark Runner")
         self.config = benchmark_config
         self.client_config = client_config
@@ -55,9 +60,11 @@ class BenchmarkRunner():
         for prompt in prompt_generator(warmup_prompts + workload_prompts):
             prepared_request = self.client_obj.prepare_request(prompt)
             self.query_queue.put(prepared_request)
-        logger.info(f"Generated {warmup_prompts} warmup and {workload_prompts} workload prompts.")
+        logger.info(
+            f"Generated {warmup_prompts} warmup and {workload_prompts} workload prompts."
+        )
 
-    def _launch_clients(self, num_clients):
+    def _launch_clients(self, num_clients: int) -> None:
         logger.info(f"Launching {num_clients} client(s)")
         self.barrier = self.barrier_cls(num_clients + 1)
         processes = [
@@ -80,7 +87,7 @@ class BenchmarkRunner():
         total_prompts = num_clients * self.config.num_requests_per_client
         pbar = tqdm(total=total_prompts)
 
-        self.barrier.wait() # Barrier 1 for master process
+        self.barrier.wait()  # Barrier 1 for master process
 
         num_results = 0
         while num_results != total_prompts:
@@ -89,18 +96,19 @@ class BenchmarkRunner():
             time.sleep(1)
         pbar.close()
 
-        self.barrier.wait() # Barrier 2 for master process
-
+        self.barrier.wait()  # Barrier 2 for master process
 
     @staticmethod
-    def _run_client(barrier, query_queue, result_queue, client_class, client_config, warmup_requests):
+    def _run_client(
+        barrier, query_queue, result_queue, client_class, client_config, warmup_requests
+    ):
         client = client_class(client_config)
 
         for _ in range(warmup_requests):
             request_kwargs = query_queue.get(timeout=1.0)
             _ = client.send_request(request_kwargs)
 
-        barrier.wait() # Barrier 1 for client process
+        barrier.wait()  # Barrier 1 for client process
         try:
             while True:
                 request_kwargs = query_queue.get(timeout=1.0)
@@ -112,9 +120,9 @@ class BenchmarkRunner():
         except queue.Empty:
             pass
 
-        barrier.wait() # Barrier 2 for client process
+        barrier.wait()  # Barrier 2 for client process
 
-    def _benchmark_settings(self):
+    def _benchmark_settings(self) -> Iterable[Tuple[int, PromptConfig]]:
         prompt_config_keys = list(PromptConfig.model_fields.keys()) + ["num_clients"]
 
         configs_list = []
@@ -129,7 +137,9 @@ class BenchmarkRunner():
 
         if not configs_list:
             logger.info(f"Generating benchmark run settings from command line args")
-            configs_list.append({key: getattr(self.config, key) for key in prompt_config_keys})
+            configs_list.append(
+                {key: getattr(self.config, key) for key in prompt_config_keys}
+            )
 
         all_config_product = []
         for config in configs_list:
@@ -137,7 +147,9 @@ class BenchmarkRunner():
                 if not isinstance(v, list) or isinstance(v, tuple):
                     config[k] = [v]
             for vals in itertools.product(*[config[k] for k in prompt_config_keys]):
-                all_config_product.append({k:v for k,v in zip(prompt_config_keys, vals)})
+                all_config_product.append(
+                    {k: v for k, v in zip(prompt_config_keys, vals)}
+                )
 
         logger.info(f"Generated {len(all_config_product)} benchmark run setting(s)")
 
@@ -150,29 +162,43 @@ class BenchmarkRunner():
         self.query_queue = self.queue_cls()
         self.result_queue = self.queue_cls()
 
-    def _save_results(self, num_clients, prompt_config):
-        response_details = []
-        while len(response_details) != num_clients * self.config.num_requests_per_client:
-            res = self.result_queue.get()
-            # vLLM returns concatinated tokens
-            response_details.append(res)
-        return response_details
+    def _get_output_path(self, prompt_config: PromptConfig, num_clients: int) -> Path:
+        output_dir = self.config.result_dir / self.config.api / self.config.model
+        output_file = f"prompt{prompt_config.prompt_length}_gen{prompt_config.max_new_tokens}_clients{num_clients}.json"
+        return output_dir / output_file
 
-    def run(self):
+    def _save_results(self, prompt_config: PromptConfig, num_clients: int) -> None:
+        output_path = self._get_output_path(
+            prompt_config=prompt_config, num_clients=num_clients
+        )
+        response_details = []
+        total_responses = num_clients * self.config.num_requests_per_client
+        while len(response_details) != total_responses:
+            raw_response = self.result_queue.get()
+            processed_response = self.client_obj.process_response(raw_response[0])
+            processed_response.request_time = raw_response[1]
+            response_details.append(processed_response.to_dict())
+
+        os.makedirs(output_path.parent, exist_ok=True)
+        with open(output_path, "w") as fh:
+            json.dump(response_details, fh, indent=2)
+
+    def run(self) -> None:
         self.client_obj.start_service()
         for num_clients, prompt_config in self._benchmark_settings():
-            logger.info(f"Running benchmark with {num_clients} client(s) and prompt config: {prompt_config}")
+            logger.info(
+                f"Running benchmark with {num_clients} client(s) and prompt config: {prompt_config}"
+            )
             self._clear_queues()
             self._generate_prompts(prompt_config=prompt_config, num_clients=num_clients)
-            #self._prepare_requests()
             self._launch_clients(num_clients=num_clients)
-            #self._process_repsonses()
-            rd = self._save_results(prompt_config=prompt_config, num_clients=num_clients)
+            self._save_results(prompt_config=prompt_config, num_clients=num_clients)
         self.client_obj.stop_service()
-        
+
 
 if __name__ == "__main__":
     from .arg_parsing import parse_args_to_configs
+
     benchmark_config, client_config = parse_args_to_configs()
     benchmark_runner = BenchmarkRunner(benchmark_config, client_config)
     benchmark_runner.run()

@@ -10,10 +10,12 @@ import time
 import requests
 import json
 
+
 class vLLMClientConfig(BaseConfigModel):
     model: str = Field(..., description="HuggingFace.co model name")
     tp_size: int = 1
     port: int = 26500
+
 
 class vLLMClient(BaseClient):
     def start_service(self) -> Status:
@@ -41,11 +43,11 @@ class vLLMClient(BaseClient):
                 break
             if "error" in line.lower():
                 p.terminate()
-                #self.stop_service(config)
+                # self.stop_service(config)
                 raise RuntimeError(f"Error starting VLLM server: {line}")
             if time.time() - start_time > timeout_after:
                 p.terminate()
-                #self.stop_service(config)
+                # self.stop_service(config)
                 raise TimeoutError("Timed out waiting for VLLM server to start")
             time.sleep(0.01)
 
@@ -68,7 +70,7 @@ class vLLMClient(BaseClient):
         }
         return {"url": api_url, "headers": headers, "json": pload, "timeout": 180}
 
-    def send_request(self, request_kwargs: Dict[str,Any]) -> Any:
+    def send_request(self, request_kwargs: Dict[str, Any]) -> Any:
         response = requests.post(**request_kwargs)
         output = json.loads(response.content)
         return output

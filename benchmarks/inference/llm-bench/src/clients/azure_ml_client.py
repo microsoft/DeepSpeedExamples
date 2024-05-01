@@ -14,6 +14,7 @@ class AzureMLClientConfig(BaseConfigModel):
     api_key: str = ""
     deployment_name: str = ""
 
+
 class AzureMLClient(BaseClient):
     def __init__(self, config: AzureMLClientConfig) -> None:
         super().__init__(config)
@@ -51,7 +52,7 @@ class AzureMLClient(BaseClient):
 
     def send_request(self, request_kwargs: Dict[str, Any]) -> Any:
         while True:
-            try: # Sometimes the AML endpoint will return an error, so we send the request again
+            try:  # Sometimes the AML endpoint will return an error, so we send the request again
                 response = requests.post(**request_kwargs)
                 output = json.loads(response.content)
                 break

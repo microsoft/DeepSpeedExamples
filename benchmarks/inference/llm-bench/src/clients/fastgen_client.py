@@ -7,6 +7,7 @@ from pydantic import Field
 from typing import Optional, Dict, Any
 import time
 
+
 class FastGenClientConfig(BaseConfigModel):
     model: str = Field(..., description="HuggingFace.co model name")
     deployment_name: str = "fastgen-benchmark-deployment"
@@ -15,10 +16,12 @@ class FastGenClientConfig(BaseConfigModel):
     max_ragged_batch_size: int = 768
     quantization_mode: Optional[str] = None
 
+
 class FastGenClient(BaseClient):
     def __init__(self, config: FastGenClientConfig):
         super().__init__(config)
         import mii
+
         self.mii_client = mii.client(config.deployment_name)
         self.streaming = config.streaming
 
@@ -41,11 +44,12 @@ class FastGenClient(BaseClient):
             tensor_parallel=self.config.tp_size,
             inference_engine_config=inference_config,
             replica_num=self.config.num_replicas,
-            quantization_mode=self.config.quantization_mode
+            quantization_mode=self.config.quantization_mode,
         )
 
     def stop_service(self) -> Status:
         import mii
+
         mii.client(self.config.deployment_name).terminate_server()
 
     def _streaming_callback(self, raw_response) -> None:
@@ -55,7 +59,10 @@ class FastGenClient(BaseClient):
         time_last_token = time_now
 
     def prepare_request(self, prompt: Prompt) -> Dict[str, Any]:
-        request_kwargs = {"prompts": prompt.text, "max_new_tokens": prompt.max_new_tokens}
+        request_kwargs = {
+            "prompts": prompt.text,
+            "max_new_tokens": prompt.max_new_tokens,
+        }
         if self.streaming:
             self.streaming_response_tokens = []
             self.streaming_token_gen_time = []
@@ -63,13 +70,13 @@ class FastGenClient(BaseClient):
             request_kwargs["streaming_fn"] = self._streaming_callback
         return request_kwargs
 
-    def send_request(self, request_kwargs: Dict[str,Any]) -> Any:
+    def send_request(self, request_kwargs: Dict[str, Any]) -> Any:
         if self.streaming:
             self.streaming_time_last_token = time.time()
         response = self.mii_client(**request_kwargs)
         if self.streaming:
             response = self.streaming_response_tokens
-        
+
         return response
 
     def process_response(self, raw_response: Any) -> Response:

@@ -2,6 +2,7 @@ import argparse
 from .clients import client_config_classes
 from .benchmark_runner import BenchmarkConfig
 
+
 def parse_args_to_configs():
     def add_model(parser, model):
         fields = model.model_fields
@@ -12,14 +13,15 @@ def parse_args_to_configs():
                 nargs = "+"
                 field_type = field.annotation.__args__[0]
             parser.add_argument(
-                f"--{name}", 
-                dest=name, 
+                f"--{name}",
+                dest=name,
                 nargs=nargs,
                 type=field_type,
                 required=getattr(field, "required", False),
                 default=getattr(field, "default", None),
                 help=getattr(field, "description", ""),
             )
+
     parser = argparse.ArgumentParser()
     add_model(parser, BenchmarkConfig)
     args, remaining_args = parser.parse_known_args()
