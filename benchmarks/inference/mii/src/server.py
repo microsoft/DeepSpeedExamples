@@ -69,7 +69,8 @@ def start_fastgen_server(args: argparse.Namespace) -> None:
         max_ragged_sequence_count=args.max_ragged_batch_size,
     )
     inference_config = RaggedInferenceEngineConfig(
-        tensor_parallel=tp_config, state_manager=mgr_config
+        tensor_parallel=tp_config, state_manager=mgr_config, 
+        enable_prefix_cache=args.enable_prefix_cache,
     )
     if args.fp6:
         quantization_mode = 'wf6af16'
@@ -81,7 +82,8 @@ def start_fastgen_server(args: argparse.Namespace) -> None:
         tensor_parallel=args.tp_size,
         inference_engine_config=inference_config,
         replica_num=args.num_replicas,
-        quantization_mode=quantization_mode
+        quantization_mode=quantization_mode,
+        device_map={"localhost": [[0]]},
     )
 
 

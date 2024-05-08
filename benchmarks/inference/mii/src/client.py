@@ -273,7 +273,7 @@ def run_client(args):
         p.start()
 
     tokenizer = AutoTokenizer.from_pretrained(args.model)
-    query_generator = RandomQueryGenerator(all_text, tokenizer, seed=42)
+    query_generator = RandomQueryGenerator(all_text, tokenizer, seed=42, fixed_offset=args.enable_prefix_cache)
     request_text = query_generator.get_random_request_text(
         args.mean_prompt_length,
         args.mean_prompt_length * args.prompt_length_var,

@@ -9,9 +9,10 @@ import random
 
 
 class RandomQueryGenerator:
-    def __init__(self, input_text, tokenizer, seed):
+    def __init__(self, input_text, tokenizer, seed, fixed_offset):
         self.input_text = input_text
         self.tokenizer = tokenizer
+        self.fixed_offset = fixed_offset
 
         torch.manual_seed(seed)
         random.seed(seed)
@@ -30,6 +31,7 @@ class RandomQueryGenerator:
             # Set max_new_tokens following normal distribution with mean=max_new_tokens and std=0.3*max_new_tokens
             req_prompt_length = min(int(np.random.normal(length, variance)), max_length)
 
-            text = self.tokenizer.decode(text_ids[i : req_prompt_length + i])
+            offset = 0 if self.fixed_offset else i
+            text = self.tokenizer.decode(text_ids[offset : req_prompt_length + offset])
             request_text.append(text)
         return request_text

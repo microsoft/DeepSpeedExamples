@@ -157,6 +157,11 @@ def parse_args(
         help="Which backend to benchmark",
     )
     parser.add_argument(
+        "--enable_prefix_cache",
+        action="store_true",
+        help="Enable prefix cache",
+    )
+    parser.add_argument(
         "--overwrite_results", action="store_true", help="Overwrite existing results"
     )
     parser.add_argument("--fp6", action="store_true", help="Enable FP6")
