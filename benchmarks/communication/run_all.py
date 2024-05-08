@@ -18,7 +18,7 @@ from communication.constants import *
 
 
 # For importing
-def main(args, rank):
+def main(args, rank, device):
 
     init_processes(local_rank=rank, args=args)
 
@@ -39,19 +39,20 @@ def main(args, rank):
 
     for comm_op in ops_to_run:
         if comm_op == 'all_reduce':
-            run_all_reduce(local_rank=rank, args=args)
+            run_all_reduce(local_rank=rank, args=args, device=device)
         if comm_op == 'all_gather':
-            run_all_gather(local_rank=rank, args=args)
+            run_all_gather(local_rank=rank, args=args, device=device)
         if comm_op == 'all_to_all':
-            run_all_to_all(local_rank=rank, args=args)
+            run_all_to_all(local_rank=rank, args=args, device=device)
         if comm_op == 'pt2pt':
-            run_pt2pt(local_rank=rank, args=args)
+            run_pt2pt(local_rank=rank, args=args, device=device)
         if comm_op == 'broadcast':
-            run_broadcast(local_rank=rank, args=args)
+            run_broadcast(local_rank=rank, args=args, device=device)
 
 
 # For directly calling benchmark
 if __name__ == "__main__":
     args = benchmark_parser().parse_args()
     rank = args.local_rank
-    main(args, rank)
+    device = args.device
+    main(args, rank, device=device)
