@@ -79,7 +79,6 @@ class FastGenClient(BaseClient):
 
         return response
 
-    def process_response(self, raw_response: Any) -> Response:
+    def process_response(self, raw_response: Any) -> str:
         if not self.streaming:
-            raw_response = raw_response[0].generated_text
-        return Response(raw_response)
+            return raw_response[0].generated_text

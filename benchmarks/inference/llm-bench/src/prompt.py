@@ -12,10 +12,11 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 @dataclass
 class Prompt:
     text: str
-    num_prompt_tokens: int
+    num_tokens: int
     max_new_tokens: int
     streaming: bool = False
     return_full_text: bool = False
+    request_kwargs: dict = None
 
 
 class PromptConfig(BaseConfigModel):
@@ -48,6 +49,9 @@ class PromptGenerator:
     def _load_tokenizer(self) -> None:
         self.tokenizer = AutoTokenizer.from_pretrained(self.model)
 
+    def count_tokens(self, text: str) -> int:
+        return len(self.tokenizer.encode(text))
+
     def __call__(self, num_prompts: Optional[int] = None) -> Iterable[Prompt]:
         tokenized_input = self.tokenizer.batch_encode_plus(
             [self.input_text], return_tensors="pt", padding=False
@@ -66,6 +70,6 @@ class PromptGenerator:
             )
             yield Prompt(
                 text=self.tokenizer.decode(tokenized_input[i : prompt_length + i]),
-                num_prompt_tokens=prompt_length,
+                num_tokens=prompt_length,
                 max_new_tokens=max_new_tokens,
             )

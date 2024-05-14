@@ -9,7 +9,7 @@ from typing import Any, Dict
 
 
 class BaseClient(ABC):
-    def __init__(self, config: BaseConfigModel):
+    def __init__(self, config: BaseConfigModel) -> None:
         self.config = config
 
     @abstractmethod
@@ -29,5 +29,5 @@ class BaseClient(ABC):
         pass
 
     @abstractmethod
-    def process_response(self, raw_response: Any) -> Response:
+    def process_response(self, raw_response: Any) -> str:
         pass

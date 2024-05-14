@@ -75,5 +75,5 @@ class vLLMClient(BaseClient):
         output = json.loads(response.content)
         return output
 
-    def process_response(self, raw_response: Any) -> Response:
-        return Response(raw_response["text"])
+    def process_response(self, raw_response: Any) -> str:
+        return raw_response["text"]
