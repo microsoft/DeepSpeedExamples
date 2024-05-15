@@ -31,7 +31,7 @@ class DummyClient(BaseClient):
         return {"input_text": prompt.text, "max_new_tokens": prompt.max_new_tokens}
 
     def send_request(self, request_kwargs: Dict[str, Any]) -> Any:
-        time.sleep(random.uniform(1, 2))
+        time.sleep(random.uniform(0.1, 0.2))
         output_text = self.tokenizer.decode(
             random.choices(
                 self.tokenizer.encode(request_kwargs["input_text"]),

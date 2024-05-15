@@ -30,43 +30,28 @@ class PromptConfig(BaseConfigModel):
 
 
 class PromptGenerator:
-    def __init__(self, config: PromptConfig) -> None:
-        self.model = config.model
-        self.max_prompt_length = config.max_prompt_length
-        self.prompt_length = config.prompt_length
-        self.prompt_length_var = config.prompt_length_var
-        self.max_new_tokens = config.max_new_tokens
-        self.max_new_tokens_var = config.max_new_tokens_var
-        # TODO: Make this better
-        from .sample_input import all_text
-
-        self.input_text = all_text
-        self._load_tokenizer()
-
-    def _load_input_text(self) -> None:
-        pass
-
-    def _load_tokenizer(self) -> None:
-        self.tokenizer = AutoTokenizer.from_pretrained(self.model)
+    def __init__(self, model: str, prompt_text_source: str) -> None:
+        self.tokenizer = AutoTokenizer.from_pretrained(model)
+        if os.path.isfile(prompt_text_source):
+            with open(prompt_text_source, "r") as f:
+                prompt_text_source = f.read()
+        self.input_text = prompt_text_source
 
     def count_tokens(self, text: str) -> int:
         return len(self.tokenizer.encode(text))
 
-    def __call__(self, num_prompts: Optional[int] = None) -> Iterable[Prompt]:
+    def __call__(self, config: PromptConfig, num_prompts: int) -> Iterable[Prompt]:
         tokenized_input = self.tokenizer.batch_encode_plus(
             [self.input_text], return_tensors="pt", padding=False
         )["input_ids"][0]
 
-        if num_prompts is None:
-            num_prompts = self.config.num_prompts
-
         for i in range(num_prompts):
             prompt_length = min(
-                int(np.random.normal(self.prompt_length, self.prompt_length_var)),
-                self.max_prompt_length,
+                int(np.random.normal(config.prompt_length, config.prompt_length_var)),
+                config.max_prompt_length,
             )
             max_new_tokens = int(
-                np.random.normal(self.max_new_tokens, self.max_new_tokens_var)
+                np.random.normal(config.max_new_tokens, config.max_new_tokens_var)
             )
             yield Prompt(
                 text=self.tokenizer.decode(tokenized_input[i : prompt_length + i]),

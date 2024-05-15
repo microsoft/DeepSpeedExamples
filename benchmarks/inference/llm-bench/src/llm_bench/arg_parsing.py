@@ -3,7 +3,7 @@ from .clients import client_config_classes
 from .benchmark_runner import BenchmarkConfig
 
 
-def parse_args_to_configs():
+def parse_args_to_configs(args):
     def add_model(parser, model):
         fields = model.model_fields
         for name, field in fields.items():
@@ -24,17 +24,17 @@ def parse_args_to_configs():
 
     parser = argparse.ArgumentParser()
     add_model(parser, BenchmarkConfig)
-    args, remaining_args = parser.parse_known_args()
+    benchmark_args, remaining_args = parser.parse_known_args(args)
+    benchmark_config = BenchmarkConfig(**vars(benchmark_args))
     unused_args = set(remaining_args)
-    benchmark_config = BenchmarkConfig(**vars(args))
 
     client_config_class = client_config_classes[benchmark_config.api]
     parser = argparse.ArgumentParser()
     add_model(parser, client_config_class)
-    args, remaining_args = parser.parse_known_args()
-    unused_args = unused_args.intersection(remaining_args)
-    client_config = client_config_class(**vars(args))
+    client_args, remaining_args = parser.parse_known_args(args)
+    client_config = client_config_class(**vars(client_args))
 
+    unused_args = unused_args.intersection(remaining_args)
     if unused_args:
         raise ValueError(f"Unused arguments: {unused_args}")
 
