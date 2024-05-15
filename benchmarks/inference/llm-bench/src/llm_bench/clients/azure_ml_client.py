@@ -1,15 +1,16 @@
+import json
+import requests
+from typing import Any, Dict
+
 from .base import BaseClient
 from ..config import BaseConfigModel
-from ..status import Status
 from ..prompt import Prompt
 from ..response import Response
-
-import requests
-import json
-from typing import Any, Dict, Optional
+from ..status import Status
 
 
 class AzureMLClientConfig(BaseConfigModel):
+    # TODO: Add descriptions for each field
     api_url: str = ""
     api_key: str = ""
     deployment_name: str = ""
@@ -22,6 +23,7 @@ class AzureMLClient(BaseClient):
         self.api_key = config.api_key
         self.deployment_name = config.deployment_name
 
+    # TODO: Implement these methods
     def start_service(self) -> Status:
         pass
 
@@ -61,6 +63,7 @@ class AzureMLClient(BaseClient):
 
         return output
 
+    # TODO: Fix type hint and output types to match latest changes to base class
     def process_response(self, raw_response: Any) -> Response:
         response_text = raw_response[0]
         return Response(response_text)

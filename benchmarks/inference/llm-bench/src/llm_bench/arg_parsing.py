@@ -1,9 +1,11 @@
 import argparse
-from .clients import client_config_classes
+
 from .benchmark_runner import BenchmarkConfig
+from .clients import client_config_classes
 
 
 def parse_args_to_configs(args):
+    # TODO: Comment and add type hints
     def add_model(parser, model):
         fields = model.model_fields
         for name, field in fields.items():

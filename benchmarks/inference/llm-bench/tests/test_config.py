@@ -1,9 +1,10 @@
 import pytest
 
-import pydantic
 import yaml
 
-from llm_bench import parse_args_to_configs, BenchmarkRunner
+import pydantic
+
+from llm_bench import BenchmarkRunner, parse_args_to_configs
 
 
 def test_config(benchmark_args):

@@ -1,11 +1,13 @@
-from typing import Iterable, Optional
-from .config import BaseConfigModel
+import os
 from dataclasses import dataclass
+from typing import Iterable
+
 import numpy as np
 from transformers import AutoTokenizer
 
-import os
+from .config import BaseConfigModel
 
+# Avoids a warning from transformers
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 
@@ -20,6 +22,7 @@ class Prompt:
 
 
 class PromptConfig(BaseConfigModel):
+    # TODO: Add descriptions for each field
     model: str
     max_prompt_length: int
     prompt_length: int
@@ -44,6 +47,8 @@ class PromptGenerator:
         tokenized_input = self.tokenizer.batch_encode_plus(
             [self.input_text], return_tensors="pt", padding=False
         )["input_ids"][0]
+
+        # TODO: Add support for prompts longer than source text
 
         for i in range(num_prompts):
             prompt_length = min(

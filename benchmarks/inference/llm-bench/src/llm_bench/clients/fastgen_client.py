@@ -1,11 +1,12 @@
-from .base import BaseClient
-from ..status import Status
-from ..prompt import Prompt
-from ..response import Response
-from ..config import BaseConfigModel
-from pydantic import Field
-from typing import Optional, Dict, Any
 import time
+from typing import Any, Dict, Optional
+
+from pydantic import Field
+
+from .base import BaseClient
+from ..config import BaseConfigModel
+from ..prompt import Prompt
+from ..status import Status
 
 
 class FastGenClientConfig(BaseConfigModel):
@@ -30,7 +31,7 @@ class FastGenClient(BaseClient):
         from deepspeed.inference import RaggedInferenceEngineConfig, DeepSpeedTPConfig
         from deepspeed.inference.v2.ragged import DSStateManagerConfig
 
-        tp_config = DeepSpeedTPConfig(tp_size=config.tp_size)
+        tp_config = DeepSpeedTPConfig(tp_size=self.config.tp_size)
         mgr_config = DSStateManagerConfig(
             max_ragged_batch_size=self.config.max_ragged_batch_size,
             max_ragged_sequence_count=self.config.max_ragged_batch_size,

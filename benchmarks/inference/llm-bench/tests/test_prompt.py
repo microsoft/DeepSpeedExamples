@@ -1,6 +1,6 @@
 import pytest
 
-from llm_bench import parse_args_to_configs, BenchmarkRunner
+from llm_bench import BenchmarkRunner, parse_args_to_configs
 
 
 @pytest.mark.parametrize("prompt_length_var, max_new_tokens_var", [(0, 0)])

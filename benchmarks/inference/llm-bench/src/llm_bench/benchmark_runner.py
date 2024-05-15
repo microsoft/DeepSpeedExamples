@@ -1,26 +1,28 @@
-from .config import BaseConfigModel
-from .prompt import PromptGenerator, PromptConfig
-from .clients import client_classes
-from .response import Response
-from .prompt import Prompt
-from typing import List, Optional, Iterable, Tuple, Dict
-from pydantic import Field
-from pathlib import Path
+import itertools
+import json
 import multiprocessing
-import threading
+import os
 import queue
+import sys
+import threading
 import time
 import yaml
-import json
-import itertools
-import os
-import sys
-from tqdm import tqdm
+from pathlib import Path
+from typing import List, Optional, Iterable, Tuple, Dict
+
 from loguru import logger
+from pydantic import Field
+from tqdm import tqdm
+
+from .clients import client_classes
+from .config import BaseConfigModel
+from .prompt import Prompt, PromptConfig, PromptGenerator
+from .response import Response
 from .sample_input import sample_input_text
 
 
 class BenchmarkConfig(BaseConfigModel):
+    # TODO: Add more detailed descriptions for each field
     model: str = Field(..., description="HuggingFace.co model name")
     api: str = "azure_ml"
     warmup_requests: int = 1
@@ -40,6 +42,7 @@ class BenchmarkConfig(BaseConfigModel):
 
 
 class ClientLauncher:
+    # TODO: Add type hints
     def __init__(
         self,
         client_class,
@@ -67,6 +70,7 @@ class ClientLauncher:
 
     def run_parallel_clients(self, num_clients: int) -> None:
         logger.info(f"Launching {num_clients} client(s)")
+
         self.barrier = self.barrier_cls(num_clients + 1)
         processes = [
             self.runnable_cls(
@@ -93,6 +97,7 @@ class ClientLauncher:
 
         self.barrier.wait()  # Barrier 2 for master process
 
+    # TODO: Add type hints
     def _progress_bar(self, total_requests):
         pbar = tqdm(total=total_requests)
         num_responses = 0
@@ -102,6 +107,7 @@ class ClientLauncher:
             time.sleep(1)
         pbar.close()
 
+    # TODO: Add type hints
     @staticmethod
     def _run_client(
         client_id,
@@ -184,6 +190,7 @@ class BenchmarkRunner:
             prompt_generator=self.prompt_generator,
         )
 
+    # TODO: fix type hint
     def _benchmark_settings(self) -> Iterable[Tuple[int, PromptConfig]]:
         prompt_config_keys = list(PromptConfig.model_fields.keys())
 
@@ -281,6 +288,7 @@ class BenchmarkRunner:
         # Generate all benchmark settings from user config(s)
         for num_clients_list, prompt_config in self._benchmark_settings():
             for num_clients in num_clients_list:
+                # TODO: implement early stopping based on response latency
                 logger.info(
                     f"Running benchmark with {num_clients} client(s) and prompt config: {prompt_config}"
                 )
