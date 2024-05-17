@@ -39,6 +39,7 @@ class BenchmarkConfig(BaseConfigModel):
     max_new_tokens: int = 60
     max_new_tokens_var: float = 0.3
     streaming: bool = False
+    early_stop_latency: float = 10.0
 
 
 class ClientLauncher:
@@ -189,6 +190,7 @@ class BenchmarkRunner:
             use_threading=self.config.use_threading,
             prompt_generator=self.prompt_generator,
         )
+        self.all_responses = []
 
     # TODO: fix type hint
     def _benchmark_settings(self) -> Iterable[Tuple[int, PromptConfig]]:
@@ -260,7 +262,9 @@ class BenchmarkRunner:
         output_file = f"prompt{prompt_config.prompt_length}_gen{prompt_config.max_new_tokens}_clients{num_clients}.json"
         return output_dir / output_file
 
-    def _save_results(self, prompt_config: PromptConfig, num_clients: int) -> None:
+    def _process_responses(
+        self, prompt_config: PromptConfig, num_clients: int
+    ) -> List[Response]:
         output_path = self._get_output_path(
             prompt_config=prompt_config, num_clients=num_clients
         )
@@ -270,16 +274,26 @@ class BenchmarkRunner:
         all_responses = []
         while True:
             try:
-                response = self.client_launcher.get_response()
-                all_responses.append(response.to_dict())
+                all_responses.append(self.client_launcher.get_response())
             except queue.Empty:
                 break
 
         os.makedirs(output_path.parent, exist_ok=True)
         with open(output_path, "w") as fh:
-            json.dump(all_responses, fh, indent=2)
+            json.dump([r.to_dict() for r in all_responses], fh, indent=2)
 
         logger.info(f"Saved {len(all_responses)} responses to {output_path}")
+
+        return all_responses
+
+    def _check_early_stop(self, all_responses: List[Response]) -> bool:
+        mean_latency = sum([r.request_time for r in all_responses]) / len(all_responses)
+        if mean_latency >= self.config.early_stop_latency:
+            logger.info(
+                f"Mean latency of {mean_latency:.2f} exceeds early stopping threshold of {self.config.early_stop_latency}. Stopping early."
+            )
+            return True
+        return False
 
     def run(self) -> None:
         # Start the client service
@@ -287,8 +301,11 @@ class BenchmarkRunner:
 
         # Generate all benchmark settings from user config(s)
         for num_clients_list, prompt_config in self._benchmark_settings():
-            for num_clients in num_clients_list:
-                # TODO: implement early stopping based on response latency
+            early_stop = False
+            for num_clients in sorted(num_clients_list):
+                if early_stop:
+                    break
+
                 logger.info(
                     f"Running benchmark with {num_clients} client(s) and prompt config: {prompt_config}"
                 )
@@ -302,7 +319,12 @@ class BenchmarkRunner:
                 self.client_launcher.run_parallel_clients(num_clients=num_clients)
 
                 # Process raw responses and save results to file
-                self._save_results(prompt_config=prompt_config, num_clients=num_clients)
+                all_responses = self._process_responses(
+                    prompt_config=prompt_config, num_clients=num_clients
+                )
+
+                # Check early stopping condition
+                early_stop = self._check_early_stop(all_responses)
 
         # Stop the client service
         self.client_launcher.stop_service()

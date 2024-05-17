@@ -14,12 +14,14 @@ import random
 
 class DummyClientConfig(BaseConfigModel):
     model: str
+    dummy_client_latency_time: float = 1.0
 
 
 class DummyClient(BaseClient):
     def __init__(self, config: DummyClientConfig) -> None:
         super().__init__(config)
         self.tokenizer = AutoTokenizer.from_pretrained(self.config.model)
+        self.latency_time = config.dummy_client_latency_time
 
     def start_service(self) -> Status:
         return Status("OK")
@@ -31,7 +33,7 @@ class DummyClient(BaseClient):
         return {"input_text": prompt.text, "max_new_tokens": prompt.max_new_tokens}
 
     def send_request(self, request_kwargs: Dict[str, Any]) -> Any:
-        time.sleep(random.uniform(0.1, 0.2))
+        time.sleep(random.uniform(self.latency_time - 0.1, self.latency_time + 0.2))
         output_text = self.tokenizer.decode(
             random.choices(
                 self.tokenizer.encode(request_kwargs["input_text"]),
