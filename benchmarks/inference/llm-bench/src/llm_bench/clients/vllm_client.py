@@ -52,10 +52,14 @@ class vLLMClient(BaseClient):
                 raise TimeoutError("Timed out waiting for VLLM server to start")
             time.sleep(0.01)
 
+        return Status("OK")
+
     def stop_service(self) -> Status:
         vllm_cmd = ("pkill", "-f", "vllm.entrypoints.api_server")
         p = subprocess.Popen(vllm_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         p.wait()
+
+        return Status("OK")
 
     def prepare_request(self, prompt: Prompt) -> Dict[str, Any]:
         api_url = "http://localhost:26500/generate"

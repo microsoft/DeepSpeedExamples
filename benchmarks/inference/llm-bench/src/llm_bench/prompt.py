@@ -1,8 +1,11 @@
 import os
 from dataclasses import dataclass
-from typing import Iterable
+from typing import Iterable, Optional
+from typing_extensions import Self
 
 import numpy as np
+from pydantic import model_validator
+import torch
 from transformers import AutoTokenizer
 
 from .config import BaseConfigModel
@@ -22,14 +25,34 @@ class Prompt:
 
 
 class PromptConfig(BaseConfigModel):
-    # TODO: Add descriptions for each field
     model: str
-    max_prompt_length: int
-    prompt_length: int
-    prompt_length_var: float
-    max_new_tokens: int
-    max_new_tokens_var: float
-    streaming: bool
+    """ Names of the model used to benchmark. Used to load the model/tokenizer from HuggingFace.co. """
+
+    prompt_generator_seed: Optional[int] = None
+    """ Seed value for prompt generator. """
+
+    max_prompt_length: int = 4000
+    """ Maximum prompt length for any request. """
+
+    prompt_length: int = 2600
+    """ Mean prompt length for requests. """
+
+    prompt_length_var: float = 0.3
+    """ Variance of prompt length. """
+
+    max_new_tokens: int = 60
+    """ Mean number of new tokens to generate in each request. """
+
+    max_new_tokens_var: float = 0.3
+    """ Variance of new tokens to generate. """
+
+    streaming: bool = False
+    """ Whether to enable streaming mode for the client. """
+
+    @model_validator(mode="after")
+    def set_max_prompt_length(self) -> Self:
+        self.max_prompt_length = max(self.max_prompt_length, self.prompt_length)
+        return self
 
 
 class PromptGenerator:
@@ -39,16 +62,25 @@ class PromptGenerator:
             with open(prompt_text_source, "r") as f:
                 prompt_text_source = f.read()
         self.input_text = prompt_text_source
+        self.tokenized_input = self.tokenizer.encode(
+            self.input_text, return_tensors="pt", padding=False
+        )[0]
 
     def count_tokens(self, text: str) -> int:
         return len(self.tokenizer.encode(text))
 
     def __call__(self, config: PromptConfig, num_prompts: int) -> Iterable[Prompt]:
-        tokenized_input = self.tokenizer.batch_encode_plus(
-            [self.input_text], return_tensors="pt", padding=False
-        )["input_ids"][0]
+        tokenized_input = self.tokenized_input
+        if len(tokenized_input) < config.max_prompt_length:
+            tokenized_input = torch.cat(
+                [
+                    tokenized_input
+                    for _ in range(config.max_prompt_length // len(tokenized_input) + 1)
+                ]
+            ).flatten()
 
-        # TODO: Add support for prompts longer than source text
+        if config.prompt_generator_seed is not None:
+            np.random.seed(config.prompt_generator_seed)
 
         for i in range(num_prompts):
             prompt_length = min(
@@ -59,7 +91,7 @@ class PromptGenerator:
                 np.random.normal(config.max_new_tokens, config.max_new_tokens_var)
             )
             yield Prompt(
-                text=self.tokenizer.decode(tokenized_input[i : prompt_length + i]),
+                text=self.tokenizer.decode(tokenized_input[:prompt_length]),
                 num_tokens=prompt_length,
                 max_new_tokens=max_new_tokens,
             )

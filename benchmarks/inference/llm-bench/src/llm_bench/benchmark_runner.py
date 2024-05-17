@@ -8,50 +8,56 @@ import threading
 import time
 import yaml
 from pathlib import Path
-from typing import List, Optional, Iterable, Tuple, Dict
+from typing import List, Iterable, Tuple
 
 from loguru import logger
-from pydantic import Field
 from tqdm import tqdm
 
-from .clients import client_classes
+from .clients import client_classes, BaseClient
 from .config import BaseConfigModel
 from .prompt import Prompt, PromptConfig, PromptGenerator
 from .response import Response
 from .sample_input import sample_input_text
 
 
-class BenchmarkConfig(BaseConfigModel):
-    # TODO: Add more detailed descriptions for each field
-    model: str = Field(..., description="HuggingFace.co model name")
+class BenchmarkConfig(PromptConfig):
     api: str = "azure_ml"
+    """ Which API to use for benchmarking. New APIs can be added by creating a new client class in the `clients` directory. """
+
     warmup_requests: int = 1
+    """ Number of requests to run (per client) as a warm-up before starting the benchmark. """
+
     result_dir: Path = Path("./results")
+    """ Top directory where results will be saved. """
+
     use_threading: bool = False
+    """ Whether to use threading or multiprocessing for parallel client requests. Default is multiprocessing. """
+
     config_file: List[Path] = []
+    """ Path to YAML file(s) containing benchmark configuration settings. """
+
     num_clients: List[int] = [1, 2, 4, 6, 8, 12, 16, 20, 24, 28, 32]
-    prompt_generator_seed: Optional[int] = None
-    prompt_text_source: str = sample_input_text
+    """ Number of clients to run in parallel. """
+
     num_requests_per_client: int = 16
-    max_prompt_length: int = 4000
-    prompt_length: int = 2600
-    prompt_length_var: float = 0.3
-    max_new_tokens: int = 60
-    max_new_tokens_var: float = 0.3
-    streaming: bool = False
+    """ Number of requests to run per client. """
+
+    prompt_text_source: str = sample_input_text
+    """ Text file or string to use for generated prompts. """
+
     early_stop_latency: float = 10.0
+    """ Maximum mean latency (in seconds) to allow before stopping the benchmark early. """
 
 
 class ClientLauncher:
-    # TODO: Add type hints
     def __init__(
         self,
-        client_class,
-        client_config,
-        warmup_requests,
-        requests_per_client,
-        use_threading,
-        prompt_generator,
+        client_class: BaseClient,
+        client_config: BaseConfigModel,
+        warmup_requests: int,
+        requests_per_client: int,
+        use_threading: bool,
+        prompt_generator: PromptGenerator,
     ):
         self.client_class = client_class
         self.client_config = client_config
@@ -98,8 +104,7 @@ class ClientLauncher:
 
         self.barrier.wait()  # Barrier 2 for master process
 
-    # TODO: Add type hints
-    def _progress_bar(self, total_requests):
+    def _progress_bar(self, total_requests: int) -> None:
         pbar = tqdm(total=total_requests)
         num_responses = 0
         while num_responses != total_requests:
@@ -108,16 +113,15 @@ class ClientLauncher:
             time.sleep(1)
         pbar.close()
 
-    # TODO: Add type hints
     @staticmethod
     def _run_client(
-        client_id,
-        barrier,
-        request_queue,
-        response_queue,
-        client_class,
-        client_config,
-        warmup_requests,
+        client_id: int,
+        barrier: multiprocessing.Barrier,
+        request_queue: multiprocessing.Queue,
+        response_queue: multiprocessing.Queue,
+        client_class: BaseClient,
+        client_config: BaseConfigModel,
+        warmup_requests: int,
     ):
         client = client_class(client_config)
 
@@ -192,8 +196,7 @@ class BenchmarkRunner:
         )
         self.all_responses = []
 
-    # TODO: fix type hint
-    def _benchmark_settings(self) -> Iterable[Tuple[int, PromptConfig]]:
+    def _benchmark_settings(self) -> Iterable[Tuple[List[int], PromptConfig]]:
         prompt_config_keys = list(PromptConfig.model_fields.keys())
 
         configs_list = []

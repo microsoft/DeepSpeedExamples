@@ -47,11 +47,13 @@ class FastGenClient(BaseClient):
             replica_num=self.config.num_replicas,
             quantization_mode=self.config.quantization_mode,
         )
+        return Status("OK")
 
     def stop_service(self) -> Status:
         import mii
 
         mii.client(self.config.deployment_name).terminate_server()
+        return Status("OK")
 
     def _streaming_callback(self, raw_response) -> None:
         self.streaming_response_tokens.append(raw_response[0].generated_text)

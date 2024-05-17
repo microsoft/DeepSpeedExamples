@@ -1,4 +1,5 @@
 from .azure_ml_client import AzureMLClientConfig, AzureMLClient
+from .base import BaseClient
 from .dummy_client import DummyClientConfig, DummyClient
 from .fastgen_client import FastGenClientConfig, FastGenClient
 from .vllm_client import vLLMClientConfig, vLLMClient
