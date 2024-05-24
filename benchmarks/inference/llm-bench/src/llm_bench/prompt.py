@@ -72,11 +72,7 @@ class PromptGenerator:
         )[0]
 
     def count_tokens(self, text: str) -> int:
-        try:
-            return len(self.tokenizer.encode(text))
-        except Exception as e:
-            print("TEXT", text)
-            raise e
+        return len(self.tokenizer.encode(text))
 
     def __call__(self, config: PromptConfig, num_prompts: int) -> Iterable[Prompt]:
         tokenized_input = self.tokenized_input

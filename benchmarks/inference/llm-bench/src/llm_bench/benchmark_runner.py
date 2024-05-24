@@ -162,8 +162,6 @@ class ClientLauncher:
         response = self.response_queue.get(timeout=1.0)
         processed_response = self.client_obj.process_response(response.raw_response)
         response.generated_output = processed_response
-        if processed_response is None:
-            print("ERROR", response)
         response.generated_tokens = self.prompt_generator.count_tokens(
             processed_response
         )
