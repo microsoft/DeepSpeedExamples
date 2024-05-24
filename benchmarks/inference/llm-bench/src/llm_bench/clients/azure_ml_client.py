@@ -2,10 +2,11 @@ import json
 import requests
 from typing import Any, Dict
 
+from loguru import logger
+
 from .base import BaseClient
 from ..config import BaseConfigModel
 from ..prompt import Prompt
-from ..response import Response
 
 
 class AzureMLClientConfig(BaseConfigModel):
@@ -29,7 +30,7 @@ class AzureMLClient(BaseClient):
     def start_service(self) -> None:
         # Verify that the server exists, this could be extended to actually
         # start an AML deployment. However currently we assume one exists.
-        test_prompt = Prompt("hello world", max_new_tokens=16)
+        test_prompt = Prompt("hello world", num_tokens=5, max_new_tokens=16)
         _ = self.process_response(self.send_request(self.prepare_request(test_prompt)))
 
     def stop_service(self) -> None:
@@ -63,12 +64,16 @@ class AzureMLClient(BaseClient):
             try:  # Sometimes the AML endpoint will return an error, so we send the request again
                 response = requests.post(**request_kwargs)
                 output = json.loads(response.content)
+                assert (
+                    response.status_code == 200
+                ), f"Status code: {response.status_code}"
+                assert output[0]["0"], f"Empty response"
                 break
             except Exception as e:
-                print(f"Connection failed with {e}. Retrying AML request")
+                logger.debug(f"Connection failed with {e}. Retrying AML request")
 
         return output
 
     def process_response(self, raw_response: Any) -> str:
-        response_text = raw_response[0]
+        response_text = raw_response[0]["0"]
         return response_text

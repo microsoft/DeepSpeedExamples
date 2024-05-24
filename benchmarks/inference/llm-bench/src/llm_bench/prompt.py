@@ -72,7 +72,11 @@ class PromptGenerator:
         )[0]
 
     def count_tokens(self, text: str) -> int:
-        return len(self.tokenizer.encode(text))
+        try:
+            return len(self.tokenizer.encode(text))
+        except Exception as e:
+            print("TEXT", text)
+            raise e
 
     def __call__(self, config: PromptConfig, num_prompts: int) -> Iterable[Prompt]:
         tokenized_input = self.tokenized_input
@@ -89,12 +93,25 @@ class PromptGenerator:
 
         for _ in range(num_prompts):
             prompt_length = min(
-                int(np.random.normal(config.prompt_length, config.prompt_length_var)),
+                abs(
+                    int(
+                        np.random.normal(
+                            config.prompt_length,
+                            config.prompt_length * config.prompt_length_var,
+                        )
+                    )
+                ),
                 config.max_prompt_length,
             )
-            max_new_tokens = int(
-                np.random.normal(config.max_new_tokens, config.max_new_tokens_var)
+            max_new_tokens = abs(
+                int(
+                    np.random.normal(
+                        config.max_new_tokens,
+                        config.max_new_tokens * config.max_new_tokens_var,
+                    )
+                )
             )
+            print(prompt_length, max_new_tokens)
             yield Prompt(
                 text=self.tokenizer.decode(tokenized_input[:prompt_length]),
                 num_tokens=prompt_length,

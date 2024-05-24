@@ -30,7 +30,7 @@ def parse_args_to_configs(args: List[str]) -> Tuple[BenchmarkConfig, BaseConfigM
             )
 
     # Parse benchmark config fields
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(allow_abbrev=False)
     add_model(parser, BenchmarkConfig)
     benchmark_args, remaining_args = parser.parse_known_args(args)
     benchmark_config = BenchmarkConfig(**vars(benchmark_args))
@@ -38,7 +38,7 @@ def parse_args_to_configs(args: List[str]) -> Tuple[BenchmarkConfig, BaseConfigM
 
     # Parse client config fields
     client_config_class = client_config_classes[benchmark_config.api]
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(allow_abbrev=False)
     add_model(parser, client_config_class)
     client_args, remaining_args = parser.parse_known_args(args)
     client_config = client_config_class(**vars(client_args))
