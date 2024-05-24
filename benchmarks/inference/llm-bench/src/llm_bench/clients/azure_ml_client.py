@@ -6,14 +6,17 @@ from .base import BaseClient
 from ..config import BaseConfigModel
 from ..prompt import Prompt
 from ..response import Response
-from ..status import Status
 
 
 class AzureMLClientConfig(BaseConfigModel):
-    # TODO: Add descriptions for each field
     api_url: str = ""
+    """ URL for the AzureML REST API. """
+
     api_key: str = ""
+    """ REST API key for the AzureML deployment. """
+
     deployment_name: str = ""
+    """ Name of the AzureML deployment. """
 
 
 class AzureMLClient(BaseClient):
@@ -23,14 +26,17 @@ class AzureMLClient(BaseClient):
         self.api_key = config.api_key
         self.deployment_name = config.deployment_name
 
-    # TODO: Implement these methods
-    def start_service(self) -> Status:
-        pass
+    def start_service(self) -> None:
+        # Verify that the server exists, this could be extended to actually
+        # start an AML deployment. However currently we assume one exists.
+        test_prompt = Prompt("hello world", max_new_tokens=16)
+        _ = self.process_response(self.send_request(self.prepare_request(test_prompt)))
 
-    def stop_service(self) -> Status:
+    def stop_service(self) -> None:
         pass
 
     def prepare_request(self, prompt: Prompt) -> Dict[str, Any]:
+        # TODO: add support for OpenAI chat completion template
         if prompt.streaming:
             raise ValueError("AzureMLClient does not support streaming prompts.")
 
@@ -63,7 +69,6 @@ class AzureMLClient(BaseClient):
 
         return output
 
-    # TODO: Fix type hint and output types to match latest changes to base class
-    def process_response(self, raw_response: Any) -> Response:
+    def process_response(self, raw_response: Any) -> str:
         response_text = raw_response[0]
-        return Response(response_text)
+        return response_text

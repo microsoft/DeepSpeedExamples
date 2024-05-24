@@ -48,6 +48,9 @@ class BenchmarkConfig(PromptConfig):
     early_stop_latency: float = 10.0
     """ Maximum mean latency (in seconds) to allow before stopping the benchmark early. """
 
+    force: bool = False
+    """ Whether to overwrite existing result files. """
+
 
 class ClientLauncher:
     def __init__(
@@ -290,6 +293,8 @@ class BenchmarkRunner:
         return all_responses
 
     def _check_early_stop(self, all_responses: List[Response]) -> bool:
+        if not all_responses:
+            return False
         mean_latency = sum([r.request_time for r in all_responses]) / len(all_responses)
         if mean_latency >= self.config.early_stop_latency:
             logger.info(
@@ -298,15 +303,39 @@ class BenchmarkRunner:
             return True
         return False
 
+    def _skip_existing_result(
+        self, prompt_config: PromptConfig, num_clients: int
+    ) -> bool:
+        output_path = self._get_output_path(
+            prompt_config=prompt_config, num_clients=num_clients
+        )
+        if output_path.exists():
+            if self.config.force:
+                logger.info(
+                    f"Result already exists, but force flag is set. Overwriting benchmark with {num_clients} client(s) and prompt config: {prompt_config}"
+                )
+                return False
+            else:
+                logger.info(
+                    f"Result already exists, skipping benchmark with {num_clients} client(s) and prompt config: {prompt_config}"
+                )
+                return True
+        return False
+
     def run(self) -> None:
         # Start the client service
         self.client_launcher.start_service()
 
         # Generate all benchmark settings from user config(s)
         for num_clients_list, prompt_config in self._benchmark_settings():
-            early_stop = False
+            all_responses = []
             for num_clients in sorted(num_clients_list):
-                if early_stop:
+                if self._skip_existing_result(
+                    prompt_config=prompt_config, num_clients=num_clients
+                ):
+                    continue
+
+                if self._check_early_stop(all_responses):
                     break
 
                 logger.info(
@@ -325,9 +354,6 @@ class BenchmarkRunner:
                 all_responses = self._process_responses(
                     prompt_config=prompt_config, num_clients=num_clients
                 )
-
-                # Check early stopping condition
-                early_stop = self._check_early_stop(all_responses)
 
         # Stop the client service
         self.client_launcher.stop_service()

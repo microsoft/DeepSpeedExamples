@@ -4,8 +4,9 @@ from typing import Iterable, Optional
 from typing_extensions import Self
 
 import numpy as np
-from pydantic import model_validator
 import torch
+from loguru import logger
+from pydantic import model_validator
 from transformers import AutoTokenizer
 
 from .config import BaseConfigModel
@@ -51,6 +52,10 @@ class PromptConfig(BaseConfigModel):
 
     @model_validator(mode="after")
     def set_max_prompt_length(self) -> Self:
+        if self.prompt_length > self.max_prompt_length:
+            logger.warning(
+                f"Prompt length {self.prompt_length} is greater than max prompt length {self.max_prompt_length}. Setting max prompt length to {self.prompt_length}."
+            )
         self.max_prompt_length = max(self.max_prompt_length, self.prompt_length)
         return self
 
@@ -82,7 +87,7 @@ class PromptGenerator:
         if config.prompt_generator_seed is not None:
             np.random.seed(config.prompt_generator_seed)
 
-        for i in range(num_prompts):
+        for _ in range(num_prompts):
             prompt_length = min(
                 int(np.random.normal(config.prompt_length, config.prompt_length_var)),
                 config.max_prompt_length,

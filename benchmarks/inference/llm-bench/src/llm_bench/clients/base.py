@@ -3,7 +3,6 @@ from typing import Any, Dict
 
 from ..config import BaseConfigModel
 from ..prompt import Prompt
-from ..status import Status
 
 
 class BaseClient(ABC):
@@ -11,11 +10,11 @@ class BaseClient(ABC):
         self.config = config
 
     @abstractmethod
-    def start_service(self) -> Status:
+    def start_service(self) -> None:
         pass
 
     @abstractmethod
-    def stop_service(self) -> Status:
+    def stop_service(self) -> None:
         pass
 
     @abstractmethod

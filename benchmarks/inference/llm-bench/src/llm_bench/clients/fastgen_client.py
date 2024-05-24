@@ -1,12 +1,12 @@
 import time
 from typing import Any, Dict, Optional
 
+from loguru import logger
 from pydantic import Field
 
 from .base import BaseClient
 from ..config import BaseConfigModel
 from ..prompt import Prompt
-from ..status import Status
 
 
 class FastGenClientConfig(BaseConfigModel):
@@ -21,12 +21,18 @@ class FastGenClientConfig(BaseConfigModel):
 class FastGenClient(BaseClient):
     def __init__(self, config: FastGenClientConfig):
         super().__init__(config)
-        import mii
+        try:
+            import mii
+        except ImportError as e:
+            logger.error(
+                "Please install the `deepspeed-mii` package to use this client."
+            )
+            raise e
 
         self.mii_client = mii.client(config.deployment_name)
         self.streaming = config.streaming
 
-    def start_service(self) -> Status:
+    def start_service(self) -> None:
         import mii
         from deepspeed.inference import RaggedInferenceEngineConfig, DeepSpeedTPConfig
         from deepspeed.inference.v2.ragged import DSStateManagerConfig
@@ -47,13 +53,11 @@ class FastGenClient(BaseClient):
             replica_num=self.config.num_replicas,
             quantization_mode=self.config.quantization_mode,
         )
-        return Status("OK")
 
-    def stop_service(self) -> Status:
+    def stop_service(self) -> None:
         import mii
 
         mii.client(self.config.deployment_name).terminate_server()
-        return Status("OK")
 
     def _streaming_callback(self, raw_response) -> None:
         self.streaming_response_tokens.append(raw_response[0].generated_text)

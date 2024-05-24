@@ -19,6 +19,13 @@ requires-python = ">=3.8"
 classifiers = [
     "Programming Language :: Python :: 3",
 ]
+dependencies = [
+    "loguru",
+    "pydantic>=2.0.0",
+    "torch",
+    "tqdm",
+    "transformers",
+]
 
 [project.urls]
 Homepage = "https://github.com/Microsoft/DeepSpeedExamples/tree/master/benchmarks/inference/llm-bench"

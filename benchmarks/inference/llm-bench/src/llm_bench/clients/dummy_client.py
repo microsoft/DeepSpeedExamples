@@ -1,15 +1,12 @@
-from abc import ABC, abstractmethod
-
-from ..config import BaseConfigModel
-from ..prompt import Prompt
-from ..response import Response
-from ..status import Status
-from .base import BaseClient
-
-from transformers import AutoTokenizer
-from typing import Any, Dict
 import time
 import random
+from typing import Any, Dict
+
+from transformers import AutoTokenizer
+
+from .base import BaseClient
+from ..config import BaseConfigModel
+from ..prompt import Prompt
 
 
 class DummyClientConfig(BaseConfigModel):
@@ -23,11 +20,11 @@ class DummyClient(BaseClient):
         self.tokenizer = AutoTokenizer.from_pretrained(self.config.model)
         self.latency_time = config.dummy_client_latency_time
 
-    def start_service(self) -> Status:
-        return Status("OK")
+    def start_service(self) -> None:
+        pass
 
-    def stop_service(self) -> Status:
-        return Status("OK")
+    def stop_service(self) -> None:
+        pass
 
     def prepare_request(self, prompt: Prompt) -> Dict[str, Any]:
         return {"input_text": prompt.text, "max_new_tokens": prompt.max_new_tokens}

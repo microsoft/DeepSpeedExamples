@@ -4,12 +4,12 @@ import subprocess
 import time
 from typing import Any, Dict
 
+from loguru import logger
 from pydantic import Field
 
 from .base import BaseClient
 from ..config import BaseConfigModel
 from ..prompt import Prompt
-from ..status import Status
 
 
 class vLLMClientConfig(BaseConfigModel):
@@ -19,7 +19,15 @@ class vLLMClientConfig(BaseConfigModel):
 
 
 class vLLMClient(BaseClient):
-    def start_service(self) -> Status:
+    def __init__(self, config: vLLMClientConfig):
+        super().__init__(config)
+        try:
+            import vllm
+        except ImportError as e:
+            logger.error("Please install the `vllm` package to use this client.")
+            raise e
+
+    def start_service(self) -> None:
         vllm_cmd = (
             "python",
             "-m",
@@ -52,14 +60,10 @@ class vLLMClient(BaseClient):
                 raise TimeoutError("Timed out waiting for VLLM server to start")
             time.sleep(0.01)
 
-        return Status("OK")
-
-    def stop_service(self) -> Status:
+    def stop_service(self) -> None:
         vllm_cmd = ("pkill", "-f", "vllm.entrypoints.api_server")
         p = subprocess.Popen(vllm_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         p.wait()
-
-        return Status("OK")
 
     def prepare_request(self, prompt: Prompt) -> Dict[str, Any]:
         api_url = "http://localhost:26500/generate"
