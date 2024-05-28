@@ -224,6 +224,7 @@ def get_results_path(args: argparse.Namespace) -> Path:
                 f"prompt{args.mean_prompt_length}",
                 f"gen{args.mean_max_new_tokens}",
                 f"clients{args.num_clients}",
+                f"cache{1 if args.enable_prefix_cache else 0}",
             )
         )
         + ".json",
