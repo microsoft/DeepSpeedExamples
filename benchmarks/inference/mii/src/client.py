@@ -306,6 +306,11 @@ def run_client(args):
             all_tokens = tokenizer.tokenize(res.generated_tokens)
             res.generated_tokens = all_tokens[len(tokenizer.tokenize(res.prompt)) :]
         response_details.append(res)
+        # print(f"Output: {tokenizer.convert_tokens_to_string(res.generated_tokens)}", flush=True)
+
+    for res in response_details:
+        print(f"Output: {tokenizer.convert_tokens_to_string(res.generated_tokens)}", flush=True)
+        
 
     return response_details
 

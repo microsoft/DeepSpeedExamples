@@ -38,6 +38,9 @@ def start_vllm_server(args: argparse.Namespace) -> None:
         "--model",
         args.model,
     )
+    if args.enable_prefix_cache:
+        vllm_cmd += ("--enable-prefix-caching",)
+        
     p = subprocess.Popen(
         vllm_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, close_fds=True
     )
@@ -83,7 +86,7 @@ def start_fastgen_server(args: argparse.Namespace) -> None:
         inference_engine_config=inference_config,
         replica_num=args.num_replicas,
         quantization_mode=quantization_mode,
-        device_map={"localhost": [[0]]},
+        # device_map={"localhost": [[0]]},
     )
 
 
