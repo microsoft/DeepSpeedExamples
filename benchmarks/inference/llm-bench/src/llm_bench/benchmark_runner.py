@@ -42,6 +42,9 @@ class BenchmarkConfig(PromptConfig):
     num_requests_per_client: int = 16
     """ Number of requests to run per client. """
 
+    min_requests: int = 128
+    """ Minimum number of request to create (regardless of num_requests_per_client). """
+
     prompt_text_source: str = sample_input_text
     """ Text file or string to use for generated prompts. """
 
@@ -58,7 +61,6 @@ class ClientLauncher:
         client_class: BaseClient,
         client_config: BaseConfigModel,
         warmup_requests: int,
-        requests_per_client: int,
         use_threading: bool,
         prompt_generator: PromptGenerator,
     ):
@@ -66,7 +68,6 @@ class ClientLauncher:
         self.client_config = client_config
         self.client_obj = client_class(client_config)
         self.warmup_requests = warmup_requests
-        self.requests_per_client = requests_per_client
         self.prompt_generator = prompt_generator
 
         if use_threading:
@@ -80,6 +81,8 @@ class ClientLauncher:
 
     def run_parallel_clients(self, num_clients: int) -> None:
         logger.info(f"Launching {num_clients} client(s)")
+
+        total_requests = self.request_queue.qsize()
 
         self.barrier = self.barrier_cls(num_clients + 1)
         processes = [
@@ -102,8 +105,7 @@ class ClientLauncher:
 
         self.barrier.wait()  # Barrier 1 for master process
 
-        total_requests = num_clients * self.requests_per_client
-        self._progress_bar(total_requests)
+        self._progress_bar(total_requests - self.warmup_requests * num_clients)
 
         self.barrier.wait()  # Barrier 2 for master process
 
@@ -193,7 +195,6 @@ class BenchmarkRunner:
             client_class=self.client_class,
             client_config=self.client_config,
             warmup_requests=self.config.warmup_requests,
-            requests_per_client=self.config.num_requests_per_client,
             use_threading=self.config.use_threading,
             prompt_generator=self.prompt_generator,
         )
@@ -250,7 +251,9 @@ class BenchmarkRunner:
         logger.info("Generating Prompts")
 
         warmup_prompts = self.config.warmup_requests * num_clients
-        workload_prompts = self.config.num_requests_per_client * num_clients
+        workload_prompts = max(
+            self.config.min_requests, self.config.num_requests_per_client * num_clients
+        )
         for prompt in self.prompt_generator(
             config=prompt_config, num_prompts=warmup_prompts + workload_prompts
         ):
@@ -291,6 +294,22 @@ class BenchmarkRunner:
         logger.info(f"Saved {len(all_responses)} responses to {output_path}")
 
         return all_responses
+
+    def _print_result_summary(
+        self, all_responses: List[Response], num_clients: int
+    ) -> None:
+        num_responses = int(len(all_responses))
+        mean_latency = sum([r.request_time for r in all_responses]) / num_responses
+        query_throughput = num_clients / mean_latency
+        mean_prompt_length = int(
+            sum([r.prompt_tokens for r in all_responses]) / num_responses
+        )
+        mean_gen_length = int(
+            sum([r.generated_tokens for r in all_responses]) / num_responses
+        )
+        logger.info(
+            f"Result summary - # Requests: {num_responses:d}, Mean Prompt Length: {mean_prompt_length:d} tokens, Mean Generation Length: {mean_gen_length:d} tokens, Mean Latency: {mean_latency:.2f} s, Throughput: {query_throughput:.2f} queries/s,"
+        )
 
     def _check_early_stop(self, all_responses: List[Response]) -> bool:
         if not all_responses:
@@ -353,6 +372,10 @@ class BenchmarkRunner:
                 # Process raw responses and save results to file
                 all_responses = self._process_responses(
                     prompt_config=prompt_config, num_clients=num_clients
+                )
+
+                self._print_result_summary(
+                    all_responses=all_responses, num_clients=num_clients
                 )
 
         # Stop the client service

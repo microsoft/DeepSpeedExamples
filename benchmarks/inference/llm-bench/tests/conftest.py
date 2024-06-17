@@ -23,6 +23,11 @@ def num_requests_per_client(request):
     return str(request.param)
 
 
+@pytest.fixture(scope="function", params=[16])
+def min_requests(request):
+    return str(request.param)
+
+
 @pytest.fixture(scope="function", params=[(1, 2)])
 def num_clients(request):
     if isinstance(request.param, tuple) or isinstance(request.param, list):
@@ -62,6 +67,7 @@ def benchmark_args(
     api,
     result_dir,
     num_requests_per_client,
+    min_requests,
     num_clients,
     config_files,
     prompt_length_var,
@@ -76,6 +82,8 @@ def benchmark_args(
         args.extend(["--result_dir", result_dir])
     if num_requests_per_client:
         args.extend(["--num_requests_per_client", num_requests_per_client])
+    if min_requests:
+        args.extend(["--min_requests", min_requests])
     if num_clients:
         args.extend(["--num_clients"] + num_clients)
     if config_files:

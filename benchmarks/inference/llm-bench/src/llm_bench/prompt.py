@@ -88,6 +88,9 @@ class PromptGenerator:
             np.random.seed(config.prompt_generator_seed)
 
         for _ in range(num_prompts):
+            # Take the absolute value here because sometimes the normal
+            # distribution will return a negative value. This is technically
+            # wrong, but works out OK for most scenarios.
             prompt_length = min(
                 abs(
                     int(
@@ -107,7 +110,6 @@ class PromptGenerator:
                     )
                 )
             )
-            print(prompt_length, max_new_tokens)
             yield Prompt(
                 text=self.tokenizer.decode(tokenized_input[:prompt_length]),
                 num_tokens=prompt_length,

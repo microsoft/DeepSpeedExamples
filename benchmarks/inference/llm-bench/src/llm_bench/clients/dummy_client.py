@@ -11,7 +11,7 @@ from ..prompt import Prompt
 
 class DummyClientConfig(BaseConfigModel):
     model: str
-    dummy_client_latency_time: float = 1.0
+    dummy_client_latency_time: float = 0.3
 
 
 class DummyClient(BaseClient):
