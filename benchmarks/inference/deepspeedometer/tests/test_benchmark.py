@@ -1,6 +1,6 @@
 import pytest
 
-from llm_bench import parse_args_to_configs, BenchmarkRunner
+from deepspeedometer import parse_args_to_configs, BenchmarkRunner
 
 
 def test_benchmark_runner(benchmark_args, num_clients):

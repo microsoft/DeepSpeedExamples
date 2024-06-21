@@ -1,6 +1,6 @@
 import pytest
 
-from llm_bench import parse_args_to_configs, BenchmarkRunner
+from deepspeedometer import parse_args_to_configs, BenchmarkRunner
 
 
 @pytest.mark.parametrize("num_clients", [(1, 2, 4)], indirect=True)

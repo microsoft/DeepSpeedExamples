@@ -1,6 +1,6 @@
 import pytest
 
-from llm_bench import BenchmarkRunner, parse_args_to_configs
+from deepspeedometer import BenchmarkRunner, parse_args_to_configs
 
 
 @pytest.mark.parametrize("prompt_length_var, max_new_tokens_var", [(0, 0)])

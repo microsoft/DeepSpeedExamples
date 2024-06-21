@@ -4,7 +4,7 @@ import yaml
 
 import pydantic
 
-from llm_bench import BenchmarkRunner, parse_args_to_configs
+from deepspeedometer import BenchmarkRunner, parse_args_to_configs
 
 
 def test_config(benchmark_args):
