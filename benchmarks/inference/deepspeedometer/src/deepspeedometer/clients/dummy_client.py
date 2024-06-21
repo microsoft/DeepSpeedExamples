@@ -11,7 +11,7 @@ from ..prompt import Prompt
 
 class DummyClientConfig(BaseConfigModel):
     model: str
-    dummy_client_latency_time: float = 0.3
+    dummy_client_latency_time: float = 0.1
 
 
 class DummyClient(BaseClient):
@@ -30,7 +30,9 @@ class DummyClient(BaseClient):
         return {"input_text": prompt.text, "max_new_tokens": prompt.max_new_tokens}
 
     def send_request(self, request_kwargs: Dict[str, Any]) -> Any:
-        time.sleep(random.uniform(self.latency_time - 0.1, self.latency_time + 0.2))
+        time.sleep(
+            abs(random.uniform(self.latency_time - 0.1, self.latency_time + 0.2))
+        )
         output_text = self.tokenizer.decode(
             random.choices(
                 self.tokenizer.encode(request_kwargs["input_text"]),
