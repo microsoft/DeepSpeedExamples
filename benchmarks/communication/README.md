@@ -77,18 +77,14 @@ Finally, users can choose specific communication operations to run in `run_all.p
 deepspeed run_all.py --scan --all-reduce --all-to-all --broadcast
 </pre>
 
-## CPU and other Accelerator Support
-Those benchmarks could also support other devices like Intel CPU and GPU via oneCCL.
+## CPU Support
+Those benchmarks could also support other devices like Intel CPU via oneCCL.
 Users just need to append one more argument "--device cpu" for all python scripts to run on Intel CPU.
 For example, run with a single large message size on Intel CPU:
 <pre>
 deepspeed all_reduce.py --device cpu
 </pre>
 
-To run with a single large message size on Intel GPU:
-<pre>
-deepspeed all_reduce.py --device xpu
-</pre>
 
 # Adding Communication Benchmarks
 

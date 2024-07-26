@@ -14,8 +14,8 @@ from communication.constants import *
 from deepspeed.accelerator import get_accelerator
 
 
-def timed_pt2pt(input, start_event, end_event, args, device):
-    if device == "cpu":
+def timed_pt2pt(input, start_event, end_event, args):
+    if args.device == "cpu":
         print_rank_0(f"No Event support on CPU to measure time for now")
         return
     if args.dist == 'torch':
@@ -70,7 +70,7 @@ def timed_pt2pt(input, start_event, end_event, args, device):
     print_rank_0(f"{size:<20} {desc:25s} {duration_str:20s} {tput_str:20s} {busbw_str:20s}")
 
 
-def run_pt2pt(local_rank, args, device):
+def run_pt2pt(local_rank, args):
     if args.dist == 'torch':
         import torch.distributed as dist
     elif args.dist == 'deepspeed':
@@ -81,10 +81,10 @@ def run_pt2pt(local_rank, args, device):
     global_rank = dist.get_rank()
     world_size = dist.get_world_size()
 
-    if device == "xpu":
+    if args.device == "xpu":
         start_event = torch.xpu.Event(enable_timing=True)
         end_event = torch.xpu.Event(enable_timing=True)
-    elif device == "cpu":
+    elif args.device == "cpu":
         start_event = torch.cpu.Event()
         end_event = torch.cpu.Event()
     else:
@@ -115,7 +115,7 @@ def run_pt2pt(local_rank, args, device):
                 else:
                     raise e
             sync_all()
-            timed_pt2pt(input, start_event, end_event, args, device)
+            timed_pt2pt(input, start_event, end_event, args)
     else:
         # Send the biggest message size our GPUs can fit. If you're facing OOM errors, reduce the mem_factor
         # Don't need output tensor, so double mem_factor
@@ -135,12 +135,11 @@ def run_pt2pt(local_rank, args, device):
                 sync_all()
                 return
         sync_all()
-        timed_pt2pt(input, start_event, end_event, args, device)
+        timed_pt2pt(input, start_event, end_event, args)
 
 
 if __name__ == "__main__":
     args = benchmark_parser().parse_args()
     rank = args.local_rank
-    device = args.device
     init_processes(local_rank=rank, args=args)
-    run_pt2pt(local_rank=rank, args=args, device=device)
+    run_pt2pt(local_rank=rank, args=args)

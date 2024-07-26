@@ -110,7 +110,7 @@ def get_bw(comm_op, size, duration, args):
     busbw = 0
 
     if duration == 0:
-        print_rank_0("Error. duration is 0.")
+        print_rank_0("Error. Duration is 0.")
         return tput, busbw
 
     if comm_op == "all_to_all":
