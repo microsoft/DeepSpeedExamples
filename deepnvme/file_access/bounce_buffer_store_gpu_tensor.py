@@ -6,7 +6,7 @@ from utils import parse_write_arguments
 import deepspeed
 from deepspeed.ops.op_builder import AsyncIOBuilder
 
-def aio_bounce_buffer_write(out_f, t, h, bounce_buffer):
+def file_write(out_f, t, h, bounce_buffer):
     bounce_buffer.copy_(t)
     h.sync_pwrite(bounce_buffer, out_f)
 
@@ -21,11 +21,11 @@ def main():
     aio_handle = AsyncIOBuilder().load().aio_handle(1024**2, 128, True, True, 1)
     bounce_buffer = torch.empty(file_sz, dtype=torch.uint8, requires_grad=False).pin_memory()
 
-    t = timeit.Timer(functools.partial(aio_bounce_buffer_write, output_file, app_tensor, aio_handle, bounce_buffer))
+    t = timeit.Timer(functools.partial(file_write, output_file, app_tensor, aio_handle, bounce_buffer))
 
     bb_t = t.timeit(cnt)
     bb_gbs = (cnt*file_sz)/bb_t/1e9
-    print(f'bb write from gpu: {bb_gbs:5.2f} GB/sec, {bb_t:5.2f} secs')
+    print(f'bbuf store_gpu: {bb_gbs:5.2f} GB/sec, {bb_t:5.2f} secs')
 
 if __name__ == "__main__":
     main()

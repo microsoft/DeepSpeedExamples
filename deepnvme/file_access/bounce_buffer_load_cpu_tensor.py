@@ -5,7 +5,7 @@ from utils import parse_read_arguments
 import deepspeed
 from deepspeed.ops.op_builder import AsyncIOBuilder
 
-def aio_bounce_buffer_read(inp_f, h, bounce_buffer):
+def file_read(inp_f, h, bounce_buffer):
     read_status = h.sync_pread(bounce_buffer, inp_f)
     t = bounce_buffer.cpu()
 
@@ -17,10 +17,10 @@ def main():
     aio_handle = AsyncIOBuilder().load().aio_handle(1024**2, 128, True, True, 2)
     bounce_buffer = torch.empty(os.path.getsize(input_file), dtype=torch.uint8).pin_memory()
 
-    t = timeit.Timer(functools.partial(aio_bounce_buffer_read, input_file, aio_handle, bounce_buffer))
+    t = timeit.Timer(functools.partial(file_read, input_file, aio_handle, bounce_buffer))
     bb_t = t.timeit(cnt)
     bb_gbs = (cnt*os.path.getsize(input_file))/bb_t/1e9
-    print(f'bb read into cpu: {bb_gbs:5.2f} GB/sec, {bb_t:5.2f} secs')
+    print(f'bbuf load_cpu: {bb_gbs:5.2f} GB/sec, {bb_t:5.2f} secs')
 
 if __name__ == "__main__":
     main()

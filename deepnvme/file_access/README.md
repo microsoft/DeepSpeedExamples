@@ -1,6 +1,6 @@
 # Using DeepNVMe to implement simple file operations  CPU/GPU tensors
 
-This folder contains examples illustrating how to use DeepNVMe to implement simple file operations for moving data between persistent storage and CPU/GPU tensors. For each file operation, we provide an implementation using Python I/O functionality, and a DeepNVMe implementation using CPU bounce buffer and NVIDIA GPUDirect Storage (GDS) as appropriate. 
+This folder contains examples illustrating how to use DeepNVMe to implement simple file operations that involve moving raw data bytes between persistent storage and CPU/GPU tensors. For each file operation, we provide an implementation using Python I/O functionality, and a DeepNVMe implementation using CPU bounce buffer and NVIDIA GPUDirect Storage (GDS) as appropriate. 
 
 The following table is a mapping of file operations to the corresponding Python and DeepNVMe implementations. 
 
