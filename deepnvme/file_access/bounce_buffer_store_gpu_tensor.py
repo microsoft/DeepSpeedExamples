@@ -3,7 +3,6 @@ import os
 import timeit, functools
 import pathlib
 from utils import parse_write_arguments
-import deepspeed
 from deepspeed.ops.op_builder import AsyncIOBuilder
 
 def file_write(out_f, t, h, bounce_buffer):

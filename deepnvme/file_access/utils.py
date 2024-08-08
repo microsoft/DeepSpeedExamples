@@ -1,6 +1,9 @@
 import os
 import argparse
-
+import torch
+import timeit
+import functools
+import pathlib
 
 def parse_read_arguments():
     parser = argparse.ArgumentParser()
@@ -39,3 +42,36 @@ def parse_write_arguments():
         quit()
 
     return args
+
+def create_file(file_path, file_sz):
+    print(f'creating {file_path}')
+    with open(file_path, 'wb') as f:
+        f.write(os.urandom(file_sz))
+
+
+def parse_nvme_arguments():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--nvme_folder', 
+                        default=None, 
+                        type=str, 
+                        required=True, 
+                        help='Folder on NVMe device to use for file read/write.')
+    parser.add_argument('--mb_size',
+                        type=int,
+                        default=None,
+                        required=True,
+                        help='I/O data size in MB.')
+    parser.add_argument('--loop',
+                        type=int,
+                        default=3,
+                        help='The number of times to repeat the operation.')
+
+    args = parser.parse_args()
+    print(f'{args=}')
+    if not os.path.isdir(args.nvme_folder):
+        print(f'Invalid folder path: {args.nvme_folder}')
+        quit()
+
+    args.file_path = os.path.join(args.nvme_folder, f'_deepnvme_file_data_{args.mb_size}MB.pt')
+
+    return args 
