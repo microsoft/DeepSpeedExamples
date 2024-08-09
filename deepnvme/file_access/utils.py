@@ -7,7 +7,7 @@ def parse_read_arguments():
                         default=None,
                         type=str,
                         required=True,
-                        help='File to read, must be on NVMe device.')
+                        help='File on NVMe device that will read as input.')
     parser.add_argument('--loop',
                         type=int,
                         default=3,
@@ -32,7 +32,7 @@ def parse_write_arguments():
                         default=None,
                         type=str,
                         required=True,
-                        help='NVMe folder for file write.')
+                        help='NVMe folder that will used for file write.')
     parser.add_argument('--mb_size',
                         type=int,
                         default=1024,

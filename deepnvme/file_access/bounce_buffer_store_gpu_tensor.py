@@ -15,7 +15,7 @@ def main():
     file_sz = args.mb_size*(1024**2)
     app_tensor = torch.empty(file_sz, dtype=torch.uint8, device='cuda', requires_grad=False)
 
-    aio_handle = AsyncIOBuilder().load().aio_handle(1024**2, 128, True, True, 2)
+    aio_handle = AsyncIOBuilder().load().aio_handle(1024**2, 128, True, True, 1)
     bounce_buffer = torch.empty(file_sz, dtype=torch.uint8, requires_grad=False).pin_memory()
 
 

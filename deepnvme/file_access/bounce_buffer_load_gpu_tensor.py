@@ -14,7 +14,7 @@ def main():
     file_sz = os.path.getsize(input_file)
     cnt = args.loop
 
-    aio_handle = AsyncIOBuilder().load().aio_handle(1024**2, 128, True, True, 2)
+    aio_handle = AsyncIOBuilder().load().aio_handle(1024**2, 128, True, True, 1)
     bounce_buffer = torch.empty(os.path.getsize(input_file), dtype=torch.uint8).pin_memory()
 
     t = timeit.Timer(functools.partial(file_read, input_file, aio_handle, bounce_buffer))
