@@ -54,6 +54,8 @@ DS_CONFIG = {
     'train_batch_size': 1,
     'train_micro_batch_size_per_gpu': 1,
     'wall_clock_breakdown': False,
+    'sequence_parallel_size': 2,
+    'data_parallel_size': 1,
 }
 
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
@@ -107,9 +109,9 @@ def get_loss(model, data_loader, config_dict, step=8):
     model, _, _, _ = deepspeed.initialize(model=model,
                                           model_parameters=model.parameters(),
                                           config=config_dict,
-                                          dist_init_required=True,
-                                          mesh_param=(1, 2))
-    spg = model.get_sequence_parallel_group()
+                                          dist_init_required=True,)
+                                          #mesh_param=(1, 2))
+    spg = model.get_sequence_parallel_group() if sp_size > 1 else None
     seq_parallel_world_size = dist.get_world_size(spg)
     seq_parallel_rank = dist.get_rank(spg)
 
