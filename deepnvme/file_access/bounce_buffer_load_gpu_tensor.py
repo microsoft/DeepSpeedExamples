@@ -1,27 +1,32 @@
 import torch
-import os
-import timeit, functools
-from utils import parse_read_arguments
-import deepspeed
+import os, timeit, functools
 from deepspeed.ops.op_builder import AsyncIOBuilder
+from utils import parse_read_arguments
 
 def file_read(inp_f, h, bounce_buffer):
-    read_status = h.sync_pread(bounce_buffer, inp_f)
-    t = bounce_buffer.cuda()
+    h.sync_pread(bounce_buffer, inp_f)
+    return bounce_buffer.cuda()
 
 
 def main():
-    cnt = 3
     args = parse_read_arguments()
-
     input_file = args.input_file
-    aio_handle = AsyncIOBuilder().load().aio_handle(1024**2, 128, True, True, 1)
+    file_sz = os.path.getsize(input_file)
+    cnt = args.loop
+
+    aio_handle = AsyncIOBuilder().load().aio_handle(1024**2, 128, True, True, 2)
     bounce_buffer = torch.empty(os.path.getsize(input_file), dtype=torch.uint8).pin_memory()
 
     t = timeit.Timer(functools.partial(file_read, input_file, aio_handle, bounce_buffer))
-    bb_t = t.timeit(cnt)
-    bb_gbs = (cnt*os.path.getsize(input_file))/bb_t/1e9
-    print(f'bbuf load_gpu: {bb_gbs:5.2f} GB/sec, {bb_t:5.2f} secs')
+    aio_t = t.timeit(cnt)
+    aio_gbs = (cnt*file_sz)/aio_t/1e9
+    print(f'bbuf load_gpu: {file_sz/(1024**3)}GB, {aio_gbs:5.2f} GB/sec, {aio_t:5.2f} secs')
+
+    if args.validate: 
+        from py_load_cpu_tensor import file_read as py_file_read 
+        aio_tensor = file_read(input_file, aio_handle, bounce_buffer).cpu()
+        py_tensor = py_file_read(input_file)
+        print(f'Validation success = {aio_tensor.equal(py_tensor)}')
 
 if __name__ == "__main__":
     main()

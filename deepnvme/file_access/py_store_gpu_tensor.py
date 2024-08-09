@@ -1,7 +1,5 @@
 import torch
-import numpy
-import os
-import timeit, functools
+import os, timeit, functools
 import pathlib
 from utils import parse_write_arguments
 
@@ -10,9 +8,9 @@ def file_write(out_f, t):
        f.write(t.numpy(force=True))
 
 def main():
-    cnt = 3
     args = parse_write_arguments()
-    output_file = os.path.join(args.output_folder, f'test_ouput_{args.mb_size}MB.pt')
+    cnt = args.loop
+    output_file = os.path.join(args.nvme_folder, f'test_ouput_{args.mb_size}MB.pt')
     pathlib.Path(output_file).unlink(missing_ok=True)
     file_sz = args.mb_size*(1024**2)
     gpu_tensor = torch.empty(file_sz, dtype=torch.uint8, device='cuda', requires_grad=False)
@@ -21,7 +19,7 @@ def main():
 
     py_t = t.timeit(cnt)
     py_gbs = (cnt*file_sz)/py_t/1e9
-    print(f'py store_gpu: {py_gbs:5.2f} GB/sec, {py_t:5.2f} secs')
+    print(f'py store_gpu: {file_sz/(1024**3)}GB, {py_gbs:5.2f} GB/sec, {py_t:5.2f} secs')
     pathlib.Path(output_file).unlink(missing_ok=True)
 
 
