@@ -1,7 +1,7 @@
 import torch
 import os, timeit, functools
 import pathlib
-from utils import parse_write_arguments
+from utils import parse_write_arguments, GIGA_UNIT
 
 def file_write(out_f, t):
     with open(out_f, 'wb') as f:
@@ -18,8 +18,8 @@ def main():
     t = timeit.Timer(functools.partial(file_write, output_file, gpu_tensor))
 
     py_t = t.timeit(cnt)
-    py_gbs = (cnt*file_sz)/py_t/1e9
-    print(f'py store_gpu: {file_sz/(1024**3)}GB, {py_gbs:5.2f} GB/sec, {py_t:5.2f} secs')
+    py_gbs = (cnt*file_sz)/GIGA_UNIT/py_t
+    print(f'py store_gpu: {file_sz/GIGA_UNIT} GB, {py_t/cnt} secs, {py_gbs:5.2f} GB/sec')
     pathlib.Path(output_file).unlink(missing_ok=True)
 
 

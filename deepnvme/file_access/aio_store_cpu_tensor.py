@@ -1,7 +1,7 @@
 import torch
 import os, timeit, functools, pathlib
 from deepspeed.ops.op_builder import AsyncIOBuilder
-from utils import parse_write_arguments
+from utils import parse_write_arguments, GIGA_UNIT
 
 def file_write(out_f, t, h, bounce_buffer):
     bounce_buffer.copy_(t)
@@ -21,9 +21,9 @@ def main():
 
     t = timeit.Timer(functools.partial(file_write, output_file, app_tensor, aio_handle, bounce_buffer))
 
-    bb_t = t.timeit(cnt)
-    bb_gbs = (cnt*file_sz)/bb_t/1e9
-    print(f'bbuf store_cpu: {file_sz/(1024**3)}GB, {bb_gbs:5.2f} GB/sec, {bb_t:5.2f} secs')
+    aio_t = t.timeit(cnt)
+    aio_gbs = (cnt*file_sz)/GIGA_UNIT/aio_t
+    print(f'aio store_cpu: {file_sz/GIGA_UNIT} GB, {aio_t/cnt} secs, {aio_gbs:5.2f} GB/sec')
 
     if args.validate: 
         import tempfile, filecmp

@@ -1,6 +1,6 @@
 import torch
 import os, timeit, functools
-from utils import parse_read_arguments
+from utils import parse_read_arguments, GIGA_UNIT
 
 def file_read(inp_f):
     with open(inp_f, 'rb') as f:
@@ -15,8 +15,8 @@ def main():
     
     t = timeit.Timer(functools.partial(file_read, input_file))
     py_t = t.timeit(cnt)
-    py_gbs = (cnt*file_sz)/py_t/1e9
-    print(f'py load_gpu:  {file_sz/(1024**3)}GB, {py_gbs:5.2f} GB/sec, {py_t:5.2f} secs')
+    py_gbs = (cnt*file_sz)/GIGA_UNIT/py_t
+    print(f'py load_gpu:  {file_sz/GIGA_UNIT} GB, {py_t/cnt} secs, {py_gbs:5.2f} GB/sec')
 
 if __name__ == "__main__":
     main()

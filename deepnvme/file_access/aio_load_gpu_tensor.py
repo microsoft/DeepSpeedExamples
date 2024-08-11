@@ -1,11 +1,12 @@
 import torch
 import os, timeit, functools
 from deepspeed.ops.op_builder import AsyncIOBuilder
-from utils import parse_read_arguments
+from utils import parse_read_arguments, GIGA_UNIT
 
 def file_read(inp_f, h, bounce_buffer):
     h.sync_pread(bounce_buffer, inp_f)
-    return bounce_buffer.cpu()
+    return bounce_buffer.cuda()
+
 
 def main():
     args = parse_read_arguments()
@@ -18,12 +19,12 @@ def main():
 
     t = timeit.Timer(functools.partial(file_read, input_file, aio_handle, bounce_buffer))
     aio_t = t.timeit(cnt)
-    aio_gbs = (cnt*file_sz)/aio_t/1e9
-    print(f'bbuf load_cpu: {file_sz/(1024**3)}GB, {aio_gbs:5.2f} GB/sec, {aio_t:5.2f} secs')
+    aio_gbs = (cnt*file_sz)/GIGA_UNIT/aio_t
+    print(f'aio load_gpu: {file_sz/GIGA_UNIT} GB, {aio_t/cnt} secs, {aio_gbs:5.2f} GB/sec')
 
     if args.validate: 
         from py_load_cpu_tensor import file_read as py_file_read 
-        aio_tensor = file_read(input_file, aio_handle, bounce_buffer)
+        aio_tensor = file_read(input_file, aio_handle, bounce_buffer).cpu()
         py_tensor = py_file_read(input_file)
         print(f'Validation success = {aio_tensor.equal(py_tensor)}')
 

@@ -1,6 +1,8 @@
 import os
 import argparse
 
+GIGA_UNIT = 1024**3
+
 def parse_read_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument('--input_file',

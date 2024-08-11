@@ -1,7 +1,7 @@
 import torch
 import os, timeit, functools, pathlib
 from deepspeed.ops.op_builder import GDSBuilder
-from utils import parse_write_arguments
+from utils import parse_write_arguments, GIGA_UNIT
 
 def file_write(out_f, t, h, gpu_buffer):
     gpu_buffer.copy_(t)
@@ -16,13 +16,13 @@ def main():
     app_tensor = torch.empty(file_sz, dtype=torch.uint8, device='cuda', requires_grad=False)
 
     gds_handle = GDSBuilder().load().gds_handle(1024**2, 128, True, True, 1)
-    gds_buffer = torch.empty(file_sz, dtype=torch.uint8, device='cuda', requires_grad=False)
+    gds_buffer = gds_handle.new_pinned_device_tensor(file_sz, torch.empty(0, dtype=torch.uint8, device='cuda', requires_grad=False))
 
     t = timeit.Timer(functools.partial(file_write, output_file, app_tensor, gds_handle, gds_buffer))
 
     gds_t = t.timeit(cnt)
-    gds_gbs = (cnt*file_sz)/gds_t/1e9
-    print(f'gds store_gpu: {file_sz/(1024**3)}GB, {gds_gbs:5.2f} GB/sec, {gds_t:5.2f} secs')
+    gds_gbs = (cnt*file_sz)/GIGA_UNIT/gds_t
+    print(f'gds store_gpu: {file_sz/GIGA_UNIT} GB, {gds_t/cnt} secs, {gds_gbs:5.2f} GB/sec')
 
     if args.validate: 
         import tempfile, filecmp
@@ -32,6 +32,7 @@ def main():
         filecmp.clear_cache()
         print(f'Validation success = {filecmp.cmp(py_ref_file, output_file, shallow=False) }')
 
+    gds_handle.free_pinned_device_tensor(gds_buffer)
     pathlib.Path(output_file).unlink(missing_ok=True)
 
 if __name__ == "__main__":

@@ -13,7 +13,7 @@ fi
 
 
 echo "Running load tensor examples using $input_file"
-for f in bounce_buffer_load_cpu_tensor.py bounce_buffer_load_gpu_tensor.py \
+for f in aio_load_cpu_tensor.py aio_load_gpu_tensor.py \
     gds_load_gpu_tensor.py \
     py_load_cpu_tensor.py py_load_gpu_tensor.py; do 
     cmd="python $f --input_file $input_file"

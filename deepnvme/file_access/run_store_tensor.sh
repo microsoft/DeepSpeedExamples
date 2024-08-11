@@ -13,7 +13,7 @@ fi
 
 
 echo "Running store tensor examples using $output_folder"
-for f in bounce_buffer_store_cpu_tensor.py bounce_buffer_store_gpu_tensor.py \
+for f in aio_store_cpu_tensor.py aio_store_gpu_tensor.py \
     gds_store_gpu_tensor.py \
     py_store_cpu_tensor.py py_store_gpu_tensor.py; do 
     cmd="python $f --nvme_folder $output_folder"
