@@ -3,8 +3,8 @@ import os, timeit, functools
 from utils import parse_read_arguments, GIGA_UNIT
 from deepspeed.ops.op_builder import GDSBuilder
 
-def file_read(inp_f, h, gpu_buffer):
-    h.sync_pread(gpu_buffer, inp_f)
+def file_read(inp_f, handle, gpu_buffer):
+    handle.sync_pread(gpu_buffer, inp_f)
     return gpu_buffer.cuda()
 
 def main():

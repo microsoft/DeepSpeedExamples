@@ -4,8 +4,8 @@ from utils import parse_read_arguments, GIGA_UNIT
 
 def file_read(inp_f):
     with open(inp_f, 'rb') as f:
-       t = torch.frombuffer(f.read(), dtype=torch.uint8)
-    return t 
+       tensor = torch.frombuffer(f.read(), dtype=torch.uint8)
+    return tensor
 
 def main():
     args = parse_read_arguments()

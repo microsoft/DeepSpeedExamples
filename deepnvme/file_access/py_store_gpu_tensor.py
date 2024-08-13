@@ -3,9 +3,9 @@ import os, timeit, functools
 import pathlib
 from utils import parse_write_arguments, GIGA_UNIT
 
-def file_write(out_f, t):
+def file_write(out_f, tensor):
     with open(out_f, 'wb') as f:
-       f.write(t.numpy(force=True))
+       f.write(tensor.numpy(force=True))
 
 def main():
     args = parse_write_arguments()

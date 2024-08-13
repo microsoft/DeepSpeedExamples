@@ -3,9 +3,9 @@ import os, timeit, functools, pathlib
 from deepspeed.ops.op_builder import AsyncIOBuilder
 from utils import parse_write_arguments, GIGA_UNIT
 
-def file_write(out_f, t, h, bounce_buffer):
-    bounce_buffer.copy_(t)
-    h.sync_pwrite(bounce_buffer, out_f)
+def file_write(out_f, tensor, handle, bounce_buffer):
+    bounce_buffer.copy_(tensor)
+    handle.sync_pwrite(bounce_buffer, out_f)
 
 def main():
     args = parse_write_arguments()

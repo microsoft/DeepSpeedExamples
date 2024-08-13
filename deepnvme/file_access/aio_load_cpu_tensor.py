@@ -3,8 +3,8 @@ import os, timeit, functools
 from deepspeed.ops.op_builder import AsyncIOBuilder
 from utils import parse_read_arguments, GIGA_UNIT
 
-def file_read(inp_f, h, bounce_buffer):
-    h.sync_pread(bounce_buffer, inp_f)
+def file_read(inp_f, handle, bounce_buffer):
+    handle.sync_pread(bounce_buffer, inp_f)
     return bounce_buffer.cpu()
 
 def main():
