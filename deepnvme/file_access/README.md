@@ -1,6 +1,6 @@
 # Using DeepNVMe for simple file reads and writes involving CPU/GPU tensors
 
-The purpose of this folder is to provide example codes that illustrate how to use DeepNVMe for simple file operations of moving raw data bytes between persistent storage and CPU/GPU tensors. For each file operation, we provide an implementation using Python I/O functionality, and a DeepNVMe implementation using CPU bounce buffer (aio) and NVIDIA GPUDirect Storage (GDS) as appropriate. 
+The purpose of this folder is to provide example codes that illustrate how to use DeepNVMe for simple file operations of moving raw data bytes between persistent storage and CPU/GPU tensors. For each file operation, we provide an implementation using Python I/O functionality, and a DeepNVMe implementation using CPU bounce buffer (aio) and NVIDIA Magnum IO<sup>TM</sup> GPUDirect® Storage (GDS) as appropriate. 
 
 The following table is a mapping of file operations to the corresponding Python and DeepNVMe implementations. 
 
@@ -20,12 +20,20 @@ Ensure your environment is properly configured to run these examples. First, you
 <div align="center">
     <img src="./media/deepnvme_ops_report.png" style="width:6.5in;height:3.42153in" />
 </div> 
-
 <div align="center">
     ds_report output showing availability of DeepNVMe operators (async_io and gds) in a DeepSpeed installation. 
 </div> 
 
 
+If `async_io` opertator is unavailable, you will need to install the appropriate `libaio` library binaries for your Linux flavor. For example, Ubuntu users will need to run `apt install libaio-dev`. In general, you should carefully inspect `ds_report` output for helpful tips such as the following: 
+
+```bash
+[WARNING]  async_io requires the dev libaio .so object and headers but these were not found.
+[WARNING]  async_io: please install the libaio-dev package with apt
+[WARNING]  If libaio is already installed (perhaps from source), try setting the CFLAGS and LDFLAGS environment variables to where it can be found.
+```
+
+To enable `gds` operator, you will need to install NVIDIA GDS by consulting the appropriate guide for [bare-metal systems](https://docs.nvidia.com/gpudirect-storage/troubleshooting-guide/index.html) or Azure VMs (coming soon). 
 
 ## Tensor Load Examples
 The tensor load example scripts share a common command-line interface, which is illustrated below using `py_read_load_cpu_tensor.py`.
