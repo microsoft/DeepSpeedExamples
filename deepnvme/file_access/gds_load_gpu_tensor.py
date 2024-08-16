@@ -13,7 +13,7 @@ def main():
     file_sz = os.path.getsize(input_file)
     cnt = args.loop
 
-    gds_handle = GDSBuilder().load().gds_handle(1024**2, 128, True, True, 1)
+    gds_handle = GDSBuilder().load().gds_handle()
     gds_buffer = gds_handle.new_pinned_device_tensor(file_sz, torch.empty(0, dtype=torch.uint8, device='cuda', requires_grad=False))
 
     t = timeit.Timer(functools.partial(file_read, input_file, gds_handle, gds_buffer))
