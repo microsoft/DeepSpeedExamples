@@ -135,8 +135,6 @@ def call_vllm(
 def call_openai(
     input_tokens: str, max_new_tokens: int, args: argparse.Namespace
 ) -> ResponseDetails:
-    if not args.stream:
-        raise NotImplementedError("Not implemented for non-streaming")
 
     api_url = args.openai_api_url
     headers = {
@@ -179,15 +177,18 @@ def call_openai(
     # For non-streaming, but currently non-streaming is not fully implemented
     def get_response(response: requests.Response) -> List[str]:
         data = json.loads(response.content)
-        output = data["text"]
+        output = data["choices"][0]["text"]
         return output
 
     token_gen_time = []
     start_time = time.time()
     response = requests.post(api_url, headers=headers, json=pload, stream=args.stream)
-    for h, t in get_streaming_response(response, start_time):
-        output = h
-        token_gen_time.append(t)
+    if args.stream:
+        for h, t in get_streaming_response(response, start_time):
+            output = h
+            token_gen_time.append(t)
+    else:
+        output = get_response(response)
 
     return ResponseDetails(
         generated_tokens=output,
