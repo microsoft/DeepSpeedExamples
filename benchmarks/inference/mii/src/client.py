@@ -165,11 +165,14 @@ def call_openai(
         response: requests.Response, time_last_token
     ) -> Iterable[List[str]]:
         for chunk in response.iter_lines(
-            chunk_size=8192, decode_unicode=False, delimiter=b"\0"
+            chunk_size=8192, decode_unicode=False, delimiter=b"data:"
         ):
             if chunk:
-                data = json.loads(chunk.decode("utf-8"))
-                output = data["text"][0]
+                plain=chunk.decode("utf-8")
+                if plain.strip() == "[DONE]":
+                    continue
+                data = json.loads(plain)
+                output = data["choices"][0]["text"]
                 time_now = time.time()
                 yield output, time_now - time_last_token
                 time_last_token = time_now
@@ -182,10 +185,12 @@ def call_openai(
 
     token_gen_time = []
     start_time = time.time()
+    #response = requests.post(api_url, headers=headers, json=pload, stream=False)
     response = requests.post(api_url, headers=headers, json=pload, stream=args.stream)
     if args.stream:
+        output = ""
         for h, t in get_streaming_response(response, start_time):
-            output = h
+            output += h
             token_gen_time.append(t)
     else:
         output = get_response(response)
