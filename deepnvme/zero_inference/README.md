@@ -25,6 +25,7 @@ GDS | OPT-66B | Bloom-176B | Llama3-70B
 |---|---|---|---|
 False | 3.156(bsz=32) | 0.291(bsz=8) | 8.606(bsz=96) |
 True | 2.321(bsz=24) | 0.293(bsz=8) | 8.876(bsz=96) |
+
 Throughput measured in tokens/sec.
 
 ## Batch Size Differences in OPT-66B
