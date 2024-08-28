@@ -9,9 +9,6 @@ The environment for these tests was a VM with NVIDIA Magnum IO<sup>TM</sup> GPUD
     <img src="./media/nvme_config.png" style="width:6.5in;height:3.42153in" />
 </div> 
 
-
-All models tested were chosen so they could not fit into 96 GB of GPU memory.
-
 ## Initial Results
 The following models where run from the folder DeepSpeedExamples/inference/huggingface/zero_inference using disk-offload of parameters via the following command:
 
@@ -19,14 +16,16 @@ The following models where run from the folder DeepSpeedExamples/inference/huggi
 deepspeed --num_gpus 1 run_model.py --model $model_name --batch_size $bsz --prompt-len 512 --gen-len 32 --disk-offload $path_to_foler --use_gds
 ```
 
-Where `--use_gds` is set to enable NVIDIA GDS and move data directly between the NVMe and GPU, otherwise an intermediate CPU bounce buffer will be used to move data between the NVMe and GPU.
+Where `--use_gds` is set to enable NVIDIA GDS and move parameters directly between the NVMe and GPU, otherwise an intermediate CPU bounce buffer will be used to move the parameters between the NVMe and GPU.
 
-GDS | OPT-66B | Bloom-176B | Llama3-70B 
+All models tested were chosen so they could not fit into 96 GB of GPU memory.
+
+GDS | OPT-66B | Llama3-70B | Bloom-176B  
 |---|---|---|---|
-False | 3.156(bsz=32) | 0.291(bsz=8) | 8.606(bsz=96) |
-True | 2.321(bsz=24) | 0.293(bsz=8) | 8.876(bsz=96) |
+False | 3.156(bsz=32) | 8.606(bsz=96) | 0.291(bsz=8) |
+True | 2.321(bsz=24) | 8.876(bsz=96) | 0.293(bsz=8) |
 
 Throughput measured in tokens/sec.
 
 ## Batch Size Differences in OPT-66B
-In 2 of the 3 model scenarios above GDS outperformed the CPU bounce buffer on throughput. In the OPT-66B scenario the CPU buffer performed better because it was able to accomodate a larger batch size. This is a result of how GDS is implemented. While the CPU keeps its bounce buffer in CPU DRAM, GDS must also keep a bounce buffer in GPU VRAM. This extra space taken up by the bounce has the possiblity of causing an OOM when scaling to larger batch sizes, compared to the CPU instance.
+In 2 of the 3 model scenarios above GDS outperformed the CPU bounce buffer on throughput. In the OPT-66B scenario the CPU buffer performed better because it was able to accomodate a larger batch size (32 vs 24). This is a result of how parameter swapping is implemented when using GDS. The CPU keeps its bounce buffer for parameters in CPU DRAM, GDS must also keep a bounce buffer in GPU VRAM. This extra space taken up in GPU VRAM by the GDS bounce buffer has the possiblity of causing an Out-of-Memory error when scaling to larger batch sizes.
