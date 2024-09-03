@@ -61,6 +61,10 @@ def parse_args(
         choices=["start", "stop", "restart"],
         help="Command for running server.py to manually start/stop/restart a server",
     )
+    server_parser.add_argument(
+        "--client_only", action="store_true", help="Run client only with server started"
+    )
+
 
     # Client args
     client_parser = argparse.ArgumentParser(add_help=False)
@@ -119,6 +123,18 @@ def parse_args(
         help="Directory to save result JSON files",
     )
     client_parser.add_argument(
+        "--openai_api_url",
+        type=str,
+        default=None,
+        help="When using the openai API backend, this is the API URL that points to an openai api server",
+    )
+    client_parser.add_argument(
+        "--openai_api_key",
+        type=str,
+        default=None,
+        help="When using the openai API backend, this is the API key for a given openai_api_url",
+    )
+    client_parser.add_argument(
         "--aml_api_url",
         type=str,
         default=None,
@@ -152,7 +168,7 @@ def parse_args(
     parser.add_argument(
         "--backend",
         type=str,
-        choices=["aml", "fastgen", "vllm"],
+        choices=["aml", "fastgen", "vllm", "openai"],
         default="fastgen",
         help="Which backend to benchmark",
     )
