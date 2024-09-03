@@ -4,7 +4,7 @@ ZeRO-inference is an ideal use case for the DeepNVMe technology. When you have a
 Maximizing inference throughput (measured in tokens/sec) in this scenario has two parts. First offloading the model parameters to fast Non-Volatile Memory, either a single device or several devices RAIDed together to further increase the effective bandiwidth of the system. These parameters are then swapped into the GPU memory layer by layer to compute the forward pass for inference. This allows for the second part of the process, maximizing the batch size. By swapping in parameters layer by layer the remaining GPU memory can be used by the computational batch which leads to a maximizing of total inference throughput.
 
 ## Testing Environment
-The environment for these tests was a VM with NVIDIA Magnum IO<sup>TM</sup> GPUDirect® Storage (GDS) installed along with a single NVIDIA H100 GPU containing 96 GB of memory. The VM also had two NVMes each with a read bandwidth of ~6 GB/sec. The two NVMes were put into a RAID0 configuration, bringing the effective read bandwidth up to ~12 GB/sec. 
+The environment for these tests was a VM with NVIDIA Magnum IO<sup>TM</sup> GPUDirect® Storage (GDS) installed along with a single NVIDIA H100 GPU containing 96 GB of memory. The VM also had two NVMes each with a read bandwidth of ~6.5 GB/sec. The two NVMes were put into a RAID0 configuration, bringing the effective read bandwidth up to ~13 GB/sec. 
 <div align="center">
     <img src="./media/nvme_config.png" style="width:6.5in;height:3.42153in" />
 </div> 
@@ -29,3 +29,17 @@ Throughput measured in tokens/sec.
 
 ## Batch Size Differences in OPT-66B
 In 2 of the 3 model scenarios above GDS outperformed the CPU bounce buffer on throughput. In the OPT-66B scenario the CPU buffer performed better because it was able to accomodate a larger batch size (32 vs 24). This is a result of how parameter swapping is implemented when using GDS. The CPU keeps its bounce buffer for parameters in CPU DRAM, GDS also keeps a bounce buffer to swap parameters into and it keeps in GPU memory. This extra space taken up in GPU VRAM by the GDS bounce buffer has the possiblity of causing an Out-of-Memory error when scaling to larger batch sizes.
+
+You can see this effect via the `see_memory_usage` calls in the log. 
+
+CPU case:
+<div align="center">
+    <img src="./media/zero_inf_mem_usage_cpu.png" style="width:6.5in;height:3.42153in" />
+</div> 
+
+GDS case:
+<div align="center">
+    <img src="./media/zero_inf_mem_usage_gds.png" style="width:6.5in;height:3.42153in" />
+</div> 
+
+The size of the bounce buffer is controlled by two parameters in the `ds_config/zero_optimization/offload_param`: `buffer_count` and `buffer_size`.
