@@ -34,12 +34,12 @@ You can see this effect via the `see_memory_usage` calls in the log.
 
 CPU case:
 <div align="center">
-    <img src="./media/zero_inf_mem_usage_cpu.png" style="width:6.5in;height:3.42153in" />
+    <img src="./media/zero_inf_mem_use_cpu.png" style="width:6.5in;height:3.42153in" />
 </div> 
 
 GDS case:
 <div align="center">
-    <img src="./media/zero_inf_mem_usage_gds.png" style="width:6.5in;height:3.42153in" />
+    <img src="./media/zero_inf_mem_use_gds.png" style="width:6.5in;height:3.42153in" />
 </div> 
 
 The size of the bounce buffer is controlled by two parameters in the `ds_config/zero_optimization/offload_param`: `buffer_count` and `buffer_size`.
