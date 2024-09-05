@@ -20,26 +20,9 @@ Where `--use_gds` is set to enable NVIDIA GDS and move parameters directly betwe
 
 All models tested were chosen so they could not fit into 96 GB of GPU memory.
 
-GDS | OPT-66B | Llama3-70B | Bloom-176B  
+GDS | Mixtral-8x22B | Llama3-70B | Bloom-176B  
 |---|---|---|---|
-False | 3.156(bsz=32) | 8.606(bsz=96) | 0.291(bsz=8) |
-True | 2.321(bsz=24) | 8.876(bsz=96) | 0.293(bsz=8) |
+False | 9.152(bsz=200) | 8.606(bsz=96) | 0.291(bsz=8) |
+True | 9.233(bsz=200) | 8.876(bsz=96) | 0.293(bsz=8) |
 
 Throughput measured in tokens/sec.
-
-## Batch Size Differences in OPT-66B
-In 2 of the 3 model scenarios above GDS outperformed the CPU bounce buffer on throughput. In the OPT-66B scenario the CPU buffer performed better because it was able to accomodate a larger batch size (32 vs 24). This is a result of how parameter swapping is implemented when using GDS. The CPU keeps its bounce buffer for parameters in CPU DRAM, GDS also keeps a bounce buffer to swap parameters into and it keeps in GPU memory. This extra space taken up in GPU VRAM by the GDS bounce buffer has the possiblity of causing an Out-of-Memory error when scaling to larger batch sizes.
-
-You can see this effect via the `see_memory_usage` calls in the log. 
-
-CPU case:
-<div align="center">
-    <img src="./media/zero_inf_mem_use_cpu.png" style="width:6.5in;height:3.42153in" />
-</div> 
-
-GDS case:
-<div align="center">
-    <img src="./media/zero_inf_mem_use_gds.png" style="width:6.5in;height:3.42153in" />
-</div> 
-
-The size of the bounce buffer is controlled by two parameters in the `ds_config/zero_optimization/offload_param`: `buffer_count` and `buffer_size`.

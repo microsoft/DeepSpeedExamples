@@ -109,6 +109,9 @@ def get_ds_model(
             buffer_count = 3 if args.use_gds else 5
             buffer_size = 8*GB if args.use_gds else 9*GB
 
+        elif config.model_type == 'mixtral':
+            buffer_count = 10
+            buffer_size = 1*GB
         else:
             buffer_count = 5
             buffer_size = 2*GB
@@ -147,6 +150,10 @@ def get_ds_model(
         )
     elif config.model_type == "llama":
         model = LlamaForCausalLM.from_pretrained(
+            dummy_weights or model_name, torch_dtype=dtype,
+        )
+    elif config.model_type == "mixtral":
+        model = AutoModelForCausalLM.from_pretrained(
             dummy_weights or model_name, torch_dtype=dtype,
         )
     else:
@@ -201,6 +208,8 @@ def run_generation(
                     model = BloomForCausalLM(config)
                 elif config.model_type == "llama":
                     model = LlamaForCausalLM(config)
+                elif config.model_type == "mixtral":
+                    model = AutoModelForCausalLM(config)
                 else:
                     raise ValueError(f"Unexpected model type: {config.model_type}")                    
             model.save_pretrained(
