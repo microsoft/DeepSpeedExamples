@@ -75,7 +75,7 @@ def run_model(model, config_dict, hidden_dim, dtype, include, pin_memory, non_bl
         assert alloc_after_offload < alloc_before_offload, f"Allocated memory should decrease after offload"
 
         # Load offloaded states back
-        model.offload_states_back()
+        model.reload_states()
         dist.barrier()
         time_after_load = time.time()
 
