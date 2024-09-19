@@ -4,9 +4,10 @@ from domino.arguments import get_args
 from domino.modules.enums import ModelType
 import domino.parallel_state as mpu
 from domino.modules.module import DominoModule
-from domino.transformer import ParallelTransformer
 from domino.tensor_parallel.comm import GatherFromModelParallelRegion
 from domino.tensor_parallel.partition  import VocabParallelEmbedding, linear_with_grad_accumulation_and_async_allreduce
+
+from deepspeed.runtime.domino.transformer import ParallelTransformer
 
 
 def parallel_lm_logits(input_, word_embeddings_weight, parallel_output,
