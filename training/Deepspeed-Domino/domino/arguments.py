@@ -3,21 +3,18 @@
 import argparse
 import os
 import types
+import math
 import torch
 import torch.nn.functional as F
-import dataclasses
-from domino.microbatches import build_num_microbatches_calculator
-from megatron.tokenizer import build_tokenizer
 
+import dataclasses
 from dataclasses import dataclass
 from typing import Callable
+from megatron.tokenizer import build_tokenizer
 
-import torch
-import torch.nn.functional as F
 
 _GLOBAL_ARGS = None
 _GLOBAL_TOKENIZER = None
-_GLOBAL_NUM_MICROBATCHES_CALCULATOR = None
 
 
 def get_args():
@@ -43,20 +40,20 @@ def get_tokenizer():
 
 
 def get_num_microbatches():
-    return _GLOBAL_NUM_MICROBATCHES_CALCULATOR.get()
+    return 1
 
 
-def get_current_global_batch_size():
-    return _GLOBAL_NUM_MICROBATCHES_CALCULATOR.get_current_global_batch_size()
+def init_method_normal(std_dev):
+    def initialize(tensor):
+        return torch.nn.init.normal_(tensor, mean=0.0, std=std_dev)
+    return initialize
 
 
-def update_num_microbatches(consumed_samples, consistency_check=True):
-    _GLOBAL_NUM_MICROBATCHES_CALCULATOR.update(consumed_samples, consistency_check)
-
-
-def build_num_microbatches_calculator_g(args):
-    global _GLOBAL_NUM_MICROBATCHES_CALCULATOR
-    _GLOBAL_NUM_MICROBATCHES_CALCULATOR = build_num_microbatches_calculator(args)
+def scaled_init_method_normal(std_dev, layer_count):
+    scaled_std_dev = std_dev / math.sqrt(2.0 * layer_count)
+    def initialize(tensor):
+        return torch.nn.init.normal_(tensor, mean=0.0, std=scaled_std_dev)
+    return initialize
 
 
 def parse_args():
@@ -120,6 +117,9 @@ def parse_args():
                        help='Initial learning rate. Depending on decay style '
                        'and initial warmup, the learing rate at each '
                        'iteration would be different.')
+    parser.add_argument('--min-lr', type=float, default=0.0,
+                       help='Minumum value for learning rate. The scheduler'
+                       'clip values below this threshold.')
     parser.add_argument('--lr-warmup-fraction', type=float, default=None,
                        help='fraction of lr-warmup-(iters/samples) to use '
                        'for warmup (as a float)')
@@ -129,9 +129,6 @@ def parse_args():
     parser.add_argument('--lr-decay-iters', type=int, default=None,
                        help='number of iterations to decay learning rate over,'
                        ' If None defaults to `--train-iters`')
-    parser.add_argument('--min-lr', type=float, default=0.0,
-                       help='Minumum value for learning rate. The scheduler'
-                       'clip values below this threshold.')
     parser.add_argument('--weight-decay', type=float, default=0.01,
                        help='Weight decay coefficient for L2 regularization.')
     parser.add_argument('--clip-grad', type=float, default=1.0,
@@ -160,26 +157,8 @@ def parse_args():
                        help='Run model in fp16 mode.')
     parser.add_argument('--bf16', action='store_true',
                        help='Run model in bfloat16 mode.')
-    parser.add_argument('--eval-iters', type=int, default=100,
-                    help='Number of iterations to run for evaluation'
-                    'validation/test for.')
-    parser.add_argument('--eval-interval', type=int, default=1000,
-                       help='Interval between running evaluation on '
-                       'validation set.')
-    # parser.add_argument('--log-interval', type=int, default=100,
-    #                    help='Report loss and timing interval.')
-    # parser.add_argument('--save-interval', type=int, default=None,
-    #                    help='Number of iterations between checkpoint saves.')
-    parser.add_argument('--no-barrier-with-level-1-timing', action='store_false',
-                       help='If not set, use barrier with level 1 time '
-                       'measurements. Note that this is up to the user '
-                       'to make sure calling barrier with their timers '
-                       'will not result in hangs. This can happen if for '
-                       'example the user adds a level 1 timer that is not '
-                       'called by all ranks.',
-                       dest='barrier_with_L1_time')
     parser.add_argument('--tokenizer-type', type=str,
-                       default=None,
+                       default='GPT2BPETokenizer',
                        choices=['BertWordPieceLowerCase',
                                 'BertWordPieceCase',
                                 'GPT2BPETokenizer',
@@ -193,16 +172,25 @@ def parse_args():
     parser.add_argument('--llama-model', action='store_true', help='Use LLaMA model.')
     parser.add_argument('--swiglu', action='store_true',
                        help='Use gated linear units and SiLU activation instead of default gelu')
-    parser.add_argument('--disable-bias-linear', action='store_false',
-                       help='Disable bias in the linear layers',
-                       dest='add_bias_linear')
+    parser.add_argument('--add-bias-linear', action='store_true',
+                       help='Enable bias in the linear layers')
     parser.add_argument('--normalization', default='LayerNorm',
                        choices=['LayerNorm', 'RMSNorm'],
                        help='Which normalization technique to use.',
                        dest='normalization')
     parser.add_argument('--layernorm-epsilon', type=float, default=1e-5,
                        help='Layer norm epsilon.')
-
+    parser.add_argument('--eval-iters', type=int, default=100,
+                    help='Number of iterations to run for evaluation'
+                    'validation/test for.')
+    parser.add_argument('--eval-interval', type=int, default=1000,
+                       help='Interval between running evaluation on '
+                       'validation set.')
+    parser.add_argument('--log-interval', type=int, default=100,
+                       help='Report loss and timing interval.')
+    parser.add_argument('--save-interval', type=int, default=None,
+                       help='Number of iterations between checkpoint saves.')
+    
     args = parser.parse_args()
 
     args.rank = int(os.getenv('RANK', '0'))
@@ -213,39 +201,39 @@ def parse_args():
     if args.swiglu:
         args.ffn_hidden_size = int((4 * args.hidden_size * 2 / 3) / 64) * 64
 
-    args.encoder_num_layers = args.num_layers
     args.kv_channels = args.hidden_size // args.num_attention_heads
-    args.group_query_attention = False
-    args.num_query_groups = 1
 
-    args.async_tensor_model_parallel_allreduce = True
-    args.gradient_accumulation_fusion = False
     args.perform_initialization = True
-    args.padded_vocab_size = 0 # tokenizer.py
-    args.model_type = 1
-    args.data_parallel_size = 1
-    args.sequence_parallel = False
-
+    args.apply_residual_connection_post_layernorm = False
     args.no_persist_layer_norm = False
-    args.apply_layernorm_1p = False
-    args.overlap_p2p_comm = False
-    args.init_method_xavier_uniform = False
 
-    args.add_bias_linear = False
-    args.DDP_impl = 'local'
-    args.accumulate_allreduce_grads_in_fp32 = False
-    args.use_contiguous_buffers_in_local_ddp = True
-    args.data_parallel_random_init = False
+    args.activation_func = F.gelu
+    args.add_bias_linear = True
+    args.gated_linear_unit = False
+    if args.swiglu:
+        args.activation_func = F.silu
+        args.gated_linear_unit = True
+        args.bias_gelu_fusion = False
+
+    init_method_std = 0.02
+    args.init_method = init_method_normal(init_method_std)
+    args.output_layer_init_method = scaled_init_method_normal(
+        init_method_std, args.num_layers)
+
     args.optimizer = 'adam'
     args.adam_beta1 = 0.9
     args.adam_beta2 = 0.999
     args.adam_eps = 1e-8
-    args.lr_warmup_init = 0.00001
-    args.start_weight_decay = 0.1
-    args.end_weight_decay = 0.1
+    args.weight_decay = 0.01
+    args.lr_warmup_init = 0.0
+    # args.min_lr = 0.0
+    # args.lr_decay_iters = args.train_iters
     args.weight_decay_incr_style ='constant'
+    args.start_weight_decay = args.weight_decay
+    args.end_weight_decay = args.weight_decay
     args.use_checkpoint_opt_param_scheduler = False
     args.override_opt_param_scheduler = False
+
     args.mmap_warmup = False
 
     args.num_workers = 1
@@ -257,7 +245,6 @@ def parse_args():
     args.train_samples = None
     args.consumed_train_samples = 0
     args.consumed_valid_samples = 0
-    
     args.decoder_seq_length = None
     args.reset_position_ids = False
     args.reset_attention_mask = False
@@ -265,14 +252,12 @@ def parse_args():
     args.empty_unused_memory_level = 1
     args.tokenizer_type = 'GPT2BPETokenizer'
 
-    args.rampup_batch_size = None
     # Parameters dtype.
+    args.accumulate_allreduce_grads_in_fp32 = False
     args.params_dtype = torch.float
     if args.fp16:
-        assert not args.bf16
         args.params_dtype = torch.half
     if args.bf16:
-        assert not args.fp16
         args.params_dtype = torch.bfloat16
         # bfloat16 requires gradient accumulation and all-reduce to
         # be done in fp32.
@@ -281,6 +266,15 @@ def parse_args():
             if args.rank == 0:
                 print('accumulate and all-reduce gradients in fp32 for '
                       'bfloat16 data type.', flush=True)
+
+    args.async_tensor_model_parallel_allreduce = True
+    args.gradient_accumulation_fusion = True
+    args.padded_vocab_size = 0 # tokenizer.py
+    args.model_type = 1
+    args.data_parallel_size = 1
+    args.DDP_impl = 'local'
+    args.use_contiguous_buffers_in_local_ddp = True
+    args.data_parallel_random_init = False
     return args
 
 
@@ -288,11 +282,6 @@ def parse_args():
 class TransformerConfig():
     """Configuration object for transformers.
     """
-
-    # Model parallelism
-    tensor_model_parallel_size: int = 1
-    pipeline_model_parallel_size: int = 1
-    virtual_pipeline_model_parallel_size: int = None
     sequence_parallel: bool = False
 
     # Initialization
@@ -306,146 +295,43 @@ class TransformerConfig():
     timers: Callable = None
 
     # Optimizations
-    gradient_accumulation_fusion: bool = False
-    async_tensor_model_parallel_allreduce: bool = False
+    gradient_accumulation_fusion: bool = True
+    async_tensor_model_parallel_allreduce: bool = True
 
     # model architecture
-    num_layers: int = 0
     hidden_size: int = 0
-    num_attention_heads: int = 0
-    num_query_groups: int = None
-
     ffn_hidden_size: int = None
     kv_channels: int = None
-    hidden_dropout: float = 0.1
-    attention_dropout: float = 0.1
-    fp32_residual_connection: bool = False
-    # @jcasper should we keep this option?
-    apply_residual_connection_post_layernorm: bool = False
-    layernorm_epsilon: float = 1e-5
-    layernorm_zero_centered_gamma: bool = False
-    add_bias_linear: bool = True
-    gated_linear_unit: bool = False
-    activation_func: Callable = F.gelu
 
     # initialization
     init_method: Callable = None
     output_layer_init_method: Callable = None
-    init_method_std: float = 0.02
-    scaled_init_method = torch.nn.init.xavier_uniform_
 
-    # mixed-precision
-    apply_query_key_layer_scaling: bool = True
-    attention_softmax_in_fp32: bool = True
-
-    # Pipeline Parallel
-    pipeline_dtype: torch.dtype = None
-    grad_scale_func: Callable = None
     enable_autocast: bool = False
-    autocast_dtype: torch.dtype = None
-    variable_seq_lengths: bool = False
-    # num_microbatches_with_partial_activation_checkpoints: Optional[int] = None
-    overlap_p2p_comm: bool = False
-    batch_p2p_comm: bool = True
-    batch_p2p_sync: bool = True
-    use_ring_exchange_p2p: bool = False
+    # autocast_dtype: torch.dtype = None
     deallocate_pipeline_outputs: bool = False
     no_sync_func: Callable = None
-    grad_sync_func: Callable = None
-    param_sync_func: Callable = None
-    # communication
-
-    # fusion
-    bias_gelu_fusion: bool = False  # TODO: this should be bias_activation_fusion ?
-    masked_softmax_fusion: bool = False
-    persist_layer_norm: bool = False
-    bias_dropout_fusion: bool = False  # TODO: this should be bias_dropout_add_fusion?
-
-    # experimental section (TODO: move to apt. section above once stable)
-    normalization: bool = "LayerNorm"  # alt value supported by TE: "RMSNorm"
+    # grad_sync_func: Callable = None
+    # param_sync_func: Callable = None
 
     def __post_init__(self):
-        """ Python dataclass method that is used to modify attributes after initialization.
-            See https://docs.python.org/3/library/dataclasses.html#post-init-processing for more details.
-        """
-        if self.fp16 and self.bf16:
-            raise ValueError(
-                f'Only one of self.fp16: {self.fp16} and self.bf16 {self.bf16} should be True.'
-            )
-
-        if self.num_attention_heads % self.tensor_model_parallel_size != 0:
-            raise ValueError(
-                f"num_attention_heads ({self.num_attention_heads}) must be a multiple of "
-                f"tensor_model_parallel_size ({self.tensor_model_parallel_size})."
-            )
-
         if self.ffn_hidden_size is None:
             self.ffn_hidden_size = 4 * self.hidden_size
 
         if self.kv_channels is None:
             self.kv_channels = self.hidden_size // self.num_attention_heads
 
-        if self.num_query_groups is None:
-            self.num_query_groups = self.num_attention_heads
-
-        if self.num_query_groups % self.tensor_model_parallel_size != 0:
-            raise ValueError(
-                f"num_query_groups ({self.num_query_groups}) must be a multiple of "
-                f"tensor_model_parallel_size ({self.tensor_model_parallel_size})."
-            )
-
-        if self.apply_query_key_layer_scaling:
-            self.attention_softmax_in_fp32 = True
-
-        if self.apply_query_key_layer_scaling:
-            self.attention_softmax_in_fp32 = True
-
-        if self.bias_gelu_fusion:
-            if not self.add_bias_linear:
-                raise ValueError(
-                    "When bias_gelu_fusion is True, add_bias_linear must also be True."
-                )
-
-            if self.activation_func != F.gelu:
-                raise ValueError(f'When bias_gelu_fusion is True, activation_func must be F.gelu.')
-
-        # if self.init_method is None:
-        #     self.init_method = init_method_normal(self.init_method_std)
-
-        # if self.output_layer_init_method is None:
-        #     self.output_layer_init_method = scaled_init_method_normal(
-        #         self.init_method_std, self.num_layers
-        #     )
-
-
 
 def core_transformer_config_from_args(args):
-
     # Translate args to core transformer configuration
     kw_args = {}
     for f in dataclasses.fields(TransformerConfig):
         if hasattr(args, f.name):
             kw_args[f.name] = getattr(args, f.name)
-    kw_args['persist_layer_norm'] = not args.no_persist_layer_norm
-    kw_args['layernorm_zero_centered_gamma'] = args.apply_layernorm_1p
-    # kw_args['deallocate_pipeline_outputs'] = True
-    # kw_args['pipeline_dtype'] = args.params_dtype
-    # kw_args['batch_p2p_comm'] = not args.overlap_p2p_comm
-    if args.swiglu:
-        kw_args['activation_func'] = F.silu
-        kw_args['gated_linear_unit'] = True
-        kw_args['bias_gelu_fusion'] = False
-    # if args.init_method_xavier_uniform:
-    kw_args['init_method'] = torch.nn.init.xavier_uniform_
-    kw_args['output_layer_init_method'] = torch.nn.init.xavier_uniform_
-    # kw_args['scaled_init_method'] = torch.nn.init.xavier_uniform_
-
-    # init_method: Callable = None
-    # output_layer_init_method: Callable = None
-    # init_method_std: float = 0.02
-    if args.group_query_attention:
-        kw_args['num_query_groups'] = args.num_query_groups
-    else:
-        kw_args['num_query_groups'] = None
+ 
+    kw_args['hidden_size'] = args.hidden_size
+    kw_args['init_method'] = args.init_method
+    kw_args['output_layer_init_method'] = args.init_method
+    kw_args['params_dtype'] = args.params_dtype
 
     return TransformerConfig(**kw_args)

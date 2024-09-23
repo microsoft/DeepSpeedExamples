@@ -1,3 +1,5 @@
+# Copyright (c) 2022, NVIDIA CORPORATION.  All rights reserved.
+
 from apex.optimizers import FusedAdam as Adam
 
 from domino.arguments import get_args 

@@ -1,3 +1,4 @@
+# Copyright (c) 2022, NVIDIA CORPORATION.  All rights reserved.
 # Copied and modified from Megatron-LM
 
 from datetime import datetime
@@ -89,6 +90,8 @@ def pretrain(base_model, train_ds, valid_ds, test_ds):
               model, optimizer, opt_param_scheduler,
               train_data_iterator, valid_data_iterator, config)
 
+    args.do_valid = False
+    args.do_test = False
     if args.do_valid:
         total_loss_dict = evaluate(forward_step, valid_data_iterator, model, config, True)
         print_rank_0(total_loss_dict)

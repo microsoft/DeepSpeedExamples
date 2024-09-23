@@ -1,13 +1,14 @@
+# Copyright (c) 2022, NVIDIA CORPORATION.  All rights reserved.
+
 import torch
 from torch import einsum, nn
 from domino.arguments import get_args
 from domino.modules.enums import ModelType
 import domino.parallel_state as mpu
 from domino.modules.module import DominoModule
+from domino.transformer import DominoTransformer
 from domino.tensor_parallel.comm import GatherFromModelParallelRegion
 from domino.tensor_parallel.partition  import VocabParallelEmbedding, linear_with_grad_accumulation_and_async_allreduce
-
-from deepspeed.runtime.domino.transformer import ParallelTransformer
 
 
 def parallel_lm_logits(input_, word_embeddings_weight, parallel_output,
@@ -142,7 +143,7 @@ class TransformerLanguageModel(DominoModule):
                 seq_len_interpolation_factor=args.rotary_seq_len_interpolation_factor
             )
 
-        self.encoder = ParallelTransformer(
+        self.encoder = DominoTransformer(
             config,
             model_type=ModelType.encoder_or_decoder,
             self_attn_mask_type=self.encoder_attn_mask_type,
@@ -151,7 +152,8 @@ class TransformerLanguageModel(DominoModule):
         )
 
     def set_input_tensor(self, input_tensor):
-        self.encoder.set_input_tensor(input_tensor[0])
+        pass
+        # self.encoder.set_input_tensor(input_tensor[0])
 
     def forward(self, enc_input_ids, enc_position_ids, enc_attn_mask,
                 inference_params=None):
@@ -178,7 +180,7 @@ class TransformerLanguageModel(DominoModule):
         encoder_outputs = self.encoder(
             encoder_inputs,
             enc_attn_mask,
-            inference_params=inference_params,
+            # inference_params=inference_params,
             rotary_pos_emb=rotary_pos_emb)
         encoder_output_t[:, 0:p_batch_size, :] = encoder_outputs[0]
         encoder_output_t[:, p_batch_size:2*p_batch_size, :] = encoder_outputs[1]
