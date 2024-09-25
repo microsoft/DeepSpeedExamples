@@ -5,7 +5,6 @@ import numbers
 import torch
 from torch.nn.parameter import Parameter
 from torch.nn import init
-import importlib
 from domino.utils import make_viewless_tensor
 
 try:

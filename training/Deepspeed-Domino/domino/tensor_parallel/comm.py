@@ -1,5 +1,5 @@
 # Copyright (c) 2022, NVIDIA CORPORATION.  All rights reserved.
-# Copied and modified from Megatron-LM
+# This file is adapted from comm.py in Megatron-LM
 
 import torch
 
@@ -19,6 +19,7 @@ def reduce_tensor(tensor):
     torch.distributed.all_reduce(tensor, group=get_tensor_model_parallel_group())
     return tensor
 
+
 def split_tensor_last_dim(tensor):
     world_size = get_tensor_model_parallel_world_size()
     if world_size == 1:
@@ -27,6 +28,7 @@ def split_tensor_last_dim(tensor):
     tensor_splits = split_tensor_along_last_dim(tensor, world_size)
     rank = get_tensor_model_parallel_rank()
     return tensor_splits[rank].contiguous()
+
 
 def gather_tensor_last_dim(tensor):
     world_size = get_tensor_model_parallel_world_size()
@@ -39,6 +41,7 @@ def gather_tensor_last_dim(tensor):
     gathered_tensors[rank] = tensor
     torch.distributed.all_gather(gathered_tensors, tensor, group=get_tensor_model_parallel_group())
     return torch.cat(gathered_tensors, dim=last_dim).contiguous()
+
 
 class CopyToModelParallelRegion(torch.autograd.Function):
     @staticmethod

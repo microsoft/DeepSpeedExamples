@@ -1,6 +1,5 @@
-# Copyright (c) 2022, NVIDIA CORPORATION. All rights reserved.
-
-"""Learning rate decay and weight decay incr functions."""
+# Copyright (c) 2022, NVIDIA CORPORATION.  All rights reserved.
+# Copied and modified from Megatron-LM
 
 import math
 from domino.utils import print_rank_0

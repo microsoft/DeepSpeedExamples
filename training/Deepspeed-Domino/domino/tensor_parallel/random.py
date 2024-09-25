@@ -1,6 +1,5 @@
 # Copyright (c) 2022, NVIDIA CORPORATION.  All rights reserved.
-'''Copied and modified from Megatron-LM
-Parts of the code here are adapted from PyTorch repo: https://github.com/pytorch/pytorch '''
+# This file is adapted from random.py in Megatron-LM
 
 import contextlib
 
@@ -10,13 +9,7 @@ from torch.cuda import _lazy_call
 from torch.cuda import device as device_ctx_manager
 from torch.utils.checkpoint import detach_variable
 
-from domino.parallel_state import (
-    get_data_parallel_rank,
-    get_tensor_model_parallel_group,
-    get_tensor_model_parallel_rank,
-    get_tensor_model_parallel_world_size,
-)
-
+from domino.parallel_state import get_tensor_model_parallel_rank
 from domino.utils import safely_set_viewless_tensor_data
 from .utils import gather_split_1d_tensor, split_tensor_into_1d_equal_chunks
 

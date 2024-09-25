@@ -1,6 +1,8 @@
+# Copyright (c) 2022, NVIDIA CORPORATION.  All rights reserved.
+# This file is adapted from pretrain_base.py in Megatron-LM
+
 from functools import partial
 import torch
-
 from domino.arguments import get_args
 from domino.arguments import get_tokenizer
 from domino.utils import get_ltor_masks_and_position_ids

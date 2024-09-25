@@ -1,4 +1,5 @@
 # Copyright (c) 2022, NVIDIA CORPORATION.  All rights reserved.
+# This file is adapted from language_model.py in Megatron-LM
 
 import torch
 from torch import einsum, nn
@@ -165,10 +166,7 @@ class TransformerLanguageModel(DominoModule):
 
         rotary_pos_emb = None
         if self.use_rotary_position_embeddings:
-            if inference_params is not None:
-                rotary_pos_emb = self.rotary_pos_emb(inference_params.max_sequence_length)
-            else:
-                rotary_pos_emb = self.rotary_pos_emb(self.seq_length)
+            rotary_pos_emb = self.rotary_pos_emb(self.seq_length)
         rotary_pos_emb = ((rotary_pos_emb,) * 2)
 
         encoder_out_size = encoder_input.shape
@@ -180,7 +178,6 @@ class TransformerLanguageModel(DominoModule):
         encoder_outputs = self.encoder(
             encoder_inputs,
             enc_attn_mask,
-            # inference_params=inference_params,
             rotary_pos_emb=rotary_pos_emb)
         encoder_output_t[:, 0:p_batch_size, :] = encoder_outputs[0]
         encoder_output_t[:, p_batch_size:2*p_batch_size, :] = encoder_outputs[1]

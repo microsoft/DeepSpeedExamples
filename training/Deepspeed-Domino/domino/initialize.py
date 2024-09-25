@@ -1,4 +1,5 @@
 # Copyright (c) 2022, NVIDIA CORPORATION.  All rights reserved.
+# This file is adapted from initialize.py in Megatron-LM
 
 import random
 import os

@@ -1,17 +1,13 @@
-# Copied and modified from Megatron-LM
+# Copyright (c) 2022, NVIDIA CORPORATION.  All rights reserved.
 
 import sys
-
 import torch
 from torch.nn.parallel import DistributedDataParallel as torchDDP
-
 from apex.multi_tensor_apply import multi_tensor_applier
 import amp_C
-
 from domino.arguments import get_args
 import domino.parallel_state as mpu
 from domino.tensor_parallel.partition import param_is_not_tensor_parallel_duplicate
-from domino.modules.utils import param_is_not_shared
 
 
 def unwrap_model(model, module_instances=(torchDDP)):
@@ -60,6 +56,10 @@ def get_model_config(model):
     return get_attr_wrapped_model(model, 'config', allow_none=False)
 
 
+def param_is_not_shared(param):
+    return not hasattr(param, 'shared') or not param.shared
+
+
 def calc_params_l2_norm(model):
     """Calculate l2 norm of parameters """
     args = get_args()
@@ -90,43 +90,6 @@ def calc_params_l2_norm(model):
                                  op=torch.distributed.ReduceOp.SUM,
                                  group=mpu.get_model_parallel_group())
     return norm_2.item() ** 0.5
-
-
-# def report_memory(name):
-#     """Simple GPU memory report."""
-#     mega_bytes = 1024.0 * 1024.0
-#     string = name + ' memory (MB)'
-#     string += ' | allocated: {}'.format(
-#         torch.cuda.memory_allocated() / mega_bytes)
-#     string += ' | max allocated: {}'.format(
-#         torch.cuda.max_memory_allocated() / mega_bytes)
-#     string += ' | reserved: {}'.format(
-#         torch.cuda.memory_reserved() / mega_bytes)
-#     string += ' | max reserved: {}'.format(
-#         torch.cuda.max_memory_reserved() / mega_bytes)
-#     if mpu.get_data_parallel_rank() == 0:
-#         print("[Rank {}] {}".format(torch.distributed.get_rank(), string),
-#               flush=True)
-
-
-# def check_adlr_autoresume_termination(iteration, model,
-#                                       optimizer, opt_param_scheduler):
-#     pass
-#     """Check for autoresume signal and exit if it is received."""
-#     from megatron.checkpointing import save_checkpoint
-
-#     args = get_args()
-#     autoresume = get_adlr_autoresume()
-#     # Add barrier to ensure consistnecy.
-#     torch.distributed.barrier()
-#     if autoresume.termination_requested():
-#         if args.save:
-#             save_checkpoint(iteration, model, optimizer, opt_param_scheduler)
-#         print_rank_0(">>> autoresume termination request found!")
-#         if torch.distributed.get_rank() == 0:
-#             autoresume.request_resume()
-#         print_rank_0(">>> training terminated. Returning")
-#         sys.exit(0)
 
 
 def print_rank_0(message):

@@ -1,9 +1,8 @@
 # Copyright (c) 2022, NVIDIA CORPORATION.  All rights reserved.
-# Copied and modified from Megatron-LM
+# This file is adapted from schedules.py in Megatron-LM
 
 import contextlib
-from typing import Callable, Iterator, List, Optional, Union
-
+from typing import Iterator, List, Union
 import torch
 from torch.autograd.variable import Variable
 from torch.nn.parallel.distributed import DistributedDataParallel as torchDDP
@@ -12,92 +11,10 @@ from domino.modules.enums import ModelType
 from domino.utils import get_attr_wrapped_model, get_model_config, get_model_type
 from domino.utils import average_losses_across_data_parallel_group
 
-from megatron import core
 from megatron.core.pipeline_parallel import p2p_communication
-
-def is_rank_0():
-    # if torch.cuda.current_device() == 0:
-    if torch.distributed.get_rank() == 0:
-        return True
-
-# Types
-Shape = Union[List[int], torch.Size]
 
 
 def get_forward_backward_func():
-    """Retrieves the appropriate forward_backward function given the
-    configuration of parallel_state.
-
-    Returns a function that will perform all of the forward and
-    backward passes of the model given the pipeline model parallel
-    world size and virtual pipeline model parallel world size in the
-    global parallel_state.
-
-    Note that if using sequence parallelism, the sequence length component of
-    the tensor shape is updated to original_sequence_length /
-    tensor_model_parallel_world_size.
-
-    The function returned takes the following arguments:
-
-    forward_step_func (required): A function that takes a data
-        iterator and a model as its arguments and return the model's
-        forward output and the loss function. The loss function should
-        take one torch.Tensor and return a torch.Tensor of loss and a
-        dictionary of string -> torch.Tensor.
-
-        A third argument, checkpoint_activations_microbatch, indicates
-        that the activations for this microbatch should be
-        checkpointed. A None value for this argument indicates that
-        the default from the configuration should be used. This is
-        used when the
-        num_microbatches_with_partial_activation_checkpoints is used.
-
-        For example:
-
-        def loss_func(loss_mask, output_tensor):
-            losses = output_tensor.float()
-            loss_mask = loss_mask.view(-1).float()
-            loss = torch.sum(losses.view(-1) * loss_mask) / loss_mask.sum()
-
-            # Reduce loss for logging.
-            averaged_loss = average_losses_across_data_parallel_group([loss])
-
-            return loss, {'lm loss': averaged_loss[0]}
-
-        def forward_step(data_iterator, model):
-            data, loss_mask = next(data_iterator)
-            output = model(data)
-            return output, partial(loss_func, loss_mask)
-
-
-        forward_backward_func(forward_step_func=forward_step, ...)
-
-
-    data_iterator (required): an iterator over the data, will be
-        passed as is to forward_step_func. Expected to be a list of
-        iterators in the case of interleaved pipeline parallelism.
-
-    model (required): the actual model. Expected to be a list of modules in the case of interleaved
-        pipeline parallelism. Must be a (potentially wrapped) megatron.core.models.MegatronModule.
-
-    num_microbatches (int, required):
-        The number of microbatches to go through
-
-    seq_length (int, required): Sequence length of the current global batch. If this is a dual-stack
-        transformer, this is the encoder's sequence length. This is ignored if variable_seq_lengths
-        in the config is True. Otherwise, each microbatch in the current global batch size must use
-        this sequence length.
-
-    micro_batch_size (int, required): The number of sequences in a microbatch.
-
-    decoder_seq_length (int, optional): The sequence length for the decoder in a dual-stack
-        transformer. This is ignored for a single-stack transformer.
-
-    forward_only (optional, default = False): Perform only the forward step
-
-    collect_non_loss_data (optional, bool, default=False): TODO
-
-    """
     forward_backward_func = forward_backward_no_pipelining
     return forward_backward_func
 
@@ -189,15 +106,6 @@ def forward_step(
     if config.timers is not None:
         config.timers('forward-compute').stop()
 
-    # If T5 model (or other model with encoder and decoder)
-    # and in decoder stack, then send encoder_hidden_state
-    # downstream as well.
-    # model_type = get_model_type(model)
-    # if (
-    #     parallel_state.is_pipeline_stage_after_split()
-    #     and model_type == ModelType.encoder_and_decoder
-    # ):
-    #     return [output_tensor, input_tensor[-1]]
     if unwrap_output_tensor:
         return output_tensor
     return [output_tensor]
@@ -340,17 +248,9 @@ def forward_backward_no_pipelining(
         collect_non_loss_data,
     )
 
-    start = torch.cuda.Event(enable_timing=True)
-    end = torch.cuda.Event(enable_timing=True)
-    start.record()
     if not forward_only:
         backward_step(input_tensor, output_tensor, output_tensor_grad, model_type, config)
-    end.record()
-    torch.cuda.synchronize()
 
-    if is_rank_0():
-        print('backward time: ')
-        print(start.elapsed_time(end))
     return forward_data_store
 
 
@@ -365,12 +265,7 @@ def get_tensor_shapes(
 ):
     # Determine right tensor sizes (based on position of rank with respect to split
     # rank) and model size.
-    # Send two tensors if model is T5 and rank is in decoder stage:
-    #     first tensor is decoder (pre-transpose),
-    #     second tensor is encoder (post-transpose).
-    # If model is T5 and rank is at the boundary:
-    #     send one tensor (post-transpose from encoder).
-    # Otherwise, send one tensor (pre-transpose).
+
     tensor_shapes = []
 
     if config.sequence_parallel:

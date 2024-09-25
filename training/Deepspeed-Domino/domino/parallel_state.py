@@ -1,8 +1,10 @@
-import os
+# Copyright (c) 2022, NVIDIA CORPORATION.  All rights reserved.
+# This file is adapted from parallel_state.py in Megatron-LM
+
 import operator
 from functools import reduce
-from typing import Optional
 import torch
+
 
 class GlobalMemoryBuffer:
     """Global buffer to avoid dynamic memory allocations.
@@ -29,7 +31,6 @@ _TENSOR_MODEL_PARALLEL_GROUP = None
 _PIPELINE_MODEL_PARALLEL_GROUP = None
 _MODEL_PARALLEL_GROUP = None
 _DATA_PARALLEL_GROUP = None
-_DATA_PARALLEL_GROUP_GLOO = None
 
 _MPU_TENSOR_MODEL_PARALLEL_WORLD_SIZE = None
 _MPU_PIPELINE_MODEL_PARALLEL_WORLD_SIZE = None
@@ -257,59 +258,3 @@ def destroy_model_parallel():
     _MPU_PIPELINE_MODEL_PARALLEL_RANK = None
     global _GLOBAL_MEMORY_BUFFER
     _GLOBAL_MEMORY_BUFFER = None
-
-
-
-
-
-# _TENSOR_MODEL_PARALLEL_GROUP = None
-# _MODEL_PARALLEL_GROUP = None
-# _DATA_PARALLEL_GROUP = None
-
-# _MPU_TENSOR_MODEL_PARALLEL_WORLD_SIZE = None
-# _MPU_TENSOR_MODEL_PARALLEL_RANK = None
-# from deepspeed.utils.groups import _create_model_parallel
-# def initialize_model_parallel(tensor_model_parallel_size):
-#     global _DATA_PARALLEL_GROUP
-#     global _TENSOR_MODEL_PARALLEL_GROUP
-#     _DATA_PARALLEL_GROUP, _TENSOR_MODEL_PARALLEL_GROUP = _create_model_parallel(tensor_model_parallel_size)
-
-#     world_size: int = torch.distributed.get_world_size()
-#     data_parallel_size: int = world_size // tensor_model_parallel_size
-#     pipeline_model_parallel_size = 1
-#     num_pipeline_model_parallel_groups: int = world_size // pipeline_model_parallel_size
-
-#     all_data_parallel_group_ranks = []
-#     for i in range(pipeline_model_parallel_size):
-#         start_rank = i * num_pipeline_model_parallel_groups
-#         end_rank = (i + 1) * num_pipeline_model_parallel_groups
-#         for j in range(tensor_model_parallel_size):
-#             ranks = range(start_rank + j, end_rank, tensor_model_parallel_size)
-#             all_data_parallel_group_ranks.append(list(ranks))
-
-#     rank = torch.distributed.get_rank()
-#     global _MODEL_PARALLEL_GROUP
-#     assert _MODEL_PARALLEL_GROUP is None, 'model parallel group is already initialized'
-#     for i in range(data_parallel_size):
-#         ranks = [
-#             data_parallel_group_ranks[i]
-#             for data_parallel_group_ranks in all_data_parallel_group_ranks
-#         ]
-#         group = torch.distributed.new_group(ranks)
-#         if rank in ranks:
-#             _MODEL_PARALLEL_GROUP = group
-
-
-# def get_tensor_model_parallel_group(check_initialized=True):
-#     """Get the tensor model parallel group the caller rank belongs to."""
-#     if check_initialized:
-#         assert (
-#             _TENSOR_MODEL_PARALLEL_GROUP is not None
-#         ), 'tensor model parallel group is not initialized'
-#     return _TENSOR_MODEL_PARALLEL_GROUP
-
-
-# def get_model_parallel_group():
-#     """Get the model parallel group the caller rank belongs to."""
-#     assert _MODEL_PARALLEL_GROUP is not None, 'model parallel group is not initialized'
-#     return _MODEL_PARALLEL_GROUP

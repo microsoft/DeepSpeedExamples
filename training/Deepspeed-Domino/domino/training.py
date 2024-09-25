@@ -1,11 +1,9 @@
 # Copyright (c) 2022, NVIDIA CORPORATION.  All rights reserved.
-# Copied and modified from Megatron-LM
+# This file is adapted from training.py in Megatron-LM
 
 from datetime import datetime
-
 import torch
-
-from domino.arguments import get_args, get_num_microbatches
+from domino.arguments import get_args, get_tokenizer, get_num_microbatches
 from domino.utils import print_rank_0
 import domino.parallel_state as mpu
 from domino.tensor_parallel.partition import set_defaults_if_not_set_tensor_model_parallel_attributes
@@ -15,11 +13,10 @@ from domino.utils import get_model_config
 from domino.data.data_samplers import build_pretraining_data_loader
 from domino.modules.distributed import DistributedDataParallel as LocalDDP
 from domino.modules.module import Float16Module
-from domino.optimizer import get_domino_optimizer
+from domino.optimizer import get_megatron_optimizer as get_domino_optimizer
+
 from domino.optimizer_param_scheduler import OptimizerParamScheduler
 from domino.initialize import set_jit_fusion_options
-from domino.arguments import get_args
-from domino.arguments import get_tokenizer
 from domino.utils import get_ltor_masks_and_position_ids
 from domino.tensor_parallel.data import broadcast_data
 
@@ -28,10 +25,12 @@ def is_rank_0():
     if torch.distributed.get_rank() == 0:
         return True
 
+
 def forward_step(data_iterator, model):
     input_tokens, target_labels, loss_mask, attention_mask, position_ids = prepare_batch(data_iterator)
     model_output = model(input_tokens, position_ids, attention_mask, labels=target_labels)
     return model_output, lambda output: compute_loss(loss_mask, output)
+
 
 def prepare_batch(data_iterator):
     args = get_args()
@@ -60,21 +59,20 @@ def prepare_batch(data_iterator):
 
     return input_tokens, target_labels, loss_mask, attention_mask, position_ids
 
+
 def compute_loss(loss_mask, model_output):
     flattened_output = model_output.view(-1).float()
     flattened_loss_mask = loss_mask.view(-1).float()
     loss = torch.sum(flattened_output * flattened_loss_mask) / flattened_loss_mask.sum()
     return loss
 
-def pretrain(base_model, train_ds, valid_ds, test_ds):
 
+def pretrain(base_model, train_ds, valid_ds, test_ds):
     args = get_args()
 
     # Model, optimizer, and learning rate.
-    # model length is 1
     model, optimizer, opt_param_scheduler = setup_model_and_optimizer(
         base_model, ModelType.encoder_or_decoder)
-    #                'scheduler are built')
     config = get_model_config(model)
 
     # Do not use virtual pipeline parallelism for data parallel
@@ -82,7 +80,6 @@ def pretrain(base_model, train_ds, valid_ds, test_ds):
         = get_dataset_iterator(train_ds, valid_ds, test_ds)
 
     # Train and eval.
-    # if not args.skip_train:
     print_rank_0('training ...')
 
     if args.do_train and args.train_iters > 0:
@@ -101,13 +98,6 @@ def pretrain(base_model, train_ds, valid_ds, test_ds):
         print_rank_0(total_loss_dict)
 
 
-def print_datetime(string):
-    """Note that this call will sync across all ranks."""
-    torch.distributed.barrier()
-    time_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    print_rank_0('[' + string + '] datetime: {} '.format(time_str))
-
-
 def setup_model_and_optimizer(base_model,
                               model_type,
                               no_wd_decay_cond=None,
@@ -116,7 +106,6 @@ def setup_model_and_optimizer(base_model,
     args = get_args()
 
     model = get_model(base_model, model_type)
-    # Remove unwrap model
 
     if isinstance(model, list):
         models = model
@@ -139,19 +128,8 @@ def get_model(base_model, model_type=ModelType.encoder_or_decoder, wrap_with_ddp
     model = base_model 
     model.model_type = model_type
 
-    # Disallow training and inference with Transformer Engine
-    # # for non-GPT models
-    # args.allow_transformer_engine = True
-    # assert args.allow_transformer_engine or args.transformer_impl == 'local', \
-    #     'Transformer Engine is only approved for GPT models'
-
-    # Set tensor model parallel attributes if not set.
-    # Only parameters that are already tensor model parallel have these
-    # attributes set for them. We should make sure the default attributes
-    # are set for all params so the optimizer can use them.
     for param in model.parameters():
-        set_defaults_if_not_set_tensor_model_parallel_attributes(
-            param)
+        set_defaults_if_not_set_tensor_model_parallel_attributes(param)
 
     # Print number of parameters.
     if mpu.get_data_parallel_rank() == 0:
@@ -190,7 +168,6 @@ def get_optimizer_param_scheduler(optimizer):
     # Iteration-based training.
     # Remove sample-based training.
     if args.train_iters:
-        print("train_iters: ", args.train_iters)
         if args.lr_decay_iters is None:
             args.lr_decay_iters = args.train_iters
         lr_decay_steps = args.lr_decay_iters * args.global_batch_size
@@ -223,7 +200,6 @@ def get_optimizer_param_scheduler(optimizer):
 
 def get_dataset_iterator(train_ds, valid_ds, test_ds):
     """Build pretraining data iterators."""
-
     args = get_args()
 
     # Build loaders.
@@ -254,7 +230,6 @@ def get_dataset_iterator(train_ds, valid_ds, test_ds):
 
 def get_data_loader(train_ds, valid_ds, test_ds):
     """Build pretraining data loaders."""
-
     args = get_args()
 
     (train_dataloader, valid_dataloader, test_dataloader) = (None, None, None)
@@ -276,9 +251,6 @@ def get_data_loader(train_ds, valid_ds, test_ds):
         # Build dataloders.
         train_dataloader = build_pretraining_data_loader(
             train_ds, args.consumed_train_samples)
-        # if args.skip_train:
-        #     valid_dataloader = build_pretraining_data_loader(valid_ds, 0)
-        # else:
         valid_dataloader = build_pretraining_data_loader(
             valid_ds, args.consumed_valid_samples)
         test_dataloader = build_pretraining_data_loader(test_ds, 0)
@@ -304,7 +276,6 @@ def get_data_loader(train_ds, valid_ds, test_ds):
     return train_dataloader, valid_dataloader, test_dataloader
 
 
-
 def train(forward_step_func, model, optimizer, opt_param_scheduler,
           train_data_iterator, valid_data_iterator, config):
     """Train the model function."""
@@ -317,37 +288,35 @@ def train(forward_step_func, model, optimizer, opt_param_scheduler,
 
     # Setup some training config params
     config.grad_scale_func = lambda loss: loss * optimizer.scale_factor
-    # config.timers = timers
+    config.timers = None
 
-    if True:
-        while iteration < args.train_iters:
-            # update_num_microbatches(args.consumed_train_samples)
-            args.curr_iteration = iteration
-            loss_dict, skipped_iter, grad_norm, num_zeros_in_grad = \
-                train_step(forward_step_func,
-                           train_data_iterator,
-                           model,
-                           optimizer,
-                           opt_param_scheduler,
-                           config)
-            iteration += 1
-            # prof.step()
-            args.consumed_train_samples += mpu.get_data_parallel_world_size() * \
-                args.micro_batch_size * get_num_microbatches()
+    start = torch.cuda.Event(enable_timing=True)
+    end = torch.cuda.Event(enable_timing=True)
+    while iteration < args.train_iters:
+        start.record()
+        args.curr_iteration = iteration
+        loss_dict, skipped_iter, grad_norm, num_zeros_in_grad = \
+            train_step(forward_step_func,
+                        train_data_iterator,
+                        model,
+                        optimizer,
+                        opt_param_scheduler,
+                        config)
+        end.record()
 
-            # Logging.
-            loss_scale = optimizer.cur_scale
-            print_rank_0('loss scale: {:.1f} |'.format(loss_scale))
-            print_rank_0(loss_dict)
+        if iteration % args.log_interval == 0 and is_rank_0():
+            torch.cuda.synchronize()
+            ite_time = start.elapsed_time(end)
+            loss = loss_dict['lm loss'].item()
+            print( 'iteration: {} | loss: {:.3f} | iteration time (ms): {} '.format(iteration, loss, ite_time))
+            # loss_scale = optimizer.cur_scale
+            # print( 'loss: {} loss scale: {:.1f} |'.format(loss_scale))
 
+        iteration += 1
+        args.consumed_train_samples += mpu.get_data_parallel_world_size() * \
+            args.micro_batch_size * get_num_microbatches()
 
     return iteration
-
-
-def is_rank_0():
-    # if torch.cuda.current_device() == 0:
-    if torch.distributed.get_rank() == 0:
-        return True
 
 
 def train_step(forward_step_func, data_iterator,
@@ -359,7 +328,6 @@ def train_step(forward_step_func, data_iterator,
     if args.DDP_impl == 'local' and args.use_contiguous_buffers_in_local_ddp:
         model.zero_grad_buffer()
     optimizer.zero_grad()
-
     # print("optimizer lr ", optimizer.optimizer.param_groups[0]['lr'])
 
     forward_backward_func = get_forward_backward_func()
@@ -414,6 +382,7 @@ def train_step(forward_step_func, data_iterator,
         return loss_reduced, skipped_iter, grad_norm, num_zeros_in_grad
     return {}, skipped_iter, grad_norm, num_zeros_in_grad
 
+
 def evaluate(forward_step_func,
              data_iterator,
              model,
@@ -454,7 +423,6 @@ def evaluate(forward_step_func,
                 micro_batch_size=args.micro_batch_size,
                 decoder_seq_length=args.decoder_seq_length,
                 forward_only=True)
-            # config.timers = get_timers()
 
             # Empty unused memory
             if args.empty_unused_memory_level >= 1:

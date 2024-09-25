@@ -1,5 +1,6 @@
 # Copyright (c) 2022, NVIDIA CORPORATION.  All rights reserved.
-# Copied and modified from Megatron-LM
+# This file is adapted from utils.py in Megatron-LM
+
 
 from typing import List, Sequence
 import torch

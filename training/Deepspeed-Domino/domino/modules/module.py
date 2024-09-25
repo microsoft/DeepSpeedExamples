@@ -1,5 +1,5 @@
 # Copyright (c) 2022, NVIDIA CORPORATION.  All rights reserved.
-# Copied and modified from Megatron-LM
+# This file is adapted from module.py in Megatron-LM
 
 import torch
 from torch.autograd import Variable
@@ -11,6 +11,10 @@ import domino.parallel_state as mpu
 _FLOAT_TYPES = (torch.FloatTensor, torch.cuda.FloatTensor)
 _HALF_TYPES = (torch.HalfTensor, torch.cuda.HalfTensor)
 _BF16_TYPES = (torch.BFloat16Tensor, torch.cuda.BFloat16Tensor)
+
+
+def param_is_not_shared(param):
+    return not hasattr(param, 'shared') or not param.shared
 
 
 class DominoModule(torch.nn.Module):
@@ -76,10 +80,8 @@ class Float16Module(torch.nn.Module):
         super(Float16Module, self).__init__()
         self.add_module('module', module.half())
 
-
     def set_input_tensor(self, input_tensor):
         return self.module.set_input_tensor(input_tensor)
-
 
     def forward(self, *inputs, **kwargs):
         if mpu.is_pipeline_first_stage():

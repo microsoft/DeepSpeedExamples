@@ -1,10 +1,10 @@
+# Copyright (c) 2022, NVIDIA CORPORATION.  All rights reserved.
+# This file is adapted from pretrain_gpt.py in Megatron-LM
+
 import time
-
 import torch
-
 from domino.utils import print_rank_0
-from domino.initialize import initialize_domino
-from domino.initialize import set_jit_fusion_options
+from domino.initialize import initialize_domino, set_jit_fusion_options
 from domino.arguments import get_args, core_transformer_config_from_args
 from domino.data.gpt_dataset import build_train_valid_test_datasets
 from domino.training import pretrain
@@ -15,7 +15,6 @@ from domino.language_model import get_language_model
 from domino.tensor_parallel.cross_entropy import vocab_parallel_cross_entropy
 
 
-# The earliest we can measure the start time.
 _TRAIN_START_TIME = time.time()
 
 def post_language_model_processing(lm_output, labels, logit_weights, parallel_output):
@@ -137,12 +136,4 @@ def main():
 
 
 if __name__ == "__main__":
-    # try:
-    #     import debugpy
-    #     debugpy.listen(9501)
-    #     print("Waiting for debugger attach")
-    #     debugpy.wait_for_client()
-    # except Exception as e:
-    #     print(e)
-
     main()

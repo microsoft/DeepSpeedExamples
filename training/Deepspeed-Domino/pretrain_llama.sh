@@ -1,3 +1,6 @@
+# Copyright (c) 2022, NVIDIA CORPORATION.  All rights reserved.
+# This file is adapted from pretrain_llama.sh in Megatron-LM
+
 #!/bin/bash
 
 export PYTHONPATH=/workspace/domino/Megatron-LM/$PYTHONPATH

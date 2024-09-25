@@ -1,6 +1,5 @@
 # Copyright (c) 2022, NVIDIA CORPORATION.  All rights reserved.
-'''Copied and modified from Megatron-LM
-Parts of the code here are adapted from PyTorch repo: https://github.com/pytorch/pytorch '''
+# This file is adapted from partition.py in Megatron-LM
 
 import math
 import os

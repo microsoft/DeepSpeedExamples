@@ -1,5 +1,5 @@
 # Copyright (c) 2022, NVIDIA CORPORATION.  All rights reserved.
-# Copied and modified from Megatron-LM
+# This file is adapted from data.py in Megatron-LM
 
 import torch
 

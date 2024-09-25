@@ -1,3 +1,6 @@
+# Copyright (c) 2022, NVIDIA CORPORATION.  All rights reserved.
+# This file is adapted from arguments.py in Megatron-LM
+
 """Domino arguments."""
 
 import argparse

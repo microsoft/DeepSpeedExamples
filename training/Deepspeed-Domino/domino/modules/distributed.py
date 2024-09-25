@@ -1,5 +1,5 @@
 # Copyright (c) 2022, NVIDIA CORPORATION.  All rights reserved.
-# Copied and modified from Megatron-LM
+# This file is adapted from distributed.py in Megatron-LM
 
 import math
 import torch
