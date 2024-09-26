@@ -1,6 +1,6 @@
 # Copyright (c) 2022, NVIDIA CORPORATION. All rights reserved.
+# This file is adapted from optimizer_param_scheduler.py in Megatron-LM
 
-"""Learning rate decay and weight decay incr functions."""
 
 import math
 from domino.utils import print_rank_0

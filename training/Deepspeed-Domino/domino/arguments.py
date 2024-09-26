@@ -13,9 +13,8 @@ import torch.nn.functional as F
 import dataclasses
 from dataclasses import dataclass
 from typing import Callable
-from megatron.tokenizer import build_tokenizer
-
 from domino.timer import Timers
+from megatron.tokenizer import build_tokenizer
 
 
 _GLOBAL_ARGS = None
@@ -60,6 +59,17 @@ def scaled_init_method_normal(std_dev, layer_count):
     def initialize(tensor):
         return torch.nn.init.normal_(tensor, mean=0.0, std=scaled_std_dev)
     return initialize
+
+
+def get_timers():
+    """Return timers."""
+    return _GLOBAL_TIMERS
+
+
+def set_timers():
+    """Initialize timers."""
+    global _GLOBAL_TIMERS
+    _GLOBAL_TIMERS = Timers(0, "maxmin")
 
 
 def parse_args():
@@ -295,15 +305,7 @@ def parse_args():
     return args
 
 
-def get_timers():
-    """Return timers."""
-    return _GLOBAL_TIMERS
 
-
-def set_timers():
-    """Initialize timers."""
-    global _GLOBAL_TIMERS
-    _GLOBAL_TIMERS = Timers(0, "maxmin")
 
 @dataclass
 class TransformerConfig():

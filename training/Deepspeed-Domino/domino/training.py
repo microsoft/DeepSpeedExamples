@@ -1,22 +1,19 @@
 # Copyright (c) 2022, NVIDIA CORPORATION.  All rights reserved.
 # This file is adapted from training.py in Megatron-LM
 
-from datetime import datetime
 import torch
 from domino.arguments import get_args, get_tokenizer, get_num_microbatches, get_timers
-from domino.utils import print_rank_0
+from domino.utils import print_rank_0, get_model_config, get_ltor_masks_and_position_ids
 import domino.parallel_state as mpu
 from domino.tensor_parallel.partition import set_defaults_if_not_set_tensor_model_parallel_attributes
 from domino.modules.enums import ModelType
 from domino.schedules import get_forward_backward_func
-from domino.utils import get_model_config
 from domino.data.data_samplers import build_pretraining_data_loader
 from domino.modules.distributed import DistributedDataParallel as LocalDDP
 from domino.modules.module import Float16Module
 from domino.optimizer import get_megatron_optimizer
 from domino.optimizer_param_scheduler import OptimizerParamScheduler
 from domino.initialize import set_jit_fusion_options
-from domino.utils import get_ltor_masks_and_position_ids
 from domino.tensor_parallel.data import broadcast_data
 
 
@@ -155,7 +152,6 @@ def get_model(base_model, model_type=ModelType.encoder_or_decoder, wrap_with_ddp
         else:
             raise NotImplementedError('Unknown DDP implementation specified: '
                                       '{}. Exiting.'.format(args.DDP_impl))
-
     return model
 
 
@@ -278,6 +274,7 @@ def train(forward_step_func, model, optimizer, opt_param_scheduler,
           train_data_iterator, valid_data_iterator, config):
     """Train the model function."""
     args = get_args()
+    timers = get_timers()
 
     model.train()
 
@@ -288,12 +285,8 @@ def train(forward_step_func, model, optimizer, opt_param_scheduler,
     config.grad_scale_func = optimizer.scale_loss
     config.timers = None
 
-    # start = torch.cuda.Event(enable_timing=True)
-    # end = torch.cuda.Event(enable_timing=True)
-    timers = get_timers()
-    timers('interval-time', log_level=0).start(barrier=True)
+    timers('ite-time', log_level=0).start(barrier=True)
     while iteration < args.train_iters:
-        # start.record()
         args.curr_iteration = iteration
         loss_dict, skipped_iter, grad_norm, num_zeros_in_grad = \
             train_step(forward_step_func,
@@ -302,29 +295,18 @@ def train(forward_step_func, model, optimizer, opt_param_scheduler,
                         optimizer,
                         opt_param_scheduler,
                         config)
-        # end.record()
 
         iteration += 1
         args.consumed_train_samples += mpu.get_data_parallel_world_size() * \
             args.micro_batch_size * get_num_microbatches()
         
-        elapsed_time = timers('interval-time').elapsed(barrier=True)
+        ite_time = timers('ite-time').elapsed(barrier=True)
         if iteration % args.log_interval == 0 and is_rank_0():
-            # torch.cuda.synchronize()
-            # ite_time = start.elapsed_time(end)
             loss = loss_dict['lm loss'].item()
-            print( 'iteration: {} | loss: {:.3f} | iteration time (ms): {} '.format(iteration, loss, elapsed_time*1000.0))
+            print( 'iteration: {} | loss: {:.3f} | iteration time (ms): {} '.format(iteration, loss, ite_time*1000.0))
             # loss_scale = optimizer.cur_scale
-            # print( 'loss: {} loss scale: {:.1f} |'.format(loss_scale))'
-            loss_scale = optimizer.get_loss_scale().item()
-            print_rank_0('loss scale: {:.1f} |'.format(loss_scale))
-            # print_rank_0(loss_dict)
-            # for key in loss_dict:
-            #     avg = loss_dict[key].item() / 1
-            #     print_rank_0(f'  {key}: {avg:.6f}')
-            if grad_norm is not None:
-                print_rank_0('grad norm: {:.4f} |'.format(grad_norm))
-            print_rank_0("learning rate: {}".format(optimizer.param_groups[0]['lr']))
+            # lr = optimizer.param_groups[0]['lr']
+            # print( 'lr: {} loss scale: {:.1f} |'.format(lr, loss_scale))'
 
     return iteration
 
@@ -338,7 +320,6 @@ def train_step(forward_step_func, data_iterator,
     if args.DDP_impl == 'local' and args.use_contiguous_buffers_in_local_ddp:
         model.zero_grad_buffer()
     optimizer.zero_grad()
-    # print("optimizer lr ", optimizer.optimizer.param_groups[0]['lr'])
 
     forward_backward_func = get_forward_backward_func()
 
@@ -362,12 +343,6 @@ def train_step(forward_step_func, data_iterator,
         torch.cuda.empty_cache()
 
     update_successful, grad_norm, num_zeros_in_grad = optimizer.step(args, timers)
-    # params = []
-    # for param_group in optimizer.optimizer.param_groups:
-    #     for param in param_group['params']:
-    #         params.append(param)
-    # grad_norm = optimizer.clip_grad_norm(params, optimizer.clip_grad)
-    # num_zeros_in_grad = 0
 
     # Update learning rate.
     if update_successful:

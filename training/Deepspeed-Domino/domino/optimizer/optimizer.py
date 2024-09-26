@@ -10,18 +10,6 @@ import torch
 from torch.nn.parallel.distributed import DistributedDataParallel as torchDDP
 from torch._utils import _flatten_dense_tensors, _unflatten_dense_tensors
 
-# from megatron import get_timers
-# from domino.utils import print_rank_0
-# from megatron.core import mpu, tensor_parallel
-# from megatron.model import DistributedDataParallel as LocalDDP
-# from domino.modules import DistributedDataParallel as LocalDDP
-
-# from megatron.model import Float16Module
-# from megatron.model.module import param_is_not_shared
-# from megatron.utils import unwrap_model
-
-# from .clip_grads import clip_grad_norm_fp32, count_zeros_fp32
-
 from domino.utils import print_rank_0
 import domino.parallel_state as mpu
 from domino.tensor_parallel.partition import copy_tensor_model_parallel_attributes, param_is_not_tensor_parallel_duplicate

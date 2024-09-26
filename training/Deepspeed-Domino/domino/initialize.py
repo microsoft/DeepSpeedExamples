@@ -11,9 +11,8 @@ from domino.arguments import parse_args, get_args, set_args, build_tokenizer_g, 
 import domino.parallel_state as mpu
 from domino.tensor_parallel.random import model_parallel_cuda_manual_seed
 # from domino.transformer import bias_dropout_add_fused_train
-from domino.modules.fused_bias_gelu import bias_gelu
-
 from deepspeed.runtime.domino.transformer import bias_dropout_add_fused_train
+from domino.modules.fused_bias_gelu import bias_gelu
 
 from megatron import fused_kernels
 
@@ -27,7 +26,6 @@ def initialize_domino():
 
     set_args(args)
     build_tokenizer_g(args)
-
     set_timers()
 
     args = get_args()

@@ -7,16 +7,9 @@ from apex.optimizers import FusedAdam as Adam
 import math
 import torch
 
-# from megatron import get_args
-# from megatron import get_timers
-# from megatron import print_rank_0
-# from megatron.core import mpu, tensor_parallel
-# from megatron.model.module import param_is_not_shared
-
 from domino.utils import print_rank_0
 import domino.parallel_state as mpu
 from domino.tensor_parallel.partition import copy_tensor_model_parallel_attributes
-
 from .optimizer import MixedPrecisionOptimizer, _zero_grad_group_helper
 
 
