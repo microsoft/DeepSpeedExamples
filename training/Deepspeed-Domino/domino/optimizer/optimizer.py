@@ -419,20 +419,20 @@ class MixedPrecisionOptimizer(MegatronOptimizer):
     def step(self, args, timers):
 
         # Copy gradients from model params to main params.
-        timers('optimizer-copy-to-main-grad', log_level=1).start(
-            barrier=args.barrier_with_L1_time)
+        # timers('optimizer-copy-to-main-grad', log_level=1).start(
+        #     barrier=args.barrier_with_L1_time)
         self._copy_model_grads_to_main_grads()
-        timers('optimizer-copy-to-main-grad').stop()
+        # timers('optimizer-copy-to-main-grad').stop()
 
         # Do unscale, check for inf, and update grad scaler only for
         # the case that grad scaler is provided.
         if self.grad_scaler:
 
             # Unscale and check for inf/nan.
-            timers('optimizer-unscale-and-check-inf', log_level=1).start(
-                barrier=args.barrier_with_L1_time)
+            # timers('optimizer-unscale-and-check-inf', log_level=1).start(
+            #     barrier=args.barrier_with_L1_time)
             found_inf_flag = self._unscale_main_grads_and_check_for_nan()
-            timers('optimizer-unscale-and-check-inf').stop()
+            # timers('optimizer-unscale-and-check-inf').stop()
 
             # We are done with scaling gradients
             # so we can update the loss scale.
@@ -443,31 +443,31 @@ class MixedPrecisionOptimizer(MegatronOptimizer):
                 return False, None, None
 
         # Clip the main gradients.
-        timers('optimizer-clip-main-grad', log_level=1).start(
-            barrier=args.barrier_with_L1_time)
+        # timers('optimizer-clip-main-grad', log_level=1).start(
+        #     barrier=args.barrier_with_L1_time)
         grad_norm = None
         if self.clip_grad > 0.0:
             grad_norm = self.clip_grad_norm(self.clip_grad)
-        timers('optimizer-clip-main-grad').stop()
+        # timers('optimizer-clip-main-grad').stop()
 
         # Count the zeros in the grads.
-        timers('optimizer-count-zeros', log_level=1).start(
-            barrier=args.barrier_with_L1_time)
+        # timers('optimizer-count-zeros', log_level=1).start(
+        #     barrier=args.barrier_with_L1_time)
         num_zeros_in_grad = self.count_zeros() if \
                             self.log_num_zeros_in_grad else None
-        timers('optimizer-count-zeros').stop()
+        # timers('optimizer-count-zeros').stop()
 
         # Step the optimizer.
-        timers('optimizer-inner-step', log_level=1).start(
-            barrier=args.barrier_with_L1_time)
+        # timers('optimizer-inner-step', log_level=1).start(
+        #     barrier=args.barrier_with_L1_time)
         self.optimizer.step()
-        timers('optimizer-inner-step').stop()
+        # timers('optimizer-inner-step').stop()
 
         # Update params from main params.
-        timers('optimizer-copy-main-to-model-params', log_level=1).start(
-            barrier=args.barrier_with_L1_time)
+        # timers('optimizer-copy-main-to-model-params', log_level=1).start(
+        #     barrier=args.barrier_with_L1_time)
         self._copy_main_params_to_model_params()
-        timers('optimizer-copy-main-to-model-params').stop()
+        # timers('optimizer-copy-main-to-model-params').stop()
 
         # Successful update.
         return True, grad_norm, num_zeros_in_grad

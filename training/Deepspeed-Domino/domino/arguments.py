@@ -15,9 +15,12 @@ from dataclasses import dataclass
 from typing import Callable
 from megatron.tokenizer import build_tokenizer
 
+from domino.timer import Timers
+
 
 _GLOBAL_ARGS = None
 _GLOBAL_TOKENIZER = None
+_GLOBAL_TIMERS = None
 
 
 def get_args():
@@ -229,8 +232,9 @@ def parse_args():
     args.adam_eps = 1e-8
     args.weight_decay = 0.01
     args.lr_warmup_init = 0.0
-    # args.min_lr = 0.0
-    # args.lr_decay_iters = args.train_iters
+    args.lr_decay_style = 'cosine'
+    args.start_weight_decay = 0.1
+    args.end_weight_decay = 0.1
     args.weight_decay_incr_style ='constant'
     args.start_weight_decay = args.weight_decay
     args.end_weight_decay = args.weight_decay
@@ -255,6 +259,15 @@ def parse_args():
     args.empty_unused_memory_level = 1
     args.tokenizer_type = 'GPT2BPETokenizer'
 
+    args.loss_scale = 1024
+    args.initial_loss_scale = 2**32
+    args.min_loss_scale = 1.0
+    args.loss_scale_window = 1000
+    args.hysteresis = 2
+    args.use_distributed_optimizer = False
+    args.log_num_zeros_in_grad = False
+
+    args.rampup_batch_size = None
     # Parameters dtype.
     args.accumulate_allreduce_grads_in_fp32 = False
     args.params_dtype = torch.float
@@ -278,8 +291,19 @@ def parse_args():
     args.DDP_impl = 'local'
     args.use_contiguous_buffers_in_local_ddp = True
     args.data_parallel_random_init = False
+
     return args
 
+
+def get_timers():
+    """Return timers."""
+    return _GLOBAL_TIMERS
+
+
+def set_timers():
+    """Initialize timers."""
+    global _GLOBAL_TIMERS
+    _GLOBAL_TIMERS = Timers(0, "maxmin")
 
 @dataclass
 class TransformerConfig():
