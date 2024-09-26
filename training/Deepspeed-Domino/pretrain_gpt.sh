@@ -157,12 +157,9 @@
 	    --split 949,50,1
 	"
 	 
-	# OUTPUT_ARGS="
-	#     --log-interval 1 \
-	#     --save-interval 10000 \
-	#     --eval-interval 1000 \
-	#     --eval-iters 1
-	# "
+	OUTPUT_ARGS="
+	    --log-interval 1 \
+	"
 	# export NCCL_DEBUG=INFO
 	# export NCCL_NTHREADS=1
 	# export NCCL_MAX_NCHANNELS=1
