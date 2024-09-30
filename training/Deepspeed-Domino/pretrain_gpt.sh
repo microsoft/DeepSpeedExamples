@@ -133,17 +133,7 @@ DATA_ARGS="
 OUTPUT_ARGS="
     --log-interval 1 \
 "
-# export NCCL_DEBUG=INFO
-# export NCCL_NTHREADS=1
-# export NCCL_MAX_NCHANNELS=1
-# export NCCL_MIN_NCHANNELS=1
-# export NCCL_BUFFSIZE=1048576
-# export NCCL_SOCKET_NTHREADS=4
-# export NCCL_NSOCKS_PERTHREAD=8
 
-# cd /work/guanhua/domino
-# python3 -m torch.distributed.launch $DISTRIBUTED_ARGS pretrain_gpt.py \
-# export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True 
 CUDA_VISIBLE_DEVISES=0,1,2,3 torchrun $DISTRIBUTED_ARGS pretrain_gpt.py \
     $GPT_ARGS \
     $DATA_ARGS \
