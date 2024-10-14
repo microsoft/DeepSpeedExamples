@@ -269,8 +269,8 @@ class DeepSpeedRLHFEngine():
             zero_stage = 0
 
         ds_config = get_eval_ds_config(offload=self.args.offload_reward_model,
-                                            dtype=self.args.dtype,
-                                            stage=zero_stage)
+                                       dtype=self.args.dtype,
+                                       stage=zero_stage)
 
         # We need to set train batch size and micro batch size here to pass the sanity check of DeepSpeed engine.
         ds_config[
