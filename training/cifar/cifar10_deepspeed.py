@@ -1,4 +1,5 @@
 import argparse
+import os
 
 import deepspeed
 import torch
@@ -279,6 +280,9 @@ def test(model_engine, testset, local_device, target_dtype, test_batch_size=4):
 def main(args):
     # Initialize DeepSpeed distributed backend.
     deepspeed.init_distributed()
+    _local_rank = int(os.environ.get("LOCAL_RANK"))
+    torch_device = torch.device(f"cuda:{_local_rank}")
+    torch.cuda.set_device(torch_device)
 
     ########################################################################
     # Step1. Data Preparation.
