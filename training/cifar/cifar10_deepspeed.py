@@ -281,8 +281,7 @@ def main(args):
     # Initialize DeepSpeed distributed backend.
     deepspeed.init_distributed()
     _local_rank = int(os.environ.get("LOCAL_RANK"))
-    torch_device = torch.device(f"cuda:{_local_rank}")
-    torch.cuda.set_device(torch_device)
+    get_accelerator().set_device(_local_rank)
 
     ########################################################################
     # Step1. Data Preparation.
