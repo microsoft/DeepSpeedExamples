@@ -1,40 +1,47 @@
-# Domino
+# Domino Project Setup Guide
+
+This guide provides instructions to set up a local Docker environment and configure Python, PyTorch, and additional tools for the Domino project
 
 ## Local (docker) environment setup
-
+To start a Docker container for the Domino environment, run the following commands:
 ```
 docker run -d -t --network=host --gpus all --privileged --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 --name domino -v /etc/localtime:/etc/localtime nvidia/cuda:12.1.1-cudnn8-devel-ubuntu20.04
 docker exec -it domino bash
 ```
 
-## Set up python environment
+## Set Up Python Environment
+Enter the Docker container and set up the Python environment:
 ```
 # Enter container
 apt update
 apt upgrade -y
 apt install -y wget git vim
 
+# Install Miniconda
 wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
 bash Miniconda3-latest-Linux-x86_64.sh
 # Follow the prompts on the installer screens.
 source /root/.bashrc
+
+# Create a Python environment for Domino
 conda create -n domino python==3.10
 conda activate domino
 
+# Create and navigate to the working directory
 mdkir /workspace/code
 cd /workspace/code
 ```
 
 ## Set up Pytorch environment
 
-You could simply install it from conda. But if you want more efficient domino, you could compile Pytorch from source.
+You can install PyTorch from conda or compile it from source for better performance.
 
-### Install from conda
+### Install from Conda (Recommended)
 ```
 conda install pytorch torchvision torchaudio pytorch-cuda=12.1 -c pytorch -c nvidia
 ```
  
-### (Optional) Compile Pytorch from source 
+### Compile PyTorch from Source (Optional)
 ```
 git clone -b v2.1.0 https://github.com/pytorch/pytorch.git
 cd pytorch
@@ -55,7 +62,7 @@ python setup.py develop
 ```
 
 ## Build Apex
-Build Apex from source code.
+To build NVIDIA Apex from source:
 ```
 cd /workspace/code
 git clone https://github.com/NVIDIA/apex
@@ -66,28 +73,29 @@ pip install -v --disable-pip-version-check --no-cache-dir --no-build-isolation -
 pip install -v --disable-pip-version-check --no-cache-dir --no-build-isolation --global-option="--cpp_ext" --global-option="--cuda_ext" --config-settings "--build-option=--fast_layer_norm" ./
 ```
 
-## Install other thirdparty library
+## Install Additional Libraries
 ```
-conda install transformers nltk pybind11
-pip install 
+Clone Domino Repositories
 ```
 
-## Fetch the newest domino
-Set up ssh public key for github before clone these two private repo, you could reference https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account?platform=linux
+## Clone Domino Repositories
+Set up an SSH key for GitHub following the instructions [here](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account?platform=linux).
+
+After configuring SSH, clone the required repositories:
 ```
 cd /workspace/code
 git clone git@github.com:zhangsmallshark/DeepSpeedExamples.git
 git clone git@github.com:zhangsmallshark/DeepSpeed-internal.git
 ```
 
-## Build deepspeed
+## Build DeepSpeed
 ```
 cd /workspace/code/DeepSpeed-internal
 pip install -e .
 ```
 
-## Prepare the data
-Reference https://github.com/microsoft/Megatron-DeepSpeed/tree/main/examples_deepspeed/universal_checkpointing#download-and-pre-process-training-dataset to setup the dataset.
+## Prepare the Dataset
+Follow the instructions from [Megatron-DeepSpeed](https://github.com/microsoft/Megatron-DeepSpeed/tree/main/examples_deepspeed/universal_checkpointing#download-and-pre-process-training-dataset) to prepare the training dataset:
 ```
 git clone https://github.com/microsoft/Megatron-DeepSpeed.git
 
@@ -108,9 +116,9 @@ python /workspace/code/Megatron-DeepSpeed/tools/preprocess_data.py \
     --workers 8
 ```
 
-## Execute domino
+## Execute Domino Training
 ```
 cd /workspace/code/DeepSpeedExamples/training/Deepspeed-Domino
-# Change the gpu number, dataset path, and training configuration in pretrain_gpt.sh if needed
+# Adjust GPU number, dataset path, and training configuration in pretrain_gpt.sh if needed.
 bash pretrain_gpt.sh
 ```
