@@ -3,7 +3,7 @@
 
 #!/bin/bash --login
 
-export PYTHONPATH=/workspace/domino/Megatron-LM:$PYTHONPATH
+export PYTHONPATH=/workspace/code/Megatron-DeepSpeed:$PYTHONPATH
 
 export CUDA_DEVICE_MAX_CONNECTIONS=1
 
@@ -18,7 +18,7 @@ CHECKPOINT_PATH=/workspace/dataset/checkpoint
 rm -rf $CHECKPOINT_PATH/*
 VOCAB_FILE="/workspace/dataset/gpt2-vocab.json"
 MERGE_FILE="/workspace/dataset/gpt2-merges.txt"
-DATA_PATH="/workspace/dataset/BookCorpusDataset_text_document"
+DATA_PATH="/workspace/dataset/my-gpt2_text_document"
 
 DISTRIBUTED_ARGS="
     --nproc_per_node $GPUS_PER_NODE \
