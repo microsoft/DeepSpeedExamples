@@ -3,22 +3,22 @@
 
 #!/bin/bash --login
 
-export PYTHONPATH=/workspace/code/Megatron-DeepSpeed:$PYTHONPATH
+export PYTHONPATH=/home/czhang/tmp/Megatron-DeepSpeed:/home/czhang/tmp/DeepSpeed-internal:$PYTHONPATH
 
 export CUDA_DEVICE_MAX_CONNECTIONS=1
 
-GPUS_PER_NODE=4
+GPUS_PER_NODE=2
 MASTER_ADDR=localhost
 MASTER_PORT=6001
 NNODES=1
 NODE_RANK=0
 WORLD_SIZE=$(($GPUS_PER_NODE*$NNODES))
  
-CHECKPOINT_PATH=/workspace/dataset/checkpoint
+CHECKPOINT_PATH=/home/czhang/tmp/dataset/checkpoint
 rm -rf $CHECKPOINT_PATH/*
-VOCAB_FILE="/workspace/dataset/gpt2-vocab.json"
-MERGE_FILE="/workspace/dataset/gpt2-merges.txt"
-DATA_PATH="/workspace/dataset/my-gpt2_text_document"
+VOCAB_FILE="/home/czhang/tmp/dataset/gpt2-vocab.json"
+MERGE_FILE="/home/czhang/tmp/dataset/gpt2-merges.txt"
+DATA_PATH="/home/czhang/tmp/dataset/my-gpt2_text_document"
 
 DISTRIBUTED_ARGS="
     --nproc_per_node $GPUS_PER_NODE \
@@ -79,7 +79,7 @@ DISTRIBUTED_ARGS="
 # mb 32 oom for 4 nodes
 # 13B
 GPT_ARGS="
-    --num-layers 16 \
+    --num-layers 2 \
     --hidden-size 1024 \
     --num-attention-heads 32 \
     --seq-length 1024 \
@@ -134,10 +134,12 @@ OUTPUT_ARGS="
     --log-interval 1 \
 "
 
-CUDA_VISIBLE_DEVISES=0,1,2,3 torchrun $DISTRIBUTED_ARGS pretrain_gpt.py \
+CUDA_VISIBLE_DEVISES=0,1 torchrun $DISTRIBUTED_ARGS pretrain_gpt.py \
     $GPT_ARGS \
     $DATA_ARGS \
     $OUTPUT_ARGS \
     --distributed-backend nccl #\
     # --save $CHECKPOINT_PATH \
     # --load $CHECKPOINT_PATH
+
+export PYTHONPATH=/pathto/DeepSpeed-internal:$PYTHONPATH
