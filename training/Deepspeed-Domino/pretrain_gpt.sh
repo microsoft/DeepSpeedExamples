@@ -19,7 +19,9 @@ rm -rf $CHECKPOINT_PATH/*
 
 VOCAB_FILE="dataset/gpt2-vocab.json"
 MERGE_FILE="dataset/gpt2-merges.txt"
-DATA_PATH="dataset/BookCorpusDataset_text_document"
+DATA_PATH="dataset/my-gpt2_text_document"
+
+export PYTHONPATH=/home/czhang/tmp/DeepSpeedExamples/training/Deepspeed-Domino:$PYTHONPATH
 
 DISTRIBUTED_ARGS="
     --nproc_per_node $GPUS_PER_NODE \
@@ -40,7 +42,7 @@ GPT_ARGS="
     --micro-batch-size 64 \
     --global-batch-size 64 \
     --lr 0.00015 \
-    --train-iters 80 \
+    --train-iters 10 \
     --lr-decay-iters 320000 \
     --lr-decay-style cosine \
     --min-lr 1.0e-5 \
@@ -136,7 +138,7 @@ OUTPUT_ARGS="
 "
 
 # CUDA_VISIBLE_DEVISES=0,1,2,3 torchrun $DISTRIBUTED_ARGS \
-cmd="deepspeed --num_gpus 1 \
+cmd="deepspeed --num_gpus $WORLD_SIZE \
     pretrain_gpt.py \
     $GPT_ARGS \
     $DATA_ARGS \
