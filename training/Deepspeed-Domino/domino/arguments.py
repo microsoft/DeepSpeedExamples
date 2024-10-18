@@ -107,7 +107,7 @@ def parse_args():
                        dest='masked_softmax_fusion')
     parser.add_argument('--tensor-model-parallel-size', type=int, default=1,
                     help='Degree of tensor model parallelism.')
-    parser.add_argument('--local-rank', type=int, default=None,
+    parser.add_argument('--local_rank', type=int, default=None,
                        help='local rank passed from distributed launcher.')
     parser.add_argument('--distributed-backend', default='nccl',
                        choices=['nccl', 'gloo'],

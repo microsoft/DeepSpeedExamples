@@ -3,7 +3,7 @@
 
 #!/bin/bash --login
 
-export PYTHONPATH=/workspace/domino/Megatron-LM:$PYTHONPATH
+# export PYTHONPATH=/workspace/domino/Megatron-LM:$PYTHONPATH
 
 export CUDA_DEVICE_MAX_CONNECTIONS=1
 
@@ -14,11 +14,12 @@ NNODES=1
 NODE_RANK=0
 WORLD_SIZE=$(($GPUS_PER_NODE*$NNODES))
  
-CHECKPOINT_PATH=/workspace/dataset/checkpoint
+CHECKPOINT_PATH=checkpoint
 rm -rf $CHECKPOINT_PATH/*
-VOCAB_FILE="/workspace/dataset/gpt2-vocab.json"
-MERGE_FILE="/workspace/dataset/gpt2-merges.txt"
-DATA_PATH="/workspace/dataset/BookCorpusDataset_text_document"
+
+VOCAB_FILE="dataset/gpt2-vocab.json"
+MERGE_FILE="dataset/gpt2-merges.txt"
+DATA_PATH="dataset/BookCorpusDataset_text_document"
 
 DISTRIBUTED_ARGS="
     --nproc_per_node $GPUS_PER_NODE \
@@ -30,27 +31,27 @@ DISTRIBUTED_ARGS="
 
 # GPT-3 2.7B
 # --no-async-tensor-model-parallel-allreduce \
-# GPT_ARGS="
-#     --num-layers 32 \
-#     --hidden-size 2560 \
-#     --num-attention-heads 32 \
-#     --seq-length 512 \
-#     --max-position-embeddings 512 \
-#     --micro-batch-size 64 \
-#     --global-batch-size 64 \
-#     --lr 0.00015 \
-#     --train-iters 80 \
-#     --lr-decay-iters 320000 \
-#     --lr-decay-style cosine \
-#     --min-lr 1.0e-5 \
-#     --weight-decay 1e-2 \
-#     --lr-warmup-fraction .01 \
-#     --clip-grad 1.0 \
-#     --no-gradient-accumulation-fusion \
-#     --fp16 \
-#     --tensor-model-parallel-size $WORLD_SIZE \
-#     --seed 3407
-# "
+GPT_ARGS="
+    --num-layers 32 \
+    --hidden-size 2560 \
+    --num-attention-heads 32 \
+    --seq-length 512 \
+    --max-position-embeddings 512 \
+    --micro-batch-size 64 \
+    --global-batch-size 64 \
+    --lr 0.00015 \
+    --train-iters 80 \
+    --lr-decay-iters 320000 \
+    --lr-decay-style cosine \
+    --min-lr 1.0e-5 \
+    --weight-decay 1e-2 \
+    --lr-warmup-fraction .01 \
+    --clip-grad 1.0 \
+    --fp16 \
+    --tensor-model-parallel-size $WORLD_SIZE \
+    --seed 3407
+"
+    # --no-gradient-accumulation-fusion \
 
 # GPT-3 6.7B
 # GPT_ARGS="
@@ -78,25 +79,25 @@ DISTRIBUTED_ARGS="
 # mb 16 oom even act-ckpt
 # mb 32 oom for 4 nodes
 # 13B
-GPT_ARGS="
-    --num-layers 16 \
-    --hidden-size 1024 \
-    --num-attention-heads 32 \
-    --seq-length 1024 \
-    --max-position-embeddings 1024 \
-    --micro-batch-size 4 \
-    --global-batch-size 4 \
-    --lr 0.00015 \
-    --train-iters 100 \
-    --lr-decay-iters 320000 \
-    --lr-decay-style cosine \
-    --min-lr 1.0e-5 \
-    --weight-decay 1e-2 \
-    --lr-warmup-fraction .01 \
-    --clip-grad 1.0 \
-    --fp16 \
-    --tensor-model-parallel-size $WORLD_SIZE
-"
+# GPT_ARGS="
+#     --num-layers 16 \
+#     --hidden-size 1024 \
+#     --num-attention-heads 32 \
+#     --seq-length 1024 \
+#     --max-position-embeddings 1024 \
+#     --micro-batch-size 4 \
+#     --global-batch-size 4 \
+#     --lr 0.00015 \
+#     --train-iters 100 \
+#     --lr-decay-iters 320000 \
+#     --lr-decay-style cosine \
+#     --min-lr 1.0e-5 \
+#     --weight-decay 1e-2 \
+#     --lr-warmup-fraction .01 \
+#     --clip-grad 1.0 \
+#     --fp16 \
+#     --tensor-model-parallel-size $WORLD_SIZE
+# "
 
 # 30B
 # 30B 4nodes mb16 OOM
@@ -134,10 +135,16 @@ OUTPUT_ARGS="
     --log-interval 1 \
 "
 
-CUDA_VISIBLE_DEVISES=0,1,2,3 torchrun $DISTRIBUTED_ARGS pretrain_gpt.py \
+# CUDA_VISIBLE_DEVISES=0,1,2,3 torchrun $DISTRIBUTED_ARGS \
+cmd="deepspeed --num_gpus 1 \
+    pretrain_gpt.py \
     $GPT_ARGS \
     $DATA_ARGS \
     $OUTPUT_ARGS \
-    --distributed-backend nccl #\
+    --distributed-backend nccl 
+    " 
+    #\
     # --save $CHECKPOINT_PATH \
     # --load $CHECKPOINT_PATH
+echo $cmd
+eval $cmd 
