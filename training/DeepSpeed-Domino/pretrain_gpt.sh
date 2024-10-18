@@ -7,7 +7,7 @@
 
 export CUDA_DEVICE_MAX_CONNECTIONS=1
 
-GPUS_PER_NODE=4
+GPUS_PER_NODE=2
 MASTER_ADDR=localhost
 MASTER_PORT=6001
 NNODES=1
@@ -21,7 +21,8 @@ VOCAB_FILE="dataset/gpt2-vocab.json"
 MERGE_FILE="dataset/gpt2-merges.txt"
 DATA_PATH="dataset/my-gpt2_text_document"
 
-export PYTHONPATH=/home/czhang/tmp/DeepSpeedExamples/training/Deepspeed-Domino:$PYTHONPATH
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+export PYTHONPATH=$SCRIPT_DIR:$PYTHONPATH
 
 DISTRIBUTED_ARGS="
     --nproc_per_node $GPUS_PER_NODE \
@@ -34,7 +35,7 @@ DISTRIBUTED_ARGS="
 # GPT-3 2.7B
 # --no-async-tensor-model-parallel-allreduce \
 GPT_ARGS="
-    --num-layers 32 \
+    --num-layers 4 \
     --hidden-size 2560 \
     --num-attention-heads 32 \
     --seq-length 512 \
