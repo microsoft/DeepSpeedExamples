@@ -7,9 +7,12 @@ from domino.arguments import get_args
 from domino.modules.enums import ModelType
 import domino.parallel_state as mpu
 from domino.modules.module import DominoModule
-# from domino.transformer import DominoTransformer
 from domino.tensor_parallel.comm import GatherFromModelParallelRegion
 from domino.tensor_parallel.partition  import VocabParallelEmbedding, linear_with_grad_accumulation_and_async_allreduce
+from domino.modules.fused_layer_norm import MixedFusedLayerNorm as fused_layer_norm
+from domino.modules.fused_func import bias_dropout_add_fused_train, bias_dropout_add_fused_inference, apply_rotary_pos_emb
+from domino.tensor_parallel.partition import _initialize_affine_weight_gpu, set_tensor_model_parallel_attributes
+from domino.tensor_parallel.partition import ColumnParallelLinear, RowParallelLinearNoComm
 
 from deepspeed.runtime.domino.transformer import DominoTransformer
 
@@ -146,8 +149,10 @@ class TransformerLanguageModel(DominoModule):
             )
 
         self.encoder = DominoTransformer(
-            config,
-            model_type=ModelType.encoder_or_decoder,
+            config, ModelType.encoder_or_decoder, mpu,
+            fused_layer_norm, _initialize_affine_weight_gpu,
+            ColumnParallelLinear, RowParallelLinearNoComm, apply_rotary_pos_emb,
+            bias_dropout_add_fused_train, bias_dropout_add_fused_inference,
             self_attn_mask_type=self.encoder_attn_mask_type,
             pre_process=self.pre_process,
             post_process=self.post_process,

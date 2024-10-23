@@ -305,13 +305,14 @@ def parse_args():
     return args
 
 
-
-
 @dataclass
 class TransformerConfig():
     """Configuration object for transformers.
     """
     sequence_parallel: bool = False
+    llama_model: bool = False
+    apply_residual_connection_post_layernorm = False
+    no_persist_layer_norm = False
 
     # Initialization
     perform_initialization: bool = True
@@ -328,13 +329,25 @@ class TransformerConfig():
     async_tensor_model_parallel_allreduce: bool = True
 
     # model architecture
+    num_layers: int = 0
     hidden_size: int = 0
+    num_attention_heads: int = 0
     ffn_hidden_size: int = None
     kv_channels: int = None
+    hidden_dropout: float = 0.1
+    attention_dropout: float = 0.1
+    layernorm_epsilon: float = 1e-5
+    layernorm_zero_centered_gamma: bool = False
+    add_bias_linear: bool = True
+    swiglu = False
+    gated_linear_unit: bool = False
+    activation_func: Callable = F.gelu
+    bias_gelu_fusion = False
 
     # initialization
     init_method: Callable = None
     output_layer_init_method: Callable = None
+    init_method_std: float = 0.02
 
     enable_autocast: bool = False
     # autocast_dtype: torch.dtype = None
@@ -344,12 +357,33 @@ class TransformerConfig():
     # param_sync_func: Callable = None
 
     def __post_init__(self):
+        """ Python dataclass method that is used to modify attributes after initialization.
+            See https://docs.python.org/3/library/dataclasses.html#post-init-processing for more details.
+        """
+        if self.fp16 and self.bf16:
+            raise ValueError(
+                f'Only one of self.fp16: {self.fp16} and self.bf16 {self.bf16} should be True.'
+            )
+
+        # if self.num_attention_heads % self.tensor_model_parallel_size != 0:
+        #     raise ValueError(
+        #         f"num_attention_heads ({self.num_attention_heads}) must be a multiple of "
+        #         f"tensor_model_parallel_size ({self.tensor_model_parallel_size})."
+        #     )
+
         if self.ffn_hidden_size is None:
             self.ffn_hidden_size = 4 * self.hidden_size
 
         if self.kv_channels is None:
             self.kv_channels = self.hidden_size // self.num_attention_heads
 
+        if self.init_method is None:
+            self.init_method = init_method_normal(self.init_method_std)
+
+        if self.output_layer_init_method is None:
+            self.output_layer_init_method = scaled_init_method_normal(
+                self.init_method_std, self.num_layers
+            )
 
 def core_transformer_config_from_args(args):
     # Translate args to core transformer configuration
