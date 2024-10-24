@@ -10,8 +10,7 @@ import torch
 from domino.arguments import parse_args, get_args, set_args, build_tokenizer_g, set_timers
 import domino.parallel_state as mpu
 from domino.tensor_parallel.random import model_parallel_cuda_manual_seed
-# from domino.transformer import bias_dropout_add_fused_train
-from deepspeed.runtime.domino.transformer import bias_dropout_add_fused_train
+from domino.modules.fused_func import bias_dropout_add_fused_train
 from domino.modules.fused_bias_gelu import bias_gelu
 
 from megatron import fused_kernels
