@@ -3,8 +3,6 @@
 
 #!/bin/bash --login
 
-# export PYTHONPATH=/workspace/domino/Megatron-LM:$PYTHONPATH
-
 export CUDA_DEVICE_MAX_CONNECTIONS=1
 
 GPUS_PER_NODE=2
@@ -22,7 +20,7 @@ MERGE_FILE="dataset/gpt2-merges.txt"
 DATA_PATH="dataset/my-gpt2_text_document"
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
-export PYTHONPATH=$SCRIPT_DIR:$PYTHONPATH
+# export PYTHONPATH=$SCRIPT_DIR:$PYTHONPATH
 
 DISTRIBUTED_ARGS="
     --nproc_per_node $GPUS_PER_NODE \
@@ -143,10 +141,8 @@ cmd="deepspeed --num_gpus $WORLD_SIZE \
     pretrain_gpt.py \
     $GPT_ARGS \
     $DATA_ARGS \
-    $OUTPUT_ARGS \
-    --distributed-backend nccl 
+    $OUTPUT_ARGS 
     " 
-    #\
     # --save $CHECKPOINT_PATH \
     # --load $CHECKPOINT_PATH
 echo $cmd
