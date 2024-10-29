@@ -20,7 +20,7 @@ If you are using conda, the following works:
 conda create -c conda-forge -n deepspeed python=3.10
 conda activate deepspeed
 pip install -r requirements.txt
-deepspeed --num_gpus 1 inference-test.py --name bigscience/bloom-3b --batch_size 2
+deepspeed --num_gpus 1 inference-test.py --model bigscience/bloom-3b --batch_size 2
 </pre>
 
 # Inference Test
@@ -91,8 +91,9 @@ The DSPipeline class helps to load the model and run inference on it, given thes
 # DeepSpeed HuggingFace Compare
 
 The ds-hf-compare script can be used to compare the text generated outputs of DeepSpeed with kernel injection and HuggingFace inference of a model with the same parameters on a single GPU.
+(p.s. kernel injection will not be used by default and is only enabled when the "--use_kernel" argument is provided.)
 
 ## Usage
 Examples can be run as follows:
-<pre>deepspeed --num_gpus 1 ds-hf-compare.py --model [model name/path] --dtype [data type] --num_inputs [number of test inputs] --print_outputs
+<pre>deepspeed --num_gpus 1 ds-hf-compare.py --model [model name/path] --dtype [data type] --num_inputs [number of test inputs] --print_outputs --use_kernel[enable kernel injection]
 </pre>
