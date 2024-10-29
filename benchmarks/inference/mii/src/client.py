@@ -131,8 +131,85 @@ def call_vllm(
     )
 
 
-def call_aml(
+# client talks with openai api
+def call_openai(
     input_tokens: str, max_new_tokens: int, args: argparse.Namespace
+) -> ResponseDetails:
+
+    api_url = args.openai_api_url
+    headers = {
+        "User-Agent": "Benchmark Client",
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {args.openai_api_key}"
+    }
+
+    pload = {
+        "prompt": input_tokens,
+        "model": args.model,
+        "n": 1,
+        "use_beam_search": False,
+        "temperature": 1.0,
+        "top_p": 0.9,
+        "max_tokens": max_new_tokens,
+        "ignore_eos": False,
+        "stream": args.stream,
+    }
+
+    def clear_line(n: int = 1) -> None:
+        LINE_UP = "\033[1A"
+        LINE_CLEAR = "\x1b[2K"
+        for _ in range(n):
+            print(LINE_UP, end=LINE_CLEAR, flush=True)
+
+    def get_streaming_response(
+        response: requests.Response, time_last_token
+    ) -> Iterable[List[str]]:
+        for chunk in response.iter_lines(
+            chunk_size=8192, decode_unicode=False, delimiter=b"data:"
+        ):
+            if chunk:
+                plain=chunk.decode("utf-8")
+                if plain.strip() == "[DONE]":
+                    continue
+                data = json.loads(plain)
+                output = data["choices"][0]["text"]
+                time_now = time.time()
+                yield output, time_now - time_last_token
+                time_last_token = time_now
+
+    # For non-streaming, but currently non-streaming is not fully implemented
+    def get_response(response: requests.Response) -> List[str]:
+        data = json.loads(response.content)
+        output = data["choices"][0]["text"]
+        return output
+
+    token_gen_time = []
+    start_time = time.time()
+    #response = requests.post(api_url, headers=headers, json=pload, stream=False)
+    response = requests.post(api_url, headers=headers, json=pload, stream=args.stream)
+    if args.stream:
+        output = ""
+        for h, t in get_streaming_response(response, start_time):
+            output += h
+            token_gen_time.append(t)
+    else:
+        output = get_response(response)
+
+    return ResponseDetails(
+        generated_tokens=output,
+        prompt=input_tokens,
+        start_time=start_time,
+        end_time=time.time(),
+        model_time=0,
+        token_gen_time=token_gen_time,
+    )
+
+
+def call_aml(
+    input_tokens: str,
+    max_new_tokens: int,
+    args: argparse.Namespace,
+    start_time: Union[None, float] = None,
 ) -> ResponseDetails:
     if args.stream:
         raise NotImplementedError("Not implemented for streaming")
@@ -148,8 +225,7 @@ def call_aml(
                 input_tokens,
             ],
             "parameters": {
-                "max_new_tokens": max_new_tokens,
-                "do_sample": True,
+                "max_tokens": max_new_tokens,
                 "return_full_text": False,
             },
         }
@@ -157,17 +233,29 @@ def call_aml(
 
     def get_response(response: requests.Response) -> List[str]:
         data = json.loads(response.content)
-        output = data[0]["0"]
+        try:
+            output = data[0]["0"]
+        except (KeyError, TypeError):
+            try:
+                output = data[0]
+            except (KeyError, TypeError):
+                output = data
         return output
 
     token_gen_time = []
-    start_time = time.time()
-    response = requests.post(args.aml_api_url, headers=headers, json=pload)
-    # Sometimes the AML endpoint will return an error, so we send the request again
-    try:
-        output = get_response(response)
-    except Exception as e:
-        return call_aml(input_tokens, max_new_tokens, args)
+    response = None
+    if start_time is None:
+        start_time = time.time()
+    while True:
+        try: # Sometimes the AML endpoint will return an error, so we send the request again
+            response = requests.post(args.aml_api_url, headers=headers, json=pload, timeout=180)
+            output = get_response(response)
+            break
+        except Exception as e:
+            print(f"Connection failed with {e}. Retrying AML request")
+            # make sure response exist before we call it
+            if response:
+                print(f"{response.status_code}:{response.content}")
 
     return ResponseDetails(
         generated_tokens=output,
@@ -191,7 +279,7 @@ def _run_parallel(
     event_loop = asyncio.new_event_loop()
     asyncio.set_event_loop(event_loop)
 
-    backend_call_fns = {"fastgen": call_fastgen, "vllm": call_vllm, "aml": call_aml}
+    backend_call_fns = {"fastgen": call_fastgen, "vllm": call_vllm, "aml": call_aml, "openai": call_openai}
     call_fn = backend_call_fns[args.backend]
 
     barrier.wait()
@@ -205,7 +293,7 @@ def _run_parallel(
 
     time.sleep(random.uniform(0, args.num_clients) * 0.01)
     try:
-        while not query_queue.empty():
+        while True:
             print(f"queue size: {query_queue.qsize()} ({pid})", flush=True)
             input_tokens, req_max_new_tokens = query_queue.get(timeout=1.0)
 
@@ -259,6 +347,14 @@ def run_client(args):
         p.start()
 
     tokenizer = AutoTokenizer.from_pretrained(args.model)
+
+    # make sure max_prompt_length is longer than the target prompt length
+    args.max_prompt_length = max(args.max_prompt_length, int(args.mean_prompt_length * 3))
+    # check if the all_text is longer than the max prompt length, if not expand it
+    global all_text
+    while len(tokenizer.tokenize(all_text)) < args.max_prompt_length:
+        all_text += all_text
+
     query_generator = RandomQueryGenerator(all_text, tokenizer, seed=42)
     request_text = query_generator.get_random_request_text(
         args.mean_prompt_length,

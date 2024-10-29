@@ -61,6 +61,10 @@ def parse_args(
         choices=["start", "stop", "restart"],
         help="Command for running server.py to manually start/stop/restart a server",
     )
+    server_parser.add_argument(
+        "--client_only", action="store_true", help="Run client only with server started"
+    )
+
 
     # Client args
     client_parser = argparse.ArgumentParser(add_help=False)
@@ -91,7 +95,7 @@ def parse_args(
     client_parser.add_argument(
         "--num_requests",
         type=int,
-        default=512,
+        default=None,
         help="Number of requests to process by clients",
     )
     client_parser.add_argument(
@@ -117,6 +121,18 @@ def parse_args(
         type=Path,
         default="./results/",
         help="Directory to save result JSON files",
+    )
+    client_parser.add_argument(
+        "--openai_api_url",
+        type=str,
+        default=None,
+        help="When using the openai API backend, this is the API URL that points to an openai api server",
+    )
+    client_parser.add_argument(
+        "--openai_api_key",
+        type=str,
+        default=None,
+        help="When using the openai API backend, this is the API key for a given openai_api_url",
     )
     client_parser.add_argument(
         "--aml_api_url",
@@ -152,13 +168,14 @@ def parse_args(
     parser.add_argument(
         "--backend",
         type=str,
-        choices=["aml", "fastgen", "vllm"],
+        choices=["aml", "fastgen", "vllm", "openai"],
         default="fastgen",
         help="Which backend to benchmark",
     )
     parser.add_argument(
         "--overwrite_results", action="store_true", help="Overwrite existing results"
     )
+    parser.add_argument("--fp6", action="store_true", help="Enable FP6")
 
     # Parse arguments
     args = parser.parse_args()
@@ -208,8 +225,7 @@ def get_args_product(
 
 def get_results_path(args: argparse.Namespace) -> Path:
     return Path(
-        args.out_json_dir,
-        f"{args.backend}/",
+        f"{args.out_json_dir}_{args.backend}/",
         "-".join(
             (
                 args.model.replace("/", "_"),
@@ -245,6 +261,9 @@ def save_json_results(
     args: argparse.Namespace, response_details: List[ResponseDetails]
 ) -> None:
     args_dict = vars(args)
+    # Remove AML key from args dictionary
+    if "aml_api_key" in args_dict:
+        args_dict["aml_api_key"] = None
     out_json_path = get_results_path(args)
     os.makedirs(out_json_path.parent, exist_ok=True)
 
