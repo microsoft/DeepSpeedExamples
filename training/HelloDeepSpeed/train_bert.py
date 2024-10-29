@@ -24,6 +24,8 @@ from transformers.models.roberta.modeling_roberta import (
     RobertaPreTrainedModel,
 )
 
+from deepspeed.accelerator import get_accelerator
+
 logger = loguru.logger
 
 ######################################################################
@@ -463,7 +465,7 @@ def create_experiment_dir(checkpoint_dir: pathlib.Path,
     try:
         gitlog = sh.git.log("-1", format="%H", _tty_out=False, _fg=False)
         with (exp_dir / "githash.log").open("w") as handle:
-            handle.write(gitlog.stdout.decode("utf-8"))
+            handle.write(gitlog)
     except sh.ErrorReturnCode_128:
         logger.info("Seems like the code is not running from"
                     " within a git repo, so hash will"
@@ -474,7 +476,7 @@ def create_experiment_dir(checkpoint_dir: pathlib.Path,
     try:
         gitdiff = sh.git.diff(_fg=False, _tty_out=False)
         with (exp_dir / "gitdiff.log").open("w") as handle:
-            handle.write(gitdiff.stdout.decode("utf-8"))
+            handle.write(gitdiff)
     except sh.ErrorReturnCode_129:
         logger.info("Seems like the code is not running from"
                     " within a git repo, so diff will"
@@ -625,8 +627,8 @@ def train(
         pathlib.Path: The final experiment directory
 
     """
-    device = (torch.device("cuda", local_rank) if (local_rank > -1)
-              and torch.cuda.is_available() else torch.device("cpu"))
+    device = (torch.device(get_accelerator().device_name(), local_rank) if (local_rank > -1)
+              and get_accelerator().is_available() else torch.device("cpu"))
     ################################
     ###### Create Exp. Dir #########
     ################################

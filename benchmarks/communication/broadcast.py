@@ -14,7 +14,10 @@ from communication.constants import *
 from deepspeed.accelerator import get_accelerator
 
 
-def timed_broadcast(input, args):
+def timed_broadcast(input, start_event, end_event, args):
+    if args.device == "cpu":
+        print_rank_0(f"No Event support on CPU to measure time for now")
+        return
     if args.dist == 'torch':
         import torch.distributed as dist
     elif args.dist == 'deepspeed':
@@ -27,11 +30,12 @@ def timed_broadcast(input, args):
     sync_all()
 
     # time the actual comm op trials times and average it
-    pre = time.perf_counter()
+    start_event.record()
     for i in range(args.trials):
         dist.broadcast(input, 0, async_op=args.async_op)
+    end_event.record()
     sync_all()
-    duration = time.perf_counter() - pre
+    duration = start_event.elapsed_time(end_event) / 1000
 
     # maintain and clean performance data
     avg_duration = duration / args.trials
@@ -59,6 +63,16 @@ def run_broadcast(local_rank, args):
     world_size = dist.get_world_size()
     global_rank = dist.get_rank()
 
+    if args.device == "xpu":
+        start_event = torch.xpu.Event(enable_timing=True)
+        end_event = torch.xpu.Event(enable_timing=True)
+    elif args.device == "cpu":
+        start_event = torch.cpu.Event()
+        end_event = torch.cpu.Event()
+    else:
+        start_event = torch.cuda.Event(enable_timing=True)
+        end_event = torch.cuda.Event(enable_timing=True)
+
     if args.scan:
         M_LIST = []
         for x in (2**p for p in range(1, args.maxsize)):
@@ -82,7 +96,7 @@ def run_broadcast(local_rank, args):
                 else:
                     raise e
             sync_all()
-            timed_broadcast(input, args)
+            timed_broadcast(input, start_event, end_event, args)
     else:
         # Send the biggest message size our GPUs can fit. If you're facing OOM errors, reduce the mem_factor
         # Don't need output tensor, so we double mem_factor
@@ -102,7 +116,7 @@ def run_broadcast(local_rank, args):
                 sync_all()
                 return
         sync_all()
-        timed_broadcast(input, args)
+        timed_broadcast(input, start_event, end_event, args)
 
 
 if __name__ == "__main__":

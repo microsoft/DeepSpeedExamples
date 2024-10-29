@@ -9,10 +9,12 @@ EP_SIZE=2
 # Number of total experts
 EXPERTS=2
 
-deepspeed --num_nodes=${NUM_NODES} --num_gpus=${NUM_GPUS} cifar10_deepspeed.py \
+deepspeed --num_nodes=${NUM_NODES}\
+          --num_gpus=${NUM_GPUS} \
+          --bind_cores_to_rank \
+        cifar10_deepspeed.py \
 	--log-interval 100 \
 	--deepspeed \
-	--deepspeed_config ds_config.json \
 	--moe \
 	--ep-world-size ${EP_SIZE} \
 	--num-experts ${EXPERTS} \

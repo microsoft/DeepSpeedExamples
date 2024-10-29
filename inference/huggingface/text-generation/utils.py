@@ -9,7 +9,8 @@ import json
 import deepspeed
 import torch
 from huggingface_hub import snapshot_download
-from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer, LlamaTokenizerFast
+from deepspeed.accelerator import get_accelerator
 
 class DSPipeline():
     '''
@@ -21,7 +22,8 @@ class DSPipeline():
                  dtype=torch.float16,
                  is_meta=True,
                  device=-1,
-                 checkpoint_path=None
+                 checkpoint_path=None,
+                 trust_remote_code=False,
                  ):
         self.model_name = model_name
         self.dtype = dtype
@@ -33,25 +35,28 @@ class DSPipeline():
         elif device < 0:
             self.device = torch.device("cpu")
         else:
-            self.device = torch.device(f"cuda:{device}")
+            self.device = torch.device(get_accelerator().device_name(device))
 
         # the Deepspeed team made these so it's super fast to load (~1 minute), rather than wait 10-20min loading time.
         self.tp_presharded_models = ["microsoft/bloom-deepspeed-inference-int8", "microsoft/bloom-deepspeed-inference-fp16"]
 
-        self.tokenizer = AutoTokenizer.from_pretrained(model_name, padding_side="left")
+        self.tokenizer = AutoTokenizer.from_pretrained(model_name, padding_side="left", trust_remote_code=trust_remote_code)
         self.tokenizer.pad_token = self.tokenizer.eos_token
 
         if (is_meta):
             '''When meta tensors enabled, use checkpoints'''
-            self.config = AutoConfig.from_pretrained(self.model_name)
+            self.config = AutoConfig.from_pretrained(self.model_name, trust_remote_code=trust_remote_code)
             self.repo_root, self.checkpoints_json = self._generate_json(checkpoint_path)
 
             with deepspeed.OnDevice(dtype=torch.float16, device="meta"):
-                self.model = AutoModelForCausalLM.from_config(self.config)
+                self.model = AutoModelForCausalLM.from_config(self.config, trust_remote_code=trust_remote_code)
         else:
-            self.model = AutoModelForCausalLM.from_pretrained(self.model_name)
+            self.model = AutoModelForCausalLM.from_pretrained(self.model_name, trust_remote_code=trust_remote_code)
 
         self.model.eval()
+
+        if self.dtype == torch.float16:
+            self.model.half()
 
 
     def __call__(self,
@@ -106,9 +111,37 @@ class DSPipeline():
             if torch.is_tensor(input_tokens[t]):
                 input_tokens[t] = input_tokens[t].to(self.device)
 
-        self.model.cuda().to(self.device)
+        self.model.to(self.device)
 
-        outputs = self.model.generate(**input_tokens, **generate_kwargs)
+        if isinstance(self.tokenizer, LlamaTokenizerFast):
+            # NOTE: Check if Llamma can work w/ **input_tokens
+            #       'token_type_ids' kwarg not recognized in Llamma generate function
+            outputs = self.model.generate(input_tokens.input_ids, **generate_kwargs)
+        else:
+            outputs = self.model.generate(**input_tokens, **generate_kwargs)
         outputs = self.tokenizer.batch_decode(outputs, skip_special_tokens=True)
 
         return outputs
+
+class Performance():
+
+    def print_perf_stats(latency_set, config, dtype, batch_size, warmup=3):
+        # trim warmup queries
+        latency_set = list(latency_set)
+        latency_set = latency_set[warmup:]
+        count = len(latency_set)
+
+        if count > 0:
+            latency_set.sort()
+            avg = sum(latency_set) / count
+            num_layers = getattr(config, "num_layers", config.num_hidden_layers)
+            num_parameters = num_layers * config.hidden_size * config.hidden_size * 12
+            if dtype == "float16":
+                num_bytes = 2
+            elif dtype == "float32":
+                num_bytes = 4
+            else:
+                num_bytes = 1
+            print("Avg Per Token Latency: {0:8.2f} ms".format(avg * 1000))
+            print("Avg BW: {0:8.2f} GB/s".format(1/avg * num_parameters * num_bytes / 1e9))
+            print("Avg flops: {0:8.2f} TFlops/s".format(1/avg * num_parameters * num_bytes * batch_size / 1e12))

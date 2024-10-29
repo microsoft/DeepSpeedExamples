@@ -14,7 +14,10 @@ from communication.constants import *
 from deepspeed.accelerator import get_accelerator
 
 
-def timed_pt2pt(input, args):
+def timed_pt2pt(input, start_event, end_event, args):
+    if args.device == "cpu":
+        print_rank_0(f"No Event support on CPU to measure time for now")
+        return
     if args.dist == 'torch':
         import torch.distributed as dist
     elif args.dist == 'deepspeed':
@@ -36,7 +39,7 @@ def timed_pt2pt(input, args):
     sync_all()
 
     # time the actual comm op trials times and average it
-    pre = time.perf_counter()
+    start_event.record()
     for i in range(args.trials):
         if dist.get_rank() == 0:
             if args.async_op:
@@ -49,8 +52,9 @@ def timed_pt2pt(input, args):
             else:
                 dist.recv(input, src=0)
 
+    end_event.record()
     sync_all()
-    duration = time.perf_counter() - pre
+    duration = start_event.elapsed_time(end_event) / 1000
 
     # maintain and clean performance data
     avg_duration = duration / args.trials
@@ -77,6 +81,16 @@ def run_pt2pt(local_rank, args):
     global_rank = dist.get_rank()
     world_size = dist.get_world_size()
 
+    if args.device == "xpu":
+        start_event = torch.xpu.Event(enable_timing=True)
+        end_event = torch.xpu.Event(enable_timing=True)
+    elif args.device == "cpu":
+        start_event = torch.cpu.Event()
+        end_event = torch.cpu.Event()
+    else:
+        start_event = torch.cuda.Event(enable_timing=True)
+        end_event = torch.cuda.Event(enable_timing=True)
+
     if args.scan:
         # Create list of message sizes
         M_LIST = []
@@ -101,7 +115,7 @@ def run_pt2pt(local_rank, args):
                 else:
                     raise e
             sync_all()
-            timed_pt2pt(input, args)
+            timed_pt2pt(input, start_event, end_event, args)
     else:
         # Send the biggest message size our GPUs can fit. If you're facing OOM errors, reduce the mem_factor
         # Don't need output tensor, so double mem_factor
@@ -121,7 +135,7 @@ def run_pt2pt(local_rank, args):
                 sync_all()
                 return
         sync_all()
-        timed_pt2pt(input, args)
+        timed_pt2pt(input, start_event, end_event, args)
 
 
 if __name__ == "__main__":
