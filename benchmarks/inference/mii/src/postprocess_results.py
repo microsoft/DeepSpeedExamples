@@ -5,11 +5,15 @@
 
 import argparse
 import json
+import re
+import os
+from tabulate import tabulate
 from dataclasses import dataclass
 from functools import reduce
 from pathlib import Path
 from statistics import mean
 from typing import List
+from collections import defaultdict
 
 import numpy as np
 from transformers import AutoTokenizer
@@ -45,10 +49,13 @@ def parse_args():
     return args
 
 
-def get_tokenizer():
+def get_tokenizer(model=None):
     global tokenizer
     if tokenizer is None:
-        tokenizer = AutoTokenizer.from_pretrained("meta-llama/Llama-2-7b-hf")
+        if model==None:
+            tokenizer = AutoTokenizer.from_pretrained("meta-llama/Llama-2-7b-hf")
+        else:
+            tokenizer = AutoTokenizer.from_pretrained(model)
     return tokenizer
 
 
@@ -74,18 +81,28 @@ def get_summary(args, response_details):
 
     tokens_per_sec = mean(
         [
-            (len(get_tokenizer().tokenize(r.prompt)) + len(r.generated_tokens))
+            (len(get_tokenizer(args["model"]).tokenize(r.prompt)) +
+            len(get_tokenizer(args["model"]).tokenize(r.generated_tokens)) if type(r.generated_tokens) == str
+            else len(r.generated_tokens))
             / (r.end_time - r.start_time)
             for r in response_details
         ]
     )
-    first_token_latency = mean([r.token_gen_time[0] for r in response_details])
 
-    token_gen_latency_flat = reduce(
-        list.__add__,
-        [r.token_gen_time[1:-1] for r in response_details if len(r.token_gen_time) > 2],
-    )
-    token_gen_latency = mean([t for t in token_gen_latency_flat])
+    # For non-streaming results, we don't have any token_gen_time information
+    first_token_latency = 0.0
+    token_gen_latency = 0.0
+    if response_details[0].token_gen_time:
+        first_token_latency = mean([r.token_gen_time[0] for r in response_details])
+        token_gen_latency_flat = reduce(
+            list.__add__,
+            [
+                r.token_gen_time[1:-1]
+                for r in response_details
+                if len(r.token_gen_time) > 2
+            ],
+        )
+        token_gen_latency = mean([t for t in token_gen_latency_flat])
 
     return ProfilingSummary(
         throughput, latency, token_gen_latency, first_token_latency, tokens_per_sec
@@ -139,3 +156,45 @@ if __name__ == "__main__":
         + f"Token generation latency: {ps.token_gen_latency:.3f} s/token, "
         + f"First token received: {ps.first_token_latency:.3f} s"
     )
+
+def get_result_sets(args: argparse.Namespace) -> set():
+    result_params = None
+    result_re = re.compile(
+        r"(.+)-tp(\d+)-bs(\d+)-replicas(\d+)-prompt(\d+)-gen(\d+)-clients.*.json"
+    )
+
+    data_sets = defaultdict(set)
+
+    if hasattr(args, "data_dirs"):
+        data_set_dirs = args.data_dirs
+    elif hasattr(args, "backend"):
+        data_set_dirs = args.backend
+
+    # Generate data sets
+    for data in data_set_dirs:
+        if hasattr(args, "log_dir"):
+            os_path = os.path.join(args.log_dir, data)
+        else:
+            os_path = os.path.join(data)
+
+        for f in os.listdir(os_path):
+            match = result_re.match(f)
+            if match:
+                data_sets[data].add(match.groups())
+
+    # Intersection between all sets
+    for data_set in data_sets.values():
+        if result_params == None:
+            result_params = data_set
+        else:
+            result_params = result_params.intersection(data_set)
+
+    # Warning messages about skipped sets
+    for key, data_set in data_sets.items():
+        difference = data_set.difference(result_params)
+        if difference:
+            print(f"WARNING: data {key} has result combinations that are not present in all data sets:")
+            print(tabulate(difference, headers=["model", "tp_size", "bs", "replicas", "prompt", "gen"]))
+            print("")
+
+    return result_params

@@ -1,4 +1,4 @@
-# Benchmarking Scripts for DeepSpeed-FastGen
+# Inference Benchmarking Scripts for vLLM, DeepSpeed-FastGen, and Azure ML endpoints
 
 ## Run the Benchmark
 
@@ -24,10 +24,22 @@ python run_benchmark.py --tp_size 1 2
 ```
 
 By default the benchmark runs with DeepSpeed-MII as the backend inference
-server. To change the backend to vLLM, provide the `--vllm` flag:
+server. The benchmark also supports vLLM and Azure endpoints. To change the
+backend to vLLM, provide the `--backend vllm` arg:
 
 ```bash
-python run_benchmark.py --vllm
+python run_benchmark.py --backend vllm
+```
+
+To benchmark against an Azure endpoint, provide the `--backend aml` as well as
+the following values:
+- `--aml_api_url`: API URL that points to an AML endpoint
+- `--aml_api_key`: API key for the given AML endpoint
+- `--deployment_name`: The name of the AML endpoint deployment you want to test against
+- `--model`: The name of the HuggingFace-hosted model deployed on the AML endpoint. This is used to load a tokenizer and correctly calculate the number of tokens in the prompts and responses.
+
+```bash
+python run_benchmark.py --backend aml --model mistralai/Mixtral-8x7B-v0.1 --deployment_name mistralai-mixtral-8x7b-v01-4 --aml_api_url <URL obtained from Azure> --aml_api_key <Authentication key obtained from Azure>
 ```
 
 The run_all.sh script performs benchmarks across various models, client numbers,
@@ -40,12 +52,44 @@ Results are collected in `./results/`.
 ## Analyze the Benchmark Results
 
 The scripts mentioned below were used for generating the plots featured in our
-blog. Specify the root directory for log files using `--log_dir`. The generated
+blog. Specify the root directory for log files using `--log_dir` and the backends you wish to run for, e.g. `--backend vllm fastgen aml`. The generated
 figures will be saved to `./plots/`
 
 - `src/plot_th_lat.py`: This script generates charts for throughput and latency across different model sizes and client counts.
 - `src/plot_effective_throughput.py`: Use this to chart effective throughput.
 - `src/plot_latency_percentile.py`: This script will plot the 50th, 90th, and 95th percentile latencies.
+- `src/plot_repl_scale.py`: This script will plot the throughput and number of replicas for a fixed clients/replica per plot.
+- `src/plot_tp_sizes.py`: This script will plot latency and TFLOPs per GPU across different tensor parallelism sizes.
+
+## Throughput Latency Plot Generation Script
+The `plot_th_lat.py` throughput-latency plot generation script is generalized for any result output directory, irrespective of where it was run.
+
+The script uses an **_optional_** `plot_config.yaml` that resides within each result directory and allows for overrides in the plot formatting. An example config file may look like this:
+```yaml
+label: "vLLM"
+color: "purple"
+marker: "o"
+linestyle: "--"
+polyfit_degree: 0
+x_max : 30
+y_max : 10
+```
+
+Each of the config parameters is optional, allowing for overriding of only the specific plot aspects required, however, all parameters may also be provided.
+
+A few nuances for the `polyfit_degree` and `x/y_max` parameters:
+- `polyfit_degree`: Specifies the polynomial degree for the 'best fit line'. Specifying `0` removes the best fit line and simply connects the scatter plot points.
+- `x/y_max`: Clips the x or y axis data using the specified value as the upper bound.
+
+An example command executing the script may look something like this:
+```bash
+DeepSpeedExamples/benchmarks/inference/mii$ python3 src/plot_th_lat.py --data_dirs ./results/results-* --model_name <plot_model_title>
+```
+
+Or each result directory can be enumerated explicitly:
+```bash
+DeepSpeedExamples/benchmarks/inference/mii$ python3 src/plot_th_lat.py --data_dirs ./results/results-1 ./results/results-2 ./results/results-3 --model_name <plot_model_title>
+```
 
 ## Running an End-to-End Example
 
