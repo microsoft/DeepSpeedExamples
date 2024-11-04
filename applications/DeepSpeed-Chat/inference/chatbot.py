@@ -50,7 +50,9 @@ def get_generator(path):
 
     model.config.end_token_id = tokenizer.eos_token_id
     model.config.pad_token_id = model.config.eos_token_id
-    model.resize_token_embeddings(len(tokenizer))
+    resize_kwargs = {}
+    resize_kwargs["mean_resizing"] = False
+    model.resize_token_embeddings(len(tokenizer), **resize_kwargs)
     generator = pipeline("text-generation",
                          model=model,
                          tokenizer=tokenizer,
