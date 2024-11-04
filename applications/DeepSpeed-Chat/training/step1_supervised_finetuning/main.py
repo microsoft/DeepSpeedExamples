@@ -4,7 +4,6 @@
 
 # DeepSpeed Team
 import argparse
-import os
 import math
 import sys
 import time
@@ -23,16 +22,12 @@ import deepspeed
 from deepspeed.ops.adam import DeepSpeedCPUAdam, FusedAdam
 from deepspeed import get_accelerator
 
-sys.path.append(
-    os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
-from utils.data.data_utils import create_prompt_dataset
-from utils.utils import print_rank_0, to_device, save_hf_format, set_random_seed, get_all_reduce_mean, \
-                        get_optimizer_grouped_parameters, save_zero_three_model, load_hf_tokenizer, \
-                        print_loss, is_hpu, hpu_mark_step
-from utils.ds_utils import get_train_ds_config
-from utils.module.lora import convert_linear_layer_to_lora, convert_lora_to_linear_layer, only_optimize_lora_parameters, make_model_gradient_checkpointing_compatible
-from utils.model.model_utils import create_hf_model, causal_lm_model_to_fp32_loss
-from utils.perf import print_throughput
+from dschat.utils.data.data_utils import create_prompt_dataset
+from dschat.utils.utils import print_rank_0, to_device, save_hf_format, set_random_seed, get_all_reduce_mean, get_optimizer_grouped_parameters, save_zero_three_model, load_hf_tokenizer, TensorAccumulator, update_optim_step_mean_loss, print_optim_step_mean_loss
+from dschat.utils.ds_utils import get_train_ds_config
+from dschat.utils.module.lora import convert_linear_layer_to_lora, convert_lora_to_linear_layer, only_optimize_lora_parameters, make_model_gradient_checkpointing_compatible
+from dschat.utils.model.model_utils import create_hf_model, causal_lm_model_to_fp32_loss
+from dschat.utils.perf import print_throughput
 
 
 def parse_args():
@@ -193,9 +188,16 @@ def parse_args():
                         type=str,
                         default="step1_tensorboard")
     ## Tokenizer
-    parser.add_argument("--add_eot_token",
-                        action='store_true',
-                        help="Add <|endoftext|> as additional special token to tokenizer")
+    parser.add_argument(
+        "--add_eot_token",
+        action='store_true',
+        help="Add `eot_token` as additional special token to tokenizer")
+    parser.add_argument(
+        "--eot_token",
+        type=str,
+        default="<|endoftext|>",
+        help="Specify the format of the `eot_token`",
+    )
     ## Print loss
     parser.add_argument('--print_loss',
                         action='store_true',
@@ -247,8 +249,7 @@ def main():
     torch.distributed.barrier()
 
     # load_hf_tokenizer will get the correct tokenizer and set padding tokens based on the model family
-    args.end_of_conversation_token = "<|endoftext|>"
-    additional_special_tokens = args.end_of_conversation_token if args.add_eot_token else None
+    additional_special_tokens = args.eot_token if args.add_eot_token else None
     tokenizer = load_hf_tokenizer(args.model_name_or_path,
                                   fast_tokenizer=True,
                                   add_special_tokens=additional_special_tokens)
@@ -284,6 +285,7 @@ def main():
         args.seed,
         tokenizer,
         args.max_seq_len,
+        end_of_conversation_token=tokenizer.eos_token,
         sft_only_data_path=args.sft_only_data_path)
     # DataLoaders creation:
     if args.local_rank == -1:

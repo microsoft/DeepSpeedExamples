@@ -4,9 +4,7 @@
 
 # DeepSpeed Team
 import argparse
-import os
 import math
-import sys
 
 import torch
 from torch.utils.data import DataLoader, RandomSampler, SequentialSampler
@@ -21,15 +19,11 @@ import deepspeed
 from deepspeed.ops.adam import DeepSpeedCPUAdam, FusedAdam
 from deepspeed.accelerator import get_accelerator
 
-sys.path.append(
-    os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
-from utils.model.model_utils import create_critic_model
-from utils.data.data_utils import create_prompt_dataset, DataCollatorReward
-from utils.utils import print_rank_0, to_device, save_hf_format, set_random_seed, get_all_reduce_mean, \
-                        get_optimizer_grouped_parameters, save_zero_three_model, load_hf_tokenizer, \
-                        print_loss, is_hpu, hpu_mark_step
-from utils.ds_utils import get_train_ds_config
-from utils.module.lora import convert_linear_layer_to_lora, convert_lora_to_linear_layer, only_optimize_lora_parameters, make_model_gradient_checkpointing_compatible
+from dschat.utils.model.model_utils import create_critic_model
+from dschat.utils.data.data_utils import create_prompt_dataset, DataCollatorReward
+from dschat.utils.utils import print_rank_0, to_device, save_hf_format, set_random_seed, get_all_reduce_mean, get_optimizer_grouped_parameters, save_zero_three_model, load_hf_tokenizer, TensorAccumulator, update_optim_step_mean_loss, print_optim_step_mean_loss
+from dschat.utils.ds_utils import get_train_ds_config
+from dschat.utils.module.lora import convert_linear_layer_to_lora, convert_lora_to_linear_layer, only_optimize_lora_parameters, make_model_gradient_checkpointing_compatible
 
 
 def parse_args():
@@ -281,8 +275,17 @@ def main():
     # the LN that precedes it.
     force_optimize_params = []
     if "bigscience/bloom-" in args.model_name_or_path:
-        torch.nn.init.ones_(rm_model.rwtranrsformer.ln_f.weight)
-        torch.nn.init.zeros_(rm_model.rwtranrsformer.ln_f.bias)
+        zero_init_enabled = (args.zero_stage == 3)
+        params = [
+            rm_model.rwtranrsformer.ln_f.weight,
+            rm_model.rwtranrsformer.ln_f.bias
+        ]
+        with deepspeed.zero.GatheredParameters(params,
+                                               modifier_rank=0,
+                                               enabled=zero_init_enabled):
+            if deepspeed.comm.get_rank() == 0 or not zero_init_enabled:
+                torch.nn.init.ones_(rm_model.rwtransformer.ln_f.weight)
+                torch.nn.init.zeros_(rm_model.rwtransformer.ln_f.bias)
         force_optimize_params.extend(
             ['rwtranrsformer.ln_f.weight', 'rwtranrsformer.ln_f.bias'])
 
@@ -317,7 +320,6 @@ def main():
                                   collate_fn=data_collator,
                                   sampler=train_sampler,
                                   batch_size=args.per_device_train_batch_size)
-    eval_sampler = SequentialSampler(eval_dataset)
     eval_dataloader = DataLoader(eval_dataset,
                                  collate_fn=data_collator,
                                  sampler=eval_sampler,
