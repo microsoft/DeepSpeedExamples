@@ -42,7 +42,7 @@ sys.path.append(
     os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
 from utils.data.data_utils import create_prompt_dataset, MiniDataset, DataCollatorRLHF, get_unsupervised_data
 from utils.utils import print_rank_0, to_device, save_hf_format, set_random_seed, get_all_reduce_mean, \
-    moving_average, save_zero_three_model, load_hf_tokenizer, ExponentialMovingAverage
+    moving_average, save_zero_three_model, load_hf_tokenizer, ExponentialMovingAverage, is_hpu
 from utils.module.lora import convert_lora_to_linear_layer
 from utils.perf import print_throughput_step3
 from deepspeed.accelerator import get_accelerator
@@ -269,20 +269,16 @@ def parse_args():
         '--critic_gradient_checkpointing',
         action='store_true',
         help='Enable HF gradient checkpointing for Critic model.')
-    parser.add_argument(
-        "--actor_dropout",
-        type=float,
-        default=None,
-        help="If actor dropout configured, use it. "
-        "Otherwise, keep the default dropout configuration of the actor model."
-    )
-    parser.add_argument(
-        "--critic_dropout",
-        type=float,
-        default=None,
-        help="If critic dropout configured, use it. "
-        "Otherwise, keep the default dropout configuration of the critic model."
-    )
+    parser.add_argument("--actor_dropout",
+                        type=float,
+                        default=None,
+                        help="If actor dropout configured, use it. "
+                             "Otherwise, keep the default dropout configuration of the actor model.")
+    parser.add_argument("--critic_dropout",
+                        type=float,
+                        default=None,
+                        help="If critic dropout configured, use it. "
+                             "Otherwise, keep the default dropout configuration of the critic model.")
     ## LoRA for efficient training setting
     parser.add_argument("--actor_lora_dim",
                         type=int,
@@ -326,13 +322,13 @@ def parse_args():
         '--enable_mixed_precision_lora',
         action='store_true',
         help='Enable Mixed Precision ZeRO++ for training and generation.')
-    ## low precision
-    parser.add_argument(
-        '--compute_fp32_loss',
-        action='store_true',
-        help='Relevant for low precision dtypes (fp16, bf16, etc.). '
-        'If specified, loss is calculated in fp32.'
-        'This applies for both actor and critic models.')
+    ## bf16
+    parser.add_argument('--no_bf16_to_fp32_loss',
+                        action='store_false',
+                        dest='bf16_to_fp32_loss',
+                        help='Relevant only with bf16 dtype. '
+                             'If specified, loss is calculated in bf16. Otherwise, calculated in fp32. '
+                             'This applies for both actor and critic models.')
     ## Tensorboard logging
     parser.add_argument('--enable_tensorboard',
                         action='store_true',
@@ -341,10 +337,9 @@ def parse_args():
                         type=str,
                         default="step3_tensorboard")
     ## Tokenizer
-    parser.add_argument(
-        "--add_eot_token",
-        action='store_true',
-        help="Add <|endoftext|> as additional special token to tokenizer")
+    parser.add_argument("--add_eot_token",
+                        action='store_true',
+                        help="Add <|endoftext|> as additional special token to tokenizer")
     ## Actor/critic model overflow alignment
     parser.add_argument(
         '--align_overflow',
@@ -354,11 +349,10 @@ def parse_args():
     parser.add_argument('--print_answers',
                         action='store_true',
                         help='Print prompt and answers during training')
-    parser.add_argument(
-        "--print_answers_interval",
-        type=int,
-        default=1,
-        help="If --print_answers enabled, controls the printing interval.")
+    parser.add_argument("--print_answers_interval",
+                        type=int,
+                        default=1,
+                        help="If --print_answers enabled, controls the printing interval.")
     ## Testing
     parser.add_argument(
         '--enable_test_mode',
@@ -373,7 +367,17 @@ def parse_args():
         help=
         "Training non-overflow step at which to terminate training during testing."
     )
+    parser.add_argument('--no_fused_kernels',
+                        action='store_true',
+                        help='Do not use cuda fused kernels.')
 
+    ## HPU
+    parser.add_argument("--enable_hpu_graphs",
+                        default=False,
+                        action="store_true",
+                        help="Enable HPU graphs.")
+
+    ## DeepSpeed
     parser = deepspeed.add_config_arguments(parser)
     args = parser.parse_args()
 
@@ -394,6 +398,9 @@ def parse_args():
         raise ValueError(
             "The combination of [actor_zero_stage==2, critic_zero_stage==2, enable_hybrid_engine=True, offload=True, lora=False] is currently unsupported due to training instability!"
         )
+
+    if is_hpu():
+        assert not args.enable_mixed_precision_lora, "HPU does not support --enable_mixed_precision_lora"
 
     return args
 
@@ -451,10 +458,16 @@ def main():
     if args.local_rank == -1:
         device = torch.device(get_accelerator().device_name())
     else:
-        get_accelerator().set_device(args.local_rank)
-        device = torch.device(get_accelerator().device_name(), args.local_rank)
-        # Initializes the distributed backend which will take care of sychronizing nodes/GPUs
+        if not is_hpu():
+            get_accelerator().set_device(args.local_rank)
+        device = torch.device(get_accelerator().device_name(args.local_rank))
+        # Initializes the distributed backend which will take care of synchronizing nodes/GPUs
         deepspeed.init_distributed()
+
+    if is_hpu():
+        from transformers.generation import GenerationMixin
+        from optimum.habana.transformers.generation import GaudiGenerationMixin
+        GenerationMixin.generate = GaudiGenerationMixin.generate
 
     args.global_rank = torch.distributed.get_rank()
 
@@ -494,6 +507,7 @@ def main():
         rlhf_engine.actor.optimizer.quantize_nontrainable_params()
         print_rank_0("Mixed Precision ZeRO++ enabled")
 
+
     ppo_trainer = DeepSpeedPPOTrainerUnsupervised if unsupervised_training_enabled else DeepSpeedPPOTrainer
     trainer = ppo_trainer(rlhf_engine, args)
 
@@ -504,9 +518,7 @@ def main():
                                      args.per_device_training_batch_size)
 
     # Train!
-    print_rank_0(
-        f"***** Running training (total_iters={num_total_iters}) *****",
-        args.global_rank)
+    print_rank_0(f"***** Running training (total_iters={num_total_iters}) *****", args.global_rank)
 
     non_overflow_step_count = 0
     step_average_reward = 0.

@@ -92,9 +92,7 @@ def get_tokenizer(model_name_or_path, fast_tokenizer=True):
     return tokenizer
 
 
-def load_hf_tokenizer(model_name_or_path,
-                      fast_tokenizer=True,
-                      add_special_tokens=None):
+def load_hf_tokenizer(model_name_or_path, fast_tokenizer=True, add_special_tokens=None):
     if os.path.exists(model_name_or_path):
         # Locally tokenizer loading has some issue, so we need to force download
         model_json = os.path.join(model_name_or_path, "config.json")
@@ -111,8 +109,7 @@ def load_hf_tokenizer(model_name_or_path,
     if add_special_tokens is not None:
         add_special_tokens = [add_special_tokens] if isinstance(add_special_tokens, str) \
             else add_special_tokens
-        tokenizer.add_special_tokens(
-            {'additional_special_tokens': add_special_tokens})
+        tokenizer.add_special_tokens({'additional_special_tokens': add_special_tokens})
 
     return tokenizer
 
@@ -211,10 +208,7 @@ def get_optimizer_grouped_parameters(
     model,
     weight_decay,
     lora_lr=5e-4,
-    no_decay_name_list=[
-        "bias", "layer_norm.weight", "layernorm.weight", "norm.weight",
-        "ln_f.weight"
-    ],
+    no_decay_name_list=["bias", "layer_norm.weight", "layernorm.weight", "norm.weight", "ln_f.weight"],
     lora_name_list=["lora_right_weight", "lora_left_weight"],
 ):
     optimizer_grouped_parameters = [
@@ -311,43 +305,26 @@ def save_zero_three_model(model_ema, global_rank, save_dir, zero_stage=0):
         del output_state_dict
 
 
-class TensorAccumulator:
+def print_loss(epoch, step, steps_per_print, gas, loss, loss_sum, rank):
+    loss_ = loss.detach()
+    loss_sum = torch.zeros_like(loss_) if loss_sum is None else loss_sum
+    loss_sum += loss_
+    if step > 0 and step % (steps_per_print * gas) == 0:
+        opt_step = step / gas
+        avg_loss = loss_sum / gas
+        print_rank_0(
+            f"[{datetime.now()}] epoch: {epoch} | step: {opt_step} | avg_loss: {avg_loss}", rank)
+    if step > 0 and step % gas == 0:
+        loss_sum.zero_()
 
-    def __init__(self):
-        self.sum = None
-        self.cnt = 0
-
-    def add(self, t):
-        t_ = t.detach()
-        if self.sum is None:
-            self.sum = torch.zeros_like(t_)
-        self.sum += t_
-        self.cnt += 1
-
-    def clear(self):
-        self.sum.zero_()
-        self.cnt = 0
-
-    def get_sum(self):
-        return self.sum.item()
-
-    def get_mean(self):
-        return 0. if self.cnt == 0 else self.get_sum() / self.cnt
+    return loss_sum
 
 
-def update_optim_step_mean_loss(loss_accumulator: TensorAccumulator, loss,
-                                step, gas):
-    loss_accumulator.add(loss)
-    optim_step_mean_loss = None
-    if (step + 1) % gas == 0:
-        optim_step_mean_loss = loss_accumulator.get_mean()
-    return optim_step_mean_loss
+def is_hpu():
+    return get_accelerator().device_name() == "hpu"
 
 
-def print_optim_step_mean_loss(loss, epoch, step, steps_per_print, gas, rank):
-    if loss is not None:
-        optim_step = (step + 1) // gas
-        if optim_step % steps_per_print == 0:
-            print_rank_0(
-                f"[{datetime.now()}] epoch: {epoch} | step: {optim_step} | mean_loss: {loss}",
-                rank)
+def hpu_mark_step():
+    if is_hpu():
+        import habana_frameworks.torch.core as htcore
+        htcore.mark_step()

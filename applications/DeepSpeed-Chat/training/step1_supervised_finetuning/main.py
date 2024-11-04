@@ -27,8 +27,8 @@ sys.path.append(
     os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
 from utils.data.data_utils import create_prompt_dataset
 from utils.utils import print_rank_0, to_device, save_hf_format, set_random_seed, get_all_reduce_mean, \
-    get_optimizer_grouped_parameters, save_zero_three_model, load_hf_tokenizer, TensorAccumulator, \
-    update_optim_step_mean_loss, print_optim_step_mean_loss
+                        get_optimizer_grouped_parameters, save_zero_three_model, load_hf_tokenizer, \
+                        print_loss, is_hpu, hpu_mark_step
 from utils.ds_utils import get_train_ds_config
 from utils.module.lora import convert_linear_layer_to_lora, convert_lora_to_linear_layer, only_optimize_lora_parameters, make_model_gradient_checkpointing_compatible
 from utils.model.model_utils import create_hf_model, causal_lm_model_to_fp32_loss
@@ -141,12 +141,11 @@ def parse_args():
     parser.add_argument('--gradient_checkpointing',
                         action='store_true',
                         help='Enable HF gradient checkpointing for model.')
-    parser.add_argument(
-        "--dropout",
-        type=float,
-        default=None,
-        help="If dropout configured, use it. "
-        "Otherwise, keep the default dropout configuration of the model.")
+    parser.add_argument("--dropout",
+                        type=float,
+                        default=None,
+                        help="If dropout configured, use it. "
+                             "Otherwise, keep the default dropout configuration of the model.")
     # deepspeed features
     parser.add_argument('--offload',
                         action='store_true',
@@ -180,12 +179,12 @@ def parse_args():
         help=
         "Initial LoRA learning rate (after the potential warmup period) to use."
     )
-    ## low precision
-    parser.add_argument(
-        '--compute_fp32_loss',
-        action='store_true',
-        help='Relevant for low precision dtypes (fp16, bf16, etc.). '
-        'If specified, loss is calculated in fp32.')
+    ## bf16
+    parser.add_argument('--no_bf16_to_fp32_loss',
+                        action='store_false',
+                        dest='bf16_to_fp32_loss',
+                        help='Relevant only with bf16 dtype. '
+                             'If specified, loss is calculated in bf16. Otherwise, calculated in fp32.')
     ## Tensorboard logging
     parser.add_argument('--enable_tensorboard',
                         action='store_true',
@@ -194,15 +193,18 @@ def parse_args():
                         type=str,
                         default="step1_tensorboard")
     ## Tokenizer
-    parser.add_argument(
-        "--add_eot_token",
-        action='store_true',
-        help="Add <|endoftext|> as additional special token to tokenizer")
+    parser.add_argument("--add_eot_token",
+                        action='store_true',
+                        help="Add <|endoftext|> as additional special token to tokenizer")
     ## Print loss
-    parser.add_argument(
-        '--print_loss',
-        action='store_true',
-        help='Prints loss at deepspeed config steps_per_print interval.')
+    parser.add_argument('--print_loss',
+                        action='store_true',
+                        help='Prints loss at deepspeed config steps_per_print interval.')
+    ## Debug
+    parser.add_argument('--no_fused_kernels',
+                        action='store_true',
+                        help='Do not use cuda fused kernels.')
+    ## DeepSpeed
     parser = deepspeed.add_config_arguments(parser)
     args = parser.parse_args()
 
@@ -210,14 +212,18 @@ def parse_args():
 
 
 def main():
+    if is_hpu():
+        import habana_frameworks.torch.core as htcore
+
     args = parse_args()
 
     if args.local_rank == -1:
         device = torch.device(get_accelerator().device_name())
     else:
-        get_accelerator().set_device(args.local_rank)
-        device = torch.device(get_accelerator().device_name(), args.local_rank)
-        # Initializes the distributed backend which will take care of sychronizing nodes/GPUs
+        if not is_hpu():
+            get_accelerator().set_device(args.local_rank)
+        device = torch.device(get_accelerator().device_name(args.local_rank))
+        # Initializes the distributed backend which will take care of synchronizing nodes/GPUs
         # torch.distributed.init_process_group(backend='nccl')
         deepspeed.init_distributed()
 
@@ -253,10 +259,8 @@ def main():
                             ds_config,
                             dropout=args.dropout)
 
-    if args.compute_fp32_loss:
-        print_rank_0(
-            f"Using model {model.__class__.__name__} with loss in fp32",
-            args.global_rank)
+    if (args.dtype == "bf16") and args.bf16_to_fp32_loss:
+        print_rank_0(f"Using model {model.__class__.__name__} with loss in fp32", args.global_rank)
         causal_lm_model_to_fp32_loss(model)
 
     if args.lora_dim > 0:
@@ -265,6 +269,9 @@ def main():
         if args.only_optimize_lora:
             model = only_optimize_lora_parameters(model)
             model = make_model_gradient_checkpointing_compatible(model)
+
+    if is_hpu():  # TODO SW-146602: remove this WA when SW-141762 is resolved
+            model.to(dtype=torch.bfloat16, device=get_accelerator().device_name())
 
     # Prepare the data
     train_phase = 1
@@ -299,8 +306,11 @@ def main():
         losses = 0
         for step, batch in enumerate(eval_dataloader):
             batch = to_device(batch, device)
+            hpu_mark_step()
+
             with torch.no_grad():
                 outputs = model(**batch)
+            hpu_mark_step()
 
             loss = outputs.loss
             losses += loss.float()
@@ -319,7 +329,14 @@ def main():
     optimizer_grouped_parameters = get_optimizer_grouped_parameters(
         model, args.weight_decay, args.lora_learning_rate)
 
-    AdamOptimizer = DeepSpeedCPUAdam if args.offload else FusedAdam
+    if args.offload:
+        AdamOptimizer = DeepSpeedCPUAdam
+    elif args.no_fused_kernels or is_hpu():
+        AdamOptimizer = torch.optim.AdamW
+    else:
+        AdamOptimizer = FusedAdam
+    print_rank_0(f'Using {AdamOptimizer.__name__} optimizer', args.global_rank)
+
     optimizer = AdamOptimizer(optimizer_grouped_parameters,
                               lr=args.learning_rate,
                               betas=(0.9, 0.95))
@@ -356,7 +373,7 @@ def main():
         print_rank_0(
             f"Beginning of Epoch {epoch+1}/{args.num_train_epochs}, Total Micro Batches {len(train_dataloader)}",
             args.global_rank)
-        loss_sum = TensorAccumulator() if args.print_loss else None
+        loss_sum = None
         model.train()
         for step, batch in enumerate(train_dataloader):
             start = time.time()
@@ -364,17 +381,17 @@ def main():
             outputs = model(**batch, use_cache=False)
             loss = outputs.loss
             model.backward(loss)
+            hpu_mark_step()
             model.step()
+            hpu_mark_step()
             end = time.time()
             if torch.distributed.get_rank() == 0:
-                print_throughput(model.model, args, end - start,
-                                 args.global_rank)
+                hf_model = model.model if hasattr(model, 'model') else model.module
+                print_throughput(hf_model, args, end - start, args.global_rank)
             if args.print_loss:
-                mean_loss = update_optim_step_mean_loss(
-                    loss_sum, loss, step, gas)
-                print_optim_step_mean_loss(mean_loss, epoch, step,
-                                           ds_config['steps_per_print'], gas,
-                                           args.global_rank)
+                steps_per_print = ds_config['steps_per_print']
+                loss_sum = print_loss(epoch, step, steps_per_print, args.gradient_accumulation_steps,
+                                      loss, loss_sum, args.global_rank)
 
         # Evaluate perplexity on the validation set.
         print_rank_0(

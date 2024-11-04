@@ -38,13 +38,13 @@ def parse_args():
     parser.add_argument(
         "--add_eot_token",
         action='store_true',
-        help="Add <|endoftext|> as additional special token to tokenizer")
+        help="Add <|endoftext|> as additional special token to tokenizer"
+    )
     args = parser.parse_args()
     return args
 
 
-def load_stuff(model_name_or_path, num_padding_at_beginning,
-               additional_special_tokens):
+def load_stuff(model_name_or_path, num_padding_at_beginning, additional_special_tokens):
 
     tokenizer = load_hf_tokenizer(model_name_or_path,
                                   fast_tokenizer=True,
@@ -52,10 +52,10 @@ def load_stuff(model_name_or_path, num_padding_at_beginning,
     tokenizer.pad_token = tokenizer.eos_token
     model = create_critic_model(model_name_or_path,
                                 tokenizer,
-                                None,
-                                num_padding_at_beginning,
+                                ds_config=None,
+                                num_padding_at_beginning=num_padding_at_beginning,
+                                rlhf_training=False,
                                 dropout=0.)
-
     return model, tokenizer
 
 
@@ -137,13 +137,12 @@ def run_pair_comparison():
 
     for prompt, good_ans, bad_ans in zip(prompt_list, good_ans_list,
                                          bad_ans_list):
-        batch = prepare_datapair(
-            prompt,
-            good_ans,
-            bad_ans,
-            tokenizer,
-            max_seq_len=512,
-            end_of_conversation_token=args.end_of_conversation_token)
+        batch = prepare_datapair(prompt,
+                                 good_ans,
+                                 bad_ans,
+                                 tokenizer,
+                                 max_seq_len=512,
+                                 end_of_conversation_token=args.end_of_conversation_token)
         batch = to_device(batch, device)
         # Run inference
         with torch.no_grad():
@@ -173,12 +172,11 @@ def run_single_sample():
     prompt = "Human: Explain the moon landing to a 6 year old in a few sentences."
     my_ans = "Assistant: The moon landing was a major milestone in the history of human exploration of the solar system. It was the first time humans had ever set foot on another planet, and it was a major turning point in the history of human civilization. The astronauts, Neil Armstrong, Buzz Aldrin, and Michael Collins, successfully landed the Apollo 11 spacecraft on the moon, marking the first time humans had ever set foot on another"
 
-    batch = prepare_singlesample(
-        prompt,
-        my_ans,
-        tokenizer,
-        max_seq_len=512,
-        end_of_conversation_token=args.end_of_conversation_token)
+    batch = prepare_singlesample(prompt,
+                                 my_ans,
+                                 tokenizer,
+                                 max_seq_len=512,
+                                 end_of_conversation_token=args.end_of_conversation_token)
     batch = to_device(batch, device)
 
     rm_model.eval()

@@ -26,8 +26,8 @@ sys.path.append(
 from utils.model.model_utils import create_critic_model
 from utils.data.data_utils import create_prompt_dataset, DataCollatorReward
 from utils.utils import print_rank_0, to_device, save_hf_format, set_random_seed, get_all_reduce_mean, \
-    get_optimizer_grouped_parameters, save_zero_three_model, load_hf_tokenizer, TensorAccumulator, \
-    update_optim_step_mean_loss, print_optim_step_mean_loss
+                        get_optimizer_grouped_parameters, save_zero_three_model, load_hf_tokenizer, \
+                        print_loss, is_hpu, hpu_mark_step
 from utils.ds_utils import get_train_ds_config
 from utils.module.lora import convert_linear_layer_to_lora, convert_lora_to_linear_layer, only_optimize_lora_parameters, make_model_gradient_checkpointing_compatible
 
@@ -140,12 +140,11 @@ def parse_args():
         '--gradient_checkpointing',
         action='store_true',
         help='Enable HF gradient checkpointing for Actor model.')
-    parser.add_argument(
-        "--dropout",
-        type=float,
-        default=None,
-        help="If dropout configured, use it. "
-        "Otherwise, keep the default dropout configuration of the model.")
+    parser.add_argument("--dropout",
+                        type=float,
+                        default=None,
+                        help="If dropout configured, use it. "
+                             "Otherwise, keep the default dropout configuration of the model.")
     # deepspeed features
     parser.add_argument('--offload',
                         action='store_true',
@@ -179,7 +178,12 @@ def parse_args():
         help=
         "Initial LoRA learning rate (after the potential warmup period) to use."
     )
-
+    ## bf16
+    parser.add_argument('--no_bf16_to_fp32_loss',
+                        action='store_false',
+                        dest='bf16_to_fp32_loss',
+                        help='Relevant only with bf16 dtype. '
+                             'If specified, loss is calculated in bf16. Otherwise, calculated in fp32.')
     # Evaluation
     parser.add_argument("--eval_interval",
                         type=int,
@@ -189,13 +193,6 @@ def parse_args():
                         type=int,
                         default=100,
                         help="Maximum evaluation iterations")
-    ## low precision
-    parser.add_argument(
-        '--compute_fp32_loss',
-        action='store_true',
-        help='Relevant for low precision dtypes (fp16, bf16, etc.). '
-        'If specified, loss is calculated in fp32.')
-
     ## Tensorboard logging
     parser.add_argument('--enable_tensorboard',
                         action='store_true',
@@ -204,15 +201,23 @@ def parse_args():
                         type=str,
                         default="step2_tensorboard")
     ## Tokenizer
-    parser.add_argument(
-        "--add_eot_token",
-        action='store_true',
-        help="Add <|endoftext|> as additional special token to tokenizer")
+    parser.add_argument("--add_eot_token",
+                        action='store_true',
+                        help="Add <|endoftext|> as additional special token to tokenizer")
+
     ## Print loss
-    parser.add_argument(
-        '--print_loss',
-        action='store_true',
-        help='Prints loss at deepspeed config steps_per_print interval.')
+    parser.add_argument('--print_loss',
+                        action='store_true',
+                        help='Prints loss at deepspeed config steps_per_print interval.')
+    ## Debug
+    parser.add_argument('--no_fused_kernels',
+                        action='store_true',
+                        help='Do not use cuda fused kernels.')
+    ## UPH
+    parser.add_argument("--optimized_reward_loss_calc",
+                        action='store_true',
+                        help="Whether to use an optimized approach for RM loss calculation, or legacy flow")
+    ## DeepSpeed
     parser = deepspeed.add_config_arguments(parser)
     args = parser.parse_args()
 
@@ -220,14 +225,18 @@ def parse_args():
 
 
 def main():
+    if is_hpu():
+        import habana_frameworks.torch.core as htcore
+
     args = parse_args()
 
     if args.local_rank == -1:
         device = torch.device(get_accelerator().device_name())
     else:
-        get_accelerator().set_device(args.local_rank)
-        device = torch.device(get_accelerator().device_name(), args.local_rank)
-        # Initializes the distributed backend which will take care of sychronizing nodes/GPUs
+        if is_hpu():
+            get_accelerator().set_device(args.local_rank)
+        device = torch.device(get_accelerator().device_name(args.local_rank))
+        # Initializes the distributed backend which will take care of synchronizing nodes/GPUs
         # torch.distributed.init_process_group(backend='nccl')
         deepspeed.init_distributed()
 
@@ -255,13 +264,16 @@ def main():
     tokenizer = load_hf_tokenizer(args.model_name_or_path,
                                   fast_tokenizer=True,
                                   add_special_tokens=additional_special_tokens)
+
+    loss_to_fp32 = (args.dtype == "bf16") and args.bf16_to_fp32_loss
     rm_model = create_critic_model(args.model_name_or_path,
                                    tokenizer,
                                    ds_config,
                                    args.num_padding_at_beginning,
                                    dropout=args.dropout,
                                    zero_stage=args.zero_stage,
-                                   compute_fp32_loss=args.compute_fp32_loss)
+                                   loss_to_fp32=loss_to_fp32,
+                                   optimized_reward_loss_calc=args.optimized_reward_loss_calc)
 
     # Model bigscience/bloom-560m has large variance at ln_f.weight parameter
     # This makes bf16 finetuning hard.
@@ -269,10 +281,10 @@ def main():
     # the LN that precedes it.
     force_optimize_params = []
     if "bigscience/bloom-" in args.model_name_or_path:
-        torch.nn.init.ones_(rm_model.rwtransformer.ln_f.weight)
-        torch.nn.init.zeros_(rm_model.rwtransformer.ln_f.bias)
+        torch.nn.init.ones_(rm_model.rwtranrsformer.ln_f.weight)
+        torch.nn.init.zeros_(rm_model.rwtranrsformer.ln_f.bias)
         force_optimize_params.extend(
-            ['rwtransformer.ln_f.weight', 'rwtransformer.ln_f.bias'])
+            ['rwtranrsformer.ln_f.weight', 'rwtranrsformer.ln_f.bias'])
 
     if args.lora_dim > 0:
         rm_model = convert_linear_layer_to_lora(rm_model,
@@ -280,9 +292,12 @@ def main():
                                                 args.lora_dim)
         if args.only_optimize_lora:
             force_optimize_params.append('v_head.weight')
-            rm_model = only_optimize_lora_parameters(rm_model,
-                                                     force_optimize_params)
+            rm_model = only_optimize_lora_parameters(rm_model, force_optimize_params)
             rm_model = make_model_gradient_checkpointing_compatible(rm_model)
+
+    # TODO SW-146776: remove this WA once SW-141762 is resolved
+    if is_hpu():
+        rm_model.to(dtype=torch.bfloat16, device=device)
 
     train_phase = 2
     train_dataset, eval_dataset = create_prompt_dataset(
@@ -327,6 +342,7 @@ def main():
             rejected_scores += _outputs["rejected_mean_scores"].mean().float()
             if (_step + 1) == eval_iters:
                 break
+        model.train()
         _acc = correct_predictions / total_predictions
         chosen_scores = chosen_scores / (_step + 1)
         rejected_scores = rejected_scores / (_step + 1)
@@ -342,7 +358,15 @@ def main():
     optimizer_grouped_parameters = get_optimizer_grouped_parameters(
         rm_model, args.weight_decay, args.lora_learning_rate)
 
-    AdamOptimizer = DeepSpeedCPUAdam if args.offload else FusedAdam
+    # TODO SW-146129: change the file to use HPEX optimizer instead of AdamW on hpu
+    if args.offload:
+        AdamOptimizer = DeepSpeedCPUAdam
+    elif args.no_fused_kernels or is_hpu():
+        AdamOptimizer = torch.optim.AdamW
+    else:
+        AdamOptimizer = FusedAdam
+    print_rank_0(f'Using {AdamOptimizer.__name__} optimizer', args.global_rank)
+
     optimizer = AdamOptimizer(optimizer_grouped_parameters,
                               lr=args.learning_rate,
                               betas=(0.9, 0.95))
@@ -374,12 +398,10 @@ def main():
     print_rank_0(
         f"***** Evaluating reward, Epoch {0}/{args.num_train_epochs} *****",
         args.global_rank)
-    reward_score, reject_score, acc = evaluation_reward(
-        rm_model, eval_dataloader, args.eval_iters)
-    print_rank_0(
-        f"chosen_last_scores (higher is better) : {reward_score}, "
-        f"rejected_last_scores (lower is better) : {reject_score}, "
-        f"acc (higher is better) : {acc}", args.global_rank)
+    reward_score, reject_score, acc = evaluation_reward(rm_model, eval_dataloader, args.eval_iters)
+    print_rank_0(f"chosen_last_scores (higher is better) : {reward_score}, "
+                 f"rejected_last_scores (lower is better) : {reject_score}, "
+                 f"acc (higher is better) : {acc}", args.global_rank)
 
     total_micro_steps = 0
     for epoch in range(args.num_train_epochs):
@@ -387,33 +409,29 @@ def main():
             f"Beginning of Epoch {epoch+1}/{args.num_train_epochs}, Total Micro Batches {len(train_dataloader)}",
             args.global_rank)
         rm_model.train()
-        loss_sum = TensorAccumulator()
+        mean_loss = 0
+        loss_sum = None
         for step, batch in enumerate(train_dataloader):
             batch = to_device(batch, device)
             outputs = rm_model(**batch, use_cache=False)
             loss = outputs["loss"]
             rm_model.backward(loss)
+            hpu_mark_step()
             rm_model.step()
-            mean_loss = update_optim_step_mean_loss(loss_sum, loss, step, gas)
+            hpu_mark_step()
             if args.print_loss:
-                print_optim_step_mean_loss(mean_loss, epoch, step,
-                                           ds_config['steps_per_print'], gas,
-                                           args.global_rank)
-
+                steps_per_print = ds_config['steps_per_print']
+                loss_sum = print_loss(epoch, step, steps_per_print, args.gradient_accumulation_steps,
+                                      loss, loss_sum, args.global_rank)
+            mean_loss += loss.item()
             total_micro_steps += 1
-            gas_boundary = (total_micro_steps % gas == 0)
-            total_steps = total_micro_steps // gas
-            if args.eval_interval and gas_boundary and (
-                    total_steps % args.eval_interval == 0):
-                print_rank_0(f"Iter {total_steps}: Evaluating reward",
-                             args.global_rank)
-                reward_score, reject_score, acc = evaluation_reward(
-                    rm_model, eval_dataloader, args.eval_iters)
-                print_rank_0(
-                    f"Iter {total_steps}: c_scores: {reward_score}, r_scores: {reject_score}, "
-                    f"diff: {reward_score - reject_score}, acc: {acc}",
-                    args.global_rank)
-                rm_model.train()
+            gas_boundary = (total_micro_steps % args.gradient_accumulation_steps == 0)
+            total_steps = total_micro_steps // args.gradient_accumulation_steps
+            if args.eval_interval and gas_boundary and (total_steps % args.eval_interval == 0):
+                print_rank_0(f"Iter {total_steps}: Evaluating reward", args.global_rank)
+                reward_score, reject_score, acc = evaluation_reward(rm_model, eval_dataloader, args.eval_iters)
+                print_rank_0(f"Iter {total_steps}: c_scores: {reward_score}, r_scores: {reject_score}, "
+                             f"diff: {reward_score - reject_score}, acc: {acc}", args.global_rank)
 
         print_rank_0(
             f"Epoch {epoch+1}/{args.num_train_epochs} with loss {loss_sum.get_mean()}",
@@ -422,12 +440,10 @@ def main():
         print_rank_0(
             f"***** Evaluating reward, Epoch {epoch+1}/{args.num_train_epochs} *****",
             args.global_rank)
-        reward_score, reject_score, acc = evaluation_reward(
-            rm_model, eval_dataloader, args.eval_iters)
-        print_rank_0(
-            f"chosen_last_scores (higher is better) : {reward_score}, "
-            f"rejected_last_scores (lower is better) : {reject_score}, "
-            f"acc (higher is better) : {acc}", args.global_rank)
+        reward_score, reject_score, acc = evaluation_reward(rm_model, eval_dataloader, args.eval_iters)
+        print_rank_0(f"chosen_last_scores (higher is better) : {reward_score}, "
+                     f"rejected_last_scores (lower is better) : {reject_score}, "
+                     f"acc (higher is better) : {acc}", args.global_rank)
         rm_model.tput_timer.update_epoch_count()
 
     if args.output_dir is not None:
