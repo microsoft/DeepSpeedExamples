@@ -20,7 +20,7 @@ def run_benchmark() -> None:
     args = parse_args(server_args=True, client_args=True)
 
     for server_args in get_args_product(args, which=SERVER_PARAMS):
-        if server_args.backend != "aml":
+        if server_args.backend != "aml" and not server_args.client_only:
             start_server(server_args)
 
         for client_args in get_args_product(server_args, which=CLIENT_PARAMS):
@@ -30,11 +30,13 @@ def run_benchmark() -> None:
                 )
                 continue
 
+            if client_args.num_requests is None:
+                client_args.num_requests = client_args.num_clients * 4 + 32
             response_details = run_client(client_args)
             print_summary(client_args, response_details)
             save_json_results(client_args, response_details)
 
-        if server_args.backend != "aml":
+        if server_args.backend != "aml" and not server_args.client_only:
             stop_server(server_args)
 
 

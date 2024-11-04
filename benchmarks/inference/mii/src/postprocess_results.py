@@ -49,10 +49,13 @@ def parse_args():
     return args
 
 
-def get_tokenizer():
+def get_tokenizer(model=None):
     global tokenizer
     if tokenizer is None:
-        tokenizer = AutoTokenizer.from_pretrained("meta-llama/Llama-2-7b-hf")
+        if model==None:
+            tokenizer = AutoTokenizer.from_pretrained("meta-llama/Llama-2-7b-hf")
+        else:
+            tokenizer = AutoTokenizer.from_pretrained(model)
     return tokenizer
 
 
@@ -78,7 +81,9 @@ def get_summary(args, response_details):
 
     tokens_per_sec = mean(
         [
-            (len(get_tokenizer().tokenize(r.prompt)) + len(r.generated_tokens))
+            (len(get_tokenizer(args["model"]).tokenize(r.prompt)) +
+            len(get_tokenizer(args["model"]).tokenize(r.generated_tokens)) if type(r.generated_tokens) == str
+            else len(r.generated_tokens))
             / (r.end_time - r.start_time)
             for r in response_details
         ]
@@ -158,27 +163,37 @@ def get_result_sets(args: argparse.Namespace) -> set():
         r"(.+)-tp(\d+)-bs(\d+)-replicas(\d+)-prompt(\d+)-gen(\d+)-clients.*.json"
     )
 
-    backend_sets = defaultdict(set)
+    data_sets = defaultdict(set)
 
-    # Generate backend sets
-    for backend in args.backend:
-        for f in os.listdir(os.path.join(args.log_dir, backend)):
+    if hasattr(args, "data_dirs"):
+        data_set_dirs = args.data_dirs
+    elif hasattr(args, "backend"):
+        data_set_dirs = args.backend
+
+    # Generate data sets
+    for data in data_set_dirs:
+        if hasattr(args, "log_dir"):
+            os_path = os.path.join(args.log_dir, data)
+        else:
+            os_path = os.path.join(data)
+
+        for f in os.listdir(os_path):
             match = result_re.match(f)
             if match:
-                backend_sets[backend].add(match.groups())
+                data_sets[data].add(match.groups())
 
     # Intersection between all sets
-    for backend_set in backend_sets.values():
+    for data_set in data_sets.values():
         if result_params == None:
-            result_params = backend_set
+            result_params = data_set
         else:
-            result_params = result_params.intersection(backend_set)
+            result_params = result_params.intersection(data_set)
 
     # Warning messages about skipped sets
-    for key, backend_set in backend_sets.items():
-        difference = backend_set.difference(result_params)
+    for key, data_set in data_sets.items():
+        difference = data_set.difference(result_params)
         if difference:
-            print(f"WARNING: backend {key} has result combinations that are not present in all backends:")
+            print(f"WARNING: data {key} has result combinations that are not present in all data sets:")
             print(tabulate(difference, headers=["model", "tp_size", "bs", "replicas", "prompt", "gen"]))
             print("")
 
