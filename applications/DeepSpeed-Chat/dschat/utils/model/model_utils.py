@@ -110,9 +110,9 @@ def create_hf_model(model_class,
     model.config.pad_token_id = model.config.eos_token_id
     resize_kwargs = {}
     resize_kwargs["mean_resizing"] = False
-    model.resize_token_embeddings(int(
-        8 *
-        math.ceil(len(tokenizer) / 8.0)), **resize_krwargs)  # make the vocab size multiple of 8
+    model.resize_token_embeddings(
+        int(8 * math.ceil(len(tokenizer) / 8.0)),
+        **resize_kwargs)  # make the vocab size multiple of 8
 
     return model
 
