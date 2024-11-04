@@ -13,7 +13,9 @@ from dschat.utils.utils import print_rank_0
 
 def print_all_ranks(tag, value, rank):
     world_size = torch.distributed.get_world_size()
-    all_tensor = torch.zeros(world_size, dtype=torch.float32, device=value.device)
+    all_tensor = torch.zeros(world_size,
+                             dtype=torch.float32,
+                             device=value.device)
     all_tensor[rank] = value
     torch.distributed.all_reduce(all_tensor, op=torch.distributed.ReduceOp.SUM)
     print_rank_0(f'{tag} {all_tensor}', rank)
@@ -53,7 +55,8 @@ class DeepSpeedPPOTrainer():
         self.end_of_conversation_token_id = self.tokenizer(
             args.end_of_conversation_token)['input_ids'][-1]
         self.z3_enabled = args.actor_zero_stage == 3
-        self.calculate_fp32_loss = (self.args.dtype == "bf16") and self.args.bf16_to_fp32_loss
+        self.calculate_fp32_loss = (self.args.dtype
+                                    == "bf16") and self.args.bf16_to_fp32_loss
 
         # In case the generated experience is not valid (too short), we use the last valid
         # generated experience. Alternatively, we can skip the step (on all workers).
@@ -89,15 +92,17 @@ class DeepSpeedPPOTrainer():
             if is_hpu() and self.args.enable_hpu_graphs:
                 orig_actor_model_fwd_fn = self.actor_model.module.forward
                 if self.first_generate:
-                    self.actor_model.module.forward = thpu.wrap_in_hpu_graph_func(self.actor_model.module.forward)
+                    self.actor_model.module.forward = thpu.wrap_in_hpu_graph_func(
+                        self.actor_model.module.forward)
                     self.first_generate = False
                 else:
                     self.actor_model.module.forward = self.actor_model_hpu_graph_wrapped_fwd_fn
-                seq = self.actor_model.module.generate(prompts,
-                                                    attention_mask=mask,
-                                                    max_length=max_min_length,
-                                                    min_length=max_min_length,
-                                                    lazy_mode=True)
+                seq = self.actor_model.module.generate(
+                    prompts,
+                    attention_mask=mask,
+                    max_length=max_min_length,
+                    min_length=max_min_length,
+                    lazy_mode=True)
                 self.actor_model_hpu_graph_wrapped_fwd_fn = self.actor_model.module.forward
                 self.actor_model.module.forward = orig_actor_model_fwd_fn
             else:
@@ -117,7 +122,8 @@ class DeepSpeedPPOTrainer():
         ans = seq[:, prompt_length:]
         valid_ans_len = (ans != self.tokenizer.pad_token_id).sum(dim=-1)
 
-        if self.args.print_answers and (step % self.args.print_answers_interval == 0):
+        if self.args.print_answers and (step % self.args.print_answers_interval
+                                        == 0):
             print(
                 f"--- prompt --> step={step}, rank={torch.distributed.get_rank()}, {self.tokenizer.batch_decode(prompts, skip_special_tokens=True)}"
             )
@@ -129,17 +135,21 @@ class DeepSpeedPPOTrainer():
         for i in range(batch_size):
             if valid_ans_len[
                     i] <= 1:  # if the answer is shorter than 1 token, drop it
-                print(f'Dropping too short generated answer: {step=}: \n'
-                      f'prompts: {self.tokenizer.batch_decode(prompts, skip_special_tokens=False)}\n'
-                      f'answers: {self.tokenizer.batch_decode(ans, skip_special_tokens=False)}')
+                print(
+                    f'Dropping too short generated answer: {step=}: \n'
+                    f'prompts: {self.tokenizer.batch_decode(prompts, skip_special_tokens=False)}\n'
+                    f'answers: {self.tokenizer.batch_decode(ans, skip_special_tokens=False)}'
+                )
                 continue
             else:
                 out_seq.append(seq[i:i + 1])
 
         if not out_seq:
-            print(f'All generated results are too short for rank={self.args.local_rank} step={step}\n'
-                  f'-> prompts: {self.tokenizer.batch_decode(prompts, skip_special_tokens=False)}\n'
-                  f'-> answers: {self.tokenizer.batch_decode(ans, skip_special_tokens=False)}')
+            print(
+                f'All generated results are too short for rank={self.args.local_rank} step={step}\n'
+                f'-> prompts: {self.tokenizer.batch_decode(prompts, skip_special_tokens=False)}\n'
+                f'-> answers: {self.tokenizer.batch_decode(ans, skip_special_tokens=False)}'
+            )
             return None
 
         out_seq = torch.cat(out_seq, dim=0)  # concat output in the batch dim

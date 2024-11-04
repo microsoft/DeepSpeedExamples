@@ -136,11 +136,12 @@ def parse_args():
     parser.add_argument('--gradient_checkpointing',
                         action='store_true',
                         help='Enable HF gradient checkpointing for model.')
-    parser.add_argument("--dropout",
-                        type=float,
-                        default=None,
-                        help="If dropout configured, use it. "
-                             "Otherwise, keep the default dropout configuration of the model.")
+    parser.add_argument(
+        "--dropout",
+        type=float,
+        default=None,
+        help="If dropout configured, use it. "
+        "Otherwise, keep the default dropout configuration of the model.")
     # deepspeed features
     parser.add_argument('--offload',
                         action='store_true',
@@ -175,11 +176,13 @@ def parse_args():
         "Initial LoRA learning rate (after the potential warmup period) to use."
     )
     ## bf16
-    parser.add_argument('--no_bf16_to_fp32_loss',
-                        action='store_false',
-                        dest='bf16_to_fp32_loss',
-                        help='Relevant only with bf16 dtype. '
-                             'If specified, loss is calculated in bf16. Otherwise, calculated in fp32.')
+    parser.add_argument(
+        '--no_bf16_to_fp32_loss',
+        action='store_false',
+        dest='bf16_to_fp32_loss',
+        help='Relevant only with bf16 dtype. '
+        'If specified, loss is calculated in bf16. Otherwise, calculated in fp32.'
+    )
     ## Tensorboard logging
     parser.add_argument('--enable_tensorboard',
                         action='store_true',
@@ -199,9 +202,10 @@ def parse_args():
         help="Specify the format of the `eot_token`",
     )
     ## Print loss
-    parser.add_argument('--print_loss',
-                        action='store_true',
-                        help='Prints loss at deepspeed config steps_per_print interval.')
+    parser.add_argument(
+        '--print_loss',
+        action='store_true',
+        help='Prints loss at deepspeed config steps_per_print interval.')
     ## Debug
     parser.add_argument('--no_fused_kernels',
                         action='store_true',
@@ -261,7 +265,9 @@ def main():
                             dropout=args.dropout)
 
     if (args.dtype == "bf16") and args.bf16_to_fp32_loss:
-        print_rank_0(f"Using model {model.__class__.__name__} with loss in fp32", args.global_rank)
+        print_rank_0(
+            f"Using model {model.__class__.__name__} with loss in fp32",
+            args.global_rank)
         causal_lm_model_to_fp32_loss(model)
 
     if args.lora_dim > 0:
@@ -272,7 +278,7 @@ def main():
             model = make_model_gradient_checkpointing_compatible(model)
 
     if is_hpu():  # TODO SW-146602: remove this WA when SW-141762 is resolved
-            model.to(dtype=torch.bfloat16, device=get_accelerator().device_name())
+        model.to(dtype=torch.bfloat16, device=get_accelerator().device_name())
 
     # Prepare the data
     train_phase = 1
@@ -388,12 +394,14 @@ def main():
             hpu_mark_step()
             end = time.time()
             if torch.distributed.get_rank() == 0:
-                hf_model = model.model if hasattr(model, 'model') else model.module
+                hf_model = model.model if hasattr(model,
+                                                  'model') else model.module
                 print_throughput(hf_model, args, end - start, args.global_rank)
             if args.print_loss:
                 steps_per_print = ds_config['steps_per_print']
-                loss_sum = print_loss(epoch, step, steps_per_print, args.gradient_accumulation_steps,
-                                      loss, loss_sum, args.global_rank)
+                loss_sum = print_loss(epoch, step, steps_per_print,
+                                      args.gradient_accumulation_steps, loss,
+                                      loss_sum, args.global_rank)
 
         # Evaluate perplexity on the validation set.
         print_rank_0(

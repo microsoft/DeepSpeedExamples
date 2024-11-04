@@ -10,7 +10,12 @@ from torch import nn
 ## https://github.com/CarperAI/trlx/blob/main/examples/summarize_rlhf/reward_model/reward_model.py
 class RewardModel(nn.Module):
 
-    def __init__(self, base_model, tokenizer, num_padding_at_beginning=0, loss_to_fp32=False, opt_loss_calc=False):
+    def __init__(self,
+                 base_model,
+                 tokenizer,
+                 num_padding_at_beginning=0,
+                 loss_to_fp32=False,
+                 opt_loss_calc=False):
         super().__init__()
         self.config = base_model.config
         self.num_padding_at_beginning = num_padding_at_beginning
@@ -112,7 +117,9 @@ class RewardModel(nn.Module):
 
                 # united_unpadding_mask will what are the unite between the unpadded elements
                 # will indicate 1's where we have non padded tokens, in either of the inputs
-                united_unpadding_mask = torch.logical_not(torch.logical_and(chosen_padding_mask, rejected_padding_mask))
+                united_unpadding_mask = torch.logical_not(
+                    torch.logical_and(chosen_padding_mask,
+                                      rejected_padding_mask))
 
                 # get a mask of all the different tokens
                 divergence_mask = (chosen_id != rejected_id)
@@ -120,27 +127,40 @@ class RewardModel(nn.Module):
 
                 # loss mask indicates the elements which should be taken into consideration after sigmoid calc
                 # from the first divergence, till the last non padded token
-                loss_mask = torch.logical_and(divergence_mask, united_unpadding_mask)
-                loss_mask = torch.where(divergence_mask.sum().bool(), loss_mask, self.fallback_mask)
+                loss_mask = torch.logical_and(divergence_mask,
+                                              united_unpadding_mask)
+                loss_mask = torch.where(divergence_mask.sum().bool(),
+                                        loss_mask, self.fallback_mask)
 
                 # calc logsigmoid on all the input and mask the not interesting ones
                 if self.loss_to_fp32:
                     chosen_reward = chosen_reward.float()
                     rejected_reward = rejected_reward.float()
-                logsigmoid = torch.nn.functional.logsigmoid(chosen_reward.float() - rejected_reward.float()) * loss_mask
+                logsigmoid = torch.nn.functional.logsigmoid(
+                    chosen_reward.float() -
+                    rejected_reward.float()) * loss_mask
                 #average according to the interesting number of elements
                 num_elements_in_loss = loss_mask.sum().float()
                 loss += -(logsigmoid.sum() / num_elements_in_loss)
 
                 # log the c_ind / r_ind in chosen_mean_scores / rejected_mean_scores
-                c_ind_mask = get_last_before_padding(chosen_padding_mask, self.num_padding_at_beginning)
-                c_ind_mask = torch.where(chosen_padding_mask.sum() > self.num_padding_at_beginning, c_ind_mask, self.fallback_mask)
-                chosen_mean_score = (c_ind_mask.float() * chosen_reward.float()).sum()
+                c_ind_mask = get_last_before_padding(
+                    chosen_padding_mask, self.num_padding_at_beginning)
+                c_ind_mask = torch.where(
+                    chosen_padding_mask.sum() > self.num_padding_at_beginning,
+                    c_ind_mask, self.fallback_mask)
+                chosen_mean_score = (c_ind_mask.float() *
+                                     chosen_reward.float()).sum()
                 chosen_mean_scores.append(chosen_mean_score)
 
-                r_ind_mask = get_last_before_padding(rejected_padding_mask, self.num_padding_at_beginning)
-                r_ind_mask = torch.where(rejected_padding_mask.sum() > self.num_padding_at_beginning, r_ind_mask, self.fallback_mask)
-                rejected_mean_score = (r_ind_mask.float() * rejected_reward.float()).sum()
+                r_ind_mask = get_last_before_padding(
+                    rejected_padding_mask, self.num_padding_at_beginning)
+                r_ind_mask = torch.where(
+                    rejected_padding_mask.sum() >
+                    self.num_padding_at_beginning, r_ind_mask,
+                    self.fallback_mask)
+                rejected_mean_score = (r_ind_mask.float() *
+                                       rejected_reward.float()).sum()
                 rejected_mean_scores.append(rejected_mean_score)
             else:
                 c_inds = (chosen_id == self.PAD_ID).nonzero()
@@ -156,7 +176,8 @@ class RewardModel(nn.Module):
                     # Check if there is any padding otherwise take length of sequence
                     r_inds = (rejected_id == self.PAD_ID).nonzero()
                     r_ind = r_inds[self.num_padding_at_beginning].item(
-                    ) if len(r_inds) > self.num_padding_at_beginning else seq_len
+                    ) if len(
+                        r_inds) > self.num_padding_at_beginning else seq_len
                     end_ind = max(c_ind, r_ind)
                     divergence_ind = check_divergence[0]
                 assert divergence_ind > 0
@@ -165,8 +186,8 @@ class RewardModel(nn.Module):
                 if self.loss_to_fp32:
                     c_truncated_reward = c_truncated_reward.float()
                     r_truncated_reward = r_truncated_reward.float()
-                loss += -torch.nn.functional.logsigmoid(c_truncated_reward -
-                                                        r_truncated_reward).mean()
+                loss += -torch.nn.functional.logsigmoid(
+                    c_truncated_reward - r_truncated_reward).mean()
 
                 chosen_mean_scores.append(
                     chosen_reward[c_ind - 1])  #use the end score for reference

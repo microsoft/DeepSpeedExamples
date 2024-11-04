@@ -108,7 +108,8 @@ class DeepSpeedRLHFEngine():
         # TODO SW-146776: remove this WA once SW-141762 is resolved
         if is_hpu():
             import habana_frameworks.torch.core as htcore
-            actor_model.to(dtype=torch.bfloat16, device=get_accelerator().device())
+            actor_model.to(dtype=torch.bfloat16,
+                           device=get_accelerator().device())
 
         # Optimizer
         if self.args.offload:
@@ -117,7 +118,9 @@ class DeepSpeedRLHFEngine():
             AdamOptimizer = torch.optim.AdamW
         else:
             AdamOptimizer = FusedAdam
-        print_rank_0(f'Using {AdamOptimizer.__name__} optimizer for actor model', self.args.global_rank)
+        print_rank_0(
+            f'Using {AdamOptimizer.__name__} optimizer for actor model',
+            self.args.global_rank)
 
         optim_params = get_optimizer_grouped_parameters(
             actor_model, self.args.actor_weight_decay,
@@ -249,7 +252,8 @@ class DeepSpeedRLHFEngine():
 
         # TODO SW-146776: remove this WA once SW-141762 is resolved
         if is_hpu():
-            critic_model.to(dtype=torch.bfloat16, device=get_accelerator().device())
+            critic_model.to(dtype=torch.bfloat16,
+                            device=get_accelerator().device())
 
         # Optimizer
         # TODO SW-147425: change the file to use HPEX optimizer instead of AdamW on hpu
@@ -259,7 +263,9 @@ class DeepSpeedRLHFEngine():
             AdamOptimizer = torch.optim.AdamW
         else:
             AdamOptimizer = FusedAdam
-        print_rank_0(f'Using {AdamOptimizer.__name__} optimizer for critic model', self.args.global_rank)
+        print_rank_0(
+            f'Using {AdamOptimizer.__name__} optimizer for critic model',
+            self.args.global_rank)
 
         optim_params = get_optimizer_grouped_parameters(
             critic_model, self.args.critic_weight_decay,

@@ -134,11 +134,12 @@ def parse_args():
         '--gradient_checkpointing',
         action='store_true',
         help='Enable HF gradient checkpointing for Actor model.')
-    parser.add_argument("--dropout",
-                        type=float,
-                        default=None,
-                        help="If dropout configured, use it. "
-                             "Otherwise, keep the default dropout configuration of the model.")
+    parser.add_argument(
+        "--dropout",
+        type=float,
+        default=None,
+        help="If dropout configured, use it. "
+        "Otherwise, keep the default dropout configuration of the model.")
     # deepspeed features
     parser.add_argument('--offload',
                         action='store_true',
@@ -173,11 +174,13 @@ def parse_args():
         "Initial LoRA learning rate (after the potential warmup period) to use."
     )
     ## bf16
-    parser.add_argument('--no_bf16_to_fp32_loss',
-                        action='store_false',
-                        dest='bf16_to_fp32_loss',
-                        help='Relevant only with bf16 dtype. '
-                             'If specified, loss is calculated in bf16. Otherwise, calculated in fp32.')
+    parser.add_argument(
+        '--no_bf16_to_fp32_loss',
+        action='store_false',
+        dest='bf16_to_fp32_loss',
+        help='Relevant only with bf16 dtype. '
+        'If specified, loss is calculated in bf16. Otherwise, calculated in fp32.'
+    )
     # Evaluation
     parser.add_argument("--eval_interval",
                         type=int,
@@ -195,22 +198,27 @@ def parse_args():
                         type=str,
                         default="step2_tensorboard")
     ## Tokenizer
-    parser.add_argument("--add_eot_token",
-                        action='store_true',
-                        help="Add <|endoftext|> as additional special token to tokenizer")
+    parser.add_argument(
+        "--add_eot_token",
+        action='store_true',
+        help="Add <|endoftext|> as additional special token to tokenizer")
 
     ## Print loss
-    parser.add_argument('--print_loss',
-                        action='store_true',
-                        help='Prints loss at deepspeed config steps_per_print interval.')
+    parser.add_argument(
+        '--print_loss',
+        action='store_true',
+        help='Prints loss at deepspeed config steps_per_print interval.')
     ## Debug
     parser.add_argument('--no_fused_kernels',
                         action='store_true',
                         help='Do not use cuda fused kernels.')
     ## UPH
-    parser.add_argument("--optimized_reward_loss_calc",
-                        action='store_true',
-                        help="Whether to use an optimized approach for RM loss calculation, or legacy flow")
+    parser.add_argument(
+        "--optimized_reward_loss_calc",
+        action='store_true',
+        help=
+        "Whether to use an optimized approach for RM loss calculation, or legacy flow"
+    )
     ## DeepSpeed
     parser = deepspeed.add_config_arguments(parser)
     args = parser.parse_args()
@@ -260,14 +268,15 @@ def main():
                                   add_special_tokens=additional_special_tokens)
 
     loss_to_fp32 = (args.dtype == "bf16") and args.bf16_to_fp32_loss
-    rm_model = create_critic_model(args.model_name_or_path,
-                                   tokenizer,
-                                   ds_config,
-                                   args.num_padding_at_beginning,
-                                   dropout=args.dropout,
-                                   zero_stage=args.zero_stage,
-                                   loss_to_fp32=loss_to_fp32,
-                                   optimized_reward_loss_calc=args.optimized_reward_loss_calc)
+    rm_model = create_critic_model(
+        args.model_name_or_path,
+        tokenizer,
+        ds_config,
+        args.num_padding_at_beginning,
+        dropout=args.dropout,
+        zero_stage=args.zero_stage,
+        loss_to_fp32=loss_to_fp32,
+        optimized_reward_loss_calc=args.optimized_reward_loss_calc)
 
     # Model bigscience/bloom-560m has large variance at ln_f.weight parameter
     # This makes bf16 finetuning hard.
@@ -295,7 +304,8 @@ def main():
                                                 args.lora_dim)
         if args.only_optimize_lora:
             force_optimize_params.append('v_head.weight')
-            rm_model = only_optimize_lora_parameters(rm_model, force_optimize_params)
+            rm_model = only_optimize_lora_parameters(rm_model,
+                                                     force_optimize_params)
             rm_model = make_model_gradient_checkpointing_compatible(rm_model)
 
     # TODO SW-146776: remove this WA once SW-141762 is resolved
@@ -400,10 +410,12 @@ def main():
     print_rank_0(
         f"***** Evaluating reward, Epoch {0}/{args.num_train_epochs} *****",
         args.global_rank)
-    reward_score, reject_score, acc = evaluation_reward(rm_model, eval_dataloader, args.eval_iters)
-    print_rank_0(f"chosen_last_scores (higher is better) : {reward_score}, "
-                 f"rejected_last_scores (lower is better) : {reject_score}, "
-                 f"acc (higher is better) : {acc}", args.global_rank)
+    reward_score, reject_score, acc = evaluation_reward(
+        rm_model, eval_dataloader, args.eval_iters)
+    print_rank_0(
+        f"chosen_last_scores (higher is better) : {reward_score}, "
+        f"rejected_last_scores (lower is better) : {reject_score}, "
+        f"acc (higher is better) : {acc}", args.global_rank)
 
     total_micro_steps = 0
     for epoch in range(args.num_train_epochs):
@@ -423,17 +435,24 @@ def main():
             hpu_mark_step()
             if args.print_loss:
                 steps_per_print = ds_config['steps_per_print']
-                loss_sum = print_loss(epoch, step, steps_per_print, args.gradient_accumulation_steps,
-                                      loss, loss_sum, args.global_rank)
+                loss_sum = print_loss(epoch, step, steps_per_print,
+                                      args.gradient_accumulation_steps, loss,
+                                      loss_sum, args.global_rank)
             mean_loss += loss.item()
             total_micro_steps += 1
-            gas_boundary = (total_micro_steps % args.gradient_accumulation_steps == 0)
+            gas_boundary = (total_micro_steps %
+                            args.gradient_accumulation_steps == 0)
             total_steps = total_micro_steps // args.gradient_accumulation_steps
-            if args.eval_interval and gas_boundary and (total_steps % args.eval_interval == 0):
-                print_rank_0(f"Iter {total_steps}: Evaluating reward", args.global_rank)
-                reward_score, reject_score, acc = evaluation_reward(rm_model, eval_dataloader, args.eval_iters)
-                print_rank_0(f"Iter {total_steps}: c_scores: {reward_score}, r_scores: {reject_score}, "
-                             f"diff: {reward_score - reject_score}, acc: {acc}", args.global_rank)
+            if args.eval_interval and gas_boundary and (
+                    total_steps % args.eval_interval == 0):
+                print_rank_0(f"Iter {total_steps}: Evaluating reward",
+                             args.global_rank)
+                reward_score, reject_score, acc = evaluation_reward(
+                    rm_model, eval_dataloader, args.eval_iters)
+                print_rank_0(
+                    f"Iter {total_steps}: c_scores: {reward_score}, r_scores: {reject_score}, "
+                    f"diff: {reward_score - reject_score}, acc: {acc}",
+                    args.global_rank)
 
         print_rank_0(
             f"Epoch {epoch+1}/{args.num_train_epochs} with loss {loss_sum.get_mean()}",
@@ -442,10 +461,12 @@ def main():
         print_rank_0(
             f"***** Evaluating reward, Epoch {epoch+1}/{args.num_train_epochs} *****",
             args.global_rank)
-        reward_score, reject_score, acc = evaluation_reward(rm_model, eval_dataloader, args.eval_iters)
-        print_rank_0(f"chosen_last_scores (higher is better) : {reward_score}, "
-                     f"rejected_last_scores (lower is better) : {reject_score}, "
-                     f"acc (higher is better) : {acc}", args.global_rank)
+        reward_score, reject_score, acc = evaluation_reward(
+            rm_model, eval_dataloader, args.eval_iters)
+        print_rank_0(
+            f"chosen_last_scores (higher is better) : {reward_score}, "
+            f"rejected_last_scores (lower is better) : {reject_score}, "
+            f"acc (higher is better) : {acc}", args.global_rank)
         rm_model.tput_timer.update_epoch_count()
 
     if args.output_dir is not None:

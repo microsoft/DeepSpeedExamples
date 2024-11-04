@@ -84,7 +84,8 @@ def causal_lm_model_to_fp32_loss(model):
 
 def configure_dropout(model_config, dropout):
     if dropout is not None:
-        for key in ('dropout', 'attention_dropout', 'hidden_dropout', 'activation_dropout'):
+        for key in ('dropout', 'attention_dropout', 'hidden_dropout',
+                    'activation_dropout'):
             if hasattr(model_config, key):
                 print(f"Setting model_config.{key} to {dropout}")
                 setattr(model_config, key, dropout)
@@ -92,27 +93,31 @@ def configure_dropout(model_config, dropout):
 
 def causal_lm_model_to_fp32_loss(model):
     """ Convert CausalLM model to calculate loss in fp32 """
-    def causal_lm_forward(input_ids=None,
-                          past_key_values=None,
-                          attention_mask=None,
-                          head_mask=None,
-                          inputs_embeds=None,
-                          labels=None,
-                          use_cache=None,
-                          output_attentions=None,
-                          output_hidden_states=None,
-                          return_dict=None,
-                          **deprecated_arguments, ):
-        output = model.__original_forward__(input_ids=input_ids,
-                                            past_key_values=past_key_values,
-                                            attention_mask=attention_mask,
-                                            head_mask=head_mask,
-                                            inputs_embeds=inputs_embeds,
-                                            labels=None,
-                                            use_cache=use_cache,
-                                            output_attentions=output_attentions,
-                                            output_hidden_states=output_hidden_states,
-                                            return_dict=return_dict)
+
+    def causal_lm_forward(
+        input_ids=None,
+        past_key_values=None,
+        attention_mask=None,
+        head_mask=None,
+        inputs_embeds=None,
+        labels=None,
+        use_cache=None,
+        output_attentions=None,
+        output_hidden_states=None,
+        return_dict=None,
+        **deprecated_arguments,
+    ):
+        output = model.__original_forward__(
+            input_ids=input_ids,
+            past_key_values=past_key_values,
+            attention_mask=attention_mask,
+            head_mask=head_mask,
+            inputs_embeds=inputs_embeds,
+            labels=None,
+            use_cache=use_cache,
+            output_attentions=output_attentions,
+            output_hidden_states=output_hidden_states,
+            return_dict=return_dict)
 
         return_dict = isinstance(output, dict)
         lm_logits = output.logits if return_dict else output[0]
@@ -127,12 +132,12 @@ def causal_lm_model_to_fp32_loss(model):
             # Flatten the tokens
             loss_fct = torch.nn.CrossEntropyLoss()
             loss = loss_fct(
-                shift_logits.view(batch_size * seq_length, vocab_size), shift_labels.view(batch_size * seq_length)
-            )
+                shift_logits.view(batch_size * seq_length, vocab_size),
+                shift_labels.view(batch_size * seq_length))
 
         if not return_dict:
             # re-pack output with fp32 loss
-            return ((loss,) + output) if loss is not None else output
+            return ((loss, ) + output) if loss is not None else output
 
         output.loss = loss
         return output

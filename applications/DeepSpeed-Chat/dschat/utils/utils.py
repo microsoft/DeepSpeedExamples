@@ -92,7 +92,9 @@ def get_tokenizer(model_name_or_path, fast_tokenizer=True):
     return tokenizer
 
 
-def load_hf_tokenizer(model_name_or_path, fast_tokenizer=True, add_special_tokens=None):
+def load_hf_tokenizer(model_name_or_path,
+                      fast_tokenizer=True,
+                      add_special_tokens=None):
     if os.path.exists(model_name_or_path):
         # Locally tokenizer loading has some issue, so we need to force download
         model_json = os.path.join(model_name_or_path, "config.json")
@@ -109,7 +111,8 @@ def load_hf_tokenizer(model_name_or_path, fast_tokenizer=True, add_special_token
     if add_special_tokens is not None:
         add_special_tokens = [add_special_tokens] if isinstance(add_special_tokens, str) \
             else add_special_tokens
-        tokenizer.add_special_tokens({'additional_special_tokens': add_special_tokens})
+        tokenizer.add_special_tokens(
+            {'additional_special_tokens': add_special_tokens})
 
     return tokenizer
 
@@ -208,7 +211,10 @@ def get_optimizer_grouped_parameters(
     model,
     weight_decay,
     lora_lr=5e-4,
-    no_decay_name_list=["bias", "layer_norm.weight", "layernorm.weight", "norm.weight", "ln_f.weight"],
+    no_decay_name_list=[
+        "bias", "layer_norm.weight", "layernorm.weight", "norm.weight",
+        "ln_f.weight"
+    ],
     lora_name_list=["lora_right_weight", "lora_left_weight"],
 ):
     optimizer_grouped_parameters = [
@@ -313,7 +319,8 @@ def print_loss(epoch, step, steps_per_print, gas, loss, loss_sum, rank):
         opt_step = step / gas
         avg_loss = loss_sum / gas
         print_rank_0(
-            f"[{datetime.now()}] epoch: {epoch} | step: {opt_step} | avg_loss: {avg_loss}", rank)
+            f"[{datetime.now()}] epoch: {epoch} | step: {opt_step} | avg_loss: {avg_loss}",
+            rank)
     if step > 0 and step % gas == 0:
         loss_sum.zero_()
 

@@ -70,9 +70,10 @@ def parse_args():
                         type=str,
                         default="English",
                         choices=["English", "Chinese", "Japanese"])
-    parser.add_argument("--add_eot_token",
-                        action='store_true',
-                        help="Add <|endoftext|> as additional special token to tokenizer")
+    parser.add_argument(
+        "--add_eot_token",
+        action='store_true',
+        help="Add <|endoftext|> as additional special token to tokenizer")
 
     args = parser.parse_args()
 

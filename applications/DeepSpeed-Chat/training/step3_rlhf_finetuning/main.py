@@ -267,16 +267,20 @@ def parse_args():
         '--critic_gradient_checkpointing',
         action='store_true',
         help='Enable HF gradient checkpointing for Critic model.')
-    parser.add_argument("--actor_dropout",
-                        type=float,
-                        default=None,
-                        help="If actor dropout configured, use it. "
-                             "Otherwise, keep the default dropout configuration of the actor model.")
-    parser.add_argument("--critic_dropout",
-                        type=float,
-                        default=None,
-                        help="If critic dropout configured, use it. "
-                             "Otherwise, keep the default dropout configuration of the critic model.")
+    parser.add_argument(
+        "--actor_dropout",
+        type=float,
+        default=None,
+        help="If actor dropout configured, use it. "
+        "Otherwise, keep the default dropout configuration of the actor model."
+    )
+    parser.add_argument(
+        "--critic_dropout",
+        type=float,
+        default=None,
+        help="If critic dropout configured, use it. "
+        "Otherwise, keep the default dropout configuration of the critic model."
+    )
     ## LoRA for efficient training setting
     parser.add_argument("--actor_lora_dim",
                         type=int,
@@ -321,12 +325,13 @@ def parse_args():
         action='store_true',
         help='Enable Mixed Precision ZeRO++ for training and generation.')
     ## bf16
-    parser.add_argument('--no_bf16_to_fp32_loss',
-                        action='store_false',
-                        dest='bf16_to_fp32_loss',
-                        help='Relevant only with bf16 dtype. '
-                             'If specified, loss is calculated in bf16. Otherwise, calculated in fp32. '
-                             'This applies for both actor and critic models.')
+    parser.add_argument(
+        '--no_bf16_to_fp32_loss',
+        action='store_false',
+        dest='bf16_to_fp32_loss',
+        help='Relevant only with bf16 dtype. '
+        'If specified, loss is calculated in bf16. Otherwise, calculated in fp32. '
+        'This applies for both actor and critic models.')
     ## Tensorboard logging
     parser.add_argument('--enable_tensorboard',
                         action='store_true',
@@ -335,9 +340,10 @@ def parse_args():
                         type=str,
                         default="step3_tensorboard")
     ## Tokenizer
-    parser.add_argument("--add_eot_token",
-                        action='store_true',
-                        help="Add <|endoftext|> as additional special token to tokenizer")
+    parser.add_argument(
+        "--add_eot_token",
+        action='store_true',
+        help="Add <|endoftext|> as additional special token to tokenizer")
     ## Actor/critic model overflow alignment
     parser.add_argument(
         '--align_overflow',
@@ -347,10 +353,11 @@ def parse_args():
     parser.add_argument('--print_answers',
                         action='store_true',
                         help='Print prompt and answers during training')
-    parser.add_argument("--print_answers_interval",
-                        type=int,
-                        default=1,
-                        help="If --print_answers enabled, controls the printing interval.")
+    parser.add_argument(
+        "--print_answers_interval",
+        type=int,
+        default=1,
+        help="If --print_answers enabled, controls the printing interval.")
     ## Testing
     parser.add_argument(
         '--enable_test_mode',
@@ -505,7 +512,6 @@ def main():
         rlhf_engine.actor.optimizer.quantize_nontrainable_params()
         print_rank_0("Mixed Precision ZeRO++ enabled")
 
-
     ppo_trainer = DeepSpeedPPOTrainerUnsupervised if unsupervised_training_enabled else DeepSpeedPPOTrainer
     trainer = ppo_trainer(rlhf_engine, args)
 
@@ -516,7 +522,9 @@ def main():
                                      args.per_device_training_batch_size)
 
     # Train!
-    print_rank_0(f"***** Running training (total_iters={num_total_iters}) *****", args.global_rank)
+    print_rank_0(
+        f"***** Running training (total_iters={num_total_iters}) *****",
+        args.global_rank)
 
     non_overflow_step_count = 0
     step_average_reward = 0.
