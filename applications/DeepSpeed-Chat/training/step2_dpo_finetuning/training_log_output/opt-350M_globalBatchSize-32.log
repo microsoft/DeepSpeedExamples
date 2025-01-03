@@ -104,7 +104,7 @@ DeepspeedExamples/applications/DeepSpeed-Chat/dschat/utils/data/data_utils.py:37
 Using .cache/torch_extensions/py310_cu121 as PyTorch extensions root...
 Detected CUDA files, patching ldflags
 Emitting ninja build file .cache/torch_extensions/py310_cu121/fused_adam/build.ninja...
-.venv/dsexamples/lib/python3.10/site-packages/torch/utils/cpp_extension.py:1964: UserWarning: TORCH_CUDA_ARCH_LIST is not set, all archs for visible cards are included for compilation. 
+.venv/dsexamples/lib/python3.10/site-packages/torch/utils/cpp_extension.py:1964: UserWarning: TORCH_CUDA_ARCH_LIST is not set, all archs for visible cards are included for compilation.
 If this is not desired, please set os.environ['TORCH_CUDA_ARCH_LIST'].
   warnings.warn(
 Building extension module fused_adam...
@@ -116,7 +116,7 @@ Time to load fused_adam op: 0.05063033103942871 seconds
 Using .cache/torch_extensions/py310_cu121 as PyTorch extensions root...
 Detected CUDA files, patching ldflags
 Emitting ninja build file .cache/torch_extensions/py310_cu121/fused_adam/build.ninja...
-.venv/dsexamples/lib/python3.10/site-packages/torch/utils/cpp_extension.py:1964: UserWarning: TORCH_CUDA_ARCH_LIST is not set, all archs for visible cards are included for compilation. 
+.venv/dsexamples/lib/python3.10/site-packages/torch/utils/cpp_extension.py:1964: UserWarning: TORCH_CUDA_ARCH_LIST is not set, all archs for visible cards are included for compilation.
 If this is not desired, please set os.environ['TORCH_CUDA_ARCH_LIST'].
   warnings.warn(
 Building extension module fused_adam...
@@ -128,7 +128,7 @@ Time to load fused_adam op: 0.04431414604187012 seconds
 Using .cache/torch_extensions/py310_cu121 as PyTorch extensions root...
 Detected CUDA files, patching ldflags
 Emitting ninja build file .cache/torch_extensions/py310_cu121/fused_adam/build.ninja...
-.venv/dsexamples/lib/python3.10/site-packages/torch/utils/cpp_extension.py:1964: UserWarning: TORCH_CUDA_ARCH_LIST is not set, all archs for visible cards are included for compilation. 
+.venv/dsexamples/lib/python3.10/site-packages/torch/utils/cpp_extension.py:1964: UserWarning: TORCH_CUDA_ARCH_LIST is not set, all archs for visible cards are included for compilation.
 If this is not desired, please set os.environ['TORCH_CUDA_ARCH_LIST'].
   warnings.warn(
 Building extension module fused_adam...
@@ -142,7 +142,7 @@ Time to load fused_adam op: 0.11332392692565918 seconds
 Using .cache/torch_extensions/py310_cu121 as PyTorch extensions root...
 Detected CUDA files, patching ldflags
 Emitting ninja build file .cache/torch_extensions/py310_cu121/fused_adam/build.ninja...
-.venv/dsexamples/lib/python3.10/site-packages/torch/utils/cpp_extension.py:1964: UserWarning: TORCH_CUDA_ARCH_LIST is not set, all archs for visible cards are included for compilation. 
+.venv/dsexamples/lib/python3.10/site-packages/torch/utils/cpp_extension.py:1964: UserWarning: TORCH_CUDA_ARCH_LIST is not set, all archs for visible cards are included for compilation.
 If this is not desired, please set os.environ['TORCH_CUDA_ARCH_LIST'].
   warnings.warn(
 Building extension module fused_adam...
@@ -154,7 +154,7 @@ Time to load fused_adam op: 0.10501360893249512 seconds
 Using .cache/torch_extensions/py310_cu121 as PyTorch extensions root...
 Detected CUDA files, patching ldflags
 Emitting ninja build file .cache/torch_extensions/py310_cu121/fused_adam/build.ninja...
-.venv/dsexamples/lib/python3.10/site-packages/torch/utils/cpp_extension.py:1964: UserWarning: TORCH_CUDA_ARCH_LIST is not set, all archs for visible cards are included for compilation. 
+.venv/dsexamples/lib/python3.10/site-packages/torch/utils/cpp_extension.py:1964: UserWarning: TORCH_CUDA_ARCH_LIST is not set, all archs for visible cards are included for compilation.
 If this is not desired, please set os.environ['TORCH_CUDA_ARCH_LIST'].
   warnings.warn(
 Building extension module fused_adam...
@@ -166,7 +166,7 @@ Time to load fused_adam op: 0.033315420150756836 seconds
 Using .cache/torch_extensions/py310_cu121 as PyTorch extensions root...
 Detected CUDA files, patching ldflags
 Emitting ninja build file .cache/torch_extensions/py310_cu121/fused_adam/build.ninja...
-.venv/dsexamples/lib/python3.10/site-packages/torch/utils/cpp_extension.py:1964: UserWarning: TORCH_CUDA_ARCH_LIST is not set, all archs for visible cards are included for compilation. 
+.venv/dsexamples/lib/python3.10/site-packages/torch/utils/cpp_extension.py:1964: UserWarning: TORCH_CUDA_ARCH_LIST is not set, all archs for visible cards are included for compilation.
 If this is not desired, please set os.environ['TORCH_CUDA_ARCH_LIST'].
   warnings.warn(
 Building extension module fused_adam...
@@ -179,7 +179,7 @@ Using .cache/torch_extensions/py310_cu121 as PyTorch extensions root...
 Using .cache/torch_extensions/py310_cu121 as PyTorch extensions root...
 Detected CUDA files, patching ldflags
 Emitting ninja build file .cache/torch_extensions/py310_cu121/fused_adam/build.ninja...
-.venv/dsexamples/lib/python3.10/site-packages/torch/utils/cpp_extension.py:1964: UserWarning: TORCH_CUDA_ARCH_LIST is not set, all archs for visible cards are included for compilation. 
+.venv/dsexamples/lib/python3.10/site-packages/torch/utils/cpp_extension.py:1964: UserWarning: TORCH_CUDA_ARCH_LIST is not set, all archs for visible cards are included for compilation.
 If this is not desired, please set os.environ['TORCH_CUDA_ARCH_LIST'].
   warnings.warn(
 Building extension module fused_adam...
@@ -202,39 +202,39 @@ Time to load fused_adam op: 0.20447063446044922 seconds
 [2025-01-02 15:46:55,967] [INFO] [logging.py:128:log_dist] [Rank 0] step=0, skipped=0, lr=[5e-05, 5e-05], mom=[(0.9, 0.95), (0.9, 0.95)]
 [2025-01-02 15:46:55,968] [INFO] [config.py:999:print] DeepSpeedEngine configuration:
 [2025-01-02 15:46:55,969] [INFO] [config.py:1003:print]   activation_checkpointing_config  {
-    "partition_activations": false, 
-    "contiguous_memory_optimization": false, 
-    "cpu_checkpointing": false, 
-    "number_checkpoints": null, 
-    "synchronize_checkpoint_boundary": false, 
+    "partition_activations": false,
+    "contiguous_memory_optimization": false,
+    "cpu_checkpointing": false,
+    "number_checkpoints": null,
+    "synchronize_checkpoint_boundary": false,
     "profile": false
 }
 [2025-01-02 15:46:55,969] [INFO] [config.py:1003:print]   aio_config ................... {'block_size': 1048576, 'queue_depth': 8, 'thread_count': 1, 'single_submit': False, 'overlap_events': True, 'use_gds': False}
 [2025-01-02 15:46:55,969] [INFO] [config.py:1003:print]   amp_enabled .................. False
 [2025-01-02 15:46:55,969] [INFO] [config.py:1003:print]   amp_params ................... False
 [2025-01-02 15:46:55,969] [INFO] [config.py:1003:print]   autotuning_config ............ {
-    "enabled": false, 
-    "start_step": null, 
-    "end_step": null, 
-    "metric_path": null, 
-    "arg_mappings": null, 
-    "metric": "throughput", 
-    "model_info": null, 
-    "results_dir": "autotuning_results", 
-    "exps_dir": "autotuning_exps", 
-    "overwrite": true, 
-    "fast": true, 
-    "start_profile_step": 3, 
-    "end_profile_step": 5, 
-    "tuner_type": "gridsearch", 
-    "tuner_early_stopping": 5, 
-    "tuner_num_trials": 50, 
-    "model_info_path": null, 
-    "mp_size": 1, 
-    "max_train_batch_size": null, 
-    "min_train_batch_size": 1, 
-    "max_train_micro_batch_size_per_gpu": 1.024000e+03, 
-    "min_train_micro_batch_size_per_gpu": 1, 
+    "enabled": false,
+    "start_step": null,
+    "end_step": null,
+    "metric_path": null,
+    "arg_mappings": null,
+    "metric": "throughput",
+    "model_info": null,
+    "results_dir": "autotuning_results",
+    "exps_dir": "autotuning_exps",
+    "overwrite": true,
+    "fast": true,
+    "start_profile_step": 3,
+    "end_profile_step": 5,
+    "tuner_type": "gridsearch",
+    "tuner_early_stopping": 5,
+    "tuner_num_trials": 50,
+    "model_info_path": null,
+    "mp_size": 1,
+    "max_train_batch_size": null,
+    "min_train_batch_size": 1,
+    "max_train_micro_batch_size_per_gpu": 1.024000e+03,
+    "min_train_micro_batch_size_per_gpu": 1,
     "num_tuning_micro_batch_sizes": 3
 }
 [2025-01-02 15:46:55,969] [INFO] [config.py:1003:print]   bfloat16_enabled ............. False
@@ -264,12 +264,12 @@ Time to load fused_adam op: 0.20447063446044922 seconds
 [2025-01-02 15:46:55,970] [INFO] [config.py:1003:print]   eigenvalue_verbose ........... False
 [2025-01-02 15:46:55,970] [INFO] [config.py:1003:print]   elasticity_enabled ........... False
 [2025-01-02 15:46:55,970] [INFO] [config.py:1003:print]   flops_profiler_config ........ {
-    "enabled": false, 
-    "recompute_fwd_factor": 0.0, 
-    "profile_step": 1, 
-    "module_depth": -1, 
-    "top_modules": 1, 
-    "detailed": true, 
+    "enabled": false,
+    "recompute_fwd_factor": 0.0,
+    "profile_step": 1,
+    "module_depth": -1,
+    "top_modules": 1,
+    "detailed": true,
     "output_file": null
 }
 [2025-01-02 15:46:55,970] [INFO] [config.py:1003:print]   fp16_auto_cast ............... False
@@ -290,11 +290,11 @@ Time to load fused_adam op: 0.20447063446044922 seconds
 [2025-01-02 15:46:55,971] [INFO] [config.py:733:__init__] Config mesh_device None world_size = 8
 [2025-01-02 15:46:55,971] [INFO] [config.py:1003:print]   monitor_config ............... tensorboard=TensorBoardConfig(enabled=False, output_path='step2_tensorboard/ds_tensorboard_logs/', job_name='step2_model_tensorboard') comet=CometConfig(enabled=False, samples_log_interval=100, project=None, workspace=None, api_key=None, experiment_name=None, experiment_key=None, online=None, mode=None) wandb=WandbConfig(enabled=False, group=None, team=None, project='deepspeed') csv_monitor=CSVConfig(enabled=False, output_path='', job_name='DeepSpeedJobName')
 [2025-01-02 15:46:55,971] [INFO] [config.py:1003:print]   nebula_config ................ {
-    "enabled": false, 
-    "persistent_storage_path": null, 
-    "persistent_time_interval": 100, 
-    "num_of_version_in_retention": 2, 
-    "enable_nebula_load": true, 
+    "enabled": false,
+    "persistent_storage_path": null,
+    "persistent_time_interval": 100,
+    "num_of_version_in_retention": 2,
+    "enable_nebula_load": true,
     "load_path": null
 }
 [2025-01-02 15:46:55,971] [INFO] [config.py:1003:print]   optimizer_legacy_fusion ...... False
@@ -325,41 +325,41 @@ Time to load fused_adam op: 0.20447063446044922 seconds
 [2025-01-02 15:46:55,972] [INFO] [config.py:1003:print]   zero_optimization_stage ...... 0
 [2025-01-02 15:46:55,972] [INFO] [config.py:733:__init__] Config mesh_device None world_size = 8
 [2025-01-02 15:46:55,972] [INFO] [config.py:989:print_user_config]   json = {
-    "train_batch_size": 32, 
-    "train_micro_batch_size_per_gpu": 2, 
-    "steps_per_print": 10, 
+    "train_batch_size": 32,
+    "train_micro_batch_size_per_gpu": 2,
+    "steps_per_print": 10,
     "zero_optimization": {
-        "stage": 0, 
-        "overlap_comm": true, 
+        "stage": 0,
+        "overlap_comm": true,
         "offload_param": {
             "device": "none"
-        }, 
+        },
         "offload_optimizer": {
             "device": "none"
-        }, 
-        "stage3_param_persistence_threshold": 1.000000e+04, 
-        "stage3_max_live_parameters": 3.000000e+07, 
-        "stage3_prefetch_bucket_size": 3.000000e+07, 
+        },
+        "stage3_param_persistence_threshold": 1.000000e+04,
+        "stage3_max_live_parameters": 3.000000e+07,
+        "stage3_prefetch_bucket_size": 3.000000e+07,
         "memory_efficient_linear": false
-    }, 
+    },
     "fp16": {
-        "enabled": true, 
+        "enabled": true,
         "loss_scale_window": 100
-    }, 
-    "gradient_clipping": 1.0, 
-    "prescale_gradients": false, 
-    "wall_clock_breakdown": false, 
+    },
+    "gradient_clipping": 1.0,
+    "prescale_gradients": false,
+    "wall_clock_breakdown": false,
     "hybrid_engine": {
-        "enabled": false, 
-        "max_out_tokens": 512, 
-        "inference_tp_size": 1, 
-        "release_inference_cache": false, 
-        "pin_parameters": true, 
+        "enabled": false,
+        "max_out_tokens": 512,
+        "inference_tp_size": 1,
+        "release_inference_cache": false,
+        "pin_parameters": true,
         "tp_gather_partition_size": 8
-    }, 
+    },
     "tensorboard": {
-        "enabled": false, 
-        "output_path": "step2_tensorboard/ds_tensorboard_logs/", 
+        "enabled": false,
+        "output_path": "step2_tensorboard/ds_tensorboard_logs/",
         "job_name": "step2_model_tensorboard"
     }
 }
@@ -370,39 +370,39 @@ Time to load fused_adam op: 0.20447063446044922 seconds
 [2025-01-02 15:47:02,563] [INFO] [logging.py:128:log_dist] [Rank 0] DeepSpeed Flops Profiler Enabled: False
 [2025-01-02 15:47:02,565] [INFO] [config.py:999:print] DeepSpeedEngine configuration:
 [2025-01-02 15:47:02,565] [INFO] [config.py:1003:print]   activation_checkpointing_config  {
-    "partition_activations": false, 
-    "contiguous_memory_optimization": false, 
-    "cpu_checkpointing": false, 
-    "number_checkpoints": null, 
-    "synchronize_checkpoint_boundary": false, 
+    "partition_activations": false,
+    "contiguous_memory_optimization": false,
+    "cpu_checkpointing": false,
+    "number_checkpoints": null,
+    "synchronize_checkpoint_boundary": false,
     "profile": false
 }
 [2025-01-02 15:47:02,565] [INFO] [config.py:1003:print]   aio_config ................... {'block_size': 1048576, 'queue_depth': 8, 'thread_count': 1, 'single_submit': False, 'overlap_events': True, 'use_gds': False}
 [2025-01-02 15:47:02,565] [INFO] [config.py:1003:print]   amp_enabled .................. False
 [2025-01-02 15:47:02,565] [INFO] [config.py:1003:print]   amp_params ................... False
 [2025-01-02 15:47:02,566] [INFO] [config.py:1003:print]   autotuning_config ............ {
-    "enabled": false, 
-    "start_step": null, 
-    "end_step": null, 
-    "metric_path": null, 
-    "arg_mappings": null, 
-    "metric": "throughput", 
-    "model_info": null, 
-    "results_dir": "autotuning_results", 
-    "exps_dir": "autotuning_exps", 
-    "overwrite": true, 
-    "fast": true, 
-    "start_profile_step": 3, 
-    "end_profile_step": 5, 
-    "tuner_type": "gridsearch", 
-    "tuner_early_stopping": 5, 
-    "tuner_num_trials": 50, 
-    "model_info_path": null, 
-    "mp_size": 1, 
-    "max_train_batch_size": null, 
-    "min_train_batch_size": 1, 
-    "max_train_micro_batch_size_per_gpu": 1.024000e+03, 
-    "min_train_micro_batch_size_per_gpu": 1, 
+    "enabled": false,
+    "start_step": null,
+    "end_step": null,
+    "metric_path": null,
+    "arg_mappings": null,
+    "metric": "throughput",
+    "model_info": null,
+    "results_dir": "autotuning_results",
+    "exps_dir": "autotuning_exps",
+    "overwrite": true,
+    "fast": true,
+    "start_profile_step": 3,
+    "end_profile_step": 5,
+    "tuner_type": "gridsearch",
+    "tuner_early_stopping": 5,
+    "tuner_num_trials": 50,
+    "model_info_path": null,
+    "mp_size": 1,
+    "max_train_batch_size": null,
+    "min_train_batch_size": 1,
+    "max_train_micro_batch_size_per_gpu": 1.024000e+03,
+    "min_train_micro_batch_size_per_gpu": 1,
     "num_tuning_micro_batch_sizes": 3
 }
 [2025-01-02 15:47:02,566] [INFO] [config.py:1003:print]   bfloat16_enabled ............. False
@@ -431,12 +431,12 @@ Time to load fused_adam op: 0.20447063446044922 seconds
 [2025-01-02 15:47:02,566] [INFO] [config.py:1003:print]   eigenvalue_verbose ........... False
 [2025-01-02 15:47:02,566] [INFO] [config.py:1003:print]   elasticity_enabled ........... False
 [2025-01-02 15:47:02,566] [INFO] [config.py:1003:print]   flops_profiler_config ........ {
-    "enabled": false, 
-    "recompute_fwd_factor": 0.0, 
-    "profile_step": 1, 
-    "module_depth": -1, 
-    "top_modules": 1, 
-    "detailed": true, 
+    "enabled": false,
+    "recompute_fwd_factor": 0.0,
+    "profile_step": 1,
+    "module_depth": -1,
+    "top_modules": 1,
+    "detailed": true,
     "output_file": null
 }
 [2025-01-02 15:47:02,566] [INFO] [config.py:1003:print]   fp16_auto_cast ............... False
@@ -457,11 +457,11 @@ Time to load fused_adam op: 0.20447063446044922 seconds
 [2025-01-02 15:47:02,567] [INFO] [config.py:1003:print]   mics_shard_size .............. -1
 [2025-01-02 15:47:02,567] [INFO] [config.py:1003:print]   monitor_config ............... tensorboard=TensorBoardConfig(enabled=False, output_path='', job_name='DeepSpeedJobName') comet=CometConfig(enabled=False, samples_log_interval=100, project=None, workspace=None, api_key=None, experiment_name=None, experiment_key=None, online=None, mode=None) wandb=WandbConfig(enabled=False, group=None, team=None, project='deepspeed') csv_monitor=CSVConfig(enabled=False, output_path='', job_name='DeepSpeedJobName')
 [2025-01-02 15:47:02,567] [INFO] [config.py:1003:print]   nebula_config ................ {
-    "enabled": false, 
-    "persistent_storage_path": null, 
-    "persistent_time_interval": 100, 
-    "num_of_version_in_retention": 2, 
-    "enable_nebula_load": true, 
+    "enabled": false,
+    "persistent_storage_path": null,
+    "persistent_time_interval": 100,
+    "num_of_version_in_retention": 2,
+    "enable_nebula_load": true,
     "load_path": null
 }
 [2025-01-02 15:47:02,567] [INFO] [config.py:1003:print]   optimizer_legacy_fusion ...... False
@@ -491,22 +491,22 @@ Time to load fused_adam op: 0.20447063446044922 seconds
 [2025-01-02 15:47:02,568] [INFO] [config.py:1003:print]   zero_force_ds_cpu_optimizer .. True
 [2025-01-02 15:47:02,568] [INFO] [config.py:1003:print]   zero_optimization_stage ...... 0
 [2025-01-02 15:47:02,568] [INFO] [config.py:989:print_user_config]   json = {
-    "train_batch_size": 32, 
-    "train_micro_batch_size_per_gpu": 2, 
-    "steps_per_print": 10, 
+    "train_batch_size": 32,
+    "train_micro_batch_size_per_gpu": 2,
+    "steps_per_print": 10,
     "zero_optimization": {
-        "stage": 0, 
-        "stage3_param_persistence_threshold": 1.000000e+04, 
+        "stage": 0,
+        "stage3_param_persistence_threshold": 1.000000e+04,
         "offload_param": {
             "device": "none"
-        }, 
+        },
         "memory_efficient_linear": false
-    }, 
+    },
     "fp16": {
         "enabled": true
-    }, 
-    "gradient_clipping": 1.0, 
-    "prescale_gradients": false, 
+    },
+    "gradient_clipping": 1.0,
+    "prescale_gradients": false,
     "wall_clock_breakdown": false
 }
 ***** Running training *****
@@ -514,67 +514,67 @@ Time to load fused_adam op: 0.20447063446044922 seconds
 chosen: 0.0, rejected: 0.0, loss: 0.693359375
 Beginning of Epoch 1/1, Total Micro Batches 4708
 Model Parameters: 0.331 B, Latency: 0.27s, TFLOPs: 1.02, Samples/sec: 7.28, Time/seq 0.14s, Batch Size: 2, Sequence Length: 512
-[2025-01-02 15:47:32,711] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:47:32,711] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 0
-[2025-01-02 15:47:32,711] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:47:32,711] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 0
 [2025-01-02 15:47:32,712] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 65536 to 32768.0
 [2025-01-02 15:47:32,712] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale fr[2025-01-02 15:47:32,712] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 65536 to 32768.0
-[2025-01-02 15:47:32,712] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:47:32,712] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 0
 [2025-01-02 15:47:32,712] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 65536 to 32768.0
-[2025-01-02 15:47:32,712] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:47:32,712] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 0
-[2025-01-02 15:47:32,712] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:47:32,712] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 0
-[2025-01-02 15:47:32,712] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:47:32,712] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 0
 [2025-01-02 15:47:32,712] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 65536 to 32768.0
 [2025-01-02 15:47:32,712] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 65536 to 32768.0
 [2025-01-02 15:47:32,712] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 65536 to 32768.0
 [2025-01-02 15:47:32,713] [INFO] [logging.py:128:log_dist] [Rank 0] Overflow detected. Skipping step. Attempted loss scale: 65536, reducing to 32768.0
-[2025-01-02 15:47:32,712] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:47:32,712] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 0
 [2025-01-02 15:47:32,713] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 65536 to 32768.0
 Model Parameters: 0.331 B, Latency: 0.49s, TFLOPs: 0.57, Samples/sec: 4.06, Time/seq 0.25s, Batch Size: 2, Sequence Length: 512
 Model Parameters: 0.331 B, Latency: 0.10s, TFLOPs: 2.70, Samples/sec: 19.26, Time/seq 0.05s, Batch Size: 2, Sequence Length: 512
-[2025-01-02 15:47:33,343] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:47:33,343] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 1
 [2025-01-02 15:47:33,343] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 32768.0 to 16384.0
-[2025-01-02 15:47:33,343] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:47:33,343] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 1
 [2025-01-02 15:47:33,343] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 32768.0 to 16384.0
 [2025-01-02 15:47:33,343] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 32768.0 to 16384.0
-[2025-01-02 15:47:33,343] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:47:33,343] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 1
-[2025-01-02 15:47:33,343] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:47:33,343] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 1
 [2025-01-02 15:47:33,343] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 32768.0 to 16384.0
-[2025-01-02 15:47:33,343] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:47:33,343] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 1
 [2025-01-02 15:47:33,343] [INFO] [logging.py:128:log_dist] [Rank 0] Overflow detected. Skipping step. Attempted loss scale: 32768.0, reducing to 16384.0
-[2025-01-02 15:47:33,343] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:47:33,343] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 1
 [2025-01-02 15:47:33,343] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale fr[2025-01-02 15:47:33,343] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 32768.0 to 16384.0
 Model Parameters: 0.331 B, Latency: 0.52s, TFLOPs: 0.54, Samples/sec: 3.84, Time/seq 0.26s, Batch Size: 2, Sequence Length: 512
 Model Parameters: 0.331 B, Latency: 0.14s, TFLOPs: 1.98, Samples/sec: 14.09, Time/seq 0.07s, Batch Size: 2, Sequence Length: 512
-[2025-01-02 15:47:33,974] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:47:33,974] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 2
-[2025-01-02 15:47:33,974] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:47:33,974] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 2
 [2025-01-02 15:47:33,974] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 16384.0 to 8192.0
 [2025-01-02 15:47:33,974] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 16384.0 to 8192.0
-[2025-01-02 15:47:33,974] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:47:33,974] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 2
 [2025-01-02 15:47:33,975] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 16384.0 to 8192.0
-[2025-01-02 15:47:33,975] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:47:33,975] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 2
 [2025-01-02 15:47:33,975] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 16384.0 to 8192.0
 [2025-01-02 15:47:33,975] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 16384.0 to 8192.0
 [2025-01-02 15:47:33,975] [INFO] [logging.py:128:log_dist] [Rank 0] Overflow detected. Skipping step. Attempted loss scale: 16384.0, reducing to 8192.0
-[2025-01-02 15:47:33,975] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:47:33,975] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 2
-[2025-01-02 15:47:33,975] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:47:33,975] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 2
 [2025-01-02 15:47:33,975] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 16384.0 to 8192.0
 [2025-01-02 15:47:33,975] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 16384.0 to 8192.0
@@ -592,26 +592,26 @@ Model Parameters: 0.331 B, Latency: 0.55s, TFLOPs: 0.51, Samples/sec: 3.65, Time
 Model Parameters: 0.331 B, Latency: 0.14s, TFLOPs: 1.97, Samples/sec: 14.04, Time/seq 0.07s, Batch Size: 2, Sequence Length: 512
 Model Parameters: 0.331 B, Latency: 0.54s, TFLOPs: 0.52, Samples/sec: 3.70, Time/seq 0.27s, Batch Size: 2, Sequence Length: 512
 Model Parameters: 0.331 B, Latency: 0.14s, TFLOPs: 1.98, Samples/sec: 14.08, Time/seq 0.07s, Batch Size: 2, Sequence Length: 512
-[2025-01-02 15:47:38,839] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:47:38,839] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 9
 [2025-01-02 15:47:38,839] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 8192.0 to 4096.0
-[2025-01-02 15:47:38,839] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:47:38,839] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 9
 [2025-01-02 15:47:38,839] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 8192.0 to 4096.0
-[2025-01-02 15:47:38,839] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:47:38,839] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 9
 [2025-01-02 15:47:38,840] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 8192.0 to 4096.0
-[2025-01-02 15:47:38,840] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:47:38,840] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 9
-[2025-01-02 15:47:38,840] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:47:38,840] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 9
-[2025-01-02 15:47:38,840] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:47:38,840] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 9
 [2025-01-02 15:47:38,840] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 8192.0 to 4096.0
 [2025-01-02 15:47:38,840] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 8192.0 to 4096.0
 [2025-01-02 15:47:38,840] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 8192.0 to 4096.0
 [2025-01-02 15:47:38,840] [INFO] [logging.py:128:log_dist] [Rank 0] Overflow detected. Skipping step. Attempted loss scale: 8192.0, reducing to 4096.0
-[2025-01-02 15:47:38,840] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:47:38,840] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 9
 [2025-01-02 15:47:38,840] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 8192.0 to 4096.0
 [2025-01-02 15:47:38,841] [INFO] [logging.py:128:log_dist] [Rank 0] step=10, skipped=4, lr=[4.999919851200522e-05, 4.999919851200522e-05], mom=[(0.9, 0.95), (0.9, 0.95)]
@@ -762,26 +762,26 @@ Model Parameters: 0.331 B, Latency: 0.55s, TFLOPs: 0.52, Samples/sec: 3.67, Time
 Model Parameters: 0.331 B, Latency: 0.14s, TFLOPs: 1.98, Samples/sec: 14.07, Time/seq 0.07s, Batch Size: 2, Sequence Length: 512
 Model Parameters: 0.331 B, Latency: 0.54s, TFLOPs: 0.52, Samples/sec: 3.68, Time/seq 0.27s, Batch Size: 2, Sequence Length: 512
 Model Parameters: 0.331 B, Latency: 0.14s, TFLOPs: 1.98, Samples/sec: 14.08, Time/seq 0.07s, Batch Size: 2, Sequence Length: 512
-[2025-01-02 15:48:25,109] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:48:25,109] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 76
 [2025-01-02 15:48:25,109] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 4096.0 to 2048.0
-[2025-01-02 15:48:25,109] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:48:25,109] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 76
 [2025-01-02 15:48:25,109] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 4096.0 to 2048.0
-[2025-01-02 15:48:25,109] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:48:25,109] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 76
 [2025-01-02 15:48:25,109] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 4096.0 to 2048.0
-[2025-01-02 15:48:25,109] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:48:25,109] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 76
-[2025-01-02 15:48:25,110] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:48:25,110] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 76
 [2025-01-02 15:48:25,110] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 4096.0 to 2048.0
-[2025-01-02 15:48:25,110] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:48:25,110] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 76
 [2025-01-02 15:48:25,110] [INFO] [logging.py:128:log_dist] [Rank 0] Overflow detected. Skipping step. Attempted loss scale: 4096.0, reducing to 2048.0
 [2025-01-02 15:48:25,110] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 4096.0 to 2048.0
 [2025-01-02 15:48:25,110] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 4096.0 to 2048.0
-[2025-01-02 15:48:25,110] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:48:25,110] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 76
 [2025-01-02 15:48:25,110] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 4096.0 to 2048.0
 Model Parameters: 0.331 B, Latency: 0.49s, TFLOPs: 0.57, Samples/sec: 4.08, Time/seq 0.24s, Batch Size: 2, Sequence Length: 512
@@ -914,26 +914,26 @@ Model Parameters: 0.331 B, Latency: 0.55s, TFLOPs: 0.51, Samples/sec: 3.63, Time
 Model Parameters: 0.331 B, Latency: 0.14s, TFLOPs: 1.98, Samples/sec: 14.09, Time/seq 0.07s, Batch Size: 2, Sequence Length: 512
 Model Parameters: 0.331 B, Latency: 0.55s, TFLOPs: 0.51, Samples/sec: 3.62, Time/seq 0.28s, Batch Size: 2, Sequence Length: 512
 Model Parameters: 0.331 B, Latency: 0.14s, TFLOPs: 1.97, Samples/sec: 14.05, Time/seq 0.07s, Batch Size: 2, Sequence Length: 512
-[2025-01-02 15:49:05,845] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:49:05,845] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 135
 [2025-01-02 15:49:05,845] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 2048.0 to 1024.0
-[2025-01-02 15:49:05,845] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:49:05,845] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 135
 [2025-01-02 15:49:05,846] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 2048.0 to 1024.0
-[2025-01-02 15:49:05,846] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:49:05,846] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 135
 [2025-01-02 15:49:05,846] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 2048.0 to 1024.0
 [2025-01-02 15:49:05,846] [INFO] [logging.py:128:log_dist] [Rank 0] Overflow detected. Skipping step. Attempted loss scale: 2048.0, reducing to 1024.0
-[2025-01-02 15:49:05,846] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:49:05,846] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 135
-[2025-01-02 15:49:05,846] [INFO] [fused_optimizer.py:392:_update_scale] 
-Grad overflow on iteration 135
-[2025-01-02 15:49:05,846] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 2048.0 to 1024.0
-[2025-01-02 15:49:05,846] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:49:05,846] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 135
 [2025-01-02 15:49:05,846] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 2048.0 to 1024.0
+[2025-01-02 15:49:05,846] [INFO] [fused_optimizer.py:392:_update_scale]
+Grad overflow on iteration 135
 [2025-01-02 15:49:05,846] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 2048.0 to 1024.0
-[2025-01-02 15:49:05,846] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:49:05,846] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 2048.0 to 1024.0
+[2025-01-02 15:49:05,846] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 135
 [2025-01-02 15:49:05,846] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 2048.0 to 1024.0
 Model Parameters: 0.331 B, Latency: 0.49s, TFLOPs: 0.57, Samples/sec: 4.09, Time/seq 0.24s, Batch Size: 2, Sequence Length: 512
@@ -1096,28 +1096,28 @@ Model Parameters: 0.331 B, Latency: 0.55s, TFLOPs: 0.51, Samples/sec: 3.64, Time
 Model Parameters: 0.331 B, Latency: 0.14s, TFLOPs: 1.98, Samples/sec: 14.11, Time/seq 0.07s, Batch Size: 2, Sequence Length: 512
 Model Parameters: 0.331 B, Latency: 0.55s, TFLOPs: 0.51, Samples/sec: 3.64, Time/seq 0.28s, Batch Size: 2, Sequence Length: 512
 Model Parameters: 0.331 B, Latency: 0.14s, TFLOPs: 1.98, Samples/sec: 14.09, Time/seq 0.07s, Batch Size: 2, Sequence Length: 512
-[2025-01-02 15:49:56,557] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:49:56,557] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 208
-[2025-01-02 15:49:56,557] [INFO] [fused_optimizer.py:392:_update_scale] 
-Grad overflow on iteration 208
-[2025-01-02 15:49:56,557] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 1024.0 to 512.0
-[2025-01-02 15:49:56,557] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 1024.0 to 512.0
-[2025-01-02 15:49:56,557] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:49:56,557] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 208
 [2025-01-02 15:49:56,557] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 1024.0 to 512.0
-[2025-01-02 15:49:56,557] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:49:56,557] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 1024.0 to 512.0
+[2025-01-02 15:49:56,557] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 208
 [2025-01-02 15:49:56,557] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 1024.0 to 512.0
-[2025-01-02 15:49:56,557] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:49:56,557] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 208
-[2025-01-02 15:49:56,557] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:49:56,557] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 1024.0 to 512.0
+[2025-01-02 15:49:56,557] [INFO] [fused_optimizer.py:392:_update_scale]
+Grad overflow on iteration 208
+[2025-01-02 15:49:56,557] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 208
 [2025-01-02 15:49:56,558] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 1024.0 to 512.0
-[2025-01-02 15:49:56,557] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:49:56,557] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 208
 [2025-01-02 15:49:56,558] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 1024.0 to 512.0
 [2025-01-02 15:49:56,558] [INFO] [logging.py:128:log_dist] [Rank 0] Overflow detected. Skipping step. Attempted loss scale: 1024.0, reducing to 512.0
-[2025-01-02 15:49:56,558] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:49:56,558] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 208
 [2025-01-02 15:49:56,558] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 1024.0 to 512.0
 Model Parameters: 0.331 B, Latency: 0.49s, TFLOPs: 0.57, Samples/sec: 4.05, Time/seq 0.25s, Batch Size: 2, Sequence Length: 512
@@ -1732,25 +1732,25 @@ Model Parameters: 0.331 B, Latency: 0.55s, TFLOPs: 0.51, Samples/sec: 3.64, Time
 Model Parameters: 0.331 B, Latency: 0.14s, TFLOPs: 1.98, Samples/sec: 14.10, Time/seq 0.07s, Batch Size: 2, Sequence Length: 512
 Model Parameters: 0.331 B, Latency: 0.55s, TFLOPs: 0.51, Samples/sec: 3.63, Time/seq 0.28s, Batch Size: 2, Sequence Length: 512
 Model Parameters: 0.331 B, Latency: 0.14s, TFLOPs: 1.98, Samples/sec: 14.09, Time/seq 0.07s, Batch Size: 2, Sequence Length: 512
-[2025-01-02 15:53:00,097] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:53:00,097] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 472
 [2025-01-02 15:53:00,097] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 2048.0 to 1024.0
 [2025-01-02 15:53:00,097] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 2048.0 to 1024.0
-[2025-01-02 15:53:00,097] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:53:00,097] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 472
 [2025-01-02 15:53:00,097] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 2048.0 to 1024.0
-[2025-01-02 15:53:00,097] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:53:00,097] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 472
 [2025-01-02 15:53:00,097] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 2048.0 to 1024.0
-[2025-01-02 15:53:00,097] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:53:00,097] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 472
 [2025-01-02 15:53:00,097] [INFO] [logging.py:128:log_dist] [Rank 0] Overflow detected. Skipping step. Attempted loss scale: 2048.0, reducing to 1024.0
 [2025-01-02 15:53:00,097] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 2048.0 to 1024.0
-[2025-01-02 15:53:00,097] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:53:00,097] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 472
 [2025-01-02 15:53:00,098] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 2048.0 to 1024.0
 [2025-01-02 15:53:00,098] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 2048.0 to 1024.0
-[2025-01-02 15:53:00,098] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:53:00,098] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 472
 [2025-01-02 15:53:00,098] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 2048.0 to 1024.0
 Model Parameters: 0.331 B, Latency: 0.49s, TFLOPs: 0.57, Samples/sec: 4.05, Time/seq 0.25s, Batch Size: 2, Sequence Length: 512
@@ -2129,29 +2129,29 @@ Model Parameters: 0.331 B, Latency: 0.55s, TFLOPs: 0.51, Samples/sec: 3.64, Time
 Model Parameters: 0.331 B, Latency: 0.14s, TFLOPs: 1.98, Samples/sec: 14.09, Time/seq 0.07s, Batch Size: 2, Sequence Length: 512
 Model Parameters: 0.331 B, Latency: 0.55s, TFLOPs: 0.51, Samples/sec: 3.65, Time/seq 0.27s, Batch Size: 2, Sequence Length: 512
 Model Parameters: 0.331 B, Latency: 0.14s, TFLOPs: 1.98, Samples/sec: 14.11, Time/seq 0.07s, Batch Size: 2, Sequence Length: 512
-[2025-01-02 15:54:54,756] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:54:54,756] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 637
-[2025-01-02 15:54:54,756] [INFO] [fused_optimizer.py:392:_update_scale] 
-Grad overflow on iteration 637
-[2025-01-02 15:54:54,757] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 2048.0 to 1024.0
-[2025-01-02 15:54:54,757] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 2048.0 to 1024.0
-[2025-01-02 15:54:54,756] [INFO] [fused_optimizer.py:392:_update_scale] 
-Grad overflow on iteration 637
-[2025-01-02 15:54:54,757] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 2048.0 to 1024.0
-[2025-01-02 15:54:54,757] [INFO] [fused_optimizer.py:392:_update_scale] 
-Grad overflow on iteration 637
-[2025-01-02 15:54:54,757] [INFO] [fused_optimizer.py:392:_update_scale] 
-Grad overflow on iteration 637
-[2025-01-02 15:54:54,757] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:54:54,756] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 637
 [2025-01-02 15:54:54,757] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 2048.0 to 1024.0
 [2025-01-02 15:54:54,757] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 2048.0 to 1024.0
+[2025-01-02 15:54:54,756] [INFO] [fused_optimizer.py:392:_update_scale]
+Grad overflow on iteration 637
 [2025-01-02 15:54:54,757] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 2048.0 to 1024.0
-[2025-01-02 15:54:54,757] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:54:54,757] [INFO] [fused_optimizer.py:392:_update_scale]
+Grad overflow on iteration 637
+[2025-01-02 15:54:54,757] [INFO] [fused_optimizer.py:392:_update_scale]
+Grad overflow on iteration 637
+[2025-01-02 15:54:54,757] [INFO] [fused_optimizer.py:392:_update_scale]
+Grad overflow on iteration 637
+[2025-01-02 15:54:54,757] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 2048.0 to 1024.0
+[2025-01-02 15:54:54,757] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 2048.0 to 1024.0
+[2025-01-02 15:54:54,757] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 2048.0 to 1024.0
+[2025-01-02 15:54:54,757] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 637
 [2025-01-02 15:54:54,757] [INFO] [logging.py:128:log_dist] [Rank 0] Overflow detected. Skipping step. Attempted loss scale: 2048.0, reducing to 1024.0
 [2025-01-02 15:54:54,757] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 2048.0 to 1024.0
-[2025-01-02 15:54:54,757] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:54:54,757] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 637
 [2025-01-02 15:54:54,757] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 2048.0 to 1024.0
 Model Parameters: 0.331 B, Latency: 0.49s, TFLOPs: 0.57, Samples/sec: 4.05, Time/seq 0.25s, Batch Size: 2, Sequence Length: 512
@@ -2698,23 +2698,23 @@ Model Parameters: 0.331 B, Latency: 0.55s, TFLOPs: 0.51, Samples/sec: 3.63, Time
 Model Parameters: 0.331 B, Latency: 0.14s, TFLOPs: 1.98, Samples/sec: 14.11, Time/seq 0.07s, Batch Size: 2, Sequence Length: 512
 Model Parameters: 0.331 B, Latency: 0.55s, TFLOPs: 0.51, Samples/sec: 3.64, Time/seq 0.27s, Batch Size: 2, Sequence Length: 512
 Model Parameters: 0.331 B, Latency: 0.14s, TFLOPs: 1.98, Samples/sec: 14.09, Time/seq 0.07s, Batch Size: 2, Sequence Length: 512
-[2025-01-02 15:57:37,399] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:57:37,399] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 871
-[2025-01-02 15:57:37,399] [INFO] [fused_optimizer.py:392:_update_scale] 
-Grad overflow on iteration 871
-[2025-01-02 15:57:37,399] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 4096.0 to 2048.0
-[2025-01-02 15:57:37,399] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 4096.0 to 2048.0
-[2025-01-02 15:57:37,399] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:57:37,399] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 871
 [2025-01-02 15:57:37,399] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 4096.0 to 2048.0
-[2025-01-02 15:57:37,399] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:57:37,399] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 4096.0 to 2048.0
+[2025-01-02 15:57:37,399] [INFO] [fused_optimizer.py:392:_update_scale]
+Grad overflow on iteration 871
+[2025-01-02 15:57:37,399] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 4096.0 to 2048.0
+[2025-01-02 15:57:37,399] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 871
 [2025-01-02 15:57:37,399] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 4096.0 to 2048.0
 [2025-01-02 15:57:37,399] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 4096.0 to 2048.0
 [2025-01-02 15:57:37,399] [INFO] [logging.py:128:log_dist] [Rank 0] Overflow detected. Skipping step. Attempted loss scale: 4096.0, reducing to 2048.0
-[2025-01-02 15:57:37,399] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:57:37,399] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 871
-[2025-01-02 15:57:37,399] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:57:37,399] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 871
 [2025-01-02 15:57:37,399] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 4096.0 to 2048.0
 Model Parameters: 0.331 B, Latency: 0.49s, TFLOPs: 0.57, Samples/sec: 4.05, Time/seq 0.25s, Batch Size: 2, Sequence Length: 512
@@ -3083,28 +3083,28 @@ Model Parameters: 0.331 B, Latency: 0.14s, TFLOPs: 1.98, Samples/sec: 14.10, Tim
 [2025-01-02 15:59:26,699] [INFO] [timer.py:264:stop] epoch=0/micro_step=2060/global_step=1030, RunningAvgSamplesPerSec=46.45030464457745, CurrSamplesPerSec=46.19032410349784, MemAllocated=5.53GB, MaxMemAllocated=8.61GB
 Model Parameters: 0.331 B, Latency: 0.55s, TFLOPs: 0.51, Samples/sec: 3.62, Time/seq 0.28s, Batch Size: 2, Sequence Length: 512
 Model Parameters: 0.331 B, Latency: 0.14s, TFLOPs: 1.96, Samples/sec: 13.97, Time/seq 0.07s, Batch Size: 2, Sequence Length: 512
-[2025-01-02 15:59:27,333] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:59:27,333] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 1030
 [2025-01-02 15:59:27,334] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 4096.0 to 2048.0
-[2025-01-02 15:59:27,333] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:59:27,333] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 1030
 [2025-01-02 15:59:27,334] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 4096.0 to 2048.0
-[2025-01-02 15:59:27,334] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:59:27,334] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 1030
 [2025-01-02 15:59:27,334] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 4096.0 to 2048.0
-[2025-01-02 15:59:27,334] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:59:27,334] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 1030
 [2025-01-02 15:59:27,334] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 4096.0 to 2048.0
-[2025-01-02 15:59:27,334] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:59:27,334] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 1030
 [2025-01-02 15:59:27,334] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 4096.0 to 2048.0
-[2025-01-02 15:59:27,334] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:59:27,334] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 1030
-[2025-01-02 15:59:27,334] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:59:27,334] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 1030
 [2025-01-02 15:59:27,334] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 4096.0 to 2048.0
 [2025-01-02 15:59:27,334] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 4096.0 to 2048.0
-[2025-01-02 15:59:27,335] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:59:27,335] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 1030
 [2025-01-02 15:59:27,335] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 4096.0 to 2048.0
 [2025-01-02 15:59:27,335] [INFO] [logging.py:128:log_dist] [Rank 0] Overflow detected. Skipping step. Attempted loss scale: 4096.0, reducing to 2048.0
@@ -3196,27 +3196,27 @@ Model Parameters: 0.331 B, Latency: 0.14s, TFLOPs: 1.98, Samples/sec: 14.07, Tim
 [2025-01-02 15:59:54,262] [INFO] [timer.py:264:stop] epoch=0/micro_step=2140/global_step=1070, RunningAvgSamplesPerSec=46.46284313048135, CurrSamplesPerSec=46.67312502129054, MemAllocated=5.53GB, MaxMemAllocated=8.61GB
 Model Parameters: 0.331 B, Latency: 0.55s, TFLOPs: 0.52, Samples/sec: 3.67, Time/seq 0.27s, Batch Size: 2, Sequence Length: 512
 Model Parameters: 0.331 B, Latency: 0.14s, TFLOPs: 1.98, Samples/sec: 14.11, Time/seq 0.07s, Batch Size: 2, Sequence Length: 512
-[2025-01-02 15:59:54,893] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:59:54,893] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 1070
 [2025-01-02 15:59:54,893] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 2048.0 to 1024.0
 [2025-01-02 15:59:54,893] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 2048.0 to 1024.0
-[2025-01-02 15:59:54,893] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:59:54,893] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 1070
 [2025-01-02 15:59:54,893] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 2048.0 to 1024.0
-[2025-01-02 15:59:54,893] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:59:54,893] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 1070
 [2025-01-02 15:59:54,893] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 2048.0 to 1024.0
 [2025-01-02 15:59:54,893] [INFO] [logging.py:128:log_dist] [Rank 0] Overflow detected. Skipping step. Attempted loss scale: 2048.0, reducing to 1024.0
-[2025-01-02 15:59:54,893] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:59:54,893] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 1070
 [2025-01-02 15:59:54,894] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 2048.0 to 1024.0
-[2025-01-02 15:59:54,894] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:59:54,894] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 1070
-[2025-01-02 15:59:54,893] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:59:54,893] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 1070
 [2025-01-02 15:59:54,894] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 2048.0 to 1024.0
 [2025-01-02 15:59:54,894] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 2048.0 to 1024.0
-[2025-01-02 15:59:54,894] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 15:59:54,894] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 1070
 [2025-01-02 15:59:54,894] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 2048.0 to 1024.0
 Model Parameters: 0.331 B, Latency: 0.49s, TFLOPs: 0.58, Samples/sec: 4.11, Time/seq 0.24s, Batch Size: 2, Sequence Length: 512
@@ -3505,29 +3505,29 @@ Model Parameters: 0.331 B, Latency: 0.54s, TFLOPs: 0.52, Samples/sec: 3.68, Time
 Model Parameters: 0.331 B, Latency: 0.14s, TFLOPs: 1.98, Samples/sec: 14.10, Time/seq 0.07s, Batch Size: 2, Sequence Length: 512
 Model Parameters: 0.331 B, Latency: 0.57s, TFLOPs: 0.50, Samples/sec: 3.53, Time/seq 0.28s, Batch Size: 2, Sequence Length: 512
 Model Parameters: 0.331 B, Latency: 0.14s, TFLOPs: 1.98, Samples/sec: 14.10, Time/seq 0.07s, Batch Size: 2, Sequence Length: 512
-[2025-01-02 16:01:19,727] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 16:01:19,727] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 1193
-[2025-01-02 16:01:19,728] [INFO] [fused_optimizer.py:392:_update_scale] 
-Grad overflow on iteration 1193
-[2025-01-02 16:01:19,728] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 2048.0 to 1024.0
-[2025-01-02 16:01:19,728] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 2048.0 to 1024.0
-[2025-01-02 16:01:19,728] [INFO] [fused_optimizer.py:392:_update_scale] 
-Grad overflow on iteration 1193
-[2025-01-02 16:01:19,728] [INFO] [fused_optimizer.py:392:_update_scale] 
-Grad overflow on iteration 1193
-[2025-01-02 16:01:19,728] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 16:01:19,728] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 1193
 [2025-01-02 16:01:19,728] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 2048.0 to 1024.0
 [2025-01-02 16:01:19,728] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 2048.0 to 1024.0
+[2025-01-02 16:01:19,728] [INFO] [fused_optimizer.py:392:_update_scale]
+Grad overflow on iteration 1193
+[2025-01-02 16:01:19,728] [INFO] [fused_optimizer.py:392:_update_scale]
+Grad overflow on iteration 1193
+[2025-01-02 16:01:19,728] [INFO] [fused_optimizer.py:392:_update_scale]
+Grad overflow on iteration 1193
 [2025-01-02 16:01:19,728] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 2048.0 to 1024.0
-[2025-01-02 16:01:19,728] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 16:01:19,728] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 2048.0 to 1024.0
+[2025-01-02 16:01:19,728] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 2048.0 to 1024.0
+[2025-01-02 16:01:19,728] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 1193
 [2025-01-02 16:01:19,728] [INFO] [logging.py:128:log_dist] [Rank 0] Overflow detected. Skipping step. Attempted loss scale: 2048.0, reducing to 1024.0
-[2025-01-02 16:01:19,728] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 16:01:19,728] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 1193
 [2025-01-02 16:01:19,728] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 2048.0 to 1024.0
 [2025-01-02 16:01:19,728] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 2048.0 to 1024.0
-[2025-01-02 16:01:19,728] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 16:01:19,728] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 1193
 [2025-01-02 16:01:19,728] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 2048.0 to 1024.0
 Model Parameters: 0.331 B, Latency: 0.49s, TFLOPs: 0.57, Samples/sec: 4.09, Time/seq 0.24s, Batch Size: 2, Sequence Length: 512
@@ -4089,25 +4089,25 @@ Model Parameters: 0.331 B, Latency: 0.54s, TFLOPs: 0.52, Samples/sec: 3.68, Time
 Model Parameters: 0.331 B, Latency: 0.14s, TFLOPs: 1.98, Samples/sec: 14.08, Time/seq 0.07s, Batch Size: 2, Sequence Length: 512
 Model Parameters: 0.331 B, Latency: 0.54s, TFLOPs: 0.52, Samples/sec: 3.68, Time/seq 0.27s, Batch Size: 2, Sequence Length: 512
 Model Parameters: 0.331 B, Latency: 0.14s, TFLOPs: 1.98, Samples/sec: 14.08, Time/seq 0.07s, Batch Size: 2, Sequence Length: 512
-[2025-01-02 16:04:07,853] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 16:04:07,853] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 1436
 [2025-01-02 16:04:07,853] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 4096.0 to 2048.0
-[2025-01-02 16:04:07,853] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 16:04:07,853] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 1436
 [2025-01-02 16:04:07,854] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 4096.0 to 2048.0
-[2025-01-02 16:04:07,854] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 16:04:07,854] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 1436
 [2025-01-02 16:04:07,854] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 4096.0 to 2048.0
-[2025-01-02 16:04:07,854] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 16:04:07,854] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 1436
-[2025-01-02 16:04:07,854] [INFO] [fused_optimizer.py:392:_update_scale] 
-Grad overflow on iteration 1436
-[2025-01-02 16:04:07,854] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 4096.0 to 2048.0
-[2025-01-02 16:04:07,854] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 4096.0 to 2048.0
-[2025-01-02 16:04:07,854] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 16:04:07,854] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 1436
 [2025-01-02 16:04:07,854] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 4096.0 to 2048.0
-[2025-01-02 16:04:07,854] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 16:04:07,854] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 4096.0 to 2048.0
+[2025-01-02 16:04:07,854] [INFO] [fused_optimizer.py:392:_update_scale]
+Grad overflow on iteration 1436
+[2025-01-02 16:04:07,854] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 4096.0 to 2048.0
+[2025-01-02 16:04:07,854] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 1436
 [2025-01-02 16:04:07,854] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 4096.0 to 2048.0
 Model Parameters: 0.331 B, Latency: 0.49s, TFLOPs: 0.58, Samples/sec: 4.11, Time/seq 0.24s, Batch Size: 2, Sequence Length: 512
@@ -4625,24 +4625,24 @@ Model Parameters: 0.331 B, Latency: 0.55s, TFLOPs: 0.51, Samples/sec: 3.65, Time
 Model Parameters: 0.331 B, Latency: 0.14s, TFLOPs: 1.98, Samples/sec: 14.07, Time/seq 0.07s, Batch Size: 2, Sequence Length: 512
 Model Parameters: 0.331 B, Latency: 0.55s, TFLOPs: 0.51, Samples/sec: 3.65, Time/seq 0.27s, Batch Size: 2, Sequence Length: 512
 Model Parameters: 0.331 B, Latency: 0.14s, TFLOPs: 1.98, Samples/sec: 14.08, Time/seq 0.07s, Batch Size: 2, Sequence Length: 512
-[2025-01-02 16:06:40,393] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 16:06:40,393] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 1656
 [2025-01-02 16:06:40,394] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 8192.0 to 4096.0
-[2025-01-02 16:06:40,394] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 16:06:40,394] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 1656
 [2025-01-02 16:06:40,394] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 8192.0 to 4096.0
-[2025-01-02 16:06:40,394] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 16:06:40,394] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 1656
 [2025-01-02 16:06:40,394] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 8192.0 to 4096.0
 [2025-01-02 16:06:40,394] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 8192.0 to 4096.0
 [2025-01-02 16:06:40,394] [INFO] [logging.py:128:log_dist] [Rank 0] Overflow detected. Skipping step. Attempted loss scale: 8192.0, reducing to 4096.0
-[2025-01-02 16:06:40,394] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 16:06:40,394] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 1656
-[2025-01-02 16:06:40,394] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 16:06:40,394] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 1656
 [2025-01-02 16:06:40,394] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 8192.0 to 4096.0
 [2025-01-02 16:06:40,394] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 8192.0 to 4096.0
-[2025-01-02 16:06:40,394] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 16:06:40,394] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 1656
 [2025-01-02 16:06:40,395] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 8192.0 to 4096.0
 Model Parameters: 0.331 B, Latency: 0.49s, TFLOPs: 0.57, Samples/sec: 4.08, Time/seq 0.25s, Batch Size: 2, Sequence Length: 512
@@ -5068,26 +5068,26 @@ Model Parameters: 0.331 B, Latency: 0.55s, TFLOPs: 0.51, Samples/sec: 3.65, Time
 Model Parameters: 0.331 B, Latency: 0.14s, TFLOPs: 1.98, Samples/sec: 14.09, Time/seq 0.07s, Batch Size: 2, Sequence Length: 512
 Model Parameters: 0.331 B, Latency: 0.55s, TFLOPs: 0.51, Samples/sec: 3.66, Time/seq 0.27s, Batch Size: 2, Sequence Length: 512
 Model Parameters: 0.331 B, Latency: 0.14s, TFLOPs: 1.98, Samples/sec: 14.09, Time/seq 0.07s, Batch Size: 2, Sequence Length: 512
-[2025-01-02 16:08:48,576] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 16:08:48,576] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 1841
-[2025-01-02 16:08:48,576] [INFO] [fused_optimizer.py:392:_update_scale] 
-Grad overflow on iteration 1841
-[2025-01-02 16:08:48,576] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 8192.0 to 4096.0
-[2025-01-02 16:08:48,576] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 8192.0 to 4096.0
-[2025-01-02 16:08:48,576] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 16:08:48,576] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 1841
 [2025-01-02 16:08:48,576] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 8192.0 to 4096.0
-[2025-01-02 16:08:48,576] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 16:08:48,576] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 8192.0 to 4096.0
+[2025-01-02 16:08:48,576] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 1841
 [2025-01-02 16:08:48,576] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 8192.0 to 4096.0
-[2025-01-02 16:08:48,576] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 16:08:48,576] [INFO] [fused_optimizer.py:392:_update_scale]
+Grad overflow on iteration 1841
+[2025-01-02 16:08:48,576] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 8192.0 to 4096.0
+[2025-01-02 16:08:48,576] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 1841
 [2025-01-02 16:08:48,576] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 8192.0 to 4096.0
 [2025-01-02 16:08:48,576] [INFO] [logging.py:128:log_dist] [Rank 0] Overflow detected. Skipping step. Attempted loss scale: 8192.0, reducing to 4096.0
-[2025-01-02 16:08:48,576] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 16:08:48,576] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 1841
 [2025-01-02 16:08:48,577] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 8192.0 to 4096.0
-[2025-01-02 16:08:48,577] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 16:08:48,577] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 1841
 [2025-01-02 16:08:48,577] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 8192.0 to 4096.0
 [2025-01-02 16:08:48,577] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 8192.0 to 4096.0
@@ -5095,28 +5095,28 @@ Model Parameters: 0.331 B, Latency: 0.49s, TFLOPs: 0.57, Samples/sec: 4.07, Time
 Model Parameters: 0.331 B, Latency: 0.14s, TFLOPs: 1.98, Samples/sec: 14.09, Time/seq 0.07s, Batch Size: 2, Sequence Length: 512
 Model Parameters: 0.331 B, Latency: 0.54s, TFLOPs: 0.52, Samples/sec: 3.69, Time/seq 0.27s, Batch Size: 2, Sequence Length: 512
 Model Parameters: 0.331 B, Latency: 0.14s, TFLOPs: 1.98, Samples/sec: 14.09, Time/seq 0.07s, Batch Size: 2, Sequence Length: 512
-[2025-01-02 16:08:49,900] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 16:08:49,900] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 1843
 [2025-01-02 16:08:49,900] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 4096.0 to 2048.0
-[2025-01-02 16:08:49,900] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 16:08:49,900] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 1843
 [2025-01-02 16:08:49,900] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 4096.0 to 2048.0
-[2025-01-02 16:08:49,900] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 16:08:49,900] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 1843
 [2025-01-02 16:08:49,900] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 4096.0 to 2048.0
-[2025-01-02 16:08:49,900] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 16:08:49,900] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 1843
-[2025-01-02 16:08:49,900] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 16:08:49,900] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 1843
 [2025-01-02 16:08:49,900] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 4096.0 to 2048.0
 [2025-01-02 16:08:49,900] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 4096.0 to 2048.0
 [2025-01-02 16:08:49,900] [INFO] [logging.py:128:log_dist] [Rank 0] Overflow detected. Skipping step. Attempted loss scale: 4096.0, reducing to 2048.0
-[2025-01-02 16:08:49,900] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 16:08:49,900] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 1843
 [2025-01-02 16:08:49,900] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 4096.0 to 2048.0
-[2025-01-02 16:08:49,900] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 16:08:49,900] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 1843
-[2025-01-02 16:08:49,900] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 16:08:49,900] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 1843
 [2025-01-02 16:08:49,900] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 4096.0 to 2048.0
 [2025-01-02 16:08:49,900] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 4096.0 to 2048.0
@@ -5422,25 +5422,25 @@ Model Parameters: 0.331 B, Latency: 0.55s, TFLOPs: 0.51, Samples/sec: 3.65, Time
 Model Parameters: 0.331 B, Latency: 0.14s, TFLOPs: 1.98, Samples/sec: 14.07, Time/seq 0.07s, Batch Size: 2, Sequence Length: 512
 Model Parameters: 0.331 B, Latency: 0.55s, TFLOPs: 0.51, Samples/sec: 3.66, Time/seq 0.27s, Batch Size: 2, Sequence Length: 512
 Model Parameters: 0.331 B, Latency: 0.14s, TFLOPs: 1.98, Samples/sec: 14.10, Time/seq 0.07s, Batch Size: 2, Sequence Length: 512
-[2025-01-02 16:10:20,011] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 16:10:20,011] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 1973
 [2025-01-02 16:10:20,011] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 4096.0 to 2048.0
-[2025-01-02 16:10:20,011] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 16:10:20,011] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 1973
 [2025-01-02 16:10:20,011] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 4096.0 to 2048.0
-[2025-01-02 16:10:20,011] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 16:10:20,011] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 1973
 [2025-01-02 16:10:20,011] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 4096.0 to 2048.0
-[2025-01-02 16:10:20,011] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 16:10:20,011] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 1973
 [2025-01-02 16:10:20,011] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 4096.0 to 2048.0
-[2025-01-02 16:10:20,011] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 16:10:20,011] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 1973
 [2025-01-02 16:10:20,011] [INFO] [logging.py:128:log_dist] [Rank 0] Overflow detected. Skipping step. Attempted loss scale: 4096.0, reducing to 2048.0
-[2025-01-02 16:10:20,012] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 16:10:20,012] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 1973
 [2025-01-02 16:10:20,012] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 4096.0 to 2048.0
-[2025-01-02 16:10:20,012] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 16:10:20,012] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 1973
 [2025-01-02 16:10:20,012] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 4096.0 to 2048.0
 Model Parameters: 0.331 B, Latency: 0.49s, TFLOPs: 0.57, Samples/sec: 4.05, Time/seq 0.25s, Batch Size: 2, Sequence Length: 512
@@ -5701,25 +5701,25 @@ Model Parameters: 0.331 B, Latency: 0.56s, TFLOPs: 0.50, Samples/sec: 3.59, Time
 Model Parameters: 0.331 B, Latency: 0.14s, TFLOPs: 1.97, Samples/sec: 14.00, Time/seq 0.07s, Batch Size: 2, Sequence Length: 512
 Model Parameters: 0.331 B, Latency: 0.54s, TFLOPs: 0.52, Samples/sec: 3.71, Time/seq 0.27s, Batch Size: 2, Sequence Length: 512
 Model Parameters: 0.331 B, Latency: 0.14s, TFLOPs: 1.98, Samples/sec: 14.12, Time/seq 0.07s, Batch Size: 2, Sequence Length: 512
-[2025-01-02 16:11:36,281] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 16:11:36,281] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 2083
 [2025-01-02 16:11:36,281] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 4096.0 to 2048.0
-[2025-01-02 16:11:36,281] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 16:11:36,281] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 2083
 [2025-01-02 16:11:36,281] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 4096.0 to 2048.0
-[2025-01-02 16:11:36,281] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 16:11:36,281] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 2083
 [2025-01-02 16:11:36,281] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 4096.0 to 2048.0
-[2025-01-02 16:11:36,282] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 16:11:36,282] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 2083
-[2025-01-02 16:11:36,282] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 16:11:36,282] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 2083
 [2025-01-02 16:11:36,282] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 4096.0 to 2048.0
 [2025-01-02 16:11:36,282] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 4096.0 to 2048.0
 [2025-01-02 16:11:36,282] [INFO] [logging.py:128:log_dist] [Rank 0] Overflow detected. Skipping step. Attempted loss scale: 4096.0, reducing to 2048.0
-[2025-01-02 16:11:36,282] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 16:11:36,282] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 2083
-[2025-01-02 16:11:36,282] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from [2025-01-02 16:11:36,282] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 16:11:36,282] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from [2025-01-02 16:11:36,282] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 2083
 [2025-01-02 16:11:36,282] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 4096.0 to 2048.0
 [2025-01-02 16:11:36,282] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 4096.0 to 2048.0
@@ -6197,28 +6197,28 @@ Model Parameters: 0.331 B, Latency: 0.14s, TFLOPs: 1.98, Samples/sec: 14.08, Tim
 [2025-01-02 16:13:55,357] [INFO] [fused_optimizer.py:401:_update_scale] Increasing dynamic loss scale from 4096.0 to 8192.0
 Model Parameters: 0.331 B, Latency: 0.54s, TFLOPs: 0.52, Samples/sec: 3.69, Time/seq 0.27s, Batch Size: 2, Sequence Length: 512
 Model Parameters: 0.331 B, Latency: 0.14s, TFLOPs: 1.98, Samples/sec: 14.10, Time/seq 0.07s, Batch Size: 2, Sequence Length: 512
-[2025-01-02 16:13:56,027] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 16:13:56,027] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 2285
-[2025-01-02 16:13:56,027] [INFO] [fused_optimizer.py:392:_update_scale] 
-Grad overflow on iteration 2285
-[2025-01-02 16:13:56,027] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 8192.0 to 4096.0
-[2025-01-02 16:13:56,027] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 8192.0 to 4096.0
-[2025-01-02 16:13:56,027] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 16:13:56,027] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 2285
 [2025-01-02 16:13:56,027] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 8192.0 to 4096.0
-[2025-01-02 16:13:56,028] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 16:13:56,027] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 8192.0 to 4096.0
+[2025-01-02 16:13:56,027] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 2285
-[2025-01-02 16:13:56,028] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 16:13:56,027] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 8192.0 to 4096.0
+[2025-01-02 16:13:56,028] [INFO] [fused_optimizer.py:392:_update_scale]
+Grad overflow on iteration 2285
+[2025-01-02 16:13:56,028] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 2285
 [2025-01-02 16:13:56,028] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 8192.0 to 4096.0
-[2025-01-02 16:13:56,028] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 16:13:56,028] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 2285
 [2025-01-02 16:13:56,028] [INFO] [logging.py:128:log_dist] [Rank 0] Overflow detected. Skipping step. Attempted loss scale: 8192.0, reducing to 4096.0
 [2025-01-02 16:13:56,028] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 8192.0 to 4096.0
-[2025-01-02 16:13:56,028] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 16:13:56,028] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 2285
 [2025-01-02 16:13:56,028] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 8192.0 to 4096.0
-[2025-01-02 16:13:56,028] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 16:13:56,028] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 2285
 [2025-01-02 16:13:56,028] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 8192.0 to 4096.0
 Model Parameters: 0.331 B, Latency: 0.49s, TFLOPs: 0.57, Samples/sec: 4.07, Time/seq 0.25s, Batch Size: 2, Sequence Length: 512
@@ -6291,27 +6291,27 @@ Model Parameters: 0.331 B, Latency: 0.54s, TFLOPs: 0.52, Samples/sec: 3.69, Time
 Model Parameters: 0.331 B, Latency: 0.14s, TFLOPs: 1.98, Samples/sec: 14.08, Time/seq 0.07s, Batch Size: 2, Sequence Length: 512
 Model Parameters: 0.331 B, Latency: 0.54s, TFLOPs: 0.52, Samples/sec: 3.68, Time/seq 0.27s, Batch Size: 2, Sequence Length: 512
 Model Parameters: 0.331 B, Latency: 0.14s, TFLOPs: 1.98, Samples/sec: 14.07, Time/seq 0.07s, Batch Size: 2, Sequence Length: 512
-[2025-01-02 16:14:18,029] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 16:14:18,029] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 2317
 [2025-01-02 16:14:18,029] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 4096.0 to 2048.0
-[2025-01-02 16:14:18,029] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 16:14:18,029] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 2317
-[2025-01-02 16:14:18,029] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 16:14:18,029] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 2317
 [2025-01-02 16:14:18,030] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 4096.0 to 2048.0
 [2025-01-02 16:14:18,030] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 4096.0 to 2048.0
-[2025-01-02 16:14:18,030] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 16:14:18,030] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 2317
 [2025-01-02 16:14:18,030] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 4096.0 to 2048.0
 [2025-01-02 16:14:18,030] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 4096.0 to 2048.0
 [2025-01-02 16:14:18,030] [INFO] [logging.py:128:log_dist] [Rank 0] Overflow detected. Skipping step. Attempted loss scale: 4096.0, reducing to 2048.0
-[2025-01-02 16:14:18,030] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 16:14:18,030] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 2317
 [2025-01-02 16:14:18,030] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 4096.0 to 2048.0
-[2025-01-02 16:14:18,030] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 16:14:18,030] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 2317
 [2025-01-02 16:14:18,030] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 4096.0 to 2048.0
-[2025-01-02 16:14:18,030] [INFO] [fused_optimizer.py:392:_update_scale] 
+[2025-01-02 16:14:18,030] [INFO] [fused_optimizer.py:392:_update_scale]
 Grad overflow on iteration 2317
 [2025-01-02 16:14:18,030] [INFO] [fused_optimizer.py:393:_update_scale] Reducing dynamic loss scale from 4096.0 to 2048.0
 Model Parameters: 0.331 B, Latency: 0.49s, TFLOPs: 0.58, Samples/sec: 4.11, Time/seq 0.24s, Batch Size: 2, Sequence Length: 512
