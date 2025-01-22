@@ -116,8 +116,6 @@ def setup_model_and_optimizer(base_model,
     else:
         args.iteration = 0
 
-    args.iteration = 0
-
     return model, optimizer, opt_param_scheduler
 
 
