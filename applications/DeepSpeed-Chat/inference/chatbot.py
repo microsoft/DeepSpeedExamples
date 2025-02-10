@@ -7,8 +7,10 @@ import argparse
 import re
 import logging
 import transformers  # noqa: F401
+import os
+import json
 from transformers import pipeline, set_seed
-from transformers import AutoConfig, OPTForCausalLM, AutoTokenizer
+from transformers import AutoConfig, AutoTokenizer, AutoModelForCausalLM
 
 
 def parse_args():
@@ -27,13 +29,24 @@ def parse_args():
 
 
 def get_generator(path):
-    tokenizer = AutoTokenizer.from_pretrained(path, fast_tokenizer=True)
+    if os.path.exists(path):
+        # Locally tokenizer loading has some issue, so we need to force download
+        model_json = os.path.join(path, "config.json")
+        if os.path.exists(model_json):
+            model_json_file = json.load(open(model_json))
+            model_name = model_json_file["_name_or_path"]
+            tokenizer = AutoTokenizer.from_pretrained(model_name,
+                                                      fast_tokenizer=True)
+    else:
+        tokenizer = AutoTokenizer.from_pretrained(path, fast_tokenizer=True)
+
     tokenizer.pad_token = tokenizer.eos_token
 
     model_config = AutoConfig.from_pretrained(path)
-    model = OPTForCausalLM.from_pretrained(path,
-                                           from_tf=bool(".ckpt" in path),
-                                           config=model_config).half()
+    model_class = AutoModelForCausalLM.from_config(model_config)
+    model = model_class.from_pretrained(path,
+                                        from_tf=bool(".ckpt" in path),
+                                        config=model_config).half()
 
     model.config.end_token_id = tokenizer.eos_token_id
     model.config.pad_token_id = model.config.eos_token_id

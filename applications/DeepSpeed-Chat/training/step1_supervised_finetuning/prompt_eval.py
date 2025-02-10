@@ -7,10 +7,11 @@ import logging
 import torch
 
 from transformers import (
-    AutoConfig,
-    AutoModelForCausalLM,
-    AutoTokenizer,
-)
+    AutoModelForCausalLM, )
+
+from dschat.utils.model.model_utils import create_hf_model
+from dschat.utils.utils import load_hf_tokenizer
+from deepspeed import get_accelerator
 
 logger = logging.getLogger(__name__)
 
@@ -69,27 +70,14 @@ def parse_args():
                         type=str,
                         default="English",
                         choices=["English", "Chinese", "Japanese"])
+    parser.add_argument(
+        "--add_eot_token",
+        action='store_true',
+        help="Add <|endoftext|> as additional special token to tokenizer")
 
     args = parser.parse_args()
 
     return args
-
-
-def get_model(config, model_path, tokenizer):
-
-    model = AutoModelForCausalLM.from_pretrained(
-        model_path,
-        from_tf=bool(".ckpt" in model_path),
-        config=config,
-    )
-    model.resize_token_embeddings(len(tokenizer))
-
-    # prepare the tokenizer and model config
-    tokenizer.pad_token = tokenizer.eos_token
-    model.config.end_token_id = tokenizer.eos_token_id
-    model.config.pad_token_id = model.config.eos_token_id
-
-    return model
 
 
 def generate(model,
@@ -207,15 +195,20 @@ def prompt_eval(args, model_baseline, model_fintuned, tokenizer, device,
 def main():
     args = parse_args()
 
-    device = torch.device("cuda:0")
-    config = AutoConfig.from_pretrained(args.model_name_or_path_baseline)
-    tokenizer = AutoTokenizer.from_pretrained(args.model_name_or_path_baseline,
-                                              fast_tokenizer=True)
+    device = torch.device(get_accelerator().device_name(0))
 
-    model_baseline = get_model(config, args.model_name_or_path_baseline,
-                               tokenizer)
-    model_fintuned = get_model(config, args.model_name_or_path_finetune,
-                               tokenizer)
+    args.end_of_conversation_token = "<|endoftext|>"
+    additional_special_tokens = args.end_of_conversation_token if args.add_eot_token else None
+    tokenizer = load_hf_tokenizer(args.model_name_or_path_baseline,
+                                  fast_tokenizer=True,
+                                  add_special_tokens=additional_special_tokens)
+
+    model_baseline = create_hf_model(AutoModelForCausalLM,
+                                     args.model_name_or_path_baseline,
+                                     tokenizer, None)
+    model_fintuned = create_hf_model(AutoModelForCausalLM,
+                                     args.model_name_or_path_finetune,
+                                     tokenizer, None)
 
     model_baseline.to(device)
     model_fintuned.to(device)

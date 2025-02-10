@@ -16,7 +16,10 @@ from deepspeed.comm import TorchBackend
 
 
 # Run all_gather and print metrics
-def timed_all_gather(input, output, args):
+def timed_all_gather(input, output, start_event, end_event, args):
+    if args.device == "cpu":
+        print_rank_0(f"No Event support on CPU to measure time for now")
+        return
     if args.dist == 'torch':
         import torch.distributed as dist
 
@@ -33,11 +36,12 @@ def timed_all_gather(input, output, args):
     sync_all()
 
     # time the actual comm op trials times and average it
-    pre = time.perf_counter()
+    start_event.record()
     for i in range(args.trials):
         all_gather_func(output, input, group=None, async_op=args.async_op)
+    end_event.record()
     sync_all()
-    duration = time.perf_counter() - pre
+    duration = start_event.elapsed_time(end_event) / 1000
 
     # maintain and clean performance data
     avg_duration = duration / args.trials
@@ -62,6 +66,16 @@ def run_all_gather(local_rank, args):
     print_header(args, 'all_gather')
     global_rank = dist.get_rank()
     world_size = dist.get_world_size()
+
+    if args.device == "xpu":
+        start_event = torch.xpu.Event(enable_timing=True)
+        end_event = torch.xpu.Event(enable_timing=True)
+    elif args.device == "cpu":
+        start_event = torch.cpu.Event()
+        end_event = torch.cpu.Event()
+    else:
+        start_event = torch.cuda.Event(enable_timing=True)
+        end_event = torch.cuda.Event(enable_timing=True)
 
     if args.scan:
         # Create list of message sizes
@@ -92,7 +106,7 @@ def run_all_gather(local_rank, args):
                 else:
                     raise e
             sync_all()
-            timed_all_gather(input, output, args)
+            timed_all_gather(input, output, start_event, end_event, args)
     else:
         # all_gather_into_tensor saves memory
         if ((args.dist == 'torch' or args.dist == 'deepspeed') and dist.has_all_gather_into_tensor()):
@@ -126,7 +140,7 @@ def run_all_gather(local_rank, args):
                 raise e
 
         sync_all()
-        timed_all_gather(input, output, args)
+        timed_all_gather(input, output, start_event, end_event, args)
 
 
 if __name__ == "__main__":
