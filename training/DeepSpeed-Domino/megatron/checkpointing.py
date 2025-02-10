@@ -247,7 +247,10 @@ def save_checkpoint(iteration, model, optimizer, opt_param_scheduler):
 
         # Arguments, iteration, and model.
         state_dict = {}
-        # state_dict['args'] = args
+        t_args = args
+        t_args.init_method = None
+        t_args.output_layer_init_method = None
+        state_dict['args'] = t_args
         state_dict['checkpoint_version'] = 3.0
         state_dict['iteration'] = iteration
         if len(model) == 1:

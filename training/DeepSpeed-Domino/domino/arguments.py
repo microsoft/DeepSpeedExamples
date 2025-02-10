@@ -218,7 +218,7 @@ def parse_args():
                        help='Do not load optimizer when loading checkpoint.')
     parser.add_argument('--no-load-rng', action='store_true', default=None,
                        help='Do not load rng state when loading checkpoint.')
-    group.add_argument('--exit-on-missing-checkpoint', action='store_true',
+    parser.add_argument('--exit-on-missing-checkpoint', action='store_true',
                        help="If '--load' is set, but checkpoint is not found "
                        "(e.g., path typo), then exit instead of random "
                        "initialization.")
