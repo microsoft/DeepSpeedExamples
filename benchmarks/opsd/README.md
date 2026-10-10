@@ -79,6 +79,8 @@ sizes before using the estimates for longer contexts. Coefficients are specific
 to the model, GPU, precision and attention backend; the sweep rejects mismatched
 configuration metadata, including a source hash covering rollout, bucket planning
 and static-cache implementations. Recalibrate when those implementations change.
+`--cost-config` requires a complete calibration metadata object. Applications
+may still pass hand-tuned coefficients directly to `HybridEngineRolloutConfig`.
 
 Calibration runs during deployment preparation; load its saved coefficients
 once when constructing the rollout. It does not profile or refit on each request:

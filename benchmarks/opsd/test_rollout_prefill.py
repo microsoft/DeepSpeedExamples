@@ -87,6 +87,11 @@ class CalibrationFitTest(unittest.TestCase):
                         self.assertEqual(error.exception.code, 2)
                         self.assertIn("source_sha256", stderr.getvalue())
                         self.assertEqual(sweep.call_count, 1)
+                costs_path.write_text(json.dumps({"costs": saved["costs"]}))
+                with patch("sys.argv", args), redirect_stderr(io.StringIO()), self.assertRaises(SystemExit) as error:
+                    main()
+                self.assertEqual(error.exception.code, 2)
+                self.assertEqual(sweep.call_count, 1)
                 costs_path.write_text(json.dumps(saved))
                 changed_cache = Path(directory) / "changed_cache.py"
                 changed_cache.write_text("# A different static-cache implementation\n")

@@ -280,6 +280,8 @@ def main():
             print('COSTS', json.dumps(costs), flush=True)
             return
         calibration = json.loads(args.cost_config.read_text()) if args.cost_config else {}
+        if args.cost_config and not isinstance(calibration.get('metadata'), dict):
+            parser.error('cost-config requires calibration metadata; rerun --calibrate')
         if 'metadata' in calibration:
             for key in ('model', 'model_config', 'dtype', 'gpu', 'sm_count', 'backend', 'torch', 'transformers',
                         'allow_tf32', 'source_sha256'):
