@@ -57,7 +57,7 @@ matrix shapes run successfully.
 `rollout_prefill.py` calibrates the opt-in adaptive prefill policy and compares
 it with ordinary generation, equal-width CB and aligned CB. It requires a
 DeepSpeed checkout containing [DeepSpeed PR #8786](https://github.com/deepspeedai/DeepSpeed/pull/8786),
-installed in the active Python environment, plus PyTorch, Transformers and NumPy.
+installed in the active Python environment, plus PyTorch, Transformers >=4.56 and NumPy.
 The scope is one GPU, greedy decoding and SDPA, with an unsharded HuggingFace
 model behind the rollout interface; it does not measure a full training step.
 
