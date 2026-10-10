@@ -77,7 +77,8 @@ The built-in calibration grid reaches 768 input tokens. Extend the `shapes`
 list in `calibrate()` to cover the deployment's actual lengths and feasible batch
 sizes before using the estimates for longer contexts. Coefficients are specific
 to the model, GPU, precision and attention backend; the sweep rejects mismatched
-configuration metadata.
+configuration metadata, including a source hash covering rollout, bucket planning
+and static-cache implementations. Recalibrate when those implementations change.
 
 Calibration runs during deployment preparation; load its saved coefficients
 once when constructing the rollout. It does not profile or refit on each request:
@@ -97,7 +98,7 @@ generation isolates routing overhead; it is not a production rollout trace.
 Use `--new-tokens` for other generation budgets and validate held-out workloads
 representative of the deployment. Timing excludes loading and tokenization.
 
-The fitting regression test needs no GPU:
+Run the fitting, MHA calibration and saved-configuration regression tests:
 
 ```sh
 python -m unittest discover -s benchmarks/opsd -p test_rollout_prefill.py

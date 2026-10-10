@@ -19,7 +19,9 @@ from transformers import AutoModelForCausalLM, AutoTokenizer, Qwen2Config, Qwen2
 
 from deepspeed.runtime.rollout.base import RolloutRequest, SamplingConfig
 from deepspeed.runtime.rollout.hybrid_engine_rollout import HybridEngineRollout, HybridEngineRolloutConfig
+import deepspeed.runtime.rollout.continuous_batching as batching_backend
 import deepspeed.runtime.rollout.hybrid_engine_rollout as rollout_backend
+import deepspeed.utils.static_cache as cache_backend
 from deepspeed.accelerator import get_accelerator
 
 
@@ -74,7 +76,8 @@ def calibrate(engine, tokenizer, token, pad, device, repeats):
     config = model.config.get_text_config()
     head_dim = getattr(config, 'head_dim', None) or config.hidden_size // config.num_attention_heads
     attention_scale = 4 * config.num_hidden_layers * config.num_attention_heads * head_dim / 1e9
-    kv_scale = 2 * config.num_hidden_layers * config.num_key_value_heads * head_dim * next(
+    kv_heads = getattr(config, 'num_key_value_heads', None) or config.num_attention_heads
+    kv_scale = 2 * config.num_hidden_layers * kv_heads * head_dim * next(
         model.parameters()).element_size() / 2**20
     matrix, times, copy_rates, records = [], [], [], []
     # These calibration shapes differ from every held-out sweep workload below.
@@ -246,7 +249,8 @@ def main():
                                                      attn_implementation='sdpa').to(device).eval()
     tokenizer = SimpleNamespace(pad_token_id=pad, eos_token_id=None)
     engine = SimpleNamespace(module=model)
-    source = Path(rollout_backend.__file__)
+    sources = (rollout_backend.__file__, batching_backend.__file__, cache_backend.__file__)
+    source_hash = hashlib.sha256(b'\0'.join(Path(source).read_bytes() for source in sources)).hexdigest()
     metadata = {
         'model': args.model,
         'model_config': json.loads(json.dumps(model.config.to_dict())),
@@ -259,7 +263,7 @@ def main():
         'seed': 8497,
         'cpu_threads': 4,
         'allow_tf32': torch.backends.cuda.matmul.allow_tf32,
-        'source_sha256': hashlib.sha256(source.read_bytes()).hexdigest(),
+        'source_sha256': source_hash,
         'scope':
         'Controlled EOS-disabled generation; includes routing and cache work; excludes loading and tokenization.'
     }
@@ -278,8 +282,8 @@ def main():
         calibration = json.loads(args.cost_config.read_text()) if args.cost_config else {}
         if 'metadata' in calibration:
             for key in ('model', 'model_config', 'dtype', 'gpu', 'sm_count', 'backend', 'torch', 'transformers',
-                        'allow_tf32'):
-                if calibration['metadata'][key] != metadata[key]:
+                        'allow_tf32', 'source_sha256'):
+                if calibration['metadata'].get(key) != metadata[key]:
                     parser.error(f'calibration differs in {key}; recalibrate for this configuration')
         costs = calibration.get('costs', {})
         # A supplied JSON uses the same validated public configuration fields as an application.
