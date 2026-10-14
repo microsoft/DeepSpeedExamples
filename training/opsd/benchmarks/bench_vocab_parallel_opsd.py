@@ -41,6 +41,26 @@ class DenseGather(torch.autograd.Function):
         return gradient[..., ctx.start:ctx.end].contiguous(), None
 
 
+def prepare_benchmark_inputs(implementation, config_path, output_jsonl):
+    with Path(config_path).open() as source:
+        config = json.load(source)
+    sharded = implementation in ('vocab_parallel', 'gathered_reference')
+    expected_backend = 'vocab_parallel' if sharded else 'dense'
+    backend = config.get('distillation', {}).get('loss_backend', 'dense')
+    if backend != expected_backend:
+        raise ValueError(f'{implementation} requires distillation.loss_backend={expected_backend!r}; got {backend!r}')
+    with Path(config['deepspeed_config']).open() as source:
+        ds_config = json.load(source)
+    if (implementation == 'dense_default'
+            and ds_config.get('tensor_parallel', {}).get('vocab_parallel_lm_head') is True):
+        raise ValueError('dense_default requires full-vocabulary heads; disable vocab_parallel_lm_head')
+    output = Path(output_jsonl)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    # Fail before model initialization if the result path cannot be written.
+    with output.open('a'):
+        pass
+
+
 def run():
     parser = argparse.ArgumentParser()
     parser.add_argument('--mode', choices=['online', 'replay'], required=True)
@@ -57,6 +77,10 @@ def run():
                         help='Use the same PyTorch SDPA backend for every measured implementation')
     parser.add_argument('--profile', action='store_true', help='Additional phase synchronization; separate from throughput')
     args = parser.parse_args()
+    try:
+        prepare_benchmark_inputs(args.implementation, args.config, args.output_jsonl)
+    except (ValueError, OSError) as error:
+        parser.error(str(error))
     if args.implementation == 'upstream_dense':
         if not args.upstream_opsd_dir:
             parser.error('upstream_dense needs the unchanged frozen upstream OPSD directory')

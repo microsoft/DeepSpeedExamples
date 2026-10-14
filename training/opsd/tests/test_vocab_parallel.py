@@ -104,3 +104,44 @@ def test_old_config_defaults_dense_and_opt_in_rejects_unsupported_routes():
         with pytest.raises(ValueError, match="eager"):
             cfg.validate()
         setattr(cfg.rollout, feature, False)
+
+
+@pytest.mark.parametrize("implementation,backend", [
+    ("upstream_dense", "dense"), ("dense_default", "dense"),
+    ("gathered_reference", "vocab_parallel"), ("vocab_parallel", "vocab_parallel"),
+])
+def test_benchmark_requires_matching_backend_and_creates_output(tmp_path, implementation, backend):
+    import json
+    from benchmarks.bench_vocab_parallel_opsd import prepare_benchmark_inputs
+
+    ds_path = tmp_path / "ds.json"
+    ds_path.write_text(json.dumps({"tensor_parallel": {"autotp_size": 2}}))
+    config_path = tmp_path / "opsd.json"
+    config = {"deepspeed_config": str(ds_path), "distillation": {"loss_backend": backend}}
+    config_path.write_text(json.dumps(config))
+    output = tmp_path / "fresh" / "nested" / "results.jsonl"
+    prepare_benchmark_inputs(implementation, config_path, output)
+    assert output.is_file()
+    output.write_text("existing result\n")
+    prepare_benchmark_inputs(implementation, config_path, output)
+    assert output.read_text() == "existing result\n"
+
+    config["distillation"]["loss_backend"] = "dense" if backend == "vocab_parallel" else "vocab_parallel"
+    config_path.write_text(json.dumps(config))
+    with pytest.raises(ValueError, match="requires distillation.loss_backend"):
+        prepare_benchmark_inputs(implementation, config_path, output)
+
+
+def test_benchmark_rejects_sharded_dense_heads_and_unwritable_output(tmp_path):
+    import json
+    from benchmarks.bench_vocab_parallel_opsd import prepare_benchmark_inputs
+
+    ds_path = tmp_path / "ds.json"
+    ds_path.write_text(json.dumps({"tensor_parallel": {"autotp_size": 2, "vocab_parallel_lm_head": True}}))
+    config_path = tmp_path / "opsd.json"
+    config_path.write_text(json.dumps({"deepspeed_config": str(ds_path)}))
+    with pytest.raises(ValueError, match="full-vocabulary"):
+        prepare_benchmark_inputs("dense_default", config_path, tmp_path / "results.jsonl")
+    ds_path.write_text("{}")
+    with pytest.raises(IsADirectoryError):
+        prepare_benchmark_inputs("dense_default", config_path, tmp_path)

@@ -200,7 +200,12 @@ the harness explicitly selects the dependency's documented full-logits
 configuration for both producers, including the upstream teacher initializer.
 `gathered_reference` uses the same candidate head layout with dense math and
 a local-slice gather backward; `vocab_parallel` retains local logits. Replay
-excludes generation. Online always generates new responses. Report actual
+excludes generation. Online always generates new responses. The benchmark
+checks that `--implementation` matches the configured loss backend before
+initializing models: `upstream_dense`/`dense_default` require `dense` (or the
+omitted default), while `gathered_reference`/`vocab_parallel` require
+`vocab_parallel` to construct the sharded heads. It also creates and checks
+the result directory before starting GPU work. Report actual
 optimizer updates, unique response tokens counted once per TP group, each
 run's workload hash, cache payload and device peak; distinguish these from
 the original trainer's unsynchronized diagnostic phase timers.
