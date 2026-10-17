@@ -43,7 +43,7 @@ def test_streamed_local_kl_matches_independent_dense_oracle(direction, temperatu
     torch.testing.assert_close(student.grad.double(), reference.grad, atol=1e-6, rtol=1e-5)
 
 
-def test_zero_mask_is_backward_safe_and_does_not_skip_collective_chunks():
+def test_chunks_without_response_tokens_are_skipped_and_backward_safe():
     student = torch.randn(1, 4, 9, requires_grad=True)
     fetched = []
 
@@ -55,8 +55,15 @@ def test_zero_mask_is_backward_safe_and_does_not_skip_collective_chunks():
                                        loss_backend="vocab_parallel", vocab_layout=local_layout(9))
     result.backward()
     assert result.item() == 0
-    assert fetched == [(0, 3), (3, 4)]
+    assert fetched == []
     assert torch.count_nonzero(student.grad) == 0
+
+    student.grad = None
+    result = streamed_distillation_loss(student, fetch, torch.tensor([[0.0, 0.0, 0.0, 1.0]]), chunk_size=3,
+                                       loss_backend="vocab_parallel", vocab_layout=local_layout(9))
+    result.backward()
+    assert fetched == [(3, 4)]
+    assert torch.count_nonzero(student.grad[:, :3]) == 0
 
 
 def test_cache_binds_actual_width_and_rejects_use_after_free():

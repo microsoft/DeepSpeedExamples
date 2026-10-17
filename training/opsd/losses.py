@@ -176,11 +176,21 @@ def streamed_distillation_loss(
     total_tokens = mask_f.sum().clamp_min(1.0)
     total_loss = student_logits[:, :0].sum(dtype=torch.float32)
 
-    for start in range(0, T, chunk_size):
+    # Chunks without response tokens contribute nothing, so they are neither fetched nor computed.
+    # The vocabulary-parallel op runs collectives, so its TP group agrees on the chunks to skip; that
+    # stays symmetric even if a caller's masks differ across TP ranks.
+    starts = list(range(0, T, chunk_size))
+    tokens_per_position = F.pad(mask_f.sum(dim=0), (0, len(starts) * chunk_size - T))
+    has_tokens = (tokens_per_position.view(len(starts), chunk_size).sum(dim=1) > 0).to(torch.int32)
+    if parallel_kl is not None and len(vocab_layout.ranks) > 1:
+        from deepspeed import comm as dist
+        dist.all_reduce(has_tokens, op=dist.ReduceOp.MAX, group=vocab_layout.group)
+
+    for start, needed in zip(starts, has_tokens.tolist()):
+        if not needed:
+            continue
         end = min(start + chunk_size, T)
         chunk_mask = mask_f[:, start:end]
-        if parallel_kl is None and chunk_mask.sum().item() == 0:
-            continue
         teacher_chunk = teacher_chunk_fetcher(start, end)
         if teacher_chunk.shape != student_logits[:, start:end].shape:
             raise RuntimeError(f"fetcher returned chunk of length {teacher_chunk.shape[1]}, "
@@ -188,11 +198,14 @@ def streamed_distillation_loss(
         if parallel_kl is None:
             per_tok = fn(student_logits[:, start:end].float(), teacher_chunk.float(), temperature)
         else:
-            student_chunk = student_logits[:, start:end].float()
-            teacher_chunk = teacher_chunk.detach().float()
+            # The op computes in fp32 internally; fp32 copies would double what its kernels read and what
+            # autograd keeps per chunk. Only a temperature needs the fp32 division first.
+            student_chunk = student_logits[:, start:end]
+            teacher_chunk = teacher_chunk.detach()
             if temperature != 1.0:
-                student_chunk = student_chunk / temperature
-                teacher_chunk = teacher_chunk / temperature
+                student_chunk = student_chunk.float() / temperature
+                teacher_chunk = teacher_chunk.float() / temperature
+            student_chunk = student_chunk.contiguous()
             per_tok = parallel_kl(student_chunk, teacher_chunk,
                                   reverse=loss_type == "reverse_kl", tp_group=vocab_layout.group)
             per_tok = per_tok * temperature**2
