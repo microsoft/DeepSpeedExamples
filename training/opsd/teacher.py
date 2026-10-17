@@ -91,14 +91,24 @@ class TeacherLogitCache:
         """Slice ``[:, start:end, :]`` and stage it on ``device``.
 
         ``dtype`` is the dtype on the destination; if ``None``, the stored
-        dtype is preserved.
+        dtype is preserved. Off-host destinations convert after the copy.
         """
-        _, T, _ = self.shape
+        B, T, _ = self.shape
         if not (0 <= start < end <= T):
             raise ValueError(f"chunk bounds [{start}, {end}) invalid for T={T}")
         chunk = self.cpu_logits[:, start:end]
-        out = chunk.to(device=device, dtype=dtype if dtype is not None else chunk.dtype, non_blocking=False)
-        return out
+        dtype = dtype if dtype is not None else chunk.dtype
+        if torch.device(device).type == "cpu":
+            return chunk.to(dtype=dtype)
+        # For B > 1 the slice is strided, and copying it to a device first makes a
+        # contiguous temporary in pageable memory. Each row's slice is contiguous
+        # in the pinned buffer, so copy rows directly. The pinned allocator keeps
+        # the buffer until the copies finish, even if the cache is freed earlier.
+        pinned = self.cpu_logits.is_pinned()
+        out = torch.empty(chunk.shape, dtype=chunk.dtype, device=device)
+        for row in range(B):
+            out[row].copy_(chunk[row], non_blocking=pinned)
+        return out.to(dtype=dtype)
 
     def free(self) -> None:
         """Drop the underlying buffer so a step's teacher cache can be GC'd
