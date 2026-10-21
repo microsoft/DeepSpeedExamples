@@ -245,7 +245,8 @@ build with the AutoEP storage maps
 ([DeepSpeed#8800](https://github.com/deepspeedai/DeepSpeed/pull/8800)) and the AffineIR
 transfer executor ([DeepSpeed#8809](https://github.com/deepspeedai/DeepSpeed/pull/8809)).
 ZeRO-3 training with AutoEP also needs the fix that makes ZeRO-3 gather expert and dense
-parameters in the same order on every rank; without it, training can hang from the third
+parameters in the same order on every rank
+([DeepSpeed#8876](https://github.com/deepspeedai/DeepSpeed/pull/8876)); without it, training can hang from the third
 step. A universal checkpoint converted from ZeRO-3 keeps ZeRO-3 model file names, which
 the ZeRO-1 rollout engine cannot load, so the run script uses only the AffineIR path for
 ZeRO-3. The UCP path writes a full training checkpoint and its universal form under
