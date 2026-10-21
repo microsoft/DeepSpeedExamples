@@ -89,10 +89,14 @@ def max_over_ranks(value):
     return tensor.item()
 
 
-def sum_over_ranks(value):
+def reduce_over_ranks(value, op):
     tensor = torch.tensor([float(value)], dtype=torch.float64, device=device())
-    dist.all_reduce(tensor, op=dist.ReduceOp.SUM)
+    dist.all_reduce(tensor, op=op)
     return int(tensor.item())
+
+
+def sum_over_ranks(value):
+    return reduce_over_ranks(value, dist.ReduceOp.SUM)
 
 
 class Timer:
@@ -379,7 +383,7 @@ def sync_affine(trained, args, timer):
     return rollout, {
         "sent_bytes": sum_over_ranks(stats.sent_bytes),
         "local_copy_bytes": sum_over_ranks(stats.local_copy_bytes),
-        "rounds": stats.rounds,
+        "rounds": reduce_over_ranks(stats.rounds, dist.ReduceOp.MAX),
     }
 
 
@@ -400,13 +404,18 @@ def generate(engine, tokenizer, prompt_ids, prompt_mask, args, timer, name):
     with timer(f"{name}_generate"):
         batch = rollout.generate(RolloutRequest(prompt_ids, prompt_mask),
                                  SamplingConfig(max_new_tokens=args.max_new_tokens, temperature=0.0))
+    # ZeRO-3 may leave prefetched parameters in flight after a forward; a later
+    # GatheredParameters on them would fail.
+    engine.empty_partition_cache()
     return batch.input_ids
 
 
 @torch.no_grad()
 def logits_of(engine, input_ids, attention_mask):
     engine.eval()
-    return engine.module(input_ids=input_ids, attention_mask=attention_mask).logits.float()
+    logits = engine.module(input_ids=input_ids, attention_mask=attention_mask).logits.float()
+    engine.empty_partition_cache()
+    return logits
 
 
 def all_ranks(value):

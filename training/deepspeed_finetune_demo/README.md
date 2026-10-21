@@ -201,17 +201,19 @@ HybridEngineRollout (in place, reference)
 | Source                 | saved ZeRO shards           | live parameter storage              | live parameters         |
 | Moves                  | all weights and, optionally, optimizer state | expert weights (dense copied separately) | nothing        |
 
-Measured on 8x Intel Arc Pro B70, Qwen3-30B-A3B truncated to 4 layers, training at EP4
-with ZeRO-2, rollout at EP8:
+Measured on 8x Intel Arc Pro B70, Qwen3-30B-A3B truncated to 4 layers, training at EP4,
+rollout at EP8 (UCP is not run for ZeRO-3, see below):
 
-| Step                               | Universal checkpoint | AffineIR transfer |
-|------------------------------------|----------------------|-------------------|
-| save / plan                        | 6.8 s                | 3.2 s             |
-| convert / execute                  | 108.9 s              | 0.27 s            |
-| load / dense copy                  | 25.9 s               | 0.01 s            |
-| rollout weights equal trained      | bitwise (8.0e9 elements) | bitwise (8.0e9 elements) |
+| Step                               | UCP, ZeRO-2  | AffineIR, ZeRO-2 | AffineIR, ZeRO-3 |
+|------------------------------------|--------------|------------------|------------------|
+| save / plan                        | 7.1 s        | 3.2 s            | 0.05 s           |
+| convert / execute                  | 107.7 s      | 0.27 s           | 0.23 s           |
+| load / dense copy                  | 25.1 s       | 0.01 s           | 0.18 s           |
+| rollout weights equal trained      | bitwise      | bitwise          | bitwise          |
 
-AffineIR sent 4.2 GB between devices and copied 0.6 GB locally, in 12 rounds.
+Each check covers 8.0e9 elements. AffineIR sent 4.2 GB between devices and copied 0.6 GB
+locally under ZeRO-2 (3.6 GB and 1.2 GB under ZeRO-3), in 12 rounds. Under ZeRO-3 the
+dense copy gathers each weight.
 
 ### Checks
 
@@ -242,7 +244,11 @@ MODEL_NAME=/path/to/Qwen3-30B-A3B ./run_autoep_rollout_e2e.sh
 build with the AutoEP storage maps
 ([DeepSpeed#8800](https://github.com/deepspeedai/DeepSpeed/pull/8800)) and the AffineIR
 transfer executor ([DeepSpeed#8809](https://github.com/deepspeedai/DeepSpeed/pull/8809)).
-The UCP path writes a full training checkpoint and its universal form under
+ZeRO-3 training with AutoEP also needs the fix that makes ZeRO-3 gather expert and dense
+parameters in the same order on every rank; without it, training can hang from the third
+step. A universal checkpoint converted from ZeRO-3 keeps ZeRO-3 model file names, which
+the ZeRO-1 rollout engine cannot load, so the run script uses only the AffineIR path for
+ZeRO-3. The UCP path writes a full training checkpoint and its universal form under
 `OUTPUT_ROOT` (about 90 GB per stage for 4 layers of Qwen3-30B-A3B), removed after each
 stage.
 

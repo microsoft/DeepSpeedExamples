@@ -24,12 +24,19 @@ export TRANSFORMERS_OFFLINE="${TRANSFORMERS_OFFLINE:-1}"
 mkdir -p "${OUTPUT_ROOT}"
 
 for stage in ${ZERO_STAGES}; do
+    # A universal checkpoint converted from ZeRO-3 keeps ZeRO-3 model file names, which the
+    # ZeRO-1 rollout engine cannot load, so ZeRO-3 runs only the AffineIR path.
+    paths="ucp,affine"
+    if [ "${stage}" = "3" ]; then
+        paths="affine"
+    fi
     torchrun --nproc_per_node "${NUM_GPUS}" "${EXAMPLE_DIR}/autoep_rollout_e2e.py" \
         --model_name "${MODEL_NAME}" \
         --num_layers "${NUM_LAYERS}" \
         --train_autoep_size "${TRAIN_AUTOEP_SIZE}" \
         --rollout_autoep_size "${ROLLOUT_AUTOEP_SIZE}" \
         --train_zero_stage "${stage}" \
+        --paths "${paths}" \
         --work_dir "${OUTPUT_ROOT}/zero${stage}_checkpoint" \
         --output "${OUTPUT_ROOT}/zero${stage}.json" 2>&1 | tee "${OUTPUT_ROOT}/zero${stage}.log"
     rm -rf "${OUTPUT_ROOT}/zero${stage}_checkpoint"
