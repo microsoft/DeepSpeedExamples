@@ -322,9 +322,16 @@ class HFCheckpoint:
 
     def __init__(self, path):
         self.path = path
-        with open(os.path.join(path, "model.safetensors.index.json")) as stream:
-            self.weight_map = json.load(stream)["weight_map"]
         self.files = {}
+        index = os.path.join(path, "model.safetensors.index.json")
+        if os.path.exists(index):
+            with open(index) as stream:
+                self.weight_map = json.load(stream)["weight_map"]
+            return
+        # A checkpoint small enough to be saved unsharded has one file and no index.
+        single = safe_open(os.path.join(path, "model.safetensors"), framework="pt", device="cpu")
+        self.files["model.safetensors"] = single
+        self.weight_map = {key: "model.safetensors" for key in single.keys()}
 
     def __contains__(self, key):
         return key in self.weight_map
