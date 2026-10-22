@@ -487,6 +487,9 @@ class AffineSync:
 
     def __call__(self):
         rank = dist.get_rank()
+        # ZeRO-3 keeps persistent parameters gathered between steps; the shards must be their only copies.
+        self.trained.engine.empty_partition_cache()
+        self.rollout.engine.empty_partition_cache()
         trained_params = self.trained.params()
         transfers = []
         for name, param in self.rollout.params().items():
